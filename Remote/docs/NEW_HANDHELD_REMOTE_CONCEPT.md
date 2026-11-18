@@ -59,3 +59,9 @@ A 1S4P pack built from four 2500 mAh cells has 10,000 mAh nominal capacity. With
 
 ## Next design phase
 Create a dimensioned front/rear/side template and CAD mock-up. Validate display and joystick component footprints, button spacing and thumb reach, antenna placement and internal battery/electronics volume before selecting final parts or producing PCBs.
+
+
+## New hardware-design additions
+- Dedicated physical power ON/OFF button centered above the display, separate from the 16 function buttons. Electrical implementation (soft power latch vs direct switched power) remains to be selected.
+- USB-C service port planned on the lower enclosure edge. It is intended for 1S pack charging and ESP32-S3 firmware/data access through one connector. This requires a validated USB-C sink/CC implementation, ESD protection, a charger with suitable power-path/load-sharing behavior, and USB data routing compatible with the selected ESP32 module. Do not assume charging and programming can safely occur simultaneously until the power-path circuit is designed and tested.
+- Hardware design workspace: `Remote/New_Handheld_Remote/`. It contains an initial OpenSCAD fit template, mechanical print plan, modular PCB architecture, connector interface plan and schematic checklist. These are preliminary design files, not fabrication-ready CAD/PCB/schematics.
