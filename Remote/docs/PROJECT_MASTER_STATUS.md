@@ -219,3 +219,10 @@ The preferred alternative controller concept now has a separate design workspace
 - OpenSCAD export/render was verified in the current working environment; the front panel and rear shell each produced a simple 3D mesh.
 - This validates basic geometry only. The component dimensions, mounting, fit, wall strength, assembly alignment and printability under chosen settings remain unverified.
 - Internal layout mockup now assumes a single integrated touchscreen/ESP32-S3 controller board to avoid a separate overlapping controller-board placeholder. Exact board selection and external-antenna support are still TBD.
+
+
+## Reference-based controller styling update — 2026-11-18
+- User uploaded the visual reference and confirmed it as the target shape/style.
+- New baseline: sculpted matte-black controller with angular shoulder transitions, deep screen bezel, joystick wells, textured outer grips/lower handle contours, rear service cover, two antennas, and centered lower USB-C.
+- Remove blue LED rings, grip LED strips, illuminated button surrounds and decorative backlighting.
+- Functional controls remain unchanged. Current CAD geometry has not yet been reshaped to this style; this update records the design decision and next mechanical revision target.
