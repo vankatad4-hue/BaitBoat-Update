@@ -110,3 +110,12 @@ Pin numbers, connector part numbers, wire gauges, fuse holder footprint and curr
 - TI PMP9779 boost short-circuit/overload protection reference: https://www.ti.com/tool/PMP9779
 - TI TPS63070 product/datasheet: https://www.ti.com/product/TPS63070
 - nRF24 PA/LNA module common issues/power discussion: https://nrf24.github.io/RF24/md_COMMON__ISSUES.html
+
+## TPS63070 radio rail — component calculation update R1 (2026-11-18)
+- Proposed feedback: R1=470 kΩ (VOUT→FB), R2=150 kΩ (FB→GND), calculated nominal 3.307 V; divider current 5.33 µA. 1% candidates.
+- Inductor candidate: Coilcraft XFL4020-152ME, 1.5 µH, manufacturer-rated current criteria to be checked at BOM selection.
+- Input capacitance reference set: 2×10 µF 25 V X7S 0805 + 10 µF 25 V X5R 0603 local; VAUX 100 nF.
+- Proposed output set: 4×22 µF 0805 + 10 µF 0603 local (98 µF nominal). Check DC-bias derating/effective capacitance against TI recommendation before lock.
+- Calculated radio battery current at 200 mA output, 3.0 V battery, assumed 90% efficiency: ≈245 mA.
+- Preliminary total remote battery draw ≈1.13 A at 3.0 V with 450 mA display load at 5 V, 85% boost efficiency, plus radio 200 mA at 3.3 V, 90% efficiency. This is a budget estimate only; confirm display current and efficiencies on bench.
+- Full calculation record in TPS63070_COMPONENT_CALCULATIONS_REVIEW_R1.md. Mode-pin/enable design, exact capacitors, layout, stability and thermal remain unresolved.
