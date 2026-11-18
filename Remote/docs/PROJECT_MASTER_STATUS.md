@@ -296,3 +296,11 @@ The preferred alternative controller concept now has a separate design workspace
 - Main fuse remains 3 A time-delay provisional. Final fuse and connector ratings must be based on measured peak/startup current, pack/BMS limits, wire gauge and downstream converter requirements.
 - BMS/protection is assumed, not verified. Charging design is outside scope. Reverse-polarity circuit, fuse, connector, capacitors, ADC divider and NTC values are not finalized.
 - README updated. All current power-sheet artifacts are net/pin planning documents; native KiCad schematics, PCB layout, ERC and fabrication outputs have not been produced.
+
+
+## Power-document review and net-name harmonization — 2026-11-18
+- Read the current new-handheld remote power distribution, net-level draft, TPS61088 pin map, TPS63070 pin map, battery input/protection map and component-selection/integration document.
+- Harmonized protected battery distribution naming to `BAT_PROT` across the power architecture and converter net maps.
+- Corrected component-selection text to reflect that the Waveshare onboard antenna is accepted and the external ESP32 antenna requirement is waived.
+- Removed charger IC/2 A charging-current selection from the current scope. Charging schematic remains out of scope; USB-C power/charging/data roles still need definition before hardware implementation.
+- All artifacts remain planning docs. Values, exact footprints, reverse-protection implementation, fuse/connector selection, PCB layout, ERC and hardware validation remain open.
