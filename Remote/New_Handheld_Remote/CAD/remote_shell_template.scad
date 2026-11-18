@@ -1,4 +1,5 @@
-// Flytec new handheld remote — preliminary printable fit template
+// Flytec new handheld remote — reference-image-inspired fit template
+// Styling baseline: sculpted matte-black controller, no blue LED/backlight accents
 // Units: mm. NOT final component-verified CAD.
 // Select "front", "rear", or "assembly" in the part variable.
 // Validate all openings against the actual purchased components before printing.
