@@ -70,3 +70,15 @@ The TI simplified circuit shows a 1.5 µH inductor, input capacitor(s), output c
 - Layout review, thermal, ripple and load tests: not performed.
 
 This file is a pin/net planning artifact, not a native KiCad schematic, reviewed PCB, ERC result or fabrication-ready design.
+
+## Component calculations and value proposal — R1 (2026-11-18)
+- Feedback divider: R1=470 kΩ (VOUT→FB), R2=150 kΩ (FB→GND), nominal VOUT=3.3067 V using 0.8 V reference; divider current ≈5.33 µA. Use 1% resistor candidates, subject to final tolerance analysis.
+- Inductor candidate: Coilcraft XFL4020-152ME, 1.5 µH. Datasheet values: 14.4 mΩ typical/15.8 mΩ max DCR, 4.1 A Isat at 10% L drop, 4.4 A at 20%, 4.6 A at 30%; RMS rating 6.7 A at 20°C rise. Confirm suffix and criteria for selected part.
+- Input capacitors starting values: 2×10 µF 25 V X7S 0805 plus 10 µF 25 V X5R 0603 local (TI reference).
+- Proposed output bank: 4×22 µF 0805 X6S/X7S plus 10 µF 0603 local (98 µF nominal). Verify exact part DC-bias effective capacitance at 3.3 V against datasheet filter table before locking. This is a proposal, not stability validation.
+- VAUX capacitor: 100 nF X7R 0402.
+- Radio load budget: 200 mA at 3.3 V; at 3.0 V input and assumed 90% efficiency, battery current ≈245 mA. Actual module burst current must be measured.
+- Combined remote preliminary estimate: display/controller 5 V × 450 mA, assumed 85% boost efficiency, plus radio at 200 mA and assumed 90% efficiency gives ≈1.13 A at 3.0 V battery. Excludes other loads and transients; display current is not verified.
+- EN, PS/SYNC, VSEL/FB2 single-voltage configuration, PG pull-up and package/footprint remain datasheet verification gates. No KiCad schematic, ERC, PCB or bench validation is claimed.
+
+Reference calculation record: PCB/TPS63070_COMPONENT_CALCULATIONS_REVIEW_R1.md.
