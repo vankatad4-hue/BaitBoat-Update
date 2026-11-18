@@ -263,3 +263,12 @@ The preferred alternative controller concept now has a separate design workspace
 - Battery remains 1S4P 18650 side-by-side; pack protection assumed; charging schematic out of scope; exact cell choice TBD.
 - Recommendations documented: nRF24 PA/LNA SMA module, dedicated 3.3 V rail, TPS61088 5 V boost, downstream 2 A provisional fuse, thermal test target.
 - No purchase-ready BOM or schematic yet.
+
+
+## Power distribution PCB — R1 (2026-11-18)
+- Added `PCB/POWER_DISTRIBUTION_DESIGN_R1.md` with input/fuse, 5 V boost, dedicated 3.3 V radio rail, placement/grounding, thermal, test points, connector groups and prototype test sequence.
+- Confirmed display board onboard antenna accepted; no ESP32 antenna requirement.
+- Recommended 5 V boost candidate: TPS61088; TI reference designs cover 5 V/3 A and low-EMI layout/short-circuit protection concepts. 3 A capability is not assumed for our PCB until designed and validated.
+- Recommended radio 3.3 V buck-boost: TPS63070 (input 2 V–16 V; 3.3 V output design TBD), chosen because battery voltage crosses 3.3 V.
+- Fuse recommendation revised to 3 A time-delay provisional due to 1S input current and peak loads. Final fuse must be verified against load profile, wiring/connectors and pack protection; previous 2 A idea superseded.
+- Battery pack protection assumed onboard; verify pack BMS specification. Charging design remains out of scope.
