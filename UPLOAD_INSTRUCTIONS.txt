@@ -1,0 +1,5 @@
+Flytec V080 GitHub import bundle
+
+Copy the Boat/, Remote/, and releases/ directories into the root of the cloned BaitBoat-Update repository. Keep the existing README.md, LICENSE, docs/, and other files. Then commit and push.
+This bundle contains the exact extracted contents of Flytec_Boat_ver004.zip and Flytec_Remote_ver004.zip, plus the original archives in releases/.
+Do not overwrite existing paths without reviewing differences.
