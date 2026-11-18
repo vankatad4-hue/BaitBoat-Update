@@ -90,3 +90,9 @@ Power PCB design: [`POWER_DISTRIBUTION_DESIGN_R1.md`](PCB/POWER_DISTRIBUTION_DES
 - Confirmed pin numbers: L1=11, L2=9, VIN=12/13, EN=14, VSEL=15, PS/SYNC=1, PG=2, VAUX=3, GND=4, FB=5, FB2=6, VOUT=7/8, PGND=10.
 - TI's stated operating range is 2.0–16 V input and 2.5–9 V output; up to 2 A under specified conditions. The remote's 3.3 V radio rail is still a design target, not validated capacity.
 - Feedback values, inductor/capacitors, EN default, PS/SYNC mode, PG usage, footprint verification and layout remain open. Document is not a native KiCad schematic.
+
+
+## Battery input and protection net map R1 — 2026-11-18
+- Added `PCB/BATTERY_INPUT_PROTECTION_NET_MAP_R1.md` documenting the pack connector, provisional 3 A time-delay fuse, reverse-polarity protection, BAT_PROT distribution, battery sensing/NTC and test points.
+- Pack protection/BMS is assumed but must be verified; charging remains out of scope. Fuse, connector, reverse-protection parts, bulk capacitors, ADC divider and thermistor interface remain TBD.
+- Battery input is documented as a net-level plan only, not a KiCad schematic or battery-pack design.
