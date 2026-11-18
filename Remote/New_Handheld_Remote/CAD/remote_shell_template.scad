@@ -63,7 +63,7 @@ module front_panel() {
   difference() {
     rounded_box_xy(W,H,front_th,corner_r);
     // Screen aperture
-    translate([0,screen_y,-0.1])
+    translate([0,screen_y,front_th/2])
       cube([screen_w,screen_h,front_th+0.4],center=true);
     // Power button aperture
     translate([0,power_y,-0.1])
