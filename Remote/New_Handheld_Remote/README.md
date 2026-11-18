@@ -46,3 +46,10 @@ Do not treat placeholder cutouts as verified component footprints.
 [Official concept image](../New_Handheld_Remote/CONCEPT/Flytec_Remote_Concept_Reference.jpg)
 
 The JPEG is uploaded and verified in the CONCEPT folder. It is the styling reference; blue LED/backlighting elements are excluded from the mechanical design.
+
+
+## Mechanical refinement R2 — concept preview (2026-11-18)
+- Generated a multi-view concept preview to explore front, angled, rear, side, and internal layout styling against the user's uploaded reference.
+- Visual target: sculpted matte-black shell, textured grips, recessed display, joystick wells, rear access panel, dual antennas, lower USB-C.
+- Decorative LED rings, grip strips, illuminated button surrounds, and blue backlighting remain excluded.
+- Preview is illustrative only. Dimensions and internal arrangement shown are not verified CAD or component-fit results; next CAD work must translate the contours into parametric geometry and validate physical parts.
