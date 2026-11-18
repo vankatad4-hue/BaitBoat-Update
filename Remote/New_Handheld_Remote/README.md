@@ -66,3 +66,7 @@ The JPEG is uploaded and verified in the CONCEPT folder. It is the styling refer
 
 ## Actual component selection and dimension integration
 See [`COMPONENT_SELECTION_DIMENSION_INTEGRATION_R1.md`](MECHANICAL/COMPONENT_SELECTION_DIMENSION_INTEGRATION_R1.md) for candidate parts, measured envelopes, power architecture and remaining verification items.
+
+
+## Confirmed component direction R2
+See [`COMPONENT_SELECTION_DIMENSION_INTEGRATION_R1.md`](MECHANICAL/COMPONENT_SELECTION_DIMENSION_INTEGRATION_R1.md) for updated nRF PA/LNA, boost, protection, fuse and thermal recommendations.
