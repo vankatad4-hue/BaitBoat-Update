@@ -232,3 +232,10 @@ The preferred alternative controller concept now has a separate design workspace
 - Official concept JPEG uploaded and verified at `Remote/New_Handheld_Remote/CONCEPT/Flytec_Remote_Concept_Reference.jpg` (344,416 bytes).
 - README and concept documentation now link to the image.
 - Visual baseline remains sculpted matte-black enclosure; decorative blue LED rings, grip lighting and backlighting excluded.
+
+
+## Mechanical refinement R2 — concept preview (2026-11-18)
+- Generated a multi-view concept preview to explore front, angled, rear, side, and internal layout styling against the user's uploaded reference.
+- Visual target: sculpted matte-black shell, textured grips, recessed display, joystick wells, rear access panel, dual antennas, lower USB-C.
+- Decorative LED rings, grip strips, illuminated button surrounds, and blue backlighting remain excluded.
+- Preview is illustrative only. Dimensions and internal arrangement shown are not verified CAD or component-fit results; next CAD work must translate the contours into parametric geometry and validate physical parts.
