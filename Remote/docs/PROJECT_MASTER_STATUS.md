@@ -256,3 +256,10 @@ The preferred alternative controller concept now has a separate design workspace
 - C&K THB001P selected as preferred joystick candidate, not yet purchased.
 - TI BQ25895 selected as charger/power-path candidate, charge-current and thermal design not finalized.
 - No parts purchased; BOM remains preliminary.
+
+
+## Power/RF recommendation update — 2026-11-18
+- User confirmed Waveshare ESP32-S3-Touch-LCD-4.3; onboard antenna accepted.
+- Battery remains 1S4P 18650 side-by-side; pack protection assumed; charging schematic out of scope; exact cell choice TBD.
+- Recommendations documented: nRF24 PA/LNA SMA module, dedicated 3.3 V rail, TPS61088 5 V boost, downstream 2 A provisional fuse, thermal test target.
+- No purchase-ready BOM or schematic yet.
