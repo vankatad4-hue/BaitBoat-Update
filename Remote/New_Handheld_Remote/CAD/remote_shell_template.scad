@@ -51,6 +51,20 @@ module rounded_box_xy(w,h,z,r) {
       square([w-2*r,h-2*r],center=true);
 }
 
+// Controller silhouette inspired by the uploaded reference: angular shoulders and flared grip lobes.
+module controller_outline_xy(w,h,z,r) {
+  scale([w/310,h/190])
+    linear_extrude(height=z)
+      offset(r=r)
+        polygon(points=[
+          [-145,-42],[-150,-18],[-146,28],[-134,54],[-112,72],[-88,82],
+          [-58,78],[-35,66],[35,66],[58,78],[88,82],[112,72],[134,54],
+          [146,28],[150,-18],[145,-42],[132,-62],[115,-78],[92,-88],
+          [70,-84],[48,-68],[30,-62],[-30,-62],[-48,-68],[-70,-84],
+          [-92,-88],[-115,-78],[-132,-62]
+        ]);
+}
+
 module button_holes() {
   for (side=[-1,1])
     for (col=[-0.5,0.5])
@@ -62,7 +76,7 @@ module button_holes() {
 
 module front_panel() {
   difference() {
-    rounded_box_xy(W,H,front_th,corner_r);
+    controller_outline_xy(W,H,front_th,8);
     // Screen aperture
     translate([0,screen_y,front_th/2])
       cube([screen_w,screen_h,front_th+0.4],center=true);
@@ -80,9 +94,9 @@ module front_panel() {
 module rear_shell() {
   difference() {
     // Tray body; open face is at z=D for mating with the front panel.
-    rounded_box_xy(W,H,D,corner_r);
+    controller_outline_xy(W,H,D,8);
     translate([0,0,wall])
-      rounded_box_xy(W-2*wall,H-2*wall,D-wall+0.2,corner_r-wall);
+      controller_outline_xy(W-2*wall,H-2*wall,D-wall+0.2,5);
 
     // Antenna exits cut through the rear wall (z-facing), not the side walls.
     for (side=[-1,1])
