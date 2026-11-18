@@ -14,7 +14,7 @@ This folder is the design workspace for the new game-controller-style bait-boat 
 - Ergonomic grips.
 
 ## Folder map
-- `CAD/`: parametric OpenSCAD prototype shell/front panel.
+- `CAD/`: parametric OpenSCAD prototype shell/front panel with `front`, `rear`, and `assembly` selectors.
 - `PCB/`: board architecture, schematic planning and connector/pinout documents.
 - `MECHANICAL/`: dimensions, component fit, print and assembly notes.
 - `WIRING/`: cable/connector interface tables.
@@ -26,7 +26,7 @@ CAD and electrical design are **preliminary templates**. Component footprints, d
 ## Suggested CAD workflow
 1. Open `CAD/remote_shell_template.scad` in OpenSCAD.
 2. Select `part = "front"` to export the front template, or `part = "rear"` for the rear shell.
-3. Render (F6), export STL, and print a low-cost fit prototype.
+3. Choose `part = "front"`, `"rear"`, or `"assembly"`; render (F6), export STL, and print a low-cost fit prototype. The current draft has been successfully rendered to STL with OpenSCAD for all three selectors (geometry checks passed; component fit remains unverified).
 4. Measure real display, joystick, switch and button parts before finalizing openings.
 
 Do not treat placeholder cutouts as verified component footprints.
