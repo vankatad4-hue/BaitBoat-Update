@@ -102,3 +102,10 @@ Power PCB design: [`POWER_DISTRIBUTION_DESIGN_R1.md`](PCB/POWER_DISTRIBUTION_DES
 - Harmonized the battery distribution net name to `BAT_PROT` across power architecture, net draft and converter pin/net maps.
 - Corrected component-selection notes: onboard ESP32 antenna is accepted; external ESP32 antenna requirement is waived.
 - Charging circuitry remains out of scope. USB-C charging/power-path roles are not electrically finalized; no charger IC or charging current is approved.
+
+## TPS63070 radio rail — component calculations R1
+- Engineering calculation record: PCB/TPS63070_COMPONENT_CALCULATIONS_REVIEW_R1.md.
+- Feedback pair proposed: 470 kΩ / 150 kΩ for 3.307 V nominal (0.8 V FB reference); inductor candidate Coilcraft XFL4020-152ME, 1.5 µH.
+- TI-reference input capacitors; proposed 98 µF nominal output bank pending effective-capacitance/DC-bias verification.
+- Radio branch budget: 200 mA output load → approximately 245 mA battery current at 3.0 V and assumed 90% efficiency. Whole remote preliminary estimate is approximately 1.13 A at 3.0 V under stated display/radio assumptions; not measured.
+- Component selection and calculations remain subject to datasheet/package checks, DC-bias capacitance verification, schematic review, layout, stability and thermal testing. Native KiCad schematic/ERC not yet created.
