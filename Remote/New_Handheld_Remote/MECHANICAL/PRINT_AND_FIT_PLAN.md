@@ -1,32 +1,22 @@
 # Mechanical Print and Fit Plan
 
-## Prototype parameters (from CAD template)
-- Outer envelope: 310 × 190 mm.
-- Depth target: 62 mm.
-- Front panel thickness: 3.2 mm.
-- Rear wall: 3 mm.
-- Screen aperture: 106.8 × 67 mm placeholder.
-- Power button opening: 16 mm placeholder.
-- Joystick openings: 24 mm placeholder.
-- Button openings: 14 mm placeholder; 2×4 per side.
-- Antenna exits: 8.5 mm placeholders.
-- USB service opening: 13 × 7 mm placeholder.
-
-These are initial modeling assumptions, not measured component dimensions.
+## Prototype assumptions
+- Outer envelope: 310×190×70 mm provisional.
+- Front panel: 3.2 mm; rear wall: 3 mm (initial CAD assumptions).
+- Display opening: 106.8×67 mm placeholder.
+- Power button opening: 16 mm; joystick openings: 24 mm; button openings: 14 mm placeholder.
+- One nRF antenna exit: connector-specific hole TBD.
+- USB-C lower-edge service opening: 13×7 mm placeholder.
 
 ## Print approach
-- Print front panel flat with openings upward; test button-hole tolerance on a small coupon first.
-- Print rear tray separately.
-- Use nonconductive filament for initial enclosure prototypes; antenna performance must be checked in the assembled housing.
-- Add internal ribs/bosses and screw inserts only after board and component locations are known.
-- Confirm screen bezel, display PCB, joystick depth, button travel, USB connector and SMA bulkheads with physical samples.
+Print front panel and rear tray separately. Use nonconductive filament for initial fit; RF must be tested in final housing. Add bosses/ribs and battery restraint only after component placement is verified.
 
 ## Fit sequence
-1. Print a low-cost front-face template only.
-2. Verify display opening and reach/spacing using mock components.
-3. Print rear tray.
-4. Verify grip comfort and battery/electronics volume.
-5. Add internal PCB bosses, battery restraints and cable guides.
-6. Finalize enclosure and print material after thermal, RF and water/splash considerations.
+1. Print front template; test display opening and control spacing.
+2. Fit actual screen board, joystick and switch samples.
+3. Print rear tray and check shell depth, battery reserve and grip.
+4. Check nRF antenna connector/feed clearance; maintain Waveshare onboard ESP32 antenna keepout.
+5. Add mounting bosses, cell restraint and cable guides.
+6. Validate splash protection and thermal behavior separately.
 
-This enclosure is not waterproof. Splash-resistant design, gasket, drainage and port sealing require a separate design review.
+This enclosure is not waterproof. All dimensions and cutouts are placeholders until actual parts are measured.
