@@ -33,3 +33,10 @@ Do not treat placeholder cutouts as verified component footprints.
 
 ## CAD geometry check
 - Fixed the front screen opening to cut fully through the panel. Front/rear STL exports are simple meshes in the local OpenSCAD verification; fit is still unverified.
+
+
+## Visual design baseline — reference image (LED-free)
+- Adopt the reference's sculpted controller silhouette: angular shoulder transitions, deep central screen bezel, integrated joystick wells, and large textured outer grips/lower handles.
+- Finish: matte black/dark graphite. Remove blue illuminated strips, joystick rings, illuminated button surrounds, and decorative backlighting.
+- Preserve central 4.3-inch screen, two upper-corner joysticks, symmetrical 2×4 button banks, separate central power button above display, lower-edge USB-C, and two rear antennas.
+- CAD shell remains simplified; reference styling requires dedicated silhouette/grip-contour revision before fit testing.
