@@ -226,3 +226,9 @@ The preferred alternative controller concept now has a separate design workspace
 - New baseline: sculpted matte-black controller with angular shoulder transitions, deep screen bezel, joystick wells, textured outer grips/lower handle contours, rear service cover, two antennas, and centered lower USB-C.
 - Remove blue LED rings, grip LED strips, illuminated button surrounds and decorative backlighting.
 - Functional controls remain unchanged. Current CAD geometry has not yet been reshaped to this style; this update records the design decision and next mechanical revision target.
+
+
+## Concept image upload verified — 2026-11-18
+- Official concept JPEG uploaded and verified at `Remote/New_Handheld_Remote/CONCEPT/Flytec_Remote_Concept_Reference.jpg` (344,416 bytes).
+- README and concept documentation now link to the image.
+- Visual baseline remains sculpted matte-black enclosure; decorative blue LED rings, grip lighting and backlighting excluded.
