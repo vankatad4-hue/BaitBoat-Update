@@ -15,21 +15,21 @@
 - J1.1 = PACK_POS
 - J1.2 = PACK_NEG / GND
 - F1 in series: PACK_POS → BAT_FUSED (3 A time-delay provisional; verify)
-- Q1 reverse-polarity protection (MOSFET ideal-diode topology, exact circuit TBD): BAT_FUSED → VBAT_SYS
-- C_IN bulk + ceramics: VBAT_SYS to GND, near converter input branches
+- Q1 reverse-polarity protection (MOSFET ideal-diode topology, exact circuit TBD): BAT_FUSED → BAT_PROT
+- C_IN bulk + ceramics: BAT_PROT to GND, near converter input branches
 - TP_BAT = PACK_POS
 - TP_FUSED = BAT_FUSED
-- TP_VSYS = VBAT_SYS
+- TP_VSYS = BAT_PROT
 
 Do not treat pack BMS as a substitute for F1. Fuse and wiring must be coordinated with pack protection, connector and wire ratings. The fuse value remains provisional.
 
 ## Sheet B — BOOST_5V (TPS61088)
 **Power flow**
-VBAT_SYS → boost inductor L_BST → TPS61088 SW pins; converter output VOUT pins → +5V_MAIN.
+BAT_PROT → boost inductor L_BST → TPS61088 SW pins; converter output VOUT pins → +5V_MAIN.
 The precise topology/pin connectivity must follow TI's datasheet typical application circuit.
 
 **Functional connections**
-- VIN pins → VBAT_SYS with local ceramic input capacitors.
+- VIN pins → BAT_PROT with local ceramic input capacitors.
 - VCC pin → local required bypass capacitor to GND.
 - BOOT → bootstrap capacitor to SW per datasheet.
 - EN → BOOST_EN; provide defined default state (pull-down/firmware enable, not floating).
@@ -51,11 +51,11 @@ The precise topology/pin connectivity must follow TI's datasheet typical applica
 
 ## Sheet C — RADIO_3V3 (TPS63070)
 **Power flow**
-VBAT_SYS → TPS63070 buck-boost VIN → 3V3_RADIO.
+BAT_PROT → TPS63070 buck-boost VIN → 3V3_RADIO.
 Inductor between L1 and L2; exact pin/inductor routing from datasheet.
 
 **Functional connections**
-- VIN pins → VBAT_SYS, with local input capacitors.
+- VIN pins → BAT_PROT, with local input capacitors.
 - L1/L2 → inductor (initial datasheet reference value 1.5 µH; confirm final design with current, saturation, DCR, layout and manufacturer recommendations).
 - VOUT pins → 3V3_RADIO with output capacitor bank.
 - FB network → program 3.3 V on adjustable version; exact resistor values calculated from datasheet equation and tolerance.
@@ -73,11 +73,11 @@ Inductor between L1 and L2; exact pin/inductor routing from datasheet.
 - Near module connector: 100 nF ceramic + 10–47 µF low-ESR bulk capacitor (confirm module vendor recommendations).
 
 ## Sheet D — SENSE_CONTROL
-- VBAT_SENSE: divider from VBAT_SYS to ADC_BAT; values chosen to keep ADC below ESP32 ADC maximum under battery/overshoot conditions. Include RC filter; consider switched divider to reduce idle drain.
+- VBAT_SENSE: divider from BAT_PROT to ADC_BAT; values chosen to keep ADC below ESP32 ADC maximum under battery/overshoot conditions. Include RC filter; consider switched divider to reduce idle drain.
 - PACK_NTC: connector for pack thermistor, with ADC bias/filter; firmware must handle open/short as fault.
 - BOOST_EN and RADIO_EN: enable control inputs with hardware-defined default states.
 - RADIO_PGOOD: optional status signal; level and pull-up voltage verified before connection to MCU.
-- Test points: GND, VBAT_SYS, +5V_MAIN, 3V3_RADIO, BOOST_EN, RADIO_EN, RADIO_PGOOD, ADC_BAT.
+- Test points: GND, BAT_PROT, +5V_MAIN, 3V3_RADIO, BOOST_EN, RADIO_EN, RADIO_PGOOD, ADC_BAT.
 
 ## Sheet E — CONNECTORS
 - J1 battery pack: polarity/keying and current rating TBD.
