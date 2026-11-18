@@ -96,3 +96,9 @@ Power PCB design: [`POWER_DISTRIBUTION_DESIGN_R1.md`](PCB/POWER_DISTRIBUTION_DES
 - Added `PCB/BATTERY_INPUT_PROTECTION_NET_MAP_R1.md` documenting the pack connector, provisional 3 A time-delay fuse, reverse-polarity protection, BAT_PROT distribution, battery sensing/NTC and test points.
 - Pack protection/BMS is assumed but must be verified; charging remains out of scope. Fuse, connector, reverse-protection parts, bulk capacitors, ADC divider and thermistor interface remain TBD.
 - Battery input is documented as a net-level plan only, not a KiCad schematic or battery-pack design.
+
+
+## Power document consistency review — 2026-11-18
+- Harmonized the battery distribution net name to `BAT_PROT` across power architecture, net draft and converter pin/net maps.
+- Corrected component-selection notes: onboard ESP32 antenna is accepted; external ESP32 antenna requirement is waived.
+- Charging circuitry remains out of scope. USB-C charging/power-path roles are not electrically finalized; no charger IC or charging current is approved.
