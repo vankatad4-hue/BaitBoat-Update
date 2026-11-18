@@ -26,7 +26,7 @@
 | 9 | L2 | SW_L2 | Inductor switching node; route compactly. |
 | 10 | PGND | POWER_GND | Power ground; high-current return. |
 | 11 | L1 | SW_L1 | Inductor switching node; route compactly. |
-| 12, 13 | VIN | BATTERY_PROTECTED | Input supply pins; local input capacitance. |
+| 12, 13 | VIN | BAT_PROT | Input supply pins; local input capacitance. |
 | 14 | EN | RADIO_REG_EN | Enable. Define default-on/off and MCU control; add bias so state is deterministic during reset. |
 | 15 | VSEL | RADIO_VSEL | Voltage scaling control. Tie low for the fixed divider configuration unless dynamic scaling is intentionally implemented and verified. |
 
