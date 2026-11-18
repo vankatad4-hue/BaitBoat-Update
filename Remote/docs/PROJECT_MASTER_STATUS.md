@@ -248,3 +248,11 @@ The preferred alternative controller concept now has a separate design workspace
 - Four 18650 placeholders remain illustrative; pack retention, electrical protection, charger, wiring, and clearances are not designed or validated.
 - OpenSCAD internal mockup R2 was rendered to STL successfully; PNG render attempt failed due to headless OpenGL/X-server limitation. A separate schematic space preview is available for review.
 - This revision is a layout study, not verified assembly or print-ready CAD.
+
+
+## Component selection / dimensional integration — 2026-11-18
+- Added candidate component integration plan with dimension envelopes and power architecture for 1S4P 18650 pack.
+- Waveshare 4.3 ESP32-S3 touchscreen remains a development candidate; onboard antenna does not meet external ESP32 antenna requirement.
+- C&K THB001P selected as preferred joystick candidate, not yet purchased.
+- TI BQ25895 selected as charger/power-path candidate, charge-current and thermal design not finalized.
+- No parts purchased; BOM remains preliminary.
