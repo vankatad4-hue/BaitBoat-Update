@@ -17,9 +17,9 @@ board_box(86,-68,-7,55,35,10,[0.9,0.2,0.2]);
 // Input/cable zones — placeholder strips
 board_box(-120,-35,-6,24,68,4,[0.55,0.3,0.75]);
 board_box(120,-35,-6,24,68,4,[0.55,0.3,0.75]);
-// Four 18650 cell envelopes, 2x2 lower-central; each 65 x 18 mm
-module cell(x,y,z){ translate([x,y,z]) rotate([0,90,0]) color([0.15,0.15,0.18]) cylinder(h=65,d=18,center=true); }
-cell(-16,-67,-20); cell(16,-67,-20); cell(-16,-67,0); cell(16,-67,0);
+// Four 18650 cell envelopes, parallel rows across X, 65 mm axes along Y; lower-central pack
+module cell(x,y,z){ translate([x,y,z]) rotate([90,0,0]) color([0.15,0.15,0.18]) cylinder(h=65,d=18,center=true); }
+cell(-27,-45,0); cell(-9,-45,0); cell(9,-45,0); cell(27,-45,0);
 // Antenna connector stubs
 translate([-125,82,-3]) color([0.7,0.7,0.7]) cylinder(h=16,d=8,center=true);
 translate([125,82,-3]) color([0.7,0.7,0.7]) cylinder(h=16,d=8,center=true);
