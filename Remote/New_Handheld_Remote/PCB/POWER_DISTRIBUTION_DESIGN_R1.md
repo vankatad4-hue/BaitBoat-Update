@@ -15,7 +15,7 @@ Protected 1S4P pack output
    |
    +-- Pack connector / polarity protection / main fuse
    |
-   +-- VBAT_RAW
+   +-- BAT_PROT
         |
         +-- TPS61088 5.0 V boost --> 5V_MAIN --> Waveshare ESP32-S3 touchscreen
         |
