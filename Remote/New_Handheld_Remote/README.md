@@ -78,3 +78,8 @@ Power PCB design: [`POWER_DISTRIBUTION_DESIGN_R1.md`](PCB/POWER_DISTRIBUTION_DES
 ## Net-level power schematic draft R1 — 2026-11-18
 - Created `PCB/POWER_SCHEMATIC_NET_DRAFT_R1.md`: BATTERY_INPUT, TPS61088 5 V boost, TPS63070 3.3 V radio buck-boost, SENSE_CONTROL, connector sheet/net groups, provisional power budget and unresolved component values.
 - This is a reviewed net-level draft, not a KiCad schematic or fabrication-ready design. Feedback/compensation, inductors, current limits, exact capacitors, fuse, reverse-polarity circuit and connector pins remain to be calculated/selected.
+
+
+## First converter schematic sheet — pin/net map R1
+- Added `PCB/TPS61088_PIN_NET_MAP_R1.md` with pin-to-net connections for the 5 V boost converter, functional external-component list, and caveats requiring package/pin verification.
+- This is not yet a native KiCad schematic; local KiCad CLI/editor was not available for generating or ERC-validating a schematic file in this environment.
