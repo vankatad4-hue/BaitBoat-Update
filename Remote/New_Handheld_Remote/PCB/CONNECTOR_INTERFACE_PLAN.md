@@ -50,3 +50,36 @@ Exact connector and signals depend on display module. For RGB displays, interfac
 
 ## Status
 No connector pin numbers, wire colors, connector part numbers, current ratings or pinout are approved yet. These will be documented before PCB fabrication.
+
+# Connector Interface Plan — Preliminary / Pinouts TBD
+
+Use keyed locking connectors where practical. Logical signal names below are not physical pin numbers; freeze pinout only after connector, module and PCB review.
+
+## Power board interfaces
+- BAT+ / GND: protected pack input.
+- SYS_5V: TPS61088 boost output for display/controller.
+- SYS_3V3_RF: TPS63070 radio output; dedicated nRF PA/LNA rail.
+- PWR_EN: board-level power control, architecture TBD.
+- BAT_SENSE: battery measurement.
+- PG_RADIO: optional radio regulator power-good.
+- NTC: battery temperature input if pack provides it.
+
+## Main ↔ input controls
+GND, 3V3 logic, four joystick ADC signals, button matrix rows/columns, optional input identification.
+
+## Main ↔ nRF24L01+ PA/LNA
+3V3_RF, GND, SPI_SCK, MOSI, MISO, NRF_CE, NRF_CSN, NRF_IRQ. Exact connector pin order TBD. Place 100 nF and 10–47 µF local decoupling near radio/module.
+
+## Display/controller
+Exact connector/interface depends on the Waveshare board revision. Verify connector, pinout and mechanical details before capture.
+
+## USB-C
+Charging and USB data/programming require CC, ESD, power-path and data routing design. Charging schematic is currently excluded from this work.
+
+## RF/antenna
+- ANT_NRF: SMA/u.FL or module's actual antenna connector, nRF24 PA/LNA only.
+- ESP32: Waveshare board onboard antenna; no external antenna connector/path planned.
+- Keep nRF and ESP32 RF systems electrically independent. Both use 2.4 GHz, so coexistence testing remains required.
+
+## Status
+Connector part numbers, physical pin numbers, wire colors, current ratings and finalized pinouts remain unapproved. Do not fabricate cable assemblies until these are documented.
