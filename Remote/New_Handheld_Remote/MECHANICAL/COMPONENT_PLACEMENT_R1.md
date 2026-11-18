@@ -63,3 +63,10 @@ This document and CAD coordinates are preliminary. The component placement is a 
 
 ## Reference-image styling update (LED-free)
 Use the uploaded reference as the visual master: sculpted angular black body, recessed screen bezel, raised joystick wells, broad textured outer grips, lower curved grip lobes, rear service cover, two antennas, and centered lower USB-C port. Delete blue illuminated joystick rings, grip LED strips, button glow and decorative backlighting. Do not change the functional control count or button mapping. The current CAD is still a simplified shell and must be reshaped to match these contours in a subsequent mechanical CAD revision.
+
+
+## Mechanical refinement R2 — concept preview (2026-11-18)
+- Generated a multi-view concept preview to explore front, angled, rear, side, and internal layout styling against the user's uploaded reference.
+- Visual target: sculpted matte-black shell, textured grips, recessed display, joystick wells, rear access panel, dual antennas, lower USB-C.
+- Decorative LED rings, grip strips, illuminated button surrounds, and blue backlighting remain excluded.
+- Preview is illustrative only. Dimensions and internal arrangement shown are not verified CAD or component-fit results; next CAD work must translate the contours into parametric geometry and validate physical parts.
