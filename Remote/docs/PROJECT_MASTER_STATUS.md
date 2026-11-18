@@ -282,3 +282,10 @@ The preferred alternative controller concept now has a separate design workspace
 ## First converter schematic sheet — pin/net map R1
 - Added `PCB/TPS61088_PIN_NET_MAP_R1.md` with pin-to-net connections for the 5 V boost converter, functional external-component list, and caveats requiring package/pin verification.
 - This is not yet a native KiCad schematic; local KiCad CLI/editor was not available for generating or ERC-validating a schematic file in this environment.
+
+
+## New handheld remote power PCB — TPS63070 pin map update (2026-11-18)
+- Added `Remote/New_Handheld_Remote/PCB/TPS63070_PIN_NET_MAP_R1.md` based on TI TPS63070 datasheet Rev. B.
+- Pin numbers and functional mapping were checked against the datasheet. Converter input/output range and nominal capability are recorded, but output current capability for our layout is not asserted.
+- The radio supply is still a provisional 3.3 V buck-boost rail from the 1S4P pack. Feedback resistor values, capacitor/inductor selection, mode, enable bias, package footprint verification and layout remain to be engineered and tested.
+- README updated to link/document this pin map. This remains a planning document; no native KiCad sheet or ERC was produced.
