@@ -75,3 +75,22 @@
 - C&K THB001P datasheet and DigiKey listing.
 - TI BQ25895 datasheet/product information.
 - Dimensions shown in CAD are envelopes for layout only; source drawings and exact vendor variants must be checked at schematic/PCB stage.
+
+
+## User-confirmed selections and power recommendations — R2 (2026-11-18)
+- Waveshare ESP32-S3-Touch-LCD-4.3 selected; onboard antenna accepted, external ESP32 antenna requirement waived for this board.
+- Battery remains 1S4P, four 18650 cells in parallel, side-by-side; exact cells TBD. Pack assumed to include protection/BMS; charging schematic intentionally out of current scope.
+- nRF radio recommendation: conventional nRF24L01+ PA/LNA module with SMA antenna, reserve 45 × 20 mm; use a dedicated 3.3 V regulator capable of at least 200 mA transient budget, with local 100 nF + 10–47 µF decoupling. Exact module vendor/PCB footprint TBD.
+- 5 V boost recommendation: TPS61088-based synchronous boost stage, 5.0 V output, target 2 A continuous capability and short peak headroom to 3 A only if the selected implementation is thermally/electrically validated. TI reference design documents 5 V/3 A capability and short-circuit/overload protection, but this is not automatic for every module or custom layout.
+- Battery protection: rely on pack protection/BMS for cell-level overcharge, over-discharge, over-current and short-circuit protections; verify its ratings and wiring. Add a separate downstream main fuse for wire/connector protection.
+- Main fuse: 2 A time-delay fuse is a provisional prototype value. Final fuse rating must be checked against measured steady/peak current, fuse I²t, wiring, connectors, and startup behavior; do not up-rate blindly.
+- Thermal: power PCB near lower USB/power zone, not beneath grip or against battery; compact switching node, short high-current loops, thermal copper and vias under converter thermal pad per datasheet. Prototype hotspot target <70 °C under sustained test; measure under full brightness and RF/Wi-Fi activity. Not a component rating.
+- Waveshare board is documented at 5 V / 450 mA (approx. 2.25 W). This load is the baseline for power budget; total remote load must be measured.
+- These are engineering recommendations, not a fabrication-ready schematic or safety certification.
+
+References:
+- Waveshare board documentation: https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3
+- nRF PA/LNA supply notes: https://shillehtek.com/blogs/shillehtek-product-manuals/nrf24l01-pa-lna-wireless-transceiver-module-antenna-1100m-range-manual
+- nRF PA/LNA current and decoupling discussion: https://circuitpython-nrf24l01.readthedocs.io/en/1.3.0/greetings.html
+- TI TPS61088 boost and reference design: https://www.ti.com/tool/PMP9779
+- TI TPS61088 product: https://www.ti.com/product/TPS61088-Q1
