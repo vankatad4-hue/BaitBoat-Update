@@ -205,3 +205,10 @@ The preferred alternative controller concept now has a separate design workspace
 - Proposed internal zones: lower-central secured 1S4P cell pack, central/upper ESP32-S3 controller behind display, radio near antenna A, independent ESP32 external-antenna feed near antenna B, and charging/power management near USB-C.
 - Front control coordinate plan and fit-validation sequence are documented in `Remote/New_Handheld_Remote/MECHANICAL/COMPONENT_PLACEMENT_R1.md`.
 - These placements are not component-fit verified. Exact part models/dimensions, CAD revisions, test prints, and fit checks remain next steps.
+
+
+## Internal layout mockup update — 2026-11-18
+- Added internal placement CAD visualization and notes.
+- Cell visual arrangement revised to four parallel 18650 rows, with cell axes along Y, to remove an obvious overlap in the first render.
+- Main/display board overlap is still deliberately visible as a placement conflict to resolve after exact boards are selected.
+- These volumes are placeholders, not component footprints or a validated battery holder.
