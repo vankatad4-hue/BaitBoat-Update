@@ -59,3 +59,7 @@ Convert the preliminary handheld remote concept into a placement plan that can g
 
 ## Status
 This document and CAD coordinates are preliminary. The component placement is a concept envelope, not a verified assembly. No battery pack assembly or charging circuit is approved by this document.
+
+
+## Reference-image styling update (LED-free)
+Use the uploaded reference as the visual master: sculpted angular black body, recessed screen bezel, raised joystick wells, broad textured outer grips, lower curved grip lobes, rear service cover, two antennas, and centered lower USB-C port. Delete blue illuminated joystick rings, grip LED strips, button glow and decorative backlighting. Do not change the functional control count or button mapping. The current CAD is still a simplified shell and must be reshaped to match these contours in a subsequent mechanical CAD revision.
