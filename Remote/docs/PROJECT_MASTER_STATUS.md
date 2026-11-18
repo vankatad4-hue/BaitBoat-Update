@@ -188,3 +188,7 @@ The user approved a central carrier PCB with removable cables for both remote an
 No external GPIO numbers are approved. Existing RGB LCD, GT911, CH422G, TF, USB and RS485/CAN resource use must be respected; check the exact board schematic and ADC/boot constraints before assignment. The proposed 1S2P 2400 mAh battery pack exceeds the previously noted Waveshare recommendation of below 2000 mAh for its battery connector; do not connect it to that connector without manufacturer confirmation. Use a separately engineered protected charger/power module and a verified board input.
 
 This is a documentation-only update. Radio and joystick ADC remain stubs/placeholders; no operational remote-to-boat link is claimed.
+
+## 6. Alternative new handheld remote concept (preliminary)
+
+A separate new handheld controller concept is preferred for exploration. It has a central 4.3-inch screen, two joysticks above symmetrical 2×4 button banks (16 total), no PlayStation symbols, no shoulder/rear buttons, two independent rear antenna systems (nRF24L01+ PA/LNA and ESP32-S3 external-antenna Wi-Fi/Bluetooth), and a proposed 1S4P pack using four 2500 mAh cells (10,000 mAh). The concept and preliminary button mapping are documented in `NEW_HANDHELD_REMOTE_CONCEPT.md`. It is not final CAD or a replacement of the current Waveshare remote baseline. Electrical, RF, battery, mechanical and safety details remain to be validated.
