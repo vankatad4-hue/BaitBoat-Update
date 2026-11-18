@@ -272,3 +272,8 @@ The preferred alternative controller concept now has a separate design workspace
 - Recommended radio 3.3 V buck-boost: TPS63070 (input 2 V–16 V; 3.3 V output design TBD), chosen because battery voltage crosses 3.3 V.
 - Fuse recommendation revised to 3 A time-delay provisional due to 1S input current and peak loads. Final fuse must be verified against load profile, wiring/connectors and pack protection; previous 2 A idea superseded.
 - Battery pack protection assumed onboard; verify pack BMS specification. Charging design remains out of scope.
+
+
+## Net-level power schematic draft R1 — 2026-11-18
+- Created `PCB/POWER_SCHEMATIC_NET_DRAFT_R1.md`: BATTERY_INPUT, TPS61088 5 V boost, TPS63070 3.3 V radio buck-boost, SENSE_CONTROL, connector sheet/net groups, provisional power budget and unresolved component values.
+- This is a reviewed net-level draft, not a KiCad schematic or fabrication-ready design. Feedback/compensation, inductors, current limits, exact capacitors, fuse, reverse-polarity circuit and connector pins remain to be calculated/selected.
