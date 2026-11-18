@@ -40,3 +40,9 @@ Do not treat placeholder cutouts as verified component footprints.
 - Finish: matte black/dark graphite. Remove blue illuminated strips, joystick rings, illuminated button surrounds, and decorative backlighting.
 - Preserve central 4.3-inch screen, two upper-corner joysticks, symmetrical 2×4 button banks, separate central power button above display, lower-edge USB-C, and two rear antennas.
 - CAD shell remains simplified; reference styling requires dedicated silhouette/grip-contour revision before fit testing.
+
+
+## Official visual reference
+[Official concept image](../New_Handheld_Remote/CONCEPT/Flytec_Remote_Concept_Reference.jpg)
+
+The JPEG is uploaded and verified in the CONCEPT folder. It is the styling reference; blue LED/backlighting elements are excluded from the mechanical design.
