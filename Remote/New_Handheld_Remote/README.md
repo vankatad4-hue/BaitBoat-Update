@@ -30,3 +30,6 @@ CAD and electrical design are **preliminary templates**. Component footprints, d
 4. Measure real display, joystick, switch and button parts before finalizing openings.
 
 Do not treat placeholder cutouts as verified component footprints.
+
+## CAD geometry check
+- Fixed the front screen opening to cut fully through the panel. Front/rear STL exports are simple meshes in the local OpenSCAD verification; fit is still unverified.
