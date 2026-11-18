@@ -13,7 +13,7 @@ This folder is the design workspace for the new game-controller-style bait-boat 
 - 1S4P Li-ion pack: 4 × matched 2500 mAh cells, nominal 10,000 mAh.
 - Ergonomic grips.
 
-## Mechanical refinement (R1)\n- Target envelope: 310 × 190 × 62 mm, still provisional.\n- Front-panel coordinate placement is documented in `MECHANICAL/COMPONENT_PLACEMENT_R1.md`.\n- Battery, controller, radio, power, and cable zones are mapped conceptually; actual parts and stack heights must be measured before locking CAD.\n- No component fit, waterproofing, or battery/charging design is approved yet.\n\n## Folder map
+## Mechanical refinement (R1)\n- Target envelope: 310 × 190 × 62 mm, still provisional.\n- Front-panel coordinate placement is documented in `MECHANICAL/COMPONENT_PLACEMENT_R1.md`.\n- Battery, controller, radio, power, and cable zones are mapped conceptually; actual parts and stack heights must be measured before locking CAD.\n- No component fit, waterproofing, or battery/charging design is approved yet.\n- Internal component mockup is available at `CAD/internal_layout_mockup.scad` and is visual-only.\n\n## Folder map
 - `CAD/`: parametric OpenSCAD prototype shell/front panel with `front`, `rear`, and `assembly` selectors.
 - `PCB/`: board architecture, schematic planning and connector/pinout documents.
 - `MECHANICAL/`: dimensions, component fit, print and assembly notes.
