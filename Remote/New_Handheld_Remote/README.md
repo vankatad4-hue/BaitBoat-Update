@@ -1,0 +1,32 @@
+# New Handheld Remote Hardware Development
+
+This folder is the design workspace for the new game-controller-style bait-boat remote, separate from the existing Waveshare remote firmware.
+
+## Current concept baseline
+- 4.3-inch central touchscreen.
+- Power button centered above display.
+- USB-C service/charging port on the lower edge (location is provisional).
+- Two joysticks above button banks.
+- 16 buttons: two symmetrical banks, each 2 columns × 4 rows.
+- No shoulder buttons or rear buttons.
+- Two rear antenna exits: nRF24L01+ PA/LNA radio and ESP32-S3 external-antenna Wi-Fi/Bluetooth radio.
+- 1S4P Li-ion pack: 4 × matched 2500 mAh cells, nominal 10,000 mAh.
+- Ergonomic grips.
+
+## Folder map
+- `CAD/`: parametric OpenSCAD prototype shell/front panel.
+- `PCB/`: board architecture, schematic planning and connector/pinout documents.
+- `MECHANICAL/`: dimensions, component fit, print and assembly notes.
+- `WIRING/`: cable/connector interface tables.
+- `docs/`: design decisions, power/RF and bring-up plans.
+
+## Important status
+CAD and electrical design are **preliminary templates**. Component footprints, display exact dimensions, joystick mounting, button switches, charging/protection design, RF layout, connector pinouts and safety details must be validated before ordering PCB fabrication or assembling a battery pack. The first CAD model is intended for fit/ergonomic printing, not final production.
+
+## Suggested CAD workflow
+1. Open `CAD/remote_shell_template.scad` in OpenSCAD.
+2. Select `part = "front"` to export the front template, or `part = "rear"` for the rear shell.
+3. Render (F6), export STL, and print a low-cost fit prototype.
+4. Measure real display, joystick, switch and button parts before finalizing openings.
+
+Do not treat placeholder cutouts as verified component footprints.
