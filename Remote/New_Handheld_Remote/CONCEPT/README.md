@@ -1,20 +1,13 @@
 # Flytec Remote — Concept Reference
 
-This folder stores the official visual concept image for the next-generation Flytec V080 handheld controller.
+This folder stores the visual reference for the next-generation handheld controller.
 
 Design baseline:
-- Sculpted ergonomic matte-black housing inspired by the uploaded reference
-- Central 4.3-inch touchscreen
-- Two precision joysticks
-- 16 physical buttons in two symmetrical 2×4 groups
-- Separate central power button
-- Two independent antennas
-- USB-C charging/programming port
-- Textured grips
+- Sculpted matte-black/graphite housing and textured grips.
+- Central 4.3-inch touchscreen; two joysticks; 16 buttons in two symmetrical 2×4 groups.
+- Separate power button above screen.
+- One external antenna for the nRF24L01+ PA/LNA radio; Waveshare ESP32-S3 board uses its onboard antenna.
+- USB-C service port on lower edge.
+- No decorative blue LED rings, grip strips, illuminated button surrounds or backlighting.
 
-Decorative blue LED rings, grip lighting, button glow, and backlighting are excluded from the mechanical design.
-
-## Reference image
-Expected filename: `Flytec_Remote_Concept_Reference.jpg`
-
-Upload the actual JPEG using GitHub's **Add file → Upload files** flow. A text placeholder is not a valid image reference.
+The reference is visual guidance, not verified CAD geometry.
