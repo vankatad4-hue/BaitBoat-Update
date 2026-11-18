@@ -212,3 +212,10 @@ The preferred alternative controller concept now has a separate design workspace
 - Cell visual arrangement revised to four parallel 18650 rows, with cell axes along Y, to remove an obvious overlap in the first render.
 - Main/display board overlap is still deliberately visible as a placement conflict to resolve after exact boards are selected.
 - These volumes are placeholders, not component footprints or a validated battery holder.
+
+
+## CAD geometry verification — 2026-11-18
+- Corrected the front-panel screen aperture cut depth so the opening passes fully through the 3.2 mm panel.
+- OpenSCAD export/render was verified in the current working environment; the front panel and rear shell each produced a simple 3D mesh.
+- This validates basic geometry only. The component dimensions, mounting, fit, wall strength, assembly alignment and printability under chosen settings remain unverified.
+- Internal layout mockup now assumes a single integrated touchscreen/ESP32-S3 controller board to avoid a separate overlapping controller-board placeholder. Exact board selection and external-antenna support are still TBD.
