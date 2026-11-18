@@ -24,8 +24,7 @@ BAT_PROT to TPS61088 boost topology following TI datasheet. Output +5V_MAIN, tar
 - Output: 3×22 µF 16 V X6S 0805 + 10 µF 0603 (76 µF nominal).
 - VAUX: 100 nF X7R.
 - Radio connector power/decoupling and SPI/control pins per connector drawing.
-- Earlier 98 µF output bank proposal is superseded.
-
+- 
 ## Sheet D — SENSE_CONTROL
 Battery ADC divider/filter TBD; optional switched divider to reduce idle drain. Pack NTC input (open/short detection required). BOOST_EN/RADIO_EN defined defaults. Optional RADIO_PGOOD input. Test points BAT_PROT, +5V_MAIN, RADIO_3V3, GND, enable and ADC.
 
