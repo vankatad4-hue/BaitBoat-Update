@@ -80,3 +80,9 @@ Create a dimensioned front/rear/side template and CAD mock-up. Validate display 
 - Remove all blue LED/backlight styling: no illuminated joystick rings, grip strips, glowing button borders, or decorative LEDs.
 - Keep the controller matte black/dark graphite. Functional screen and normal status indicators are retained; decorative lighting is not.
 - The next CAD revision must sculpt the shell silhouette and grip geometry; the existing rounded-rectangle shell is only a template and does not yet match the reference.
+
+
+## Official concept image
+![Flytec handheld remote concept](../New_Handheld_Remote/CONCEPT/Flytec_Remote_Concept_Reference.jpg)
+
+Repository image: `Remote/New_Handheld_Remote/CONCEPT/Flytec_Remote_Concept_Reference.jpg`. Verified uploaded JPEG (344,416 bytes). Blue decorative LED/backlighting is excluded from the mechanical design baseline.
