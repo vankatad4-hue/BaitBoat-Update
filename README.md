@@ -32,3 +32,11 @@ Motor running/stall currents, solenoid coil currents, battery/BMS limits, wiring
 - `Flytec_Remote_verXXX.zip`
 
 Do not overwrite an existing release archive. Update the project documentation and version history when releasing changes.
+
+## New handheld remote — power design baseline (2026-11-18)
+- Remote power work is active under `Remote/New_Handheld_Remote/`.
+- Pack: protected 1S4P Li-ion (charging schematic excluded from current work).
+- Display/controller rail: TPS61088-based 5 V boost candidate; component calculations and thermal validation pending.
+- Radio rail: TPS63070 3.3 V buck-boost. Calculated feedback 470 kΩ/150 kΩ (3.307 V nominal), 1.5 µH inductor candidate, TI reference capacitor baseline (76 µF nominal output bank).
+- Preliminary remote current estimate: about 1.13 A at 3.0 V battery for display/radio assumptions; not measured.
+- See `Remote/New_Handheld_Remote/README.md` and master status for limitations and engineering gates.
