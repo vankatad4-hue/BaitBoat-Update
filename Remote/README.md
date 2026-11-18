@@ -1,18 +1,19 @@
-# Remote Firmware
+# Remote Project
 
-Remote touchscreen firmware, UI, configuration and release archives.
+Remote touchscreen firmware, UI, configuration, hardware development and versioned releases.
 
+## Existing touchscreen remote
 - Source: `source/`
-- Hardware, UI, map and project documentation: `docs/`
-- Versioned releases: `releases/`
+- Documentation: `docs/`
+- Releases: `releases/`
+- Target board: Waveshare ESP32-S3-Touch-LCD-4.3 Standard, LVGL 9.6.0.
 
-Target hardware is the Waveshare ESP32-S3-Touch-LCD-4.3 standard board with LVGL 9.6.0. The repository is the canonical source of truth. Check it before editing and update relevant docs alongside source changes. Do not overwrite existing release archives.
+## New handheld hardware
+The new game-controller-style remote is an active hardware-development workspace under `New_Handheld_Remote/`, separate from the existing remote firmware.
+- Concept/mechanical/CAD: preliminary, physical fit not yet verified.
+- Power design: TPS61088 5 V display boost candidate and TPS63070 3.3 V nRF radio buck-boost.
+- Radio: nRF24L01+ PA/LNA external antenna; ESP32 uses the Waveshare board onboard antenna.
+- Battery: 1S4P 18650 pack; cell model and protection verification pending.
+- Charging schematic is excluded from current power-design scope.
 
-## Alternative handheld remote concept
-
-A new game-controller-style handheld remote concept is under exploration, separate from the current Waveshare-based remote. See [`docs/NEW_HANDHELD_REMOTE_CONCEPT.md`](docs/NEW_HANDHELD_REMOTE_CONCEPT.md). This concept is not yet approved as a replacement firmware/hardware baseline.
-
-## New handheld remote hardware development
-The new handheld hardware concept is now an active engineering workspace, separate from existing touchscreen firmware work. Hardware documents live in `New_Handheld_Remote/`.
-
-Power baseline: 1S4P protected battery (charging circuit excluded), TPS61088 5 V display boost candidate, TPS63070 3.3 V dedicated nRF radio buck-boost. Calculated radio-rail baseline and current estimates are documented in the hardware README and PCB design files. Native KiCad capture and validation remain pending.
+See `New_Handheld_Remote/README.md` and `docs/NEW_HANDHELD_REMOTE_CONCEPT.md` for baseline, calculations and remaining validation.
