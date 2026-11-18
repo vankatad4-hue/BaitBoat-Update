@@ -1,132 +1,43 @@
 # Power PCB — Electrical Schematic Net Draft R1
 
-**Status:** Net-level schematic draft, not a finished KiCad schematic. Pin-specific implementation, compensation and component values require datasheet/reference design review and bench validation.
+**Status:** Net-level electrical draft; not a native KiCad schematic.
 
-## Design constraints
-- Pack: protected 1S4P 18650 (four cells in parallel); battery chemistry voltage range must be confirmed from pack documentation.
-- Charging circuit excluded; battery pack is assumed to have protection. Confirm protection rating and cutoffs.
-- Main display/controller: Waveshare ESP32-S3-Touch-LCD-4.3 powered from 5 V.
-- Radio: nRF24L01+ PA/LNA module supplied from dedicated 3.3 V rail.
-- Two independent switching rails from fused battery: 5 V boost and 3.3 V buck-boost.
-- Ground is common; power return routing must keep converter/radio current loops from sensitive signal returns.
+## Design
+- Pack: protected 1S4P 18650; charging schematic excluded.
+- Display/controller: Waveshare ESP32-S3-Touch-LCD-4.3 powered from 5 V.
+- Radio: nRF24L01+ PA/LNA on dedicated 3.3 V rail.
+- Two converters from fused/protected battery: 5 V boost and 3.3 V buck-boost.
+- Common ground plane; high-current return loops controlled by layout.
 
 ## Sheet A — BATTERY_INPUT
-**Proposed nets**
-- J1.1 = PACK_POS
-- J1.2 = PACK_NEG / GND
-- F1 in series: PACK_POS → BAT_FUSED (3 A time-delay provisional; verify)
-- Q1 reverse-polarity protection (MOSFET ideal-diode topology, exact circuit TBD): BAT_FUSED → BAT_PROT
-- C_IN bulk + ceramics: BAT_PROT to GND, near converter input branches
-- TP_BAT = PACK_POS
-- TP_FUSED = BAT_FUSED
-- TP_VSYS = BAT_PROT
-
-Do not treat pack BMS as a substitute for F1. Fuse and wiring must be coordinated with pack protection, connector and wire ratings. The fuse value remains provisional.
+J1 battery input; F1 3 A time-delay provisional; reverse-polarity MOSFET ideal-diode circuit Q1 not yet specified; BAT_PROT downstream. Input bulk/ceramics and test points. Pack protection is not a replacement for wiring fuse.
 
 ## Sheet B — BOOST_5V (TPS61088)
-**Power flow**
-BAT_PROT → boost inductor L_BST → TPS61088 SW pins; converter output VOUT pins → +5V_MAIN.
-The precise topology/pin connectivity must follow TI's datasheet typical application circuit.
-
-**Functional connections**
-- VIN pins → BAT_PROT with local ceramic input capacitors.
-- VCC pin → local required bypass capacitor to GND.
-- BOOT → bootstrap capacitor to SW per datasheet.
-- EN → BOOST_EN; provide defined default state (pull-down/firmware enable, not floating).
-- FB → divider from +5V_MAIN to AGND; divider values calculated for TPS61088 reference.
-- COMP → compensation network to AGND; values derived for chosen L/C/load.
-- ILIM → resistor to AGND; set peak limit after inductor and load-current calculations.
-- SS → soft-start capacitor to AGND.
-- MODE → defined configuration for PFM or forced-PWM; mode chosen after EMI/efficiency tests.
-- FSW → programming resistor to SW per datasheet.
-- AGND and PGND → ground plane with layout/return guidance from TI.
-- NC pins → datasheet-required treatment; note TPS61088 datasheet indicates NC pins 11/12 are tied to ground plane for thermal dissipation.
-- +5V_MAIN connector J2: 5 V and GND; add output capacitors near connector/load.
-
-**Output**
-- Target: 5.0 V.
-- Load: Waveshare display/controller.
-- Initial power-budget baseline: board documentation lists approx. 450 mA at 5 V (verify board revision and actual load).
-- Converter target capacity is not a promise; select parts/layout after load and thermal validation.
+BAT_PROT to TPS61088 boost topology following TI datasheet. Output +5V_MAIN, target 5.0 V for display/controller. EN has defined default state. FB divider, inductor, FSW, ILIM, compensation, SS, MODE, input/output capacitors and layout still require calculation. NC/thermal connections follow exact datasheet.
 
 ## Sheet C — RADIO_3V3 (TPS63070)
-**Power flow**
-BAT_PROT → TPS63070 buck-boost VIN → 3V3_RADIO.
-Inductor between L1 and L2; exact pin/inductor routing from datasheet.
-
-**Functional connections**
-- VIN pins → BAT_PROT, with local input capacitors.
-- L1/L2 → inductor (initial datasheet reference value 1.5 µH; confirm final design with current, saturation, DCR, layout and manufacturer recommendations).
-- VOUT pins → 3V3_RADIO with output capacitor bank.
-- FB network → program 3.3 V on adjustable version; exact resistor values calculated from datasheet equation and tolerance.
-- EN → RADIO_EN, defined default-off pull-down.
-- VSEL → ground for single output configuration, following datasheet typical application.
-- PS/SYNC → defined level for power-save/PWM mode; choose after current/noise tests.
-- VAUX → required 100 nF bypass.
-- PG → RADIO_PGOOD, pulled up to logic rail only if needed; don't connect to MCU until signal voltage is checked.
-- PGND and GND → common ground, layout per datasheet.
-- nRF connector J3: 3V3_RADIO, GND, SPI_SCK, SPI_MOSI, SPI_MISO, CSN, CE, IRQ. Signal pin order TBD; add keyed connector.
-
-**Output**
-- Target: 3.3 V.
-- Radio transient supply budget: at least 200 mA provisionally; verify actual module.
-- Near module connector: 100 nF ceramic + 10–47 µF low-ESR bulk capacitor (confirm module vendor recommendations).
+- VIN=BAT_PROT.
+- L1/L2 through L_RADIO 1.5 µH.
+- VOUT=RADIO_3V3; R1=470 kΩ VOUT→FB, R2=150 kΩ FB→GND (3.307 V calculated nominal).
+- FB2=GND single-output; VSEL static LOW; PS/SYNC HIGH power-save (verify recommended pin connection/bias); EN active via proposed 10 kΩ BAT_PROT pull-up; PG optional 100 kΩ pull-up to RADIO_3V3.
+- Input: 2×10 µF 25 V X7S 0805 + 10 µF 25 V X5R 0603.
+- Output: 3×22 µF 16 V X6S 0805 + 10 µF 0603 (76 µF nominal).
+- VAUX: 100 nF X7R.
+- Radio connector power/decoupling and SPI/control pins per connector drawing.
+- Earlier 98 µF output bank proposal is superseded.
 
 ## Sheet D — SENSE_CONTROL
-- VBAT_SENSE: divider from BAT_PROT to ADC_BAT; values chosen to keep ADC below ESP32 ADC maximum under battery/overshoot conditions. Include RC filter; consider switched divider to reduce idle drain.
-- PACK_NTC: connector for pack thermistor, with ADC bias/filter; firmware must handle open/short as fault.
-- BOOST_EN and RADIO_EN: enable control inputs with hardware-defined default states.
-- RADIO_PGOOD: optional status signal; level and pull-up voltage verified before connection to MCU.
-- Test points: GND, BAT_PROT, +5V_MAIN, 3V3_RADIO, BOOST_EN, RADIO_EN, RADIO_PGOOD, ADC_BAT.
+Battery ADC divider/filter TBD; optional switched divider to reduce idle drain. Pack NTC input (open/short detection required). BOOST_EN/RADIO_EN defined defaults. Optional RADIO_PGOOD input. Test points BAT_PROT, +5V_MAIN, RADIO_3V3, GND, enable and ADC.
 
 ## Sheet E — CONNECTORS
-- J1 battery pack: polarity/keying and current rating TBD.
-- J2 Waveshare 5 V input: 5 V/GND; connector part/pinout must match board revision.
-- J3 radio: power + SPI/control, keyed connector.
-- J4 pack NTC: NTC/GND.
-- J5 control interface: enable/status/ADC lines to MCU, pinout TBD.
-- Include labels and pin-1 marks in PCB silkscreen; connector pin numbers and wire colors are not frozen.
+J1 pack; J2 display 5 V/GND; J3 radio 3.3 V/GND/SPI/control; J4 NTC; J5 MCU control/status. Connector part numbers, pin order, wire gauges and keyed mating parts TBD.
 
-## Power budget — first pass
-- Waveshare nominal documented load: approx. 5 V × 0.45 A = 2.25 W.
-- At VBAT=3.0 V and 85% boost efficiency, display load alone is approximately 0.88 A from battery (calculation: 2.25 W / (3.0 V × 0.85)).
-- Radio and all other loads add to this; input current peaks and low-battery operation must be measured.
-- This is why the main fuse and battery/connector/wire ratings cannot be finalized from the display load alone.
+## Budget
+At 3.0 V battery, assumptions:
+- Display 5 V × 450 mA, 85% boost efficiency → 882 mA input.
+- Radio 3.307 V × 200 mA, 90% buck-boost efficiency → 245 mA input.
+- Total ≈1.13 A.
+This is not measured and excludes other loads/inrush. Fuse and pack wiring must be validated.
 
-## Parts not yet value-locked
-- TPS61088 inductor and current rating.
-- TPS61088 input/output capacitors, feedback divider, compensation, ILIM, FSW, MODE and soft-start values.
-- TPS63070 inductor and current rating; input/output capacitor set; FB resistor values.
-- Input bulk capacitance and any EMI filtering.
-- Reverse polarity MOSFET and gate network.
-- Fuse part, holder and final rating.
-- Connector part numbers/pin assignments.
-- NTC, ADC divider and filter.
-- Layout and thermal copper/via design.
-
-## References
-- TPS61088 datasheet: https://www.ti.com/lit/ds/symlink/tps61088.pdf
-- TPS63070 datasheet: https://www.ti.com/lit/ds/symlink/tps63070.pdf
-
-## Sheet C — RADIO_3V3 value calculation update R1 (2026-11-18)
-- R1=470 kΩ from 3V3_RADIO to FB; R2=150 kΩ from FB to GND. Calculated nominal output is 3.307 V using 0.8 V FB reference; divider current is approximately 5.33 µA. Use 1% candidates pending tolerance review.
-- L_RADIO candidate: Coilcraft XFL4020-152ME, 1.5 µH.
-- CIN: 2×10 µF 25 V X7S 0805 plus 10 µF 25 V X5R 0603 local.
-- COUT proposal: 4×22 µF 0805 plus 10 µF 0603 local; 98 µF nominal. Exact part DC-bias curves must verify effective capacitance against TI filter guidance. Do not treat nominal capacitance as guaranteed effective capacitance.
-- CVAUX: 100 nF X7R 0402.
-- Radio 200 mA output budget implies ≈245 mA battery current at 3.0 V assuming 90% efficiency. Actual PA/LNA current and RF bursts are not yet measured.
-- See TPS63070_COMPONENT_CALCULATIONS_REVIEW_R1.md for calculations and design gates. This remains a net-level planning document, not a KiCad schematic.
-
-## Preliminary whole-remote current calculation
-- Display/controller estimate: 2.25 W at 5 V / 450 mA, assuming 85% boost efficiency → 2.647 W battery input power.
-- Radio: 0.661 W at 3.307 V / 200 mA, assuming 90% buck-boost efficiency → 0.735 W battery input power.
-- Combined estimated input power: 3.382 W; at 3.0 V battery, approximately 1.13 A.
-- These are assumptions, not measurements; exclude other loads and transient/inrush. Validate the display current and converter efficiencies before fuse, connector, wire or pack decisions.
-
-## Datasheet correction and configuration review update (2026-11-18)
-- TPS63070 adjustable single-rail configuration: FB2 grounded; VSEL held LOW (no dynamic voltage scaling); PS/SYNC HIGH to enable power-save PFM/PWM operation; EN pulled high through a 10 kΩ resistor to BAT_PROT for always-enabled rail. These are the design choices to implement, pending symbol/net review. If MCU shutdown control is added, it must safely override EN.
-- PG is open-drain; 100 kΩ pull-up to 3V3_RADIO is a candidate for MCU status monitoring, not mandatory. Verify the intended MCU input and PG behavior before capture.
-- Capacitor-bank proposal corrected: follow TI's adjustable 3.3 V typical application BOM (3×22 µF X6S 0805 + 10 µF 0603, nominal 76 µF), rather than the earlier 98 µF proposal. TI's filter table supports 1.5 µH with nominal 47/68/100 µF; the 76 µF typical-app bank is within the recommended combination table. Effective capacitance remains to be confirmed using manufacturer DC-bias/temperature data. Datasheet permits effective output capacitance 15–470 µF for nominal 1.5 µH.
-- Selected 22 µF candidate: Murata GRM21BC81C226ME44L, 16 V X6S, 0805, ±20%, -55°C to +105°C. Exact DC-bias capacitance at 3.3 V is not stated in the basic part specification and must be verified from Murata's bias curves/approval data. Three units are specified by TI's reference BOM.
-- The prior 98 µF nominal output proposal is superseded. See the calculation review and pin/net map for corrected baseline.
-Sources: TI TPS63070 Rev. B datasheet, §§8.5.1, 9.2.2.1–9.2.2.3, Tables 2–4; Murata GRM21BC81C226ME44L reference sheet.
+## Validation gates
+Exact pin numbers, footprints, converter compensation/current limit, capacitor bias, fuse/connector/wire ratings, layout, ERC and bench validation remain outstanding.
