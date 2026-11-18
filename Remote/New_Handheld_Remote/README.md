@@ -83,3 +83,10 @@ Power PCB design: [`POWER_DISTRIBUTION_DESIGN_R1.md`](PCB/POWER_DISTRIBUTION_DES
 ## First converter schematic sheet — pin/net map R1
 - Added `PCB/TPS61088_PIN_NET_MAP_R1.md` with pin-to-net connections for the 5 V boost converter, functional external-component list, and caveats requiring package/pin verification.
 - This is not yet a native KiCad schematic; local KiCad CLI/editor was not available for generating or ERC-validating a schematic file in this environment.
+
+
+## TPS63070 radio regulator pin/net map R1 — 2026-11-18
+- Added `PCB/TPS63070_PIN_NET_MAP_R1.md`, using TI datasheet Rev. B pin assignments and functional connections for the 3.3 V nRF24 PA/LNA supply.
+- Confirmed pin numbers: L1=11, L2=9, VIN=12/13, EN=14, VSEL=15, PS/SYNC=1, PG=2, VAUX=3, GND=4, FB=5, FB2=6, VOUT=7/8, PGND=10.
+- TI's stated operating range is 2.0–16 V input and 2.5–9 V output; up to 2 A under specified conditions. The remote's 3.3 V radio rail is still a design target, not validated capacity.
+- Feedback values, inductor/capacitors, EN default, PS/SYNC mode, PG usage, footprint verification and layout remain open. Document is not a native KiCad schematic.
