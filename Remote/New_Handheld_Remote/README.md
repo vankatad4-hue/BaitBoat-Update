@@ -73,3 +73,8 @@ See [`COMPONENT_SELECTION_DIMENSION_INTEGRATION_R1.md`](MECHANICAL/COMPONENT_SEL
 
 
 Power PCB design: [`POWER_DISTRIBUTION_DESIGN_R1.md`](PCB/POWER_DISTRIBUTION_DESIGN_R1.md)
+
+
+## Net-level power schematic draft R1 — 2026-11-18
+- Created `PCB/POWER_SCHEMATIC_NET_DRAFT_R1.md`: BATTERY_INPUT, TPS61088 5 V boost, TPS63070 3.3 V radio buck-boost, SENSE_CONTROL, connector sheet/net groups, provisional power budget and unresolved component values.
+- This is a reviewed net-level draft, not a KiCad schematic or fabrication-ready design. Feedback/compensation, inductors, current limits, exact capacitors, fuse, reverse-polarity circuit and connector pins remain to be calculated/selected.
