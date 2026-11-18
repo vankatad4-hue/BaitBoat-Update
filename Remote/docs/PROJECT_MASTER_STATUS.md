@@ -289,3 +289,10 @@ The preferred alternative controller concept now has a separate design workspace
 - Pin numbers and functional mapping were checked against the datasheet. Converter input/output range and nominal capability are recorded, but output current capability for our layout is not asserted.
 - The radio supply is still a provisional 3.3 V buck-boost rail from the 1S4P pack. Feedback resistor values, capacitor/inductor selection, mode, enable bias, package footprint verification and layout remain to be engineered and tested.
 - README updated to link/document this pin map. This remains a planning document; no native KiCad sheet or ERC was produced.
+
+
+## New handheld remote — battery input/protection net map R1 (2026-11-18)
+- Added `Remote/New_Handheld_Remote/PCB/BATTERY_INPUT_PROTECTION_NET_MAP_R1.md` for pack connector, fuse, reverse-polarity protection, protected distribution, ADC battery sense, optional pack NTC and test points.
+- Main fuse remains 3 A time-delay provisional. Final fuse and connector ratings must be based on measured peak/startup current, pack/BMS limits, wire gauge and downstream converter requirements.
+- BMS/protection is assumed, not verified. Charging design is outside scope. Reverse-polarity circuit, fuse, connector, capacitors, ADC divider and NTC values are not finalized.
+- README updated. All current power-sheet artifacts are net/pin planning documents; native KiCad schematics, PCB layout, ERC and fabrication outputs have not been produced.
