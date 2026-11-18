@@ -102,3 +102,11 @@ Repository image: `Remote/New_Handheld_Remote/CONCEPT/Flytec_Remote_Concept_Refe
 - Four 18650 placeholders remain illustrative; pack retention, electrical protection, charger, wiring, and clearances are not designed or validated.
 - OpenSCAD internal mockup R2 was rendered to STL successfully; PNG render attempt failed due to headless OpenGL/X-server limitation. A separate schematic space preview is available for review.
 - This revision is a layout study, not verified assembly or print-ready CAD.
+
+
+## Component integration basis
+- 1S4P four-cell 18650 pack (target 10 Ah) is the battery architecture.
+- Display/controller candidate is Waveshare ESP32-S3-Touch-LCD-4.3; onboard antenna is a known mismatch with the external ESP32 antenna requirement.
+- Preferred compact joystick candidate: C&K THB001P.
+- Charger/power-path candidate: TI BQ25895; 2 A initial charge-current target subject to cell/pack/thermal validation.
+- Detailed dimensions and unresolved selection items are recorded in the component integration plan.
