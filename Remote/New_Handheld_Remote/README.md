@@ -62,3 +62,7 @@ The JPEG is uploaded and verified in the CONCEPT folder. It is the styling refer
 - Four 18650 placeholders remain illustrative; pack retention, electrical protection, charger, wiring, and clearances are not designed or validated.
 - OpenSCAD internal mockup R2 was rendered to STL successfully; PNG render attempt failed due to headless OpenGL/X-server limitation. A separate schematic space preview is available for review.
 - This revision is a layout study, not verified assembly or print-ready CAD.
+
+
+## Actual component selection and dimension integration
+See [`COMPONENT_SELECTION_DIMENSION_INTEGRATION_R1.md`](MECHANICAL/COMPONENT_SELECTION_DIMENSION_INTEGRATION_R1.md) for candidate parts, measured envelopes, power architecture and remaining verification items.
