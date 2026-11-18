@@ -37,7 +37,6 @@ Published candidate ratings recorded for review: 14.4 mΩ typical/15.8 mΩ maxim
 - Nominal total = 76 µF.
 **VAUX:** 100 nF X7R ceramic, placed close to pin.
 
-This replaces the earlier 4×22 µF + 10 µF (98 µF nominal) proposal. Do not mix the old proposal into the schematic/BOM.
 
 22 µF capacitor candidate: Murata GRM21BC81C226ME44L (16 V X6S, 0805). Verify DC-bias capacitance at 3.3 V and temperature from manufacturer data. TI's nominal capacitance recommendations do not substitute for the effective capacitance check. Check capacitor tolerance and temperature against TI output filter guidance before schematic release.
 
