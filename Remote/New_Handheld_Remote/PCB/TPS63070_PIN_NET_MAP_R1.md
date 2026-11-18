@@ -1,92 +1,56 @@
-# TPS63070 Radio 3.3 V Supply — Pin/Net Map R1
+# TPS63070 — Pin/Net Map R1
 
-**Status:** Datasheet-checked functional pin map; values and PCB layout not yet design-verified.  
-**Purpose:** Dedicated buck-boost rail for the nRF24L01+ PA/LNA module from the remote's 1S4P battery.  
-**Source:** Texas Instruments TPS63070 datasheet, Rev. B, March 2019: https://www.ti.com/lit/ds/symlink/tps63070.pdf
+**Status:** Functional pin/net draft. Pin numbers and footprint must be verified against exact TPS63070 package/library symbol. Not a native KiCad schematic.
 
-## Design target
-- Input: protected 1S4P battery bus (approximately 3.0–4.2 V during normal use; actual pack limits must be checked).
-- Output: 3.3 V nominal for radio.
-- Converter: TPS63070 adjustable buck-boost.
-- Radio rail transient/load budget: design for at least 200 mA provisionally; verify actual PA/LNA module current and RF bursts before final sizing.
-- TI specifies 2.0–16 V input, 2.5–9 V output, and up to 2 A output in buck or boost mode under specified conditions. This does **not** guarantee 2 A on our PCB.
-- Package: 15-pin VQFN-HR, 3 × 2.5 mm nominal body. Confirm footprint/pad numbering against selected CAD library and datasheet package drawing.
+## Fixed-rail configuration
+- Output: 3.3 V radio supply (calculated nominal 3.307 V).
+- FB2: GND for single-output adjustable operation.
+- VSEL: LOW/static selection; no dynamic voltage switching planned.
+- PS/SYNC: HIGH for power-save mode, subject to datasheet pin-state and bias verification.
+- EN: always enabled via proposed 10 kΩ pull-up to BAT_PROT; defined state, never floating.
+- PG: optional open-drain status, proposed 100 kΩ pull-up to 3V3_RADIO.
 
-## Pin-to-net map (datasheet pin numbers)
+## Functional net mapping
+| Pin/function | Net/connection | Notes |
+|---|---|---|
+| VIN | BAT_PROT | Input ceramics placed close to IC |
+| L1 | SW_L1 | One end of 1.5 µH inductor |
+| L2 | SW_L2 | Other end of inductor |
+| VOUT | RADIO_3V3 | Output capacitor bank and radio connector |
+| FB | RADIO_FB | Junction of R1/R2 |
+| FB2 | GND | Single-output configuration |
+| VSEL | VSEL_LOW | Static LOW; verify datasheet |
+| PS/SYNC | PS_SYNC_HIGH | Power-save; verify proper connection |
+| EN | RADIO_EN | Defined high state; proposed 10 kΩ BAT_PROT pull-up |
+| VAUX | VAUX_BYP | 100 nF X7R to GND |
+| PG | RADIO_PGOOD | Optional; open-drain pull-up 100 kΩ to RADIO_3V3 |
+| PGND/GND | GND | Follow datasheet ground/exposed-pad guidance |
 
-| Pin | Name | Net / connection | Notes |
-|---:|---|---|---|
-| 1 | PS/SYNC | RADIO_PFM_SYNC | Pull low for forced PWM, or high for PWM/PFM power-save operation. External sync only if intentionally designed. Default mode decision TBD. |
-| 2 | PG | RADIO_PGOOD_N | Open-drain power-good output; pull-up and MCU monitoring optional. Do not assume it can drive a load directly. |
-| 3 | VAUX | VAUX_CAP | 100 nF capacitor to GND close to pin; do not load externally. |
-| 4 | GND | LOGIC_GND | Control/logic ground. |
-| 5 | FB | RADIO_FB | Adjustable output feedback node; resistor divider design must be calculated from datasheet equations and selected variant. |
-| 6 | FB2 | RADIO_FB2 | Feedback voltage-scaling output; leave open or ground if unused as specified. Do not treat as a second feedback input. |
-| 7, 8 | VOUT | RADIO_3V3 | Output pins joined to 3.3 V output and capacitor bank. |
-| 9 | L2 | SW_L2 | Inductor switching node; route compactly. |
-| 10 | PGND | POWER_GND | Power ground; high-current return. |
-| 11 | L1 | SW_L1 | Inductor switching node; route compactly. |
-| 12, 13 | VIN | BAT_PROT | Input supply pins; local input capacitance. |
-| 14 | EN | RADIO_REG_EN | Enable. Define default-on/off and MCU control; add bias so state is deterministic during reset. |
-| 15 | VSEL | RADIO_VSEL | Voltage scaling control. Tie low for the fixed divider configuration unless dynamic scaling is intentionally implemented and verified. |
+## Components
+| Ref | Value / part | Status |
+|---|---|---|
+| U_RADIO | TPS63070RNM/RNMT suffix/package to verify | Candidate |
+| L_RADIO | Coilcraft XFL4020-152ME, 1.5 µH | Candidate |
+| R1 | 470 kΩ, 1% VOUT→FB | Calculated |
+| R2 | 150 kΩ, 1% FB→GND | Calculated |
+| CIN1–2 | 10 µF, 25 V X7S 0805 | TI typical application |
+| CIN3 | 10 µF, 25 V X5R 0603 | TI typical application |
+| COUT1–3 | 22 µF, 16 V X6S 0805; Murata GRM21BC81C226ME44L candidate | TI typical application |
+| COUT4 | 10 µF 0603 | TI typical application |
+| CVAUX | 100 nF X7R | Datasheet bypass |
+| R_EN | 10 kΩ pull-up | Proposed; verify control behavior |
+| R_PG | 100 kΩ pull-up | Optional |
 
-## Functional connections
-- L1 (pin 11) and L2 (pin 9) connect to opposite ends of the buck-boost inductor.
-- VIN pins 12/13 connect to protected battery rail with local input capacitor(s).
-- VOUT pins 7/8 connect to 3.3 V output with output capacitor bank.
-- FB, FB2, VSEL network must follow the adjustable-output datasheet circuit; values are not assigned in this revision.
-- VAUX pin 3 gets its required 100 nF capacitor to ground.
-- PS/SYNC pin 1 mode is a design choice; default power-save behavior is under review.
-- PG pin 2 is optional open-drain status output; if used, pull it up to a logic rail and route to a controller input.
-- EN pin 14 must have a defined state at startup. A pull resistor and/or MCU control are to be selected.
-- GND pin 4 and PGND pin 10 join into the board ground system with layout that respects high-current return paths and datasheet guidance.
+Output nominal capacitance is 76 µF. Earlier 98 µF nominal proposal (4×22 µF + 10 µF) is superseded. Check DC-bias effective capacitance and temperature before BOM release.
 
-## Datasheet reference component guidance (not yet adopted as final BOM)
-The TI simplified circuit shows a 1.5 µH inductor, input capacitor(s), output capacitor(s), a feedback resistor network, 100 nF at VAUX, and EN biasing. These are reference values/topology only. The final design must use the exact datasheet design procedure, effective capacitance after DC-bias derating, inductor saturation/current rating, switching-loop layout, thermal calculation and selected output configuration.
+## Radio connector J_RADIO
+Proposed signals: RADIO_3V3, GND, SPI_SCK, SPI_MOSI, SPI_MISO, CSN, CE, IRQ. Pin order and exact connector remain TBD. Add 100 nF and 10–47 µF local decoupling at module.
 
-## Layout constraints
-- Place inductor, IC, input capacitors and output capacitors close together; keep switching loops small.
-- Keep SW_L1/SW_L2 copper compact; do not route RF, ADC or touch/control lines through switching-node area.
-- Keep the radio 3.3 V output and ground return low impedance; local decoupling at the radio connector.
-- Grounding and exposed-pad/thermal implementation must follow the package and datasheet layout recommendations.
-- Do not copy the TPS61088 5 V converter layout; the two power stages need separate optimized layouts.
-
-## Bring-up checks (radio disconnected first)
-1. Inspect shorts/continuity and footprint/pin orientation.
-2. Power with a current-limited bench supply; start below intended load.
-3. Verify output voltage, startup, shutdown, ripple and load step with dummy load.
-4. Verify stability and temperatures across battery input range.
-5. Test RF module bursts and measure 3.3 V droop/ripple with appropriate probing.
-6. Only then connect the nRF24 PA/LNA module and perform RF coexistence tests.
-
-## Verification gates
-- Exact TPS63070 variant/package symbol and footprint pin mapping: verify before schematic capture.
-- Output-feedback calculation and resistor values: TBD.
-- Inductor and capacitor selection: TBD, calculate using TI design procedure and bias derating.
-- EN default and MCU control: TBD.
-- PS/SYNC mode: TBD.
-- PG pull-up/controller pin: TBD.
-- Radio peak current and module variant: TBD.
-- Layout review, thermal, ripple and load tests: not performed.
-
-This file is a pin/net planning artifact, not a native KiCad schematic, reviewed PCB, ERC result or fabrication-ready design.
-
-## Component calculations and value proposal — R1 (2026-11-18)
-- Feedback divider: R1=470 kΩ (VOUT→FB), R2=150 kΩ (FB→GND), nominal VOUT=3.3067 V using 0.8 V reference; divider current ≈5.33 µA. Use 1% resistor candidates, subject to final tolerance analysis.
-- Inductor candidate: Coilcraft XFL4020-152ME, 1.5 µH. Datasheet values: 14.4 mΩ typical/15.8 mΩ max DCR, 4.1 A Isat at 10% L drop, 4.4 A at 20%, 4.6 A at 30%; RMS rating 6.7 A at 20°C rise. Confirm suffix and criteria for selected part.
-- Input capacitors starting values: 2×10 µF 25 V X7S 0805 plus 10 µF 25 V X5R 0603 local (TI reference).
-- Proposed output bank: 4×22 µF 0805 X6S/X7S plus 10 µF 0603 local (98 µF nominal). Verify exact part DC-bias effective capacitance at 3.3 V against datasheet filter table before locking. This is a proposal, not stability validation.
-- VAUX capacitor: 100 nF X7R 0402.
-- Radio load budget: 200 mA at 3.3 V; at 3.0 V input and assumed 90% efficiency, battery current ≈245 mA. Actual module burst current must be measured.
-- Combined remote preliminary estimate: display/controller 5 V × 450 mA, assumed 85% boost efficiency, plus radio at 200 mA and assumed 90% efficiency gives ≈1.13 A at 3.0 V battery. Excludes other loads and transients; display current is not verified.
-- EN, PS/SYNC, VSEL/FB2 single-voltage configuration, PG pull-up and package/footprint remain datasheet verification gates. No KiCad schematic, ERC, PCB or bench validation is claimed.
-
-Reference calculation record: PCB/TPS63070_COMPONENT_CALCULATIONS_REVIEW_R1.md.
-
-## Datasheet correction and configuration review update (2026-11-18)
-- TPS63070 adjustable single-rail configuration: FB2 grounded; VSEL held LOW (no dynamic voltage scaling); PS/SYNC HIGH to enable power-save PFM/PWM operation; EN pulled high through a 10 kΩ resistor to BAT_PROT for always-enabled rail. These are the design choices to implement, pending symbol/net review. If MCU shutdown control is added, it must safely override EN.
-- PG is open-drain; 100 kΩ pull-up to 3V3_RADIO is a candidate for MCU status monitoring, not mandatory. Verify the intended MCU input and PG behavior before capture.
-- Capacitor-bank proposal corrected: follow TI's adjustable 3.3 V typical application BOM (3×22 µF X6S 0805 + 10 µF 0603, nominal 76 µF), rather than the earlier 98 µF proposal. TI's filter table supports 1.5 µH with nominal 47/68/100 µF; the 76 µF typical-app bank is within the recommended combination table. Effective capacitance remains to be confirmed using manufacturer DC-bias/temperature data. Datasheet permits effective output capacitance 15–470 µF for nominal 1.5 µH.
-- Selected 22 µF candidate: Murata GRM21BC81C226ME44L, 16 V X6S, 0805, ±20%, -55°C to +105°C. Exact DC-bias capacitance at 3.3 V is not stated in the basic part specification and must be verified from Murata's bias curves/approval data. Three units are specified by TI's reference BOM.
-- The prior 98 µF nominal output proposal is superseded. See the calculation review and pin/net map for corrected baseline.
-Sources: TI TPS63070 Rev. B datasheet, §§8.5.1, 9.2.2.1–9.2.2.3, Tables 2–4; Murata GRM21BC81C226ME44L reference sheet.
+## Validation gates
+- Verify exact symbol pin numbers/package/footprint.
+- Check FB divider topology, VSEL and FB2 configuration against TI adjustable application.
+- Verify PS/SYNC bias and EN default.
+- Verify PG voltage compatibility.
+- Check capacitor effective values at DC bias and temperature.
+- Review SW-node loop, input/output capacitor placement, feedback routing and ground/exposed pad.
+- Native schematic, ERC, PCB and bench validation remain pending.
