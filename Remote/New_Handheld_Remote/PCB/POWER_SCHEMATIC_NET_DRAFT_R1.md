@@ -107,3 +107,18 @@ Inductor between L1 and L2; exact pin/inductor routing from datasheet.
 ## References
 - TPS61088 datasheet: https://www.ti.com/lit/ds/symlink/tps61088.pdf
 - TPS63070 datasheet: https://www.ti.com/lit/ds/symlink/tps63070.pdf
+
+## Sheet C — RADIO_3V3 value calculation update R1 (2026-11-18)
+- R1=470 kΩ from 3V3_RADIO to FB; R2=150 kΩ from FB to GND. Calculated nominal output is 3.307 V using 0.8 V FB reference; divider current is approximately 5.33 µA. Use 1% candidates pending tolerance review.
+- L_RADIO candidate: Coilcraft XFL4020-152ME, 1.5 µH.
+- CIN: 2×10 µF 25 V X7S 0805 plus 10 µF 25 V X5R 0603 local.
+- COUT proposal: 4×22 µF 0805 plus 10 µF 0603 local; 98 µF nominal. Exact part DC-bias curves must verify effective capacitance against TI filter guidance. Do not treat nominal capacitance as guaranteed effective capacitance.
+- CVAUX: 100 nF X7R 0402.
+- Radio 200 mA output budget implies ≈245 mA battery current at 3.0 V assuming 90% efficiency. Actual PA/LNA current and RF bursts are not yet measured.
+- See TPS63070_COMPONENT_CALCULATIONS_REVIEW_R1.md for calculations and design gates. This remains a net-level planning document, not a KiCad schematic.
+
+## Preliminary whole-remote current calculation
+- Display/controller estimate: 2.25 W at 5 V / 450 mA, assuming 85% boost efficiency → 2.647 W battery input power.
+- Radio: 0.661 W at 3.307 V / 200 mA, assuming 90% buck-boost efficiency → 0.735 W battery input power.
+- Combined estimated input power: 3.382 W; at 3.0 V battery, approximately 1.13 A.
+- These are assumptions, not measurements; exclude other loads and transient/inrush. Validate the display current and converter efficiencies before fuse, connector, wire or pack decisions.
