@@ -11,9 +11,7 @@
 - Plain functional labels; no PlayStation symbols.
 - No shoulder buttons and no rear buttons.
 - Ergonomic lower grips.
-- Two rear antenna exits, both functional and electrically independent:
-  - Antenna A: nRF24L01+ PA/LNA boat-control/telemetry radio.
-  - Antenna B: ESP32-S3 Wi-Fi/Bluetooth, only with a board/module variant that supports an external antenna.
+- One dedicated external antenna exit for the nRF24L01+ PA/LNA boat-control/telemetry radio. The selected Waveshare ESP32-S3-Touch-LCD-4.3 board uses its onboard antenna; a second ESP32 antenna is not required.
 - Battery concept: **1S4P Li-ion, 4 × 2500 mAh matched cells = 10,000 mAh nominal pack capacity**, USB-C charging.
 - Dark graphite/black enclosure with blue accents is the preferred visual direction.
 
@@ -70,13 +68,13 @@ Create a dimensioned front/rear/side template and CAD mock-up. Validate display 
 ## Mechanical refinement R1 (2026-11-18)
 - Target envelope refined to 310 × 190 × 62 mm for layout work (provisional).
 - Front-panel draft coordinates: display centered at y=-3; power at y=+82; joysticks at x=±105, y=+58; button banks at x=±112, y=-30 with 21 mm pitch.
-- Internal zones planned for a lower-central battery pack, central controller/display stack, radio near antenna A, separate ESP32 antenna path near antenna B, and power/charging near USB-C.
+- Internal zones planned for a lower-central battery pack, central controller/display stack, radio near antenna A, Waveshare ESP32-S3 onboard antenna, and power/charging near USB-C.
 - See `Remote/New_Handheld_Remote/MECHANICAL/COMPONENT_PLACEMENT_R1.md` for the coordinate table, risks, and fit-validation workflow.
 - All measurements remain provisional until real component datasheets and physical samples are checked.
 
 
 ## Updated visual baseline — uploaded reference (2026-11-18)
-- Adopt the uploaded image's shape and front/rear/side styling as the design target: angular upper shoulders, recessed central screen/bezel, joystick wells, broad textured side grips and lower grip contours, rear service cover, two antennas, and lower centered USB-C.
+- Adopt the uploaded image's shape and front/rear/side styling as the design target: angular upper shoulders, recessed central screen/bezel, joystick wells, broad textured side grips and lower grip contours, rear service cover, one external nRF24 antenna and onboard ESP32 antenna, and lower centered USB-C.
 - Remove all blue LED/backlight styling: no illuminated joystick rings, grip strips, glowing button borders, or decorative LEDs.
 - Keep the controller matte black/dark graphite. Functional screen and normal status indicators are retained; decorative lighting is not.
 - The next CAD revision must sculpt the shell silhouette and grip geometry; the existing rounded-rectangle shell is only a template and does not yet match the reference.
@@ -90,7 +88,7 @@ Repository image: `Remote/New_Handheld_Remote/CONCEPT/Flytec_Remote_Concept_Refe
 
 ## Mechanical refinement R2 — concept preview (2026-11-18)
 - Generated a multi-view concept preview to explore front, angled, rear, side, and internal layout styling against the user's uploaded reference.
-- Visual target: sculpted matte-black shell, textured grips, recessed display, joystick wells, rear access panel, dual antennas, lower USB-C.
+- Visual target: sculpted matte-black shell, textured grips, recessed display, joystick wells, rear access panel, external nRF24 antenna plus onboard ESP32 antenna, lower USB-C.
 - Decorative LED rings, grip strips, illuminated button surrounds, and blue backlighting remain excluded.
 - Preview is illustrative only. Dimensions and internal arrangement shown are not verified CAD or component-fit results; next CAD work must translate the contours into parametric geometry and validate physical parts.
 
@@ -110,3 +108,11 @@ Repository image: `Remote/New_Handheld_Remote/CONCEPT/Flytec_Remote_Concept_Refe
 - Preferred compact joystick candidate: C&K THB001P.
 - Charger/power-path candidate: TI BQ25895; 2 A initial charge-current target subject to cell/pack/thermal validation.
 - Detailed dimensions and unresolved selection items are recorded in the component integration plan.
+
+
+## Power electronics baseline update (2026-11-18)
+- Radio supply: TPS63070 adjustable buck-boost, target 3.3 V; calculated feedback pair 470 kΩ/150 kΩ gives 3.307 V nominal.
+- Candidate inductor: 1.5 µH Coilcraft XFL4020-152ME.
+- Output bank corrected to TI typical application: 3×22 µF + 10 µF local (76 µF nominal), replacing prior 98 µF proposal. Effective capacitance under DC bias/temperature remains a verification item.
+- Configuration proposal: FB2 GND, VSEL static LOW, PS/SYNC HIGH power-save, EN defined with 10 kΩ pull-up, optional PG pull-up. Verify exact pin states/connection against datasheet before schematic capture.
+- See PCB/TPS63070_COMPONENT_CALCULATIONS_REVIEW_R1.md.
