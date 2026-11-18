@@ -304,3 +304,11 @@ The preferred alternative controller concept now has a separate design workspace
 - Corrected component-selection text to reflect that the Waveshare onboard antenna is accepted and the external ESP32 antenna requirement is waived.
 - Removed charger IC/2 A charging-current selection from the current scope. Charging schematic remains out of scope; USB-C power/charging/data roles still need definition before hardware implementation.
 - All artifacts remain planning docs. Values, exact footprints, reverse-protection implementation, fuse/connector selection, PCB layout, ERC and hardware validation remain open.
+
+## New handheld remote — TPS63070 component calculation review R1 (2026-11-18)
+- Added Remote/New_Handheld_Remote/PCB/TPS63070_COMPONENT_CALCULATIONS_REVIEW_R1.md with feedback calculations, inductor/capacitor proposals, radio current scenarios, combined remote current estimate, and schematic/layout validation gates.
+- Feedback proposal: 470 kΩ / 150 kΩ gives 3.307 V nominal and approximately 5.33 µA divider current.
+- Inductor candidate: Coilcraft XFL4020-152ME 1.5 µH; current ratings and suffix to be confirmed at procurement.
+- Proposed capacitor set follows TI reference input values and VAUX bypass; output bank proposed as 4×22 µF + 10 µF local (98 µF nominal), pending DC-bias effective-capacitance verification.
+- At 200 mA radio load, 3.0 V battery and assumed 90% efficiency, estimated radio branch battery current is approximately 245 mA. Preliminary whole-remote estimate (450 mA/5 V display at assumed 85% boost efficiency plus radio) is approximately 1.13 A at 3.0 V; not measured and excludes other loads/transients.
+- The calculations are a design baseline, not validated stability or a fabrication BOM. Pin-mode configuration, exact capacitor parts, schematic capture, ERC, layout, thermal and bench testing remain pending.
