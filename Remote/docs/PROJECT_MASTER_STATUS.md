@@ -197,3 +197,11 @@ A separate new handheld controller concept is preferred for exploration. It has 
 ## 7. New handheld remote hardware workspace
 
 The preferred alternative controller concept now has a separate design workspace at `Remote/New_Handheld_Remote/`. It includes a parametric OpenSCAD front/rear enclosure fit template, mechanical print/fit plan, modular PCB architecture, connector-interface plan, and schematic-sheet checklist. Additions include a dedicated power ON/OFF button centered above the display and a USB-C service port intended for charging and ESP32 programming/data. USB charging/programming coexistence requires a proper charger power-path and USB data design. Component footprints, connector pin numbers, power rails, CAD dimensions and circuit details remain provisional; no fabrication-ready schematic or PCB is claimed.
+
+
+## New handheld remote mechanical refinement — 2026-11-18
+- Started mechanical refinement R1 for the new game-controller-style remote.
+- Target enclosure envelope remains provisional: 310 × 190 × 62 mm.
+- Proposed internal zones: lower-central secured 1S4P cell pack, central/upper ESP32-S3 controller behind display, radio near antenna A, independent ESP32 external-antenna feed near antenna B, and charging/power management near USB-C.
+- Front control coordinate plan and fit-validation sequence are documented in `Remote/New_Handheld_Remote/MECHANICAL/COMPONENT_PLACEMENT_R1.md`.
+- These placements are not component-fit verified. Exact part models/dimensions, CAD revisions, test prints, and fit checks remain next steps.
