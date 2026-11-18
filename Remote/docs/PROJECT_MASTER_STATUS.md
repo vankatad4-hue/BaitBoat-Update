@@ -192,3 +192,8 @@ This is a documentation-only update. Radio and joystick ADC remain stubs/placeho
 ## 6. Alternative new handheld remote concept (preliminary)
 
 A separate new handheld controller concept is preferred for exploration. It has a central 4.3-inch screen, two joysticks above symmetrical 2×4 button banks (16 total), no PlayStation symbols, no shoulder/rear buttons, two independent rear antenna systems (nRF24L01+ PA/LNA and ESP32-S3 external-antenna Wi-Fi/Bluetooth), and a proposed 1S4P pack using four 2500 mAh cells (10,000 mAh). The concept and preliminary button mapping are documented in `NEW_HANDHELD_REMOTE_CONCEPT.md`. It is not final CAD or a replacement of the current Waveshare remote baseline. Electrical, RF, battery, mechanical and safety details remain to be validated.
+
+
+## 7. New handheld remote hardware workspace
+
+The preferred alternative controller concept now has a separate design workspace at `Remote/New_Handheld_Remote/`. It includes a parametric OpenSCAD front/rear enclosure fit template, mechanical print/fit plan, modular PCB architecture, connector-interface plan, and schematic-sheet checklist. Additions include a dedicated power ON/OFF button centered above the display and a USB-C service port intended for charging and ESP32 programming/data. USB charging/programming coexistence requires a proper charger power-path and USB data design. Component footprints, connector pin numbers, power rails, CAD dimensions and circuit details remain provisional; no fabrication-ready schematic or PCB is claimed.
