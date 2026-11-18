@@ -65,3 +65,11 @@ Create a dimensioned front/rear/side template and CAD mock-up. Validate display 
 - Dedicated physical power ON/OFF button centered above the display, separate from the 16 function buttons. Electrical implementation (soft power latch vs direct switched power) remains to be selected.
 - USB-C service port planned on the lower enclosure edge. It is intended for 1S pack charging and ESP32-S3 firmware/data access through one connector. This requires a validated USB-C sink/CC implementation, ESD protection, a charger with suitable power-path/load-sharing behavior, and USB data routing compatible with the selected ESP32 module. Do not assume charging and programming can safely occur simultaneously until the power-path circuit is designed and tested.
 - Hardware design workspace: `Remote/New_Handheld_Remote/`. It contains an initial OpenSCAD fit template, mechanical print plan, modular PCB architecture, connector interface plan and schematic checklist. These are preliminary design files, not fabrication-ready CAD/PCB/schematics.
+
+
+## Mechanical refinement R1 (2026-11-18)
+- Target envelope refined to 310 × 190 × 62 mm for layout work (provisional).
+- Front-panel draft coordinates: display centered at y=-3; power at y=+82; joysticks at x=±105, y=+58; button banks at x=±112, y=-30 with 21 mm pitch.
+- Internal zones planned for a lower-central battery pack, central controller/display stack, radio near antenna A, separate ESP32 antenna path near antenna B, and power/charging near USB-C.
+- See `Remote/New_Handheld_Remote/MECHANICAL/COMPONENT_PLACEMENT_R1.md` for the coordinate table, risks, and fit-validation workflow.
+- All measurements remain provisional until real component datasheets and physical samples are checked.
