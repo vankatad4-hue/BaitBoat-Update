@@ -86,3 +86,10 @@ Create a dimensioned front/rear/side template and CAD mock-up. Validate display 
 ![Flytec handheld remote concept](../New_Handheld_Remote/CONCEPT/Flytec_Remote_Concept_Reference.jpg)
 
 Repository image: `Remote/New_Handheld_Remote/CONCEPT/Flytec_Remote_Concept_Reference.jpg`. Verified uploaded JPEG (344,416 bytes). Blue decorative LED/backlighting is excluded from the mechanical design baseline.
+
+
+## Mechanical refinement R2 — concept preview (2026-11-18)
+- Generated a multi-view concept preview to explore front, angled, rear, side, and internal layout styling against the user's uploaded reference.
+- Visual target: sculpted matte-black shell, textured grips, recessed display, joystick wells, rear access panel, dual antennas, lower USB-C.
+- Decorative LED rings, grip strips, illuminated button surrounds, and blue backlighting remain excluded.
+- Preview is illustrative only. Dimensions and internal arrangement shown are not verified CAD or component-fit results; next CAD work must translate the contours into parametric geometry and validate physical parts.
