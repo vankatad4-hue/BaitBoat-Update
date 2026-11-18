@@ -239,3 +239,12 @@ The preferred alternative controller concept now has a separate design workspace
 - Visual target: sculpted matte-black shell, textured grips, recessed display, joystick wells, rear access panel, dual antennas, lower USB-C.
 - Decorative LED rings, grip strips, illuminated button surrounds, and blue backlighting remain excluded.
 - Preview is illustrative only. Dimensions and internal arrangement shown are not verified CAD or component-fit results; next CAD work must translate the contours into parametric geometry and validate physical parts.
+
+
+## Mechanical refinement R2 — expanded battery reserve (2026-11-18)
+- Provisional shell depth allowance increased from 62 to 70 mm to provide additional internal volume.
+- Reserved lower-central battery volume enlarged to 104 × 82 × 24 mm (placeholder envelope).
+- Controller/display envelope moved upward in the space study to improve separation from the battery reserve.
+- Four 18650 placeholders remain illustrative; pack retention, electrical protection, charger, wiring, and clearances are not designed or validated.
+- OpenSCAD internal mockup R2 was rendered to STL successfully; PNG render attempt failed due to headless OpenGL/X-server limitation. A separate schematic space preview is available for review.
+- This revision is a layout study, not verified assembly or print-ready CAD.
