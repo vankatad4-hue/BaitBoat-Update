@@ -1,3 +1,9 @@
 # Boat Firmware
 
-Boat-side firmware and hardware interface files will be imported here from `Flytec_Boat_ver004.zip`. See `../docs/HARDWARE_ARCHITECTURE.md` and `../docs/IMPORT_STATUS.md`.
+Boat-side firmware, configuration, hardware documentation and release archives.
+
+- Source: `source/`
+- Hardware and project documentation: `docs/`
+- Versioned releases: `releases/`
+
+The repository is the canonical source of truth. Check it before editing and update relevant docs alongside firmware changes. Do not overwrite existing release archives.

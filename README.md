@@ -1,35 +1,34 @@
 # Flytec V080 Bait Boat Retrofit
 
-Firmware and hardware documentation for the Flytec V080 bait-boat retrofit.
+**This GitHub repository is the canonical source of truth for the project.** Approved project decisions, documentation, firmware source, and versioned releases belong here.
 
 ## Project layout
+- `Boat/` — boat-side firmware, configuration, docs and releases.
+- `Remote/` — remote firmware, UI, docs and releases.
+- `docs/` — shared architecture, decisions, safety, validation and repository workflow.
 
-- `Boat/` — boat-side firmware, configuration and hardware interfaces.
-- `Remote/` — touchscreen remote firmware and UI.
-- `docs/` — shared architecture, decisions, safety and validation.
-- `shared/` — protocol definitions and common configuration.
-- `releases/` — versioned source archives.
+## Development workflow
+1. Check the relevant repository files before starting work.
+2. Implement approved changes in the relevant source files.
+3. Update documentation when decisions, interfaces, hardware, safety or behavior change.
+4. Keep Boat and Remote changes coordinated when protocol or shared requirements change.
+5. Review the changes and verify them before committing.
+6. Increment release versions for deliverable changes. Never overwrite prior release ZIPs.
+7. Use this repository—not chat history—as the authoritative record. Chat is for planning, discussion and development assistance.
 
-## Current baseline
+## Project baseline
+- Retain the Flytec V080 hull, 12 V 550 brushed motors, battery indicator and main power switch; replace the control system.
+- Boat controller target: Heltec Wireless Tracker V1.2 (ESP32-S3 + UC6580 GNSS).
+- Remote target: Waveshare ESP32-S3-Touch-LCD-4.3 standard, 800×480, LVGL 9.6.0, Arduino IDE.
+- Radio target: nRF24L01+ PA/LNA modules on both ends; 250 kbps initial test rate; 500 m range is a goal, not a guarantee.
+- Motor driver target: Cytron MDD20A dual-channel module, subject to current measurements and validation.
+- Sonar target: ready CHIRP-style module with echogram/fish-arch output; module and interface are not yet validated.
 
-- Preserve the Flytec V080 hull, two 12 V brushed 550 motors, battery indicator and main power switch; replace the original control system.
-- Boat controller: Heltec Wireless Tracker V1.2 (ESP32-S3 + UC6580 GNSS).
-- Navigation sensor: GY-91-style MPU-9250 + BMP280 module; exact board revision and wiring still require verification.
-- Remote: Waveshare ESP32-S3-Touch-LCD-4.3 standard board, 800×480, LVGL 9.6.0, Arduino IDE; hardware not yet purchased.
-- Primary radio: nRF24L01+ PA/LNA on both boat and remote; initial air-rate target 250 kbps; 500 m is a test target, not a guaranteed range.
-- Motor driver: Cytron MDD20A dual-channel module, physically separate from the small carrier PCB.
-- Solenoid driver: separate two-channel MOSFET module; bait and hook solenoids interlocked for one-at-a-time operation.
-- Sonar: ready CHIRP module with live echogram/fish-arch output is the target; no module has yet passed the required verification.
-- Boat carrier PCB envelope: 77 × 79 × 14 mm; keep high-current motor and solenoid paths off this carrier.
+## Safety and validation
+Motor running/stall currents, solenoid coil currents, battery/BMS limits, wiring, fuse sizing, and final pin assignments remain verification tasks. Outputs must default OFF on reset and invalid control. Return-home on link loss is permitted only if navigation and system health are valid.
 
-## Safety status
-
-Motor current, startup/stall current, actual solenoid coil current, exact battery/BMS capability and final fuse/wire sizing are not yet verified. Firmware and hardware must default propulsion and solenoid outputs to OFF on reset or loss of valid control. Autopilot return-home on radio loss is allowed only when GNSS, heading, home position and boat health are valid.
-
-## Versioning
-
-Never overwrite a released archive. Increment the version for every deliverable modification:
+## Release naming
 - `Flytec_Boat_verXXX.zip`
 - `Flytec_Remote_verXXX.zip`
 
-The current archived baseline available in the ChatGPT project Library is ver004 for both boat and remote. See `docs/IMPORT_STATUS.md` for repository import status.
+Do not overwrite an existing release archive. Update the project documentation and version history when releasing changes.

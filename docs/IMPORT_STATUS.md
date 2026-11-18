@@ -1,28 +1,22 @@
-# Repository Import Status
+# Repository Status
 
-## Connection
+## Canonical project location
+This repository is the authoritative project location:
+https://github.com/vankatad4-hue/BaitBoat-Update
 
-GitHub App installation and repository push access were verified on 2026-11-17 for `vankatad4-hue/BaitBoat-Update`, default branch `main`.
+The Boat and Remote project folders, source files, documentation, and ver004 release archives are present in the repository.
 
-## Source archive inventory
+## Repository organization
+- `Boat/source/` — boat-side firmware and configuration.
+- `Boat/docs/` — boat-side hardware, status, radio and safety documentation.
+- `Boat/releases/Flytec_Boat_ver004.zip` — archived boat release.
+- `Remote/source/` — remote-side firmware, UI and supporting files.
+- `Remote/docs/` — remote-side hardware, UI, map and project status documentation.
+- `Remote/releases/Flytec_Remote_ver004.zip` — archived remote release.
+- `docs/` — shared project documentation.
 
-The project Library contains:
-- `Flytec_Boat_ver004.zip` (18,080 bytes)
-- `Flytec_Remote_ver004.zip` (79,125 bytes)
+## Working rule
+Before changes, inspect the relevant files in this repository. Commit approved source and documentation updates here. Keep the Boat and Remote projects separate while updating shared decisions in both when necessary. Do not overwrite released ZIPs; increment the version for each deliverable modification and preserve previous releases.
 
-Both archives were retrieved and their contents inspected. Boat ver004 contains 9 files. Remote ver004 contains 30 entries (including directory entries).
-
-## Import limitation
-
-The available GitHub connector supports UTF-8 text file operations and Git object operations, but does not provide a direct binary archive upload or a filesystem bridge from the retrieved ZIPs. Therefore the original source files and ZIP release archives have **not** yet been committed by this import step. This document does not claim otherwise.
-
-The repository structure and shared project documentation are being established first. To complete a byte-for-byte import of all existing firmware files and the two ZIP archives, use GitHub's web upload interface (or a local Git client) to upload the extracted folders and archives. Preserve the existing ver004 filenames and contents exactly.
-
-## Planned paths
-
-- `Boat/Flytec_Boat/` — contents of the boat ver004 archive.
-- `Remote/Flytec_Remote/` — contents of the remote ver004 archive.
-- `releases/Flytec_Boat_ver004.zip`
-- `releases/Flytec_Remote_ver004.zip`
-
-After import, compare file counts and archive checksums before treating the migration as complete.
+## Local synchronization
+Use GitHub Desktop (or another Git client) to Fetch and Pull the latest `main` before editing locally. After local changes are committed and pushed, verify the updated repository state.
