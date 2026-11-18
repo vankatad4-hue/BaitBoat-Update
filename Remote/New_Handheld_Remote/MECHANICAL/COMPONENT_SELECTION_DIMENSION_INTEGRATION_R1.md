@@ -103,3 +103,9 @@ References:
 - Recommended radio 3.3 V buck-boost: TPS63070 (input 2 V–16 V; 3.3 V output design TBD), chosen because battery voltage crosses 3.3 V.
 - Fuse recommendation revised to 3 A time-delay provisional due to 1S input current and peak loads. Final fuse must be verified against load profile, wiring/connectors and pack protection; previous 2 A idea superseded.
 - Battery pack protection assumed onboard; verify pack BMS specification. Charging design remains out of scope.
+
+
+## TPS63070 component-value update (2026-11-18)
+- Dedicated radio regulator: TPS63070 3.3 V buck-boost; R1 470 kΩ and R2 150 kΩ feedback values (3.307 V calculated nominal); 1.5 µH Coilcraft XFL4020-152ME candidate.
+- Capacitor baseline: input 2×10 µF 25 V X7S 0805 + 10 µF 25 V X5R 0603; output 3×22 µF 16 V X6S 0805 + 10 µF 0603 (76 µF nominal); VAUX 100 nF. Check effective capacitance at bias/temperature.
+- Previous 98 µF output proposal is superseded. Detailed calculation and pin/net map are in the PCB folder.
