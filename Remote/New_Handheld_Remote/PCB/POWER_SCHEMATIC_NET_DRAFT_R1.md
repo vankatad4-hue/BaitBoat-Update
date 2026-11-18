@@ -122,3 +122,11 @@ Inductor between L1 and L2; exact pin/inductor routing from datasheet.
 - Radio: 0.661 W at 3.307 V / 200 mA, assuming 90% buck-boost efficiency → 0.735 W battery input power.
 - Combined estimated input power: 3.382 W; at 3.0 V battery, approximately 1.13 A.
 - These are assumptions, not measurements; exclude other loads and transient/inrush. Validate the display current and converter efficiencies before fuse, connector, wire or pack decisions.
+
+## Datasheet correction and configuration review update (2026-11-18)
+- TPS63070 adjustable single-rail configuration: FB2 grounded; VSEL held LOW (no dynamic voltage scaling); PS/SYNC HIGH to enable power-save PFM/PWM operation; EN pulled high through a 10 kΩ resistor to BAT_PROT for always-enabled rail. These are the design choices to implement, pending symbol/net review. If MCU shutdown control is added, it must safely override EN.
+- PG is open-drain; 100 kΩ pull-up to 3V3_RADIO is a candidate for MCU status monitoring, not mandatory. Verify the intended MCU input and PG behavior before capture.
+- Capacitor-bank proposal corrected: follow TI's adjustable 3.3 V typical application BOM (3×22 µF X6S 0805 + 10 µF 0603, nominal 76 µF), rather than the earlier 98 µF proposal. TI's filter table supports 1.5 µH with nominal 47/68/100 µF; the 76 µF typical-app bank is within the recommended combination table. Effective capacitance remains to be confirmed using manufacturer DC-bias/temperature data. Datasheet permits effective output capacitance 15–470 µF for nominal 1.5 µH.
+- Selected 22 µF candidate: Murata GRM21BC81C226ME44L, 16 V X6S, 0805, ±20%, -55°C to +105°C. Exact DC-bias capacitance at 3.3 V is not stated in the basic part specification and must be verified from Murata's bias curves/approval data. Three units are specified by TI's reference BOM.
+- The prior 98 µF nominal output proposal is superseded. See the calculation review and pin/net map for corrected baseline.
+Sources: TI TPS63070 Rev. B datasheet, §§8.5.1, 9.2.2.1–9.2.2.3, Tables 2–4; Murata GRM21BC81C226ME44L reference sheet.
