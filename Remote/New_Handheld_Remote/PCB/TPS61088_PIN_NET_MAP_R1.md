@@ -15,9 +15,9 @@
 | 1 | VCC | VCC_BYP; C_VCC (≥1 µF ceramic) to GND |
 | 2 | EN | BOOST_EN; hardware pull-down for default off |
 | 3 | FSW | R_FSW to SW per datasheet |
-| 4–7 | SW | SW_NODE; inductor L_BST connects VBAT_SYS to SW_NODE |
+| 4–7 | SW | SW_NODE; inductor L_BST connects BAT_PROT to SW_NODE |
 | 8 | BOOT | C_BOOT 0.1 µF between BOOT and SW_NODE |
-| 9 | VIN | VBAT_SYS; local ceramic input capacitors to PGND |
+| 9 | VIN | BAT_PROT; local ceramic input capacitors to PGND |
 | 10 | SS | C_SS to ground per datasheet soft-start guidance |
 | 11–12 | NC | Tie to ground plane for thermal dissipation as datasheet instructs |
 | 13 | MODE | Ground for forced PWM, or float for PFM; mode to be chosen/tested |
