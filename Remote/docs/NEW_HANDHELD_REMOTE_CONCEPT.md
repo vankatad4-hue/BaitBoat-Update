@@ -73,3 +73,10 @@ Create a dimensioned front/rear/side template and CAD mock-up. Validate display 
 - Internal zones planned for a lower-central battery pack, central controller/display stack, radio near antenna A, separate ESP32 antenna path near antenna B, and power/charging near USB-C.
 - See `Remote/New_Handheld_Remote/MECHANICAL/COMPONENT_PLACEMENT_R1.md` for the coordinate table, risks, and fit-validation workflow.
 - All measurements remain provisional until real component datasheets and physical samples are checked.
+
+
+## Updated visual baseline — uploaded reference (2026-11-18)
+- Adopt the uploaded image's shape and front/rear/side styling as the design target: angular upper shoulders, recessed central screen/bezel, joystick wells, broad textured side grips and lower grip contours, rear service cover, two antennas, and lower centered USB-C.
+- Remove all blue LED/backlight styling: no illuminated joystick rings, grip strips, glowing button borders, or decorative LEDs.
+- Keep the controller matte black/dark graphite. Functional screen and normal status indicators are retained; decorative lighting is not.
+- The next CAD revision must sculpt the shell silhouette and grip geometry; the existing rounded-rectangle shell is only a template and does not yet match the reference.
