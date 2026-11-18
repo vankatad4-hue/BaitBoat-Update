@@ -16,7 +16,7 @@
 - Board/display envelope: 106.1 × 67.8 mm; board depth reported around 8.8 mm.
 - MCU: ESP32-S3, 16 MB Flash, 8 MB PSRAM.
 - Use as the main UI/firmware development platform.
-- Important mismatch: onboard antenna. It does not satisfy the previously requested ESP32 external antenna. Final production hardware may use a separate ESP32-S3 module with U.FL/IPEX and a display-only module, or a verified external-antenna variant.
+- Onboard antenna is accepted for this project; external ESP32 antenna requirement is waived. Do not add a second ESP32 RF antenna path.
 - Do not connect the large 1S4P pack to the board's onboard battery charger as the final charging system. Power the board from a validated 5 V system rail and isolate/avoid unintended charge paths.
 
 ## 3. Joysticks (preferred candidate)
