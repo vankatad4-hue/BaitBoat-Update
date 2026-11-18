@@ -8,7 +8,7 @@ part = "assembly"; // "front", "rear", "assembly"
 
 W = 310;
 H = 190;
-D = 62;
+D = 70;
 wall = 3;
 front_th = 3.2;
 corner_r = 18;
