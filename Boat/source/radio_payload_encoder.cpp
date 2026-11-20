@@ -8,7 +8,9 @@ static void put32(uint8_t *p, int32_t v) {
     p[0]=(uint8_t)u; p[1]=(uint8_t)(u>>8); p[2]=(uint8_t)(u>>16); p[3]=(uint8_t)(u>>24);
 }
 
-// Heartbeat and ACK payload encoders live in radio_payload_codec.cpp.\n\nbool radio_encodeTelemetryPayload(const RadioDecodedPayload &in, uint8_t out[8]) {
+// Heartbeat and ACK payload encoders live in radio_payload_codec.cpp.
+
+bool radio_encodeTelemetryPayload(const RadioDecodedPayload &in, uint8_t out[8]) {
     if(!out) return false;
     clear8(out);
     switch(in.kind) {
