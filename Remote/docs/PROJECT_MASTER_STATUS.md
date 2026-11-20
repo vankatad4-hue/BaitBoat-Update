@@ -407,4 +407,4 @@ Boat:
 - New canonical restart document: `../../docs/CONTINUATION_CHECKPOINT_VER001.md`. It summarizes decisions, current status, safety restrictions and prioritized next work.
 - UI source is unreleased ver029 development (latest polish ver029.13); static echogram remains demo-only. UI checklist `UI_BUILD_VER029_9.md` and SVG previews are available.
 - Latest consolidated changelog VER021. Source markers remain Remote 028 / Boat 014; current branch archives are unverified snapshots.
-- Latest packaging workflow #880 succeeded; versioned archive preservation is only permitted on release marker changes. No target compile or LVGL test has occurred.
+- Workflow #880 previously succeeded with archive-preservation guard. Latest documentation sync triggered packaging run #888 (pending at last check); verify its outcome when resuming. No target compile or LVGL test has occurred.
