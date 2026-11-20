@@ -7,7 +7,7 @@ static constexpr uint8_t RECOVERY_GOOD_REQUIRED = 8;
 static constexpr uint32_t BACKUP_CONTROL_INTERVAL_MS = 3000; // duty-cycle-safe conservative placeholder
 
 DualRadioManager::DualRadioManager() : active_(LINK_NONE), state_(LINK_DISCONNECTED),
-    recoveryStartMs_(0), lastBackupControlMs_(0), recoveryStreak_(0) {
+    recoveryStartMs_(0), lastBackupControlMs_(UINT32_MAX), recoveryStreak_(0) {
     memset(&primary_, 0, sizeof(primary_));
     memset(&backup_, 0, sizeof(backup_));
 }
@@ -16,7 +16,7 @@ void DualRadioManager::begin(uint32_t now) {
     active_ = LINK_NONE;
     state_ = LINK_DISCONNECTED;
     recoveryStartMs_ = now;
-    lastBackupControlMs_ = 0;
+    lastBackupControlMs_ = UINT32_MAX;
     recoveryStreak_ = 0;
     memset(&primary_, 0, sizeof(primary_));
     memset(&backup_, 0, sizeof(backup_));
@@ -107,7 +107,7 @@ bool DualRadioManager::send(const BoatCommand &cmd, RadioSendFn sendFn, uint32_t
         if (!backupCommandAllowed(cmd)) return false;
         BoatCommand safe = cmd;
         if (safe.type == CMD_MANUAL_MOTORS) {
-            if (lastBackupControlMs_ && (uint32_t)(now-lastBackupControlMs_) < BACKUP_CONTROL_INTERVAL_MS)
+            if (lastBackupControlMs_ != UINT32_MAX && (uint32_t)(now-lastBackupControlMs_) < BACKUP_CONTROL_INTERVAL_MS
                 return false;
             limitBackupMotorCommand(safe);
             lastBackupControlMs_ = now;
