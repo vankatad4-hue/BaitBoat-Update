@@ -7,203 +7,39 @@
 #include <math.h>
 #include <stddef.h>
 
-// This UI deliberately does not send mission or release commands.
-// Local waypoint storage is persistent in NVS; boat-side
-// mission validation/execution remain unimplemented.
-static constexpr uint8_t SLOT_COUNT = 4;
+static constexpr uint8_t SLOT_COUNT = 16;
 struct WaypointSlot { bool valid; float lat, lon; bool baitMark, hookMark; };
 static WaypointSlot slots[SLOT_COUNT] = {};
-static bool homeValid = false;
-static float homeLat = 0.0f, homeLon = 0.0f;
-static int selectedSlot = -1;
+static bool homeValid=false; static float homeLat=0,homeLon=0; static int selectedSlot=-1;
 static void setStatus(const char *s);
-static Preferences missionPrefs;
-static bool storageReady = false;
-static bool storageAttempted = false;
-static constexpr uint32_t STORE_MAGIC = 0x42544D50UL;
-struct StoredMission { uint32_t magic; WaypointSlot points[SLOT_COUNT]; bool homeValid; float homeLat, homeLon; int8_t selected; uint32_t crc; };
-static uint32_t crc32(const uint8_t *data, size_t len) {
- uint32_t crc=0xFFFFFFFFUL;
- for(size_t i=0;i<len;i++){crc^=data[i];for(uint8_t b=0;b<8;b++)crc=(crc&1)?(crc>>1)^0xEDB88320UL:crc>>1;}
- return ~crc;
-}
-static bool validCoordinate(float lat,float lon){return isfinite(lat)&&isfinite(lon)&&lat>=-90.0f&&lat<=90.0f&&lon>=-180.0f&&lon<=180.0f;}
-static bool persist() {
- if(!storageReady)return false;
- StoredMission s={};s.magic=STORE_MAGIC;memcpy(s.points,slots,sizeof(slots));s.homeValid=homeValid;s.homeLat=homeLat;s.homeLon=homeLon;s.selected=(int8_t)selectedSlot;
- s.crc=crc32(reinterpret_cast<const uint8_t*>(&s),offsetof(StoredMission,crc));
- return missionPrefs.putBytes("mission",&s,sizeof(s))==sizeof(s);
-}
-static void loadPersisted() {
- if(storageAttempted)return;storageAttempted=true;
- storageReady=missionPrefs.begin("baitmission",false);
- if(!storageReady){setStatus("NVS OPEN FAILED - RAM ONLY");return;}
- StoredMission s={};
- if(missionPrefs.getBytesLength("mission")!=sizeof(s)||missionPrefs.getBytes("mission",&s,sizeof(s))!=sizeof(s)||s.magic!=STORE_MAGIC||s.crc!=crc32(reinterpret_cast<const uint8_t*>(&s),offsetof(StoredMission,crc))){
-  memset(slots,0,sizeof(slots));homeValid=false;selectedSlot=-1;setStatus("NVS EMPTY/INVALID - NEW PLAN");return;
- }
- for(uint8_t i=0;i<SLOT_COUNT;i++)if(s.points[i].valid&&!validCoordinate(s.points[i].lat,s.points[i].lon))s.points[i]={};
- memcpy(slots,s.points,sizeof(slots));homeValid=s.homeValid&&validCoordinate(s.homeLat,s.homeLon);
- homeLat=homeValid?s.homeLat:0;homeLon=homeValid?s.homeLon:0;
- selectedSlot=(s.selected>=0&&s.selected<SLOT_COUNT&&slots[(uint8_t)s.selected].valid)?s.selected:-1;
- setStatus("PLAN LOADED FROM NVS");
-}
+static Preferences missionPrefs; static bool storageReady=false,storageAttempted=false;
+static constexpr uint32_t STORE_MAGIC=0x42544D50UL;
+struct StoredMission { uint32_t magic; WaypointSlot points[SLOT_COUNT]; bool homeValid; float homeLat,homeLon; int8_t selected; uint32_t crc; };
+static uint32_t crc32(const uint8_t *data,size_t len){uint32_t crc=0xFFFFFFFFUL;for(size_t i=0;i<len;i++){crc^=data[i];for(uint8_t b=0;b<8;b++)crc=(crc&1)?(crc>>1)^0xEDB88320UL:crc>>1;}return ~crc;}
+static bool validCoordinate(float lat,float lon){return isfinite(lat)&&isfinite(lon)&&lat>=-90&&lat<=90&&lon>=-180&&lon<=180;}
+static bool persist(){if(!storageReady)return false;StoredMission s={};s.magic=STORE_MAGIC;memcpy(s.points,slots,sizeof(slots));s.homeValid=homeValid;s.homeLat=homeLat;s.homeLon=homeLon;s.selected=(int8_t)selectedSlot;s.crc=crc32(reinterpret_cast<const uint8_t*>(&s),offsetof(StoredMission,crc));return missionPrefs.putBytes("mission",&s,sizeof(s))==sizeof(s);}
+static void loadPersisted(){if(storageAttempted)return;storageAttempted=true;storageReady=missionPrefs.begin("baitmission",false);if(!storageReady){setStatus("NVS OPEN FAILED — STORAGE DISABLED");return;}StoredMission s={};if(missionPrefs.getBytesLength("mission")!=sizeof(s)||missionPrefs.getBytes("mission",&s,sizeof(s))!=sizeof(s)||s.magic!=STORE_MAGIC||s.crc!=crc32(reinterpret_cast<const uint8_t*>(&s),offsetof(StoredMission,crc))){memset(slots,0,sizeof(slots));homeValid=false;selectedSlot=-1;setStatus("EMPTY / INVALID STORE — RESET");return;}for(uint8_t i=0;i<SLOT_COUNT;i++)if(s.points[i].valid&&!validCoordinate(s.points[i].lat,s.points[i].lon))s.points[i]={};memcpy(slots,s.points,sizeof(slots));homeValid=s.homeValid&&validCoordinate(s.homeLat,s.homeLon);homeLat=homeValid?s.homeLat:0;homeLon=homeValid?s.homeLon:0;selectedSlot=(s.selected>=0&&s.selected<SLOT_COUNT&&slots[(uint8_t)s.selected].valid)?s.selected:-1;setStatus("16-WAYPOINT PLAN RESTORED");}
 
-static lv_obj_t *screen = nullptr;
-static lv_obj_t *returnScreen = nullptr;
-static lv_obj_t *gpsLabel = nullptr;
-static lv_obj_t *homeLabel = nullptr;
-static lv_obj_t *slotLabels[SLOT_COUNT] = {};
-static lv_obj_t *statusLabel = nullptr;
-static lv_obj_t *selectedLabel = nullptr;
-static lv_timer_t *refreshTimer = nullptr;
-
-static lv_color_t bg() { return lv_color_hex(0x101820); }
-static lv_color_t panel() { return lv_color_hex(0x1C2935); }
-static lv_color_t blue() { return lv_color_hex(0x1565C0); }
-static lv_color_t green() { return lv_color_hex(0x2E7D32); }
-static lv_color_t red() { return lv_color_hex(0xC62828); }
-
-static lv_obj_t *label(lv_obj_t *parent, const char *text, int x, int y, int w)
-{
-    lv_obj_t *o=lv_label_create(parent); lv_label_set_text(o,text);
-    lv_obj_set_pos(o,x,y); lv_obj_set_width(o,w);
-    lv_obj_set_style_text_color(o,lv_color_hex(0xFFFFFF),LV_PART_MAIN);
-    lv_label_set_long_mode(o,LV_LABEL_LONG_WRAP); return o;
-}
-static lv_obj_t *button(lv_obj_t *parent,const char *txt,int x,int y,int w,int h,lv_color_t color)
-{
-    lv_obj_t *b=lv_button_create(parent); lv_obj_set_size(b,w,h); lv_obj_set_pos(b,x,y);
-    lv_obj_set_style_bg_color(b,color,LV_PART_MAIN);
-    lv_obj_t *t=lv_label_create(b); lv_label_set_text(t,txt); lv_obj_center(t); return b;
-}
-static bool currentFixIsFresh()
-{
-    return boatState.gpsValid && (uint32_t)(millis()-boatState.gpsLastUpdateMs)<=2000U;
-}
-static void refresh()
-{
-    if(!screen) return;
-    char buf[150];
-    if(currentFixIsFresh()) snprintf(buf,sizeof(buf),"CURRENT FIX: %.6f, %.6f  |  age %lu ms",boatState.latitude,boatState.longitude,(unsigned long)(millis()-boatState.gpsLastUpdateMs));
-    else snprintf(buf,sizeof(buf),"CURRENT FIX: INVALID / STALE — SAVE DISABLED");
-    lv_label_set_text(gpsLabel,buf);
-    if(homeValid) snprintf(buf,sizeof(buf),"HOME (NVS): %.6f, %.6f",homeLat,homeLon);
-    else snprintf(buf,sizeof(buf),"HOME: NOT SET");
-    lv_label_set_text(homeLabel,buf);
-    for(uint8_t i=0;i<SLOT_COUNT;i++){
-        if(slots[i].valid) snprintf(buf,sizeof(buf),"WP%u  %.6f, %.6f  %s%s",(unsigned)(i+1),slots[i].lat,slots[i].lon,slots[i].baitMark?"BAIT MARK ":"",slots[i].hookMark?"HOOK MARK":"");
-        else snprintf(buf,sizeof(buf),"WP%u  EMPTY",(unsigned)(i+1));
-        lv_label_set_text(slotLabels[i],buf);
-    }
-    if(selectedSlot>=0 && slots[selectedSlot].valid) snprintf(buf,sizeof(buf),"SELECTED: WP%d",(selectedSlot+1));
-    else snprintf(buf,sizeof(buf),"SELECTED: NONE");
-    lv_label_set_text(selectedLabel,buf);
-}
-static void setStatus(const char *s){ if(statusLabel) lv_label_set_text(statusLabel,s); }
-static void selectSlot(lv_event_t *e)
-{
-    if(lv_event_get_code(e)!=LV_EVENT_CLICKED) return;
-    int index=(int)(intptr_t)lv_event_get_user_data(e);
-    if(index<0||index>=SLOT_COUNT||!slots[index].valid){setStatus("SLOT EMPTY — SAVE A CURRENT FIX FIRST");return;}
-    selectedSlot=index; const bool saved=persist(); refresh(); setStatus(saved?"WAYPOINT SELECTED":"SELECTED RAM ONLY");
-}
-static void saveCurrent(lv_event_t *e)
-{
-    if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;
-    if(!currentFixIsFresh()){setStatus("SAVE BLOCKED: NEED FRESH VALID GNSS FIX");return;}
-    int slot=-1;
-    if(selectedSlot>=0&&!slots[selectedSlot].valid) slot=selectedSlot;
-    if(slot<0){for(int i=0;i<SLOT_COUNT;i++)if(!slots[i].valid){slot=i;break;}}
-    if(slot<0){setStatus("ALL FOUR SLOTS FULL — SELECT AND CLEAR ONE");return;}
-    slots[slot]={true,boatState.latitude,boatState.longitude,false,false};
-    selectedSlot=slot;refresh();setStatus("WAYPOINT SAVED — LOST ON POWER OFF");
-}
-static void setHome(lv_event_t *e)
-{
-    if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;
-    if(!currentFixIsFresh()){setStatus("HOME SET BLOCKED: NEED FRESH VALID GNSS FIX");return;}
-    homeLat=boatState.latitude;homeLon=boatState.longitude;homeValid=true;
-    const bool saved=persist();refresh();setStatus(saved?"HOME SAVED TO NVS":"SAVE FAILED - RAM ONLY");
-}
-static void clearSlot(lv_event_t *e)
-{
-    if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;
-    if(selectedSlot<0||!slots[selectedSlot].valid){setStatus("SELECT A VALID WAYPOINT TO CLEAR");return;}
-    slots[selectedSlot]={}; selectedSlot=-1;const bool saved=persist();refresh();setStatus(saved?"WAYPOINT CLEARED":"CLEAR RAM ONLY - NVS WRITE FAILED");
-}
-static void toggleBait(lv_event_t *e)
-{
-    if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;
-    if(selectedSlot<0||!slots[selectedSlot].valid){setStatus("SELECT A WAYPOINT FIRST");return;}
-    slots[selectedSlot].baitMark=!slots[selectedSlot].baitMark;const bool saved=persist();refresh();
-    setStatus(saved?"BAIT MARK SAVED — PLANNING ONLY":"BAIT MARK RAM ONLY — NVS WRITE FAILED");
-}
-static void toggleHook(lv_event_t *e)
-{
-    if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;
-    if(selectedSlot<0||!slots[selectedSlot].valid){setStatus("SELECT A WAYPOINT FIRST");return;}
-    slots[selectedSlot].hookMark=!slots[selectedSlot].hookMark;const bool saved=persist();refresh();
-    setStatus(saved?"HOOK MARK SAVED — PLANNING ONLY":"HOOK MARK RAM ONLY — NVS WRITE FAILED");
-}
-static void startMission(e)
-{
-    if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;
-    setStatus("MISSION START DISABLED: PERSISTENCE, BOAT EXECUTOR, AUTH/ACK AND SAFETY GATES NOT READY");
-}
-static void back(e)
-{
-    if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;
-    if(refreshTimer){lv_timer_delete(refreshTimer);refreshTimer=nullptr;}
-    if(returnScreen)lv_screen_load(returnScreen);
-    screen=nullptr;
-}
+static lv_obj_t *screen=nullptr,*returnScreen=nullptr,*gpsLabel=nullptr,*homeLabel=nullptr,*slotLabels[SLOT_COUNT]={},*statusLabel=nullptr,*selectedLabel=nullptr;static lv_timer_t *refreshTimer=nullptr;
+static lv_color_t bg(){return lv_color_hex(0x101820);}static lv_color_t panel(){return lv_color_hex(0x1C2935);}static lv_color_t blue(){return lv_color_hex(0x1565C0);}static lv_color_t green(){return lv_color_hex(0x2E7D32);}static lv_color_t red(){return lv_color_hex(0xC62828);}
+static lv_obj_t *label(lv_obj_t *p,const char *t,int x,int y,int w){lv_obj_t *o=lv_label_create(p);lv_label_set_text(o,t);lv_obj_set_pos(o,x,y);lv_obj_set_width(o,w);lv_obj_set_style_text_color(o,lv_color_hex(0xFFFFFF),LV_PART_MAIN);lv_label_set_long_mode(o,LV_LABEL_LONG_WRAP);return o;}
+static lv_obj_t *button(lv_obj_t *p,const char *t,int x,int y,int w,int h,lv_color_t c){lv_obj_t *b=lv_button_create(p);lv_obj_set_size(b,w,h);lv_obj_set_pos(b,x,y);lv_obj_set_style_bg_color(b,c,LV_PART_MAIN);lv_obj_t *l=lv_label_create(b);lv_label_set_text(l,t);lv_obj_center(l);return b;}
+static bool currentFixIsFresh(){return boatState.gpsValid&&(uint32_t)(millis()-boatState.gpsLastUpdateMs)<=2000U;}
+static void refresh(){if(!screen)return;char b[160];if(currentFixIsFresh())snprintf(b,sizeof(b),"FIX: %.6f, %.6f | age %lu ms",boatState.latitude,boatState.longitude,(unsigned long)(millis()-boatState.gpsLastUpdateMs));else snprintf(b,sizeof(b),"FIX: INVALID / STALE — SAVE DISABLED");lv_label_set_text(gpsLabel,b);if(homeValid)snprintf(b,sizeof(b),"HOME: %.6f, %.6f",homeLat,homeLon);else snprintf(b,sizeof(b),"HOME: NOT SET");lv_label_set_text(homeLabel,b);for(uint8_t i=0;i<SLOT_COUNT;i++){if(slots[i].valid)snprintf(b,sizeof(b),"WP%02u %s%s",(unsigned)(i+1),slots[i].baitMark?"B ":"",slots[i].hookMark?"H":"");else snprintf(b,sizeof(b),"WP%02u EMPTY",(unsigned)(i+1));lv_label_set_text(slotLabels[i],b);}if(selectedSlot>=0&&slots[selectedSlot].valid)snprintf(b,sizeof(b),"SELECTED WP%02d",(selectedSlot+1));else snprintf(b,sizeof(b),"SELECTED: NONE");lv_label_set_text(selectedLabel,b);}
+static void setStatus(const char *s){if(statusLabel)lv_label_set_text(statusLabel,s);}
+static void selectSlot(lv_event_t *e){if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;int i=(int)(intptr_t)lv_event_get_user_data(e);if(i<0||i>=SLOT_COUNT||!slots[i].valid){setStatus("EMPTY SLOT — SAVE A FRESH FIX");return;}selectedSlot=i;bool ok=persist();refresh();setStatus(ok?"WAYPOINT SELECTED / SAVED":"NVS WRITE FAILED");}
+static void saveCurrent(lv_event_t *e){if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;if(!currentFixIsFresh()){setStatus("BLOCKED: NEED FRESH GNSS (<2s)");return;}int i=(selectedSlot>=0)?selectedSlot:-1;if(i<0||slots[i].valid){i=-1;for(int n=0;n<SLOT_COUNT;n++)if(!slots[n].valid){i=n;break;}}if(i<0){setStatus("16 SLOTS FULL — CLEAR OR SELECT SLOT");return;}slots[i]={true,boatState.latitude,boatState.longitude,false,false};selectedSlot=i;bool ok=persist();refresh();setStatus(ok?"WAYPOINT STORED IN NVS":"NVS WRITE FAILED — NOT CONFIRMED");}
+static void setHome(lv_event_t *e){if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;if(!currentFixIsFresh()){setStatus("HOME BLOCKED: NEED FRESH GNSS");return;}homeLat=boatState.latitude;homeLon=boatState.longitude;homeValid=true;bool ok=persist();refresh();setStatus(ok?"HOME STORED IN NVS":"NVS WRITE FAILED");}
+static void clearSlot(lv_event_t *e){if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;if(selectedSlot<0||!slots[selectedSlot].valid){setStatus("SELECT A WAYPOINT TO CLEAR");return;}slots[selectedSlot]={};selectedSlot=-1;bool ok=persist();refresh();setStatus(ok?"WAYPOINT CLEARED":"NVS WRITE FAILED");}
+static void toggleFlag(lv_event_t *e,bool bait){if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;if(selectedSlot<0||!slots[selectedSlot].valid){setStatus("SELECT A WAYPOINT FIRST");return;}if(bait)slots[selectedSlot].baitMark=!slots[selectedSlot].baitMark;else slots[selectedSlot].hookMark=!slots[selectedSlot].hookMark;bool ok=persist();refresh();setStatus(ok?"MARK STORED — PLANNING ONLY":"NVS WRITE FAILED");}
+static void toggleBait(lv_event_t *e){toggleFlag(e,true);}static void toggleHook(lv_event_t *e){toggleFlag(e,false);}
+static void startMission(lv_event_t *e){if(lv_event_get_code(e)==LV_EVENT_CLICKED)setStatus("MISSION START DISABLED — SAFETY / EXECUTOR NOT READY");}
+static void back(lv_event_t *e){if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;if(refreshTimer){lv_timer_delete(refreshTimer);refreshTimer=nullptr;}if(returnScreen)lv_screen_load(returnScreen);screen=nullptr;}
 static void timerRefresh(lv_timer_t *t){(void)t;refresh();}
-
-void missionUI_open(lv_obj_t *main)
-{
-    returnScreen=main;
-    loadPersisted();
-    screen=lv_obj_create(nullptr);lv_obj_set_style_bg_color(screen,bg(),LV_PART_MAIN);
-    lv_obj_remove_flag(screen,LV_OBJ_FLAG_SCROLLABLE);
-    label(screen,"WAYPOINTS / MISSION PLAN — LOCAL ONLY",15,10,760);
-    gpsLabel=label(screen,"CURRENT FIX: CHECKING",15,42,760);
-    homeLabel=label(screen,"HOME: NOT SET",15,72,760);
-    lv_obj_t *p=lv_obj_create(screen);lv_obj_set_pos(p,10,105);lv_obj_set_size(p,780,220);
-    lv_obj_set_style_bg_color(p,panel(),LV_PART_MAIN);lv_obj_set_style_pad_all(p,8,LV_PART_MAIN);
-    label(p,"SAVED WAYPOINTS (NVS)",8,6,750);
-    const int ys[4]={38,78,118,158};
-    const int colors[4]={0x1565C0,0x1565C0,0x1565C0,0x1565C0};
-    for(int i=0;i<4;i++){
-        slotLabels[i]=label(p,"WP EMPTY",8,ys[i],510);
-        lv_obj_t *b=button(p,"SELECT",530,ys[i]-5,110,34,lv_color_hex(colors[i]));
-        lv_obj_add_event_cb(b,selectSlot,LV_EVENT_CLICKED,(void*)(intptr_t)i);
-    }
-    selectedLabel=label(screen,"SELECTED: NONE",15,333,760);
-    lv_obj_t *save=button(screen,"SAVE CURRENT",15,360,150,45,green());
-    lv_obj_add_event_cb(save,saveCurrent,LV_EVENT_CLICKED,nullptr);
-    lv_obj_t *setH=button(screen,"SET HOME",175,360,130,45,blue());
-    lv_obj_add_event_cb(setH,setHome,LV_EVENT_CLICKED,nullptr);
-    lv_obj_t *clear=button(screen,"CLEAR SLOT",315,360,130,45,red());
-    lv_obj_add_event_cb(clear,clearSlot,LV_EVENT_CLICKED,nullptr);
-    lv_obj_t *bait=button(screen,"BAIT MARK",455,360,130,45,blue());
-    lv_obj_add_event_cb(bait,toggleBait,LV_EVENT_CLICKED,nullptr);
-    lv_obj_t *hook=button(screen,"HOOK MARK",595,360,130,45,blue());
-    lv_obj_add_event_cb(hook,toggleHook,LV_EVENT_CLICKED,nullptr);
-    lv_obj_t *start=button(screen,"START MISSION",15,410,180,45,red());
-    lv_obj_add_event_cb(start,startMission,LV_EVENT_CLICKED,nullptr);
-    lv_obj_t *backBtn=button(screen,"BACK",650,410,130,45,blue());
-    lv_obj_add_event_cb(backBtn,back,LV_EVENT_CLICKED,nullptr);
-    statusLabel=label(screen,"MISSION EXECUTION DISABLED — UI PLANNING ONLY",205,418,430);
-    refresh();lv_screen_load(screen);
-    refreshTimer=lv_timer_create(timerRefresh,250,nullptr);
-}
-
-// Read-only accessors for the main map overlay; no mission commands are emitted.
-void missionUI_initStorage(){ if(!storageReady) loadPersisted(); }
-bool missionUI_getWaypoint(uint8_t index,float *lat,float *lon,bool *bait,bool *hook){
- if(index>=SLOT_COUNT||!slots[index].valid)return false;
- if(lat)*lat=slots[index].lat;if(lon)*lon=slots[index].lon;
- if(bait)*bait=slots[index].baitMark;if(hook)*hook=slots[index].hookMark;return true;
-}
+void missionUI_open(lv_obj_t *main){returnScreen=main;loadPersisted();screen=lv_obj_create(nullptr);lv_obj_set_style_bg_color(screen,bg(),LV_PART_MAIN);lv_obj_remove_flag(screen,LV_OBJ_FLAG_SCROLLABLE);label(screen,"WAYPOINT MANAGER — 16 SLOTS / LOCAL ONLY",12,8,770);gpsLabel=label(screen,"GNSS CHECK",12,35,770);homeLabel=label(screen,"HOME: NOT SET",12,60,770);
+ lv_obj_t *p=lv_obj_create(screen);lv_obj_set_pos(p,8,88);lv_obj_set_size(p,784,250);lv_obj_set_style_bg_color(p,panel(),LV_PART_MAIN);lv_obj_set_style_pad_all(p,5,LV_PART_MAIN);label(p,"SELECT SLOT — NVS PERSISTENT",4,3,760);
+ for(uint8_t i=0;i<SLOT_COUNT;i++){int col=i%4,row=i/4;int x=col*190+5,y=row*48+25;slotLabels[i]=label(p,"WP EMPTY",x,y,118);lv_obj_t *s=button(p,"SEL",x+122,y-5,54,34,blue());lv_obj_add_event_cb(s,selectSlot,LV_EVENT_CLICKED,(void*)(intptr_t)i);}
+ selectedLabel=label(screen,"SELECTED: NONE",12,343,770);lv_obj_t *save=button(screen,"SAVE FIX",10,366,130,42,green());lv_obj_add_event_cb(save,saveCurrent,LV_EVENT_CLICKED,nullptr);lv_obj_t *h=button(screen,"SET HOME",148,366,125,42,blue());lv_obj_add_event_cb(h,setHome,LV_EVENT_CLICKED,nullptr);lv_obj_t *c=button(screen,"CLEAR",281,366,100,42,red());lv_obj_add_event_cb(c,clearSlot,LV_EVENT_CLICKED,nullptr);lv_obj_t *b=button(screen,"BAIT",389,366,100,42,blue());lv_obj_add_event_cb(b,toggleBait,LV_EVENT_CLICKED,nullptr);lv_obj_t *k=button(screen,"HOOK",497,366,100,42,blue());lv_obj_add_event_cb(k,toggleHook,LV_EVENT_CLICKED,nullptr);lv_obj_t *start=button(screen,"START",605,366,90,42,red());lv_obj_add_event_cb(start,startMission,LV_EVENT_CLICKED,nullptr);lv_obj_t *bb=button(screen,"BACK",700,366,90,42,blue());lv_obj_add_event_cb(bb,back,LV_EVENT_CLICKED,nullptr);statusLabel=label(screen,"MISSION EXECUTION DISABLED",12,418,770);refresh();lv_screen_load(screen);refreshTimer=lv_timer_create(timerRefresh,250,nullptr);}
+void missionUI_initStorage(){if(!storageReady)loadPersisted();}
+bool missionUI_getWaypoint(uint8_t i,float *lat,float *lon,bool *bait,bool *hook){if(i>=SLOT_COUNT||!slots[i].valid)return false;if(lat)*lat=slots[i].lat;if(lon)*lon=slots[i].lon;if(bait)*bait=slots[i].baitMark;if(hook)*hook=slots[i].hookMark;return true;}
 bool missionUI_getHome(float *lat,float *lon){if(!homeValid)return false;if(lat)*lat=homeLat;if(lon)*lon=homeLon;return true;}
