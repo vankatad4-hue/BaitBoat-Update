@@ -1,4 +1,5 @@
 #include "offline_map_coverage.h"
+#include "lake_storage.h"
 #include <SD.h>
 #include <math.h>
 #include <esp_heap_caps.h>
@@ -42,7 +43,7 @@ bool mapCoverage_begin()
     valid = false;
     calculationCapped = false;
 
-    File f = SD.open("/maps/coverage_index.csv", FILE_READ);
+    File f = SD.open(lakeStorage_path("/maps/coverage_index.csv").c_str(), FILE_READ);
     if (!f) return false;
     rows = (CoverageRecord *)heap_caps_malloc(sizeof(CoverageRecord) * INDEX_LIMIT, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     if (!rows) { f.close(); return false; }

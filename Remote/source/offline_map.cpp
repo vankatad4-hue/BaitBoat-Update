@@ -1,4 +1,5 @@
 #include "offline_map.h"
+#include "lake_storage.h"
 #include "offline_map_coverage.h"
 
 #include <Arduino.h>
@@ -13,7 +14,7 @@ static char g_map_attribution[256] = {0};            // Validated map-pack sourc
 // Require a valid pack header, complete coverage flag and source attribution/licence metadata.
 static bool offlineMap_checkManifest()
 {
-    File manifest = SD.open("/maps/manifest.txt", FILE_READ);
+    File manifest = SD.open(lakeStorage_path("/maps/manifest.txt").c_str(), FILE_READ);
     if (!manifest) return false;
 
     char signature[12] = {0};
@@ -48,7 +49,7 @@ static bool offlineMap_checkManifest()
 // Initialise offline-map storage and validate its map-pack manifest.
 bool offlineMap_begin(bool sdCardReady)
 {
-    g_sd_available = sdCardReady;                   // Remember the mount result from display_port.cpp.
+    g_sd_available = sdCardReady && lakeStorage_ready();                   // Remember the mount result from display_port.cpp.
     g_map_pack_available = false;                   // Clear any previous map-pack status.
     g_map_attribution[0] = '\0';
 
@@ -100,7 +101,7 @@ uint16_t *offlineMap_readTile(OfflineMapStyle style, uint8_t zoom, uint32_t tile
 
     const char *styleFolder = (style == OFFLINE_MAP_SATELLITE) ? "satellite" : "street"; // Select style directory.
     char path[96];                                  // Hold the full tile path without dynamic String allocation.
-    snprintf(path, sizeof(path), "/maps/%s/%u/%lu/%lu.rgb565", styleFolder, static_cast<unsigned>(zoom), static_cast<unsigned long>(tileX), static_cast<unsigned long>(tileY)); // Build tile path.
+    snprintf(path, sizeof(path), "%s/%s/%u/%lu/%lu.rgb565", lakeStorage_path("/maps").c_str(), styleFolder, static_cast<unsigned>(zoom), static_cast<unsigned long>(tileX), static_cast<unsigned long>(tileY)); // Build tile path.
 
     File tileFile = SD.open(path, FILE_READ);        // Open the requested tile in read-only mode.
     if (!tileFile)                                  // A missing tile is not replaced with a fake land/water image.
