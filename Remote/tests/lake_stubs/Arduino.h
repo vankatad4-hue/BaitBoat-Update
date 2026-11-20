@@ -19,3 +19,6 @@ public:
     friend bool operator==(const String&a,const String&b){return a.value==b.value;}
     friend bool operator!=(const String&a,const String&b){return !(a==b);}
 };
+
+struct MockSerial { void println(const char *) {} };
+inline MockSerial Serial;
