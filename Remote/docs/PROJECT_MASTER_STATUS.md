@@ -53,6 +53,9 @@ Boat:
 - Remote SC16/E22 and Boat direct-UART E22 bench probes.
 - Fixed CRC-only probe frames; no authenticated commands or actuators. Boat pin macros disabled until board audit.
 
+- E22 bench configuration byte decode is documented in `Remote/docs/E22_CONFIGURATION_DECODE_R1.md`.
+- Path audit corrected: test sketches were present; initial fetch failure was retrieval/path-check issue.
+
 ## Electrical/PCB status
 - Detailed electrical capture sheets, pin tables/CSV, power net drafts, BOM candidate docs and Mermaid block diagrams exist.
 - Native KiCad schematic, ERC/DRC, footprints, PCB layout and fabrication files **not created**.
