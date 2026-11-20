@@ -94,3 +94,6 @@ The schematic audit shows that the previously suggested “free GPIO” assignme
 ## Next design gate
 
 Review the exact Waveshare schematic and determine accessible GPIOs. Then produce the physical pin map, connector pinout, expander/ADC schematic, and bring-up test list. Keep this architecture separate from the final PCB design until verified.
+
+
+> **Archive reconciliation correction (2026-11-20):** This brainstorming draft is superseded by the established R5 architecture in ver009. Use MCP23017 0x20 for 16 individual button inputs (no matrix), MCP23017 0x21 for radio/OK I/O, ADS1115 at 0x4A and 0x4B (not ADS1015), and SC16IS750 0x48 for E22 UART. nRF CE=GPIO6 and CSN=GPIO15 are direct candidates only after onboard Sensor-AD and RS485 paths are isolated; SPI GPIO11/12/13 is shared with TF. See ARCHIVE_RECONCILIATION_AND_NEXT_GATE_R6_4.md.
