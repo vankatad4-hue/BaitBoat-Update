@@ -119,3 +119,15 @@ No propulsion, release, live battery charging in the proposed enclosure, or wate
 The latest UI development ver029.9–ver029.13 is recorded in Remote consolidated changelog VER021 and `Remote/docs/UI_BUILD_VER029_9.md`. It includes a Bulgarian main UI, mission planner 16 slots, calibration/settings/map-manager polish and a static DEMO echogram; none is LVGL Pro-rendered or target-compiled. The current canonical restart document is `CONTINUATION_CHECKPOINT_VER001.md`.
 
 Archive correction: the former packaging workflow regenerated version-named ZIPs during routine pushes. Existing branch ZIPs must be treated as unverified snapshots. Guarded workflow run #880 succeeded, but this does not restore historical release integrity. Documentation sync subsequently triggered runs #888 and #889; both succeeded, with #889 latest. A clean release-marker bump/package/hash/inspection is required before issuing a release.
+
+
+## Source consistency & compile-preparation audit R1 — 2026-11-20
+- Full source consistency findings and blockers are documented in `docs/SOURCE_CONSISTENCY_AUDIT_R1.md`.
+- Found a session-handshake reliability issue: startup marker and reply could be lost without retry. Remote now retries each configured link until per-link confirmation (primary 500 ms, E22 3 s and duty-limited); Boat resends same-session response idempotently. Source changes committed, not compiled or integration-tested.
+- No reproducible target build manifest/dependency lock is present. Remote requires LVGL 9.6, but exact display library versions are not pinned.
+- Remote host-test workflow is missing; Boat portable tests do not exercise full dual-radio port/session/ACK integration.
+- Boat sketch remains a placeholder and does not instantiate the dual-radio port, executor, telemetry, interlocks, watchdog or actuators.
+- Authentication provisioning is intentionally disabled/fail-closed; session retry is dormant until keys are provisioned.
+- E22 duty accounting is estimated and RAM-only, so reboot reset and actual airtime/regulatory verification remain open.
+- ONLINE map source is a preference only; no renderer/provider is implemented and availability returns false.
+- This audit does not claim a build or test run. Target compilation is the next gate after exact hardware and dependencies are pinned.
