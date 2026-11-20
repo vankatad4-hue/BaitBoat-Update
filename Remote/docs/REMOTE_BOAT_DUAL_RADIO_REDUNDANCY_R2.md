@@ -1,3 +1,5 @@
+**SUPERSEDED:** R3 selects matching EBYTE E22-900T22S modules at both endpoints. The Tracker integrated SX1262 is not used for the initial backup pair. See `REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R3.md`.
+
 # Dual-radio redundancy architecture R2 — updated hardware pairing
 
 ## Pairing
