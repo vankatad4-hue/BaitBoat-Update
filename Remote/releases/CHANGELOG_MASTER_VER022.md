@@ -49,3 +49,7 @@
 - Target compile attempt #1 failed at Arduino sketch discovery (folder/main-INO naming mismatch), not C++ compilation. Workflow staging was corrected and log artifact capture added.
 - Host release-guard test initially had a mismatched reduced BoatState struct in its test fixture; corrected to link the real state source.
 - Payload codec test contained an invalid latitude vector that represented 50° rather than 91°. Test vector corrected; rerun pending.
+
+### CI test fixes and results
+- Host run #7 passed: release guard/scanner syntax, radio payload codec, ACK tracker and telemetry freshness. Fixes included real BoatState layout in the test, a correct 91° latitude invalid vector, and braces around telemetry pair timestamp conditionals to satisfy strict warning checks.
+- Target run #3 reached sketch compilation but failed because LVGL configuration was not provided. Added tracked `Remote/source/lv_conf.h` from LVGL v9.6.0 template (project pool 128 KiB) and workflow installation step. Target retry pending.
