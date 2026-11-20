@@ -544,11 +544,7 @@ void toggleMapPanel()
         // Expand map to fill the content area.
         lv_obj_set_pos(mapPanel, 5, 5);
 
-        lv_obj_set_size(
-            mapPanel,
-            780,
-            345
-        );
+        lv_obj_set_size(mapPanel, 780, 315);
         lv_obj_set_size(mapViewport, 760, 220);
     }
     else
@@ -556,11 +552,7 @@ void toggleMapPanel()
         // Restore the original map dimensions.
         lv_obj_set_pos(mapPanel, 5, 5);
 
-        lv_obj_set_size(
-            mapPanel,
-            385,
-            345
-        );
+        lv_obj_set_size(mapPanel, 385, 315);
         lv_obj_set_size(mapViewport, 369, 190);
 
         // Show sonar again.
@@ -594,22 +586,14 @@ void toggleSonarPanel()
         // Expand sonar to fill the content area.
         lv_obj_set_pos(sonarPanel, 5, 5);
 
-        lv_obj_set_size(
-            sonarPanel,
-            780,
-            345
-        );
+        lv_obj_set_size(sonarPanel, 780, 315);
     }
     else
     {
         // Restore the original sonar dimensions.
         lv_obj_set_pos(sonarPanel, 400, 5);
 
-        lv_obj_set_size(
-            sonarPanel,
-            385,
-            345
-        );
+        lv_obj_set_size(sonarPanel, 385, 315);
 
         // Show map again.
         lv_obj_remove_flag(
