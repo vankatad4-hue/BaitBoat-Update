@@ -10,6 +10,10 @@ void initialiseBoatState()
     boatState.mode = MODE_MANUAL;
 
     boatState.radioConnected = false;
+    boatState.radioPrimaryConnected = false;
+    boatState.radioBackupConnected = false;
+    boatState.radioActiveLink = RADIO_UI_NONE;
+    boatState.radioLinkState = RADIO_UI_DISCONNECTED;
     boatState.gpsValid = false;
     boatState.gpsFixType = 0;
     boatState.gpsSatellites = 0;
