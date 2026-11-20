@@ -5,7 +5,7 @@ Updated 2026-11-20. The repository is canonical; this is not operational firmwar
 ## Release naming
 - ZIP: `Flytec_Boat_verXXX.zip`
 - Preserve all older releases.
-- Package version marker: `releases/VERSION` (currently `010`).
+- Package version marker: `releases/VERSION` (currently `014`).
 - Increment by one for every modification included in a distributed package; see root `docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Current controller and radios
@@ -58,3 +58,6 @@ Updated 2026-11-20. The repository is canonical; this is not operational firmwar
 - `../docs/BOAT_RADIO_PIN_ASSIGNMENTS_R3.md`
 - `../docs/BOAT_HARDWARE_TEST_BUILD_R2.md`
 - `../docs/BOAT_ELECTRICAL_SCHEMATIC_DESIGN_R2.md`
+
+## Continuation checkpoint
+Read `../../docs/CONTINUATION_CHECKPOINT_VER001.md` for project-wide current status and prioritized next work. Boat ver014 is a source-package marker only; the current branch ZIP is unverified. No boat target build, application executor, telemetry source, actuator or autopilot implementation is complete.
