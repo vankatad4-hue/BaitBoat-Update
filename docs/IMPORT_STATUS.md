@@ -32,3 +32,8 @@ This repository is the authoritative project workspace. Do not start from older 
 
 ## Working rule
 Inspect the exact source/document before editing; commit to the development branch; run available tests and report exact evidence; update checkpoint, statuses and consolidated changelog after substantial work. Keep safety gates fail-closed.
+
+
+## Latest verified CI update (2026-11-20)
+Remote target compile #19 succeeded (run ID 44781879101; commit 3f189cb1ac65a764aec678893f1df857d113c815). Build used ESP32-S3 16MB/OPI PSRAM with huge_app partition; artifact upload succeeded. Firmware: 1,430,957 bytes (45% of 3,145,728-byte app partition); global RAM 178,136 bytes (54%, 149,544 bytes free). No compiler errors or C++ warnings reported. This is compile/link only, not hardware validation.
+Host tests #44779439310 and packaging workflow #44779439396 passed on source commit 2289e84ad73e1931f18f357d0e437fed5e0d6c12; the latest commit only changed build workflow. Continue with runtime lifecycle/map import/cache audit. Keep release markers Remote 028 / Boat 014; ZIP snapshots remain unverified.
