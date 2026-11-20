@@ -152,3 +152,10 @@ Archive correction: the former packaging workflow regenerated version-named ZIPs
 - Remote portable host CI run #11 passes all current host tests.
 - Full target compile has reached the source compiler. Initial compiler findings (LVGL 9.6 precise line point type and missing footer-label declarations) were fixed; current target run #11 is pending.
 - Dependency pins now include RF24 1.4.11; LVGL configuration is tracked in source.
+
+
+## Target compile follow-up — 2026-11-20
+- Remote target compile workflow run #11 failed at C++ compilation after installing the pinned toolchain/libraries and compiling source modules.
+- Confirmed installed versions from compiler output: ESP32 Arduino core 3.0.2, LVGL 9.6.0, ESP32_Display_Panel 1.0.0, ESP32_IO_Expander 1.0.1, esp-lib-utils 0.1.2, RF24 1.4.11.
+- Three compile findings were corrected: LVGL event-target API use in joystick calibration; map renderer line-point type for LVGL 9.6; escaped-newline comment accidentally suppressing Map Manager `copyChunk()` declaration.
+- Corrective commits: `1afd17d5`, `00840087`, `7213f04e`. Target rebuild pending. Do not claim full compilation.
