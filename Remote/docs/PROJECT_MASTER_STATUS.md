@@ -96,7 +96,7 @@ Boat:
 
 ## Release status
 - Repository branch: `hardware-ready-dual-radio-r1`; draft PR #1 remains open and unmerged.
-- Current package markers are Remote ver023 / Boat ver010. ZIP pair and checksum manifest are generated and committed; independent byte-level integrity verification is pending. Existing ver004 archives are preserved.
+- Current package markers are Remote ver023 / Boat ver010. ZIP pair and manifest are committed, but Boat ver010 checksum currently mismatches the manifest; a reproducible rebuild is pending. Remote ver023 binary is unverified. Existing ver004 archives are preserved.
 - Do not operate boat or connect actuator power. Bench tests only.
 
 - Consolidated remote pin map and connector CSV R4 are the current versions; older R2 docs marked superseded. Consolidated remote power BOM/capture spec R6 are current; R5 docs marked superseded.
