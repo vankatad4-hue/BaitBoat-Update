@@ -10,12 +10,12 @@ flowchart LR
  BAT --> TPS[TPS63070]
  TPS --> R3[RADIO_3V3]
  R3 --> NRF[nRF24 PA/LNA]
- BAT --> W[CS8501 5V rail]
- W --> LORA[E22 LoRa VCC]
+ BAT --> LBOOST[TPS61023 dedicated 5V boost]
+ LBOOST --> LORA[E22 LoRa VCC]
  BAT --> MON[Battery monitor ADC]
 ```
 
-LoRa module accepts 2.7–5.5V but datasheet says 5V guarantees output power; power it from CS8501 5V branch. Controller/display shares CS8501, so simultaneous-load test is mandatory. nRF has separate 3.3V converter. Do not parallel converters.
+LoRa module accepts 2.7–5.5V; 5V guarantees output power. A dedicated TPS61023 5V branch powers E22 only, so the CS8501 controller/display rail stays within its board-load specification. This is a separate load/converter, not parallel outputs. nRF has separate 3.3V converter.
 
 ## Controller and I/O
 ```mermaid
