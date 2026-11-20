@@ -116,3 +116,9 @@ When continuing in a new chat:
 - Tests run under strict warnings: release guard, scanner syntax, payload codec, ACK tracker and telemetry freshness.
 - Workflow result not yet observed. These tests are host-level only; they do not build the full LVGL/ESP32 firmware.
 - Next: confirm CI result and fix; then build configuration/dependency pinning after exact hardware revisions are confirmed.
+
+
+## Target build selection follow-up
+- Added `docs/TARGET_BUILD_CONFIGURATION_R1.md` documenting candidate Remote target SKU 25948 (Waveshare ESP32-S3-Touch-LCD-4.3 standard), dependencies and pinning rationale.
+- This is still a candidate based on project source/design, not physical board confirmation. Do not freeze PlatformIO/Arduino build manifests until official example dependency versions are reconciled with project LVGL 9.6 and exact hardware is confirmed.
+- Boat candidate Heltec Wireless Tracker remains revision/pin unresolved.
