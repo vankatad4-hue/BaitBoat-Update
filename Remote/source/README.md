@@ -48,7 +48,7 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 ## Safety / limitations
 - Key storage returns false by default; authenticated communication/control is disabled.
 - Remote session/replay protection, ACK lifecycle tracking and telemetry dispatch are implemented in the current scaffold; UI ACK display, boat-side state synchronization, command execution and ACK/telemetry generation remain incomplete.
-- No joystick ADC input, boat-side actuator execution, waypoint/mission save/select, autopilot, return-home execution, sonar hardware integration or live telemetry is operational. Release GPIO scanning is coded but not physically verified; safety readiness remains false by default.
+- Joystick ADC input remains fail-closed pending hardware validation. Waypoint save/select/home and BAIT/HOOK planning markers are UI/NVS scaffolding only; no boat-side mission executor, autopilot, return-home execution, release control path, sonar integration or validated live telemetry is operational. Release GPIO scanning is coded but not physically verified; safety readiness remains false by default.
 - Remote STOP is not an independently validated safety system.
 - Do not connect actuator power or operate the boat.
 
@@ -72,12 +72,12 @@ Authenticated receive frames are dispatched to strict payload decoders. Remote A
 - This is feedback/request UI only. Boat application command execution remains absent, key provisioning is fail-closed, and the source has not been compiled for the exact Waveshare/LVGL target.
 
 
-## Remote ver025 — waypoint/mission-planning UI scaffold
+## Remote ver025 — waypoint/mission-planning UI scaffold (superseded by ver026 storage)
 - Footer now includes a MISSION button opening a dedicated planning screen.
-- Four volatile RAM waypoint slots: save current fresh GNSS position, select, clear, and show coordinate values.
-- A HOME coordinate can be set from the current fresh GNSS fix. Both actions reject invalid or >2-second-old fixes.
+- ver025 initially used four volatile waypoint slots; ver026 replaces that storage with NVS persistence.
+- HOME and waypoint capture require a fresh valid GNSS fix (<2 seconds).
 - Selected waypoint can be tagged with planned BAIT / HOOK markers; they do not issue actuator commands.
-- START MISSION is explicitly blocked and displays why. No mission execution, persistent storage, geofence, authenticated boat command or release sequence is implemented.
+- Mission start remains blocked. No mission execution, geofence, authenticated boat command or release sequence is implemented.
 - Preview: `UI_PREVIEW_MISSION_VER026.svg`; updated main screen: `UI_PREVIEW_REMOTE_VER026.svg`. Target build and touch/hardware validation remain pending.
 
 
