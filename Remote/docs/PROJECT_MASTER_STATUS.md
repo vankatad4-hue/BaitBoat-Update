@@ -1,6 +1,6 @@
 # Flytec V080 bait boat and remote — master project record R2
 
-**Consolidated:** 2026-11-20. This is the current planning record; repository source is canonical.
+**Consolidated:** 2026-11-20 (schematic design update). Repository source is canonical; latest schematic capture specification is documented below.
 
 ## Archive versioning
 ZIPs use Flytec_Remote_verXXX.zip and Flytec_Boat_verXXX.zip. Never overwrite a prior release. ver005 archives exist but are not fully synchronized to current repository work.
@@ -19,6 +19,14 @@ Retain Flytec V080 hull, motors, battery indicator and main switch; replace boat
 - Cytron MDD20A motor-driver candidate; confirm motor current before use.
 - Sonar: full CHIRP echogram/fish arches desired, module/interface still unselected.
 - Autopilot mission: save waypoint, send, release bait/hook, return; failsafe return-home only with valid navigation/system health.
+
+## Remote schematic design progress (2026-11-20)
+- Waveshare PORT1 mapping reviewed against manufacturer schematic; assignment document `WAVESHARE_HEADER_MAPPING_AND_PIN_ASSIGNMENTS_R2.md`.
+- Capture-sheet design and net-level drafts created: `SCHEMATIC_CAPTURE_SHEETS_R1.md`, `SCHEMATIC_NETLIST_BLOCKS_R1.md`, `SCHEMATIC_CAPTURE_CHECKLIST_R1.md`.
+- Battery protection/power branches specified; controller power via onboard CS8501 boost, external TPS61023 fallback only; radio TPS63070 dedicated rail.
+- Controls: ADS1115 @0x48 for four joystick axes, MCP23017 @0x20 for buttons, second ADS1115 @0x49 for battery/NTC/optional radio rail monitoring, MCP23017 @0x21 for radio CE/CSN/IRQ candidate.
+- Shared SPI GPIO11/12/13 with onboard TF card; radio priority and bus serialization required.
+- Expander-based radio control remains an explicit validation gate; no native KiCad capture/ERC/bench test has yet been performed.
 
 ## Remote baseline
 - Waveshare ESP32-S3-Touch-LCD-4.3 Standard, 800×480; onboard ESP32 antenna.
