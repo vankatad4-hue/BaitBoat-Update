@@ -75,3 +75,7 @@ Do not connect motor/solenoid power or operate the boat.
 
 ## Remote integration state note (2026-11-20)
 Remote now decodes authenticated telemetry/ACK frames and applies freshness/safety gates. Boat firmware still does not emit these payloads or execute/ACK commands. Mirrored codec is currently a portable validator only on the boat side. Do not connect actuators.
+
+
+## Package revision status
+Latest generated pair is Remote ver019 / Boat ver006. Next bookkeeping markers are Remote ver020 / Boat ver007. Boat payload decoder remains unused by Boat application; telemetry/ACK sender and command executor are still not implemented.
