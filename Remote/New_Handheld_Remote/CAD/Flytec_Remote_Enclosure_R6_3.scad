@@ -50,11 +50,11 @@ module block(x,y,w,h,z=4,t=5,col="#91b7a5"){
 }
 module internal_layout(){
  // Touch controller PCB behind display, approximate board envelope
- block(0,screen_y,108,72,6,3,"#78b89a");
+ block(0,screen_y,106.1,67.8,6,3,"#78b89a");
  // Joystick module envelopes
  block(-108,66,36,36,6,6,"#b7c2d0"); block(108,66,36,36,6,6,"#b7c2d0");
  // Primary nRF PA/LNA and backup E22 radio near antenna exits
- block(-123,25,42,26,6,6,"#7c9bd0"); block(126,23,48,30,6,6,"#7c9bd0");
+ block(-123,25,42,26,6,6,"#7c9bd0"); block(126,23,26,16,6,6,"#7c9bd0");
  // Lower pack and power zone
  block(0,-61,84,36,6,8,"#a5aab0");
  block(-65,-74,30,20,6,5,"#e0b477"); // charge/protection placeholder
