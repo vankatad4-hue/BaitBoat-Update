@@ -114,3 +114,7 @@ This low-rate summary is not raw CHIRP data and cannot render a fish-arch echogr
 - Remote telemetry updates are partial, locally timestamped, sample-paired for GNSS and freshness-limited. Only fresh primary-origin STOP/interlock status can set actuator readiness.
 - Session start is checked against the remote epoch and reserved bytes; sequence freshness is guarded per transport and cross-transport. Duplicate authenticated frames may update link health but do not update application state twice.
 - Boat telemetry/ACK generation and command execution/deduplication are not implemented. Session resync after boat restart without restarting the remote remains an open fail-closed limitation.
+
+
+## Encoder mirror status
+Portable encoder APIs now exist on both endpoints for HEARTBEAT, ACK and telemetry payloads. Round-trip/invalid-range host tests cover every payload subtype. Encoders produce payload bytes only; frame sequence, IDs, HMAC, CRC, transport and application execution are separate. Boat application still does not call the encoders.
