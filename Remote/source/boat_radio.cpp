@@ -121,7 +121,8 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame) {
     const bool valid=radio_frameVerify(frame,g_authKey) &&
         frame.sourceId==BOAT_DEVICE_ID && frame.destinationId==REMOTE_DEVICE_ID &&
         (frame.type==RADIO_MSG_SESSION_START || frame.type==RADIO_MSG_HEARTBEAT || frame.type==RADIO_MSG_TELEMETRY ||
-         frame.type==RADIO_MSG_ACK || frame.type==RADIO_MSG_LINK_PROBE);
+         frame.type==RADIO_MSG_ACK || frame.type==RADIO_MSG_LINK_PROBE) &&
+        (frame.type!=RADIO_MSG_SESSION_START || (frame.sequence==0 && frame.payload[0]==frame.sessionEpoch));
     if(valid && !g_boatSequenceGuard.accept(frame.sessionEpoch,frame.sequence,frame.type==RADIO_MSG_SESSION_START)) {g_linkManager.reportFailure(link);return;}
     if(valid) g_linkManager.reportValidRx(link,true,now);
     else g_linkManager.reportFailure(link);
