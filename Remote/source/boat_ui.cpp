@@ -681,10 +681,10 @@ void updateBoatScreen(const BoatState &state)
         lv_label_set_text(gpsCoordinatesLabel, coordinateText);
 
         char mapStatusText[96];
-        const char *mapStorageText = state.offlineMapReady ? "SD MAP READY" : (state.sdCardReady ? "NO SD MAP" : "SD NOT READY");
+        const char *mapStorageText = state.offlineMapReady ? "SD КАРТА: ГОТОВА" : (state.sdCardReady ? "НЯМА SD КАРТА" : "SD НЕ Е ГОТОВА");
         const MapSourceMode sourceMode = mapSource_getMode();
-        const char *sourceText = (sourceMode == MAP_SOURCE_ONLINE && !mapSource_onlineAvailable()) ? "ONLINE UNAVAILABLE - SD FALLBACK" : (sourceMode == MAP_SOURCE_AUTO ? "AUTO / SD" : "OFFLINE / SD");
-        snprintf(mapStatusText, sizeof(mapStatusText), "GPS: FIX  |  %s  |  %s", mapStorageText, sourceText);
+        const char *sourceText = (sourceMode == MAP_SOURCE_ONLINE && !mapSource_onlineAvailable()) ? "ONLINE НЕ Е НАЛИЧЕН — SD РЕЗЕРВА" : (sourceMode == MAP_SOURCE_AUTO ? "AUTO / SD" : "OFFLINE / SD");
+        snprintf(mapStatusText, sizeof(mapStatusText), "GPS: ИМА FIX  |  %s  |  %s", mapStorageText, sourceText);
         lv_label_set_text(gpsMapStatusLabel, mapStatusText);
 
         char gpsDetailsText[80];
@@ -700,10 +700,10 @@ void updateBoatScreen(const BoatState &state)
     }
     else
     {
-        lv_label_set_text(gpsCoordinatesLabel, "LAT: --.------   LON: --.------");
-        const char *mapStorageText = state.offlineMapReady ? "SD MAP READY" : (state.sdCardReady ? "NO SD MAP" : "SD NOT READY");
+        lv_label_set_text(gpsCoordinatesLabel, "ШИР: --.------   ДЪЛ: --.------");
+        const char *mapStorageText = state.offlineMapReady ? "SD КАРТА: ГОТОВА" : (state.sdCardReady ? "НЯМА SD КАРТА" : "SD НЕ Е ГОТОВА");
         const MapSourceMode sourceMode = mapSource_getMode();
-        const char *sourceText = (sourceMode == MAP_SOURCE_ONLINE && !mapSource_onlineAvailable()) ? "ONLINE UNAVAILABLE - SD FALLBACK" : (sourceMode == MAP_SOURCE_AUTO ? "AUTO / SD" : "OFFLINE / SD");
+        const char *sourceText = (sourceMode == MAP_SOURCE_ONLINE && !mapSource_onlineAvailable()) ? "ONLINE НЕ Е НАЛИЧЕН — SD РЕЗЕРВА" : (sourceMode == MAP_SOURCE_AUTO ? "AUTO / SD" : "OFFLINE / SD");
         char mapStatusText[120];
         snprintf(mapStatusText, sizeof(mapStatusText), "GPS: НЯМА FIX  |  %s  |  %s", mapStorageText, sourceText);
         lv_label_set_text(gpsMapStatusLabel, mapStatusText);
@@ -744,7 +744,7 @@ void updateBoatScreen(const BoatState &state)
         case MODE_MANUAL:
             lv_label_set_text(
                 modeLabel,
-                "MODE: MANUAL"
+                "РЕЖИМ: РЪЧЕН"
             );
             break;
 
