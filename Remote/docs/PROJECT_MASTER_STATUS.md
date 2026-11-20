@@ -75,7 +75,7 @@ Boat:
 ## Versioned ZIP status
 - [Build and checksum status](../../docs/ZIP_BUILD_STATUS_R1.md)
 - Preserved baseline archives: Remote `Flytec_Remote_ver004.zip`, Boat `Flytec_Boat_ver004.zip`.
-- Current source markers are Remote `026` and Boat `014`. Last package snapshot is Remote ver024 / Boat ver014; Boat ver014 archive verified, Remote ver024 binary checksum remains unverified.
+- Current source markers are Remote `027` and Boat `014`. Last package snapshot is Remote ver024 / Boat ver014; Boat ver014 archive verified, Remote ver024 binary checksum remains unverified.
 - Packaging policy: `docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Boat controller pin audit
@@ -96,7 +96,7 @@ Boat:
 
 ## Release status
 - Repository branch: `hardware-ready-dual-radio-r1`; draft PR #1 remains open and unmerged.
-- Last package markers: Remote ver024 / Boat ver014. Source has since advanced to Remote ver026; no ver026 archive is confirmed. Boat ver014 archive independently verified. Remote ver024 binary remains unverified.
+- Last package markers: Remote ver024 / Boat ver014. Source has since advanced to Remote ver027; no ver026 archive is confirmed. Boat ver014 archive independently verified. Remote ver024 binary remains unverified.
 - Do not operate boat or connect actuator power. Bench tests only.
 
 - Consolidated remote pin map and connector CSV R4 are the current versions; older R2 docs marked superseded. Consolidated remote power BOM/capture spec R6 are current; R5 docs marked superseded.
@@ -235,11 +235,15 @@ Boat:
 - ver025 source is not yet compiled against the actual board/LVGL package and is not hardware tested.
 
 
-## Remote ver026 waypoint storage and map overlay (2026-11-20)
+## Remote ver027 waypoint storage and map overlay (2026-11-20)
 - Waypoint/home and planned bait/hook flags now persist in ESP32 NVS Preferences with record magic + CRC32 check.
 - Main placeholder map adds relative waypoint/home markers; markers are hidden when GNSS is invalid or more than 150m from the boat. This overlay is only illustrative, not a navigational map or route.
 - The mission UI's save-current and set-home require fresh GNSS (<2s). Selection and marker edits persist.
 - Mission start remains blocked. No boat mission execution, geofence/route validation, release command or authenticated operational path.
-- Source version marker Remote ver026. ZIP/checksum and target build/hardware test are pending.
+- Source version marker Remote ver027. ZIP/checksum and target build/hardware test are pending.
 
 - Hardware verification checklist: `Remote/docs/MISSION_NVS_TEST_PLAN_VER026.md` (not yet run).
+
+
+## Remote ver027 update
+- Waypoint capacity increased to 16 (NVS) plus Home. SD/microSD card is designated for offline map packs. Existing map tile reader path documented; no renderer/map pack generator yet. Target compile, SD-card test and NVS test remain pending.
