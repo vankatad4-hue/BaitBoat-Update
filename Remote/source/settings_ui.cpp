@@ -295,7 +295,7 @@ static void buildSonarSection(lv_obj_t *parent)
 static void wifiScanPoll(lv_timer_t *timer)
 {
     const int result = WiFi.scanComplete();
-    if (result == WIFI_СКАНИРАЙ_RUNNING)
+    if (result == WIFI_SCAN_RUNNING)
         return;
 
     if (wifiScanTimer != nullptr)
@@ -304,7 +304,7 @@ static void wifiScanPoll(lv_timer_t *timer)
         wifiScanTimer = nullptr;
     }
 
-    if (result == WIFI_СКАНИРАЙ_FAILED)
+    if (result == WIFI_SCAN_FAILED)
     {
         lv_label_set_text(wifiStatus, "СКАНИРАНЕТО НЕ УСПЯ. ВЪВЕДИ SSID РЪЧНО.");
         WiFi.scanDelete();
@@ -339,7 +339,7 @@ static void scanWiFiEvent(lv_event_t *event)
     lv_label_set_text(wifiStatus, "СКАНИРАНЕ НА WI-FI МРЕЖИ...");
     WiFi.mode(WIFI_STA);
     const int result = WiFi.scanNetworks(true, true); // Async scan; show hidden networks as well.
-    if (result == WIFI_СКАНИРАЙ_FAILED)
+    if (result == WIFI_SCAN_FAILED)
     {
         lv_label_set_text(wifiStatus, "СКАНИРАНЕТО НЕ МОЖЕ ДА СТАРТИРА.");
         return;
@@ -351,7 +351,7 @@ static void scanWiFiEvent(lv_event_t *event)
 static void wifiConnectPoll(lv_timer_t *timer)
 {
     const wl_status_t status = WiFi.status();
-    if (status == WL_СВЪРЖИED)
+    if (status == WL_CONNECTED)
     {
         lv_label_set_text(wifiStatus, "WI-FI Е СВЪРЗАН.");
         lv_timer_del(timer);
