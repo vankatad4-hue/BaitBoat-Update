@@ -290,7 +290,7 @@ Boat:
 - Tests added for coverage-index export, not executed. Firmware compile and hardware tests pending. Remote version remains 028; ver029 development not packaged.
 
 
-- Consolidated Remote history is maintained at `Remote/releases/CHANGELOG_MASTER_VER012.md` (history document revision VER008; source marker still ver028).
+- Consolidated Remote history is maintained at `Remote/releases/CHANGELOG_MASTER_VER013.md` (history document revision VER008; source marker still ver028).
 
 - ver029.3 robustness follow-up: coverage index uses PSRAM/binary search, import validates tile byte lengths/count and cache refresh. Added map-tools test workflow; CI result not confirmed.
 
@@ -343,3 +343,11 @@ Boat:
 - Selected waypoint label clarified. Mission execution remains deliberately blocked; planning markers are not sent as boat commands.
 - Source: `Remote/source/mission_ui.cpp`. Commits: `67e0a87e9cb24219`, `699936ef55033318`.
 - Not compiled or LVGL Pro-tested; layout, Bulgarian glyphs and text fitting need simulator validation.
+
+
+## Joystick calibration UI polish — 2026-11-20
+- Calibration screen now shares the dark marine palette, blue accents and rounded outlined touch controls.
+- Screen headings, button labels, status messages, axis names, layout mode, autopilot override and dead-zone readout translated to Bulgarian.
+- Safety gating, raw/min/centre/max/normalized telemetry, endpoint capture, dead-zone slider and neutral-before-exit behavior retained.
+- Source: `Remote/source/joystick_calibration_ui.cpp`; commit `59e0f81fb5676500`.
+- Not compiled or simulator tested; text-fit and Cyrillic font support pending LVGL Pro validation.
