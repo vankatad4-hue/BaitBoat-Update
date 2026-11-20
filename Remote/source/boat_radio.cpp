@@ -26,6 +26,7 @@ static uint8_t g_sessionEpoch=1;
 static uint16_t g_txSequence=0;
 static uint32_t g_lastPrimaryHeartbeat=0,g_lastBackupHeartbeat=0;
 static uint8_t g_authKey[32];
+static RadioSequenceGuard g_boatSequenceGuard;
 
 static BoatRadioLink toPublicLink(ManagedLink link) {
     if(link==LINK_NRF_PRIMARY) return RADIO_LINK_NRF24_PRIMARY;
@@ -60,10 +61,9 @@ bool boatRadio_begin() {
     g_loraConfigured=false;g_nrfReady=false;g_begun=false;
     memset(g_authKey,0,sizeof(g_authKey));
     g_sessionEpoch=(uint8_t)esp_random(); if(g_sessionEpoch==0)g_sessionEpoch=1;
-    g_txSequence=0;g_lastPrimaryHeartbeat=0;g_lastBackupHeartbeat=0;
+    g_txSequence=0;g_lastPrimaryHeartbeat=0;g_lastBackupHeartbeat=0;g_boatSequenceGuard.reset();
 
-    // Display/SD initialization should already have initialized the shared SPI
-    // and I2C buses. The exact physical radio CE/CSN pins are still unassigned.
+    // Display/SD setup initializes shared SPI/I2C. nRF CE/CSN pins are provisional.
     g_nrfReady=g_nrf.begin(true);
     g_linkManager.setTransportReady(LINK_NRF_PRIMARY,g_nrfReady);
 
@@ -96,6 +96,7 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame) {
         frame.sourceId==BOAT_DEVICE_ID && frame.destinationId==REMOTE_DEVICE_ID &&
         (frame.type==RADIO_MSG_SESSION_START || frame.type==RADIO_MSG_HEARTBEAT || frame.type==RADIO_MSG_TELEMETRY ||
          frame.type==RADIO_MSG_ACK || frame.type==RADIO_MSG_LINK_PROBE);
+    if(valid && !g_boatSequenceGuard.accept(frame.sessionEpoch,frame.sequence,frame.type==RADIO_MSG_SESSION_START)) {g_linkManager.reportFailure(link);return;}
     if(valid) g_linkManager.reportValidRx(link,true,now);
     else g_linkManager.reportFailure(link);
 }
