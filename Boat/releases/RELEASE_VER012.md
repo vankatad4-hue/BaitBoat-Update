@@ -6,5 +6,5 @@
 - Implemented the previously declared but missing `commandPending()` and `sendCommandAck()` definitions. ACK generation uses payload validation, authenticated frame sealing, command type/ID correlation and sends on the receiving link.
 - Previous cross-radio replay classification remains: stale sequence with a new command ID is rejected; exact pending/executed duplicate may be ACKed.
 - Host tests are committed but not executed in this environment; no compile claim.
-- First ver012 ZIP retrieval did not match the manifest checksum. Packaging must be regenerated and independently rechecked before this archive is considered verified.
+- The current ver012 ZIP SHA-256 was independently checked against the committed manifest. The earlier mismatch was caused by an incomplete checksum implementation in the review script; it was corrected and validated against the SHA-256 `abc` test vector.
 - No command executor, STOP/interlock policy, telemetry, actuator output, secure session handshake, GPIO enablement or hardware validation.
