@@ -33,10 +33,17 @@ Motor running/stall currents, solenoid coil currents, battery/BMS limits, wiring
 
 Do not overwrite an existing release archive. Update the project documentation and version history when releasing changes.
 
-## New handheld remote — power design baseline (2026-11-18)
-- Remote power work is active under `Remote/New_Handheld_Remote/`.
-- Pack: protected 1S4P Li-ion (charging schematic excluded from current work).
-- Display/controller rail: TPS61088-based 5 V boost candidate; component calculations and thermal validation pending.
-- Radio rail: TPS63070 3.3 V buck-boost. Calculated feedback 470 kΩ/150 kΩ (3.307 V nominal), 1.5 µH inductor candidate, TI reference capacitor baseline (76 µF nominal output bank).
-- Preliminary remote current estimate: about 1.13 A at 3.0 V battery for display/radio assumptions; not measured.
-- See `Remote/New_Handheld_Remote/README.md` and master status for limitations and engineering gates.
+## Remote power design progress (2026-11-20)
+- 1S4P protected Li-ion pack; charging schematic excluded from this phase.
+- TPS61088 5 V boost calculations R2 documented. 5 V / 1 A is a design target, not validated. Feedback, FSW, ILIM, inductor, capacitors and soft-start are preliminary; loop compensation remains open.
+- TPS63070 3.3 V radio rail calculations and pin map R2 reviewed against TI Rev. B datasheet. 1.5 µH inductor and TI capacitor baseline; verify effective capacitance and actual radio burst current.
+- Battery input protection architecture drafted: pack BMS, fuse candidate, reverse-polarity MOSFET, battery voltage sense and NTC. Parts not selected.
+- Current estimated worst-case rail budget ~2.6 A from 3.0 V pack at 5 V/1 A plus radio 3.3 V/300 mA; actual load/efficiency must be measured.
+- Native schematic, compensation verification, ERC, PCB, and bench bring-up remain incomplete.
+
+Documents:
+- `Remote/New_Handheld_Remote/PCB/TPS61088_COMPONENT_CALCULATIONS_R2.md`
+- `Remote/New_Handheld_Remote/PCB/TPS63070_COMPONENT_CALCULATIONS_REVIEW_R2.md`
+- `Remote/New_Handheld_Remote/PCB/BATTERY_INPUT_PROTECTION_DESIGN_R1.md`
+- `Remote/New_Handheld_Remote/PCB/POWER_SCHEMATIC_NET_DRAFT_R2.md`
+- `Remote/New_Handheld_Remote/PCB/POWER_DISTRIBUTION_DESIGN_R2.md`
