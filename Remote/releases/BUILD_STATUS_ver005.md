@@ -10,3 +10,6 @@ SHA-256:
 This is a software/hardware-design development archive only. It is not compiled, ERC/DRC validated, or hardware-tested. No boat actuator operation is authorized.
 
 PR artifact is verified and downloaded. The archive has not yet been committed into the repository releases folder; ver006 is the next package snapshot. See `../../docs/ZIP_BUILD_STATUS_R1.md`.
+
+
+> **Historical record:** ver005 verification applies only to that old artifact/run. It does not verify current branch ZIPs (ver028 marker). Current archive status is `../../docs/ZIP_BUILD_STATUS_R1.md`; resume from `../../docs/CONTINUATION_CHECKPOINT_VER001.md`.
