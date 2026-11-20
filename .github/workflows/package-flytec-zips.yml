@@ -18,7 +18,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: flytec-package-${{ github.ref }}
+  group: flytec-branch-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
