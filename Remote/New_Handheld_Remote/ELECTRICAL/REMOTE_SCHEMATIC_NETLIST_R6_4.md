@@ -43,7 +43,7 @@ U_BUTTONS MCP23017 @0x20:
 - Physical arrangement: two columns × four rows per bank. The right-bank bottom-right position is OK/confirm, not an R8 input. The bottom-right right-bank position is OK/confirm, not a normal MCP0x20 button.
 - Debounce target 25 ms.
 - Button mapping from R5 CSV: L1 STOP; L2 Manual/Autopilot; L3 Return Home; L4 save waypoint; L5 waypoint selection; L6 map full-screen; L7 sonar full-screen; L8 settings. Right R1–R4 guarded independent releases; R5–R7 are UI/status/cancel functions; the physical OK key is separately wired to U_RADIO_IO GPA4
-- The OK button is physically separate and not part of the 16-key bank.
+- OK occupies the right-bank bottom-right physical position but uses the dedicated input on U_RADIO_IO GPA4; U_BUTTONS scans only 15 keys.
 
 U_RADIO_IO MCP23017 @0x21:
 - GPA0 spare.
