@@ -126,3 +126,6 @@ Authenticated receive frames are dispatched to strict payload decoders. Remote A
 
 ## Archive workflow safeguard
 Development pushes no longer overwrite repository versioned ZIPs unless Remote or Boat `releases/VERSION` changes. Push/PR/manual runs may still upload a snapshot artifact for inspection. Release marker bump and package verification remain explicit release steps.
+
+## Archive integrity note
+The legacy packaging workflow previously regenerated the unchanged ver028/ver014 ZIP names on every source push, repeatedly committing them. The branch archives therefore must not be treated as immutable verified releases. The workflow guard is now in place and verified on a run; restoration of an earlier release archive is not yet done. Source remains unreleased development.
