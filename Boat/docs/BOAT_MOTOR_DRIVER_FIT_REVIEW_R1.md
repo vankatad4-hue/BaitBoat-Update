@@ -20,3 +20,9 @@ The previously measured control-carrier envelope is 77×79×14mm, therefore the 
 
 ## Decision status
 MDD20A remains a candidate for bench testing, not a confirmed final fit. The carrier footprint must be revised or driver placed elsewhere before the final boat hardware is frozen.
+
+
+## R2 control-carrier and radio fit
+- Low-voltage carrier remains measured/provisional 77×79×14mm; Heltec Tracker controller board and E22/nRF radio modules must be placed with connector/coax and thermal clearances, likely with external module/harness where needed.
+- The E22 module requires a separate 5V electronics branch; the 3S battery pack is not connected directly to E22 VCC. nRF module uses 3.3V rail.
+- MDD20A still cannot be placed within the 77×79 carrier area. Use separate mount or revise compartment dimensions. Motor current is unknown, so don't replace it with a low-current board without stall/start tests.
