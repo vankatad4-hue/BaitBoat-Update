@@ -41,6 +41,7 @@ Remote source includes nRF/E22 transports, SC16 bridge, CRC/HMAC protocol, comma
 - [Hardware test instructions](hardware_test/README.md)
 
 ## ZIP snapshots
+- [Shared build status](../docs/ZIP_BUILD_STATUS_R1.md)
 - Latest preserved archive: `releases/Flytec_Remote_ver004.zip`.
 - Current package version marker: `releases/VERSION` = `006`.
 - Packaging automation: [ZIP release policy](../../docs/ZIP_RELEASE_POLICY_R1.md) and `.github/workflows/package-flytec-zips.yml`. On push the workflow commits ZIPs to the branch and uploads artifacts; verify checksums before calling them released.
