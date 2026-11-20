@@ -53,7 +53,7 @@ Telemetry and ACK payload formats still need detailed allocation; current 8-byte
 Candidate band for backup safety/control: 869.4–869.65MHz, harmonized conditions indicate up to 500mW ERP with 10% duty-cycle or polite spectrum access, but national implementation, device category, bandwidth and EIRP/ERP calculation must be confirmed in Bulgaria. E22 output max is 22dBm, not a target setting.
 - Initial power must be conservative and compliant with antenna gain/feed loss.
 - Configure the exact selected channel and LoRa PHY on both devices. Keep packet airtime short.
-- Start at 1Hz backup heartbeat/control; target measured packet airtime ≤100ms and enforce 10% duty budget per transmitter. 2Hz only if measured airtime, ACK traffic and legal duty budget permit.
+- Use channel18 868.125MHz (1% duty band). At 25ms conservative frame airtime, one frame per 3s per transmitter = 0.83% duty; enforce 36s/hour max and track each endpoint separately. This is too slow for normal joystick steering; LoRa backup is STOP/RETURN and limited control only if tested, compliant airtime budget permits.
 - Duty-cycle counters persist across resets or reset only after the legal interval; design a robust airtime limiter.
 - Avoid 868.0–868.6MHz 1% subband for 2Hz control unless LBT/AFA compliant access is implemented and verified.
 
