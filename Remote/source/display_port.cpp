@@ -46,7 +46,11 @@ static uint32_t displayPort_getTick()
 // Copy one rendered LVGL rectangle to the Waveshare RGB panel.
 static void displayPort_flush(lv_display_t *display, const lv_area_t *area, uint8_t *pixels)
 {
-    (void)display;                                 // This adapter uses the single global LCD instance.
+    // The LVGL callback should always provide a display, but do not dereference a null one.
+    if (display == nullptr)
+    {
+        return;                                    // There is no display handle to signal.
+    }
 
     if (g_lcd == nullptr || area == nullptr || pixels == nullptr) // Reject invalid flush requests.
     {
