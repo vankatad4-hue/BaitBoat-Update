@@ -10,12 +10,15 @@
 - CHIRP sonar selection/integration pending.
 
 ## Current development status
-- Remote/boat nRF and E22 transport scaffolds, SC16 bridge, CRC/HMAC protocol, command codec, dual-radio manager, heartbeat, dedupe and failsafe helpers exist.
-- Secure key provisioning returns false; no authenticated control, actuator execution or boat application.
-- Remote envelope300×210×70mm,carrier100×75mm proposed. Boat carrier77×79×14mm; MDD20A candidate does not fit that footprint.
-- Remote R5 CAD/print prototypes, physical button scan/debounce and release-confirmation guard are added; R3 BOM and R5 pin/button allocation documented; native host tests pass. Physical GPIO crosswalk, boat actuator execution/interlocks, full Arduino compile, native KiCad/ERC/DRC, fabrication PCB and hardware tests remain incomplete.
+- Remote firmware: joystick acquisition/calibration, LVGL UI scaffolds, dual-radio transport, authenticated receive dispatch, ACK tracking and partial telemetry freshness/safety application. Not fully compiled or hardware-tested.
+- Boat firmware: transport/codec/queue/failsafe scaffolds; portable payload encoders with host tests; session epoch echo, per-radio sequence guards, pending-command deduplication and queue-level ACCEPTED/DUPLICATE/BUSY ACK scaffolds. No boat application/executor, telemetry source, EXECUTED ACK or actuator integration.
+- Key provisioning remains fail-closed. Radio GPIOs remain disabled/TBD pending exact board revision and pin audit.
+- Remote R6.1 enclosure/grip/battery cradle and fit coupons are draft CAD; no actual component fit or live battery validation.
+- Native KiCad schematics/ERC/DRC, PCB fabrication, full firmware compile, RF range/compliance, power/current/thermal and hardware tests remain incomplete. Boat must not be operated.
 
 ## Main documents
+- [Comprehensive progress review and next engineering gates](docs/PROJECT_PROGRESS_REVIEW_R1.md)
+- [Current ZIP integrity/build status](docs/ZIP_BUILD_STATUS_R1.md)
 - [Master project status](Remote/docs/PROJECT_MASTER_STATUS.md)
 - [Remote test build R4](Remote/New_Handheld_Remote/PCB/REMOTE_HARDWARE_TEST_BUILD_R4.md)
 - [Remote schematic capture R4](Remote/New_Handheld_Remote/PCB/SCHEMATIC_CAPTURE_SHEETS_R4.md)
@@ -38,10 +41,8 @@ Do not connect motor/solenoid power or operate boat. Hardware pins, power, RF co
 
 
 ## Versioned project ZIPs
-- [ZIP build status](docs/ZIP_BUILD_STATUS_R1.md)
-- Last preserved archives: `Remote/releases/Flytec_Remote_ver004.zip` and `Boat/releases/Flytec_Boat_ver004.zip`.
-- Current package markers: Remote `006`, Boat `006`.
-- Automated packaging workflow: `.github/workflows/package-flytec-zips.yml`. On push it commits the versioned ZIPs and SHA-256 manifest to the branch and uploads downloadable Actions artifacts. On pull requests it uploads artifacts only. Verify successful workflow completion and checksums before treating ver005 as issued.
-- Each ZIP excludes previous ZIPs to avoid nested archives. See [ZIP release policy](docs/ZIP_RELEASE_POLICY_R1.md).
+- Current development snapshots: Remote `ver023`, Boat `ver010`; ZIPs and SHA-256 manifest are committed.
+- Boat ver010 archive structure and SHA-256 were independently checked against the manifest; Remote ver023 archive checksum is manifest-only because its binary was not retrievable in this session.
+- These are development snapshots, not hardware or operational releases. See [ZIP build status](docs/ZIP_BUILD_STATUS_R1.md) and [ZIP release policy](docs/ZIP_RELEASE_POLICY_R1.md).
 
 **Pin audit result:** the Heltec Wireless Tracker revision is not identified; all boat radio GPIO assignments remain disabled/TBD. The integrated SX1262/GNSS/TFT/USB and boot/strap resources are reserved pending physical board identification.
