@@ -36,9 +36,14 @@ All values are CAD envelope estimates, in mm; center coordinates use the front-v
 | 1S4P pack | (0, -61) | 84×36 |
 | Charger/protection | (-65, -74) | 30×20 |
 | DC/DC converter | (+71, -71) | 38×24 |
-| Power distribution | (0, -32) | 44×18 |
+| Power distribution | (0, -35) | 30×12 |
 
 The display and E22 module dimensions are from manufacturer documentation; other blocks remain **not measurements of selected products**. Some zones may overlap the display-board, battery or switch/connector envelopes; this layout is only a placement study. Full collision checks require exact parts and 3D dimensions.
+
+## Power architecture and manufacturer references
+- [Preliminary power architecture/load budget](../ELECTRICAL/REMOTE_POWER_ARCHITECTURE_PRELIM_R6_3.md)
+- Waveshare official documentation lists the 4.3-inch touch board as 106.1×67.8 mm, 5V input and 450mA power draw; board includes a 1-cell battery interface and charge/boost manager. [Official documentation](https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3)
+- Ebyte E22-900T22S module is 26×16 mm, 2.7–5.5V supply, 3.3V UART logic, and up to 150mA TX current at 22dBm. [Manufacturer manual](https://www.ebyte.com/Uploadfiles/Files/2024-4-12/2024412165254103.pdf)
 
 ## Preliminary stack-up strategy
 - Touchscreen/controller PCB sits immediately behind the display window.
