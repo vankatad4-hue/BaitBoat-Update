@@ -44,6 +44,7 @@ public:
     void markActionExecuted(uint8_t sender,uint8_t epoch,uint16_t commandId);
     bool sendFrame(ManagedLink link,const RadioFrame &frame);
     bool sendHeartbeat(ManagedLink link,uint16_t sequence,uint32_t nowMs);
+    bool sendSessionStart(ManagedLink link,uint32_t nowMs);
     bool primaryReady() const { return nrfReady_; }
     bool backupReady() const { return e22Configured_; }
     bool primaryFresh(uint32_t now) const;
@@ -56,6 +57,7 @@ private:
     E22UartLink e22_;
     bool nrfReady_,e22Configured_;
     uint8_t key_[32];
+    uint8_t sessionEpoch_;
     RadioSequenceGuard seqGuard_;
     BoatCommandDeduplicator dedupe_;
     struct QueuedCommand { BoatCommand cmd; ManagedLink link; bool duplicate; };
