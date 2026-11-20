@@ -309,3 +309,11 @@ Boat:
 - Existing Wi-Fi profile/connect UI confirmed; no internet-health service, Google session/API client, credential provisioning, image decoder, or online renderer exists yet.
 - New contract document defines source modes, online layers, worker isolation, TLS, API session lifecycle, transient rendering buffers, attribution and fallback policy: `Remote/docs/GOOGLE_MAP_RENDERER_PHASE1_CONTRACT_VER029_7.md`.
 - Architecture only; no Google requests or imagery are enabled. Implementation gated on credentials, quota/billing setup, decoder selection and target validation.
+
+
+## Google online maps — source selector UI update (2026-11-20)
+- Settings → MAP now has a real persistent AUTO / ONLINE / OFFLINE selector using the existing map-source NVS preference.
+- UI explicitly communicates that AUTO is designed for online-first with SD fallback, ONLINE remains unavailable pending provider implementation, OFFLINE is SD-only, and Wi-Fi association is not proof of internet reachability.
+- This is preference/UI only: no internet probe, Google API request, session/key provisioning, JPEG decoder, or online tile render is implemented. Map display remains SD renderer.
+- Source file updated: `Remote/source/settings_ui.cpp`. Commit: `57ac81975845f8d958f49b09f86bcf51ee147613`.
+- Not compiled or hardware-tested.
