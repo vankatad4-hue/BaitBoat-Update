@@ -34,7 +34,7 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 - `joystick.*`, `joystick_calibration_ui.*`: calibration UI; hardware ADC reader currently fails closed.
 - `boat_ui.*`, `settings_ui.*`: UI scaffold; map and sonar displays are not operational data views.
 - `offline_map.*`, `map_projection.*`: tile validation/read and projection utilities, not a complete geographic map renderer.
-- `boat_telemetry.*`: telemetry structure/validity; radio telemetry is not connected.
+- `boat_telemetry.*`: telemetry structure/validity; radio telemetry is not connected.\n- `radio_payload_codec.*`: strict eight-byte HEARTBEAT/ACK/TELEMETRY payload validators; not wired to receive dispatch.\n- `radio_ack_tracker.*`: bounded command lifecycle tracker (waiting/accepted/executed/rejected/timeout); not connected to command send/ACK receive.
 
 ## Bench test sketches
 - `hardware_test/nRF24_Bench/nRF24_Bench.ino`
