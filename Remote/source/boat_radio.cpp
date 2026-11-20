@@ -153,14 +153,21 @@ static bool dispatchValidatedPayload(ManagedLink link,const RadioFrame &frame,ui
             return false;
     }
 }
+static bool payloadBytesZero(const uint8_t *p,uint8_t start,uint8_t end) {
+    for(uint8_t i=start;i<=end;i++)if(p[i]!=0)return false;
+    return true;
+}
 static void validateInboundFrame(ManagedLink link,const RadioFrame &frame) {
     const uint32_t now=millis();
     if(!radioKey_get(g_authKey)){g_linkManager.reportFailure(link);return;}
-    const bool envelopeValid=radio_frameVerify(frame,g_authKey)&&
+    const bool sessionPayloadValid=frame.type!=RADIO_MSG_SESSION_START||
+        (frame.sequence==0&&frame.payload[0]==frame.sessionEpoch&&frame.sessionEpoch==g_sessionEpoch&&payloadBytesZero(frame.payload,1,7));
+    const bool probePayloadValid=frame.type!=RADIO_MSG_LINK_PROBE||payloadBytesZero(frame.payload,0,7);
+    const bool envelopeValid=radio_frameVerify(frame,g_authKey)&&frame.flags==0&&
         frame.sourceId==BOAT_DEVICE_ID&&frame.destinationId==REMOTE_DEVICE_ID&&
         (frame.type==RADIO_MSG_SESSION_START||frame.type==RADIO_MSG_HEARTBEAT||
          frame.type==RADIO_MSG_TELEMETRY||frame.type==RADIO_MSG_ACK||frame.type==RADIO_MSG_LINK_PROBE)&&
-        (frame.type!=RADIO_MSG_SESSION_START||(frame.sequence==0&&frame.payload[0]==frame.sessionEpoch&&frame.sessionEpoch==g_sessionEpoch));
+        sessionPayloadValid&&probePayloadValid;
     if(!envelopeValid){g_linkManager.reportFailure(link);return;}
     RadioSequenceGuard &linkGuard=(link==LINK_NRF_PRIMARY)?g_boatPrimarySequenceGuard:g_boatBackupSequenceGuard;
     bool &startSeen=(link==LINK_NRF_PRIMARY)?g_sessionStartSeenPrimary:g_sessionStartSeenBackup;
