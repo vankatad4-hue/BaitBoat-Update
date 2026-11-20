@@ -55,3 +55,5 @@
 - Target run #3 reached sketch compilation but failed because LVGL configuration was not provided. Added tracked `Remote/source/lv_conf.h` from LVGL v9.6.0 template (project pool 128 KiB) and workflow installation step. Target retry pending.
 
 - Target compile attempt #4 exposed missing RF24 Arduino library (`RF24.h`). Pinned RF24 1.4.11 in the target workflow. Retry pending.
+
+- Source hardening: flush callback now guards a null LVGL display handle before signaling flush completion.
