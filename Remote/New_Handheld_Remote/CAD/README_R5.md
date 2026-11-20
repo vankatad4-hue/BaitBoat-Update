@@ -22,3 +22,11 @@ Assembly preview now includes display-glass and joystick placeholders to visuali
 CAD export retriggered after shared workflow concurrency fix; generated meshes and print ZIP will be versioned by the build workflow.
 
 Queued build enabled (non-cancelling shared concurrency); latest CAD export requested after workflow race fix.
+
+## R6 enclosure concept (2026-11-20)
+- New parametric source: `Flytec_Remote_Enclosure_R6.scad`.
+- Physical button banks are user-confirmed **4 columns × 2 rows each side** (8 each); left side utility functions, right side four separate guarded release controls in top row.
+- R6 starting envelope 310×209mm footprint and 66.5mm shell body + 3.5mm front panel = about 70mm nominal total before antenna hardware.
+- Includes front-panel apertures, rear tray/cavity, provisional mounting bosses, screen support ledges, joystick mounting rings, USB-C cutout, twin antenna bulkhead exits, vent slots and preview caps.
+- This is an early geometry draft, not verified. Display/joystick/button/antenna/battery/PCB part dimensions are unconfirmed. Boss positions, cavity, screen opening, antenna alignment, hand ergonomics and printability require CAD inspection and physical fit checks.
+- Automated workflow now exports R6 front, rear, button-cap plate and assembly PNG alongside the historical R5 artifacts.
