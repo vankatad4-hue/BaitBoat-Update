@@ -13,7 +13,7 @@ int main() {
   assert(radio_encodeCommand(c,1,2,9,f,key));
   assert(radio_decodeCommand(f,1,2,200,2500,true,out,key));
   assert(out.leftMotor==250 && out.rightMotor==-250); // backup throttle clamp
-  assert(!radio_decodeCommand(f,1,2,200,2500,false,out,key)==false); // primary still accepts
+  assert(radio_decodeCommand(f,1,2,200,2500,false,out,key)); // primary unrestricted by backup clamp
 
   c.type=CMD_CLEAR_STOP; c.activate=false;
   assert(radio_encodeCommand(c,1,2,9,f,key));
