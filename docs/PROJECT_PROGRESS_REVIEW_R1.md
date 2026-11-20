@@ -92,3 +92,11 @@ No propulsion, release, live battery charging in the proposed enclosure, or wate
 - Safety status strip summarizes STOP confirmation, failsafe/low-battery/interlock and pending command ACK count.
 - Stale/absent battery percentage is rendered unknown.
 - These are command request/UI feedback paths only. Boat-side execution is not integrated; authentication key is unprovisioned. Target compile/hardware validation pending.
+
+
+## Remote mission UI — ver025
+- Added MISSION touchscreen page with four waypoint slots, save/select/clear, set HOME and planned BAIT/HOOK markers.
+- Waypoint and HOME save require fresh valid GNSS (2-second age limit). Data is RAM-only and clears on reboot.
+- START MISSION remains blocked; this screen does not transmit waypoint/release/autopilot commands.
+- Mission-screen preview committed. Missing ver024 footer status-label declarations were corrected.
+- Build and hardware tests pending; ZIP/package output has not been independently verified.
