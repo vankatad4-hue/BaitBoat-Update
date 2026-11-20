@@ -13,6 +13,35 @@ static WaypointSlot slots[SLOT_COUNT] = {};
 static bool homeValid = false;
 static float homeLat = 0.0f, homeLon = 0.0f;
 static int selectedSlot = -1;
+static Preferences missionPrefs;
+static bool storageReady = false;
+static constexpr uint32_t STORE_MAGIC = 0x42544D50UL;
+struct StoredMission { uint32_t magic; WaypointSlot points[SLOT_COUNT]; bool homeValid; float homeLat, homeLon; int8_t selected; uint32_t crc; };
+static uint32_t crc32(const uint8_t *data, size_t len) {
+ uint32_t crc=0xFFFFFFFFUL;
+ for(size_t i=0;i<len;i++){crc^=data[i];for(uint8_t b=0;b<8;b++)crc=(crc&1)?(crc>>1)^0xEDB88320UL:crc>>1;}
+ return ~crc;
+}
+static bool validCoordinate(float lat,float lon){return isfinite(lat)&&isfinite(lon)&&lat>=-90.0f&&lat<=90.0f&&lon>=-180.0f&&lon<=180.0f;}
+static void persist() {
+ if(!storageReady)return;
+ StoredMission s={};s.magic=STORE_MAGIC;memcpy(s.points,slots,sizeof(slots));s.homeValid=homeValid;s.homeLat=homeLat;s.homeLon=homeLon;s.selected=(int8_t)selectedSlot;
+ s.crc=crc32(reinterpret_cast<const uint8_t*>(&s),offsetof(StoredMission,crc));
+ missionPrefs.putBytes("mission",&s,sizeof(s));
+}
+static void loadPersisted() {
+ storageReady=missionPrefs.begin("baitmission",false);
+ if(!storageReady){setStatus("NVS OPEN FAILED - RAM ONLY");return;}
+ StoredMission s={};
+ if(missionPrefs.getBytesLength("mission")!=sizeof(s)||missionPrefs.getBytes("mission",&s,sizeof(s))!=sizeof(s)||s.magic!=STORE_MAGIC||s.crc!=crc32(reinterpret_cast<const uint8_t*>(&s),offsetof(StoredMission,crc))){
+  memset(slots,0,sizeof(slots));homeValid=false;selectedSlot=-1;setStatus("NVS EMPTY/INVALID - NEW PLAN");return;
+ }
+ for(uint8_t i=0;i<SLOT_COUNT;i++)if(s.points[i].valid&&!validCoordinate(s.points[i].lat,s.points[i].lon))s.points[i]={};
+ memcpy(slots,s.points,sizeof(slots));homeValid=s.homeValid&&validCoordinate(s.homeLat,s.homeLon);
+ homeLat=homeValid?s.homeLat:0;homeLon=homeValid?s.homeLon:0;
+ selectedSlot=(s.selected>=0&&s.selected<SLOT_COUNT&&slots[(uint8_t)s.selected].valid)?s.selected:-1;
+ setStatus("PLAN LOADED FROM NVS");
+}
 
 static lv_obj_t *screen = nullptr;
 static lv_obj_t *returnScreen = nullptr;
@@ -89,26 +118,26 @@ static void setHome(lv_event_t *e)
     if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;
     if(!currentFixIsFresh()){setStatus("HOME SET BLOCKED: NEED FRESH VALID GNSS FIX");return;}
     homeLat=boatState.latitude;homeLon=boatState.longitude;homeValid=true;
-    refresh();setStatus("HOME MARKER SAVED IN RAM ONLY");
+    persist();refresh();setStatus(storageReady?"HOME SAVED TO NVS":"HOME SAVED RAM ONLY");
 }
 static void clearSlot(lv_event_t *e)
 {
     if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;
     if(selectedSlot<0||!slots[selectedSlot].valid){setStatus("SELECT A VALID WAYPOINT TO CLEAR");return;}
-    slots[selectedSlot]={}; selectedSlot=-1;refresh();setStatus("SELECTED WAYPOINT CLEARED");
+    slots[selectedSlot]={}; selectedSlot=-1;persist();refresh();setStatus("WAYPOINT CLEARED");
 }
 static void toggleBait(lv_event_t *e)
 {
     if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;
     if(selectedSlot<0||!slots[selectedSlot].valid){setStatus("SELECT A WAYPOINT FIRST");return;}
-    slots[selectedSlot].baitMark=!slots[selectedSlot].baitMark;refresh();
+    slots[selectedSlot].baitMark=!slots[selectedSlot].baitMark;persist();refresh();
     setStatus("BAIT RELEASE MARKER EDITED — PLANNING ONLY, NOT A COMMAND");
 }
 static void toggleHook(lv_event_t *e)
 {
     if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;
     if(selectedSlot<0||!slots[selectedSlot].valid){setStatus("SELECT A WAYPOINT FIRST");return;}
-    slots[selectedSlot].hookMark=!slots[selectedSlot].hookMark;refresh();
+    slots[selectedSlot].hookMark=!slots[selectedSlot].hookMark;persist();refresh();
     setStatus("HOOK RELEASE MARKER EDITED — PLANNING ONLY, NOT A COMMAND");
 }
 static void startMission(e)
@@ -128,6 +157,7 @@ static void timerRefresh(lv_timer_t *t){(void)t;refresh();}
 void missionUI_open(lv_obj_t *main)
 {
     returnScreen=main;
+    loadPersisted();
     screen=lv_obj_create(nullptr);lv_obj_set_style_bg_color(screen,bg(),LV_PART_MAIN);
     lv_obj_remove_flag(screen,LV_OBJ_FLAG_SCROLLABLE);
     label(screen,"WAYPOINTS / MISSION PLAN — LOCAL ONLY",15,10,760);
@@ -135,7 +165,7 @@ void missionUI_open(lv_obj_t *main)
     homeLabel=label(screen,"HOME: NOT SET",15,72,760);
     lv_obj_t *p=lv_obj_create(screen);lv_obj_set_pos(p,10,105);lv_obj_set_size(p,780,220);
     lv_obj_set_style_bg_color(p,panel(),LV_PART_MAIN);lv_obj_set_style_pad_all(p,8,LV_PART_MAIN);
-    label(p,"SAVED WAYPOINTS (RAM; NOT PERSISTENT)",8,6,750);
+    label(p,"SAVED WAYPOINTS (NVS)",8,6,750);
     const int ys[4]={38,78,118,158};
     const int colors[4]={0x1565C0,0x1565C0,0x1565C0,0x1565C0};
     for(int i=0;i<4;i++){
