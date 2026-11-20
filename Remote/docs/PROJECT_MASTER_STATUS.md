@@ -12,7 +12,7 @@ Updated: 2026-11-20. Development branch; no firmware compile, hardware test, ERC
 - Mission: manual waypoint save→autopilot to waypoint→bait/hook release→return home. Boat-side failsafe must return only if GNSS/heading/battery/geofence health valid; otherwise stop safely.
 
 ## Remote hardware R5 — mechanical/button revision
-- R5 shell CAD envelope310×209×69.5mm; two-piece front/rear shell prototype, central 4.3in display, twin sticks, two 2×4 button banks, OK and power keys, dual antenna exits.
+- R5 shell CAD envelope310×209×69.5mm; two-piece front/rear shell prototype, central 4.3in display, twin sticks, two 4×2 button banks (four columns across, two rows high per side), OK and power keys, dual antenna exits.
 - Right bank top four keys are independent H-L/H-R/K-L/K-R release controls. Combined release commands are disabled/rejected.
 - MCP23017 physical button scanning/debounce, mapping and release/OK event wiring are in remote loop; GPIO crosswalk and actual hardware remain unverified.
 - Remote release commands require authenticated primary link, STOP-confirmed released and boat interlock telemetry. Host-tested 1.2s release-key + 0.8s OK confirm within4s guard exists. `actuatorSafetyReady` is false by default and is not set by current telemetry, so release remains disabled.
@@ -120,3 +120,9 @@ Boat:
 - Added repository SVG front-panel preview and updated R5 physical button concept.
 
 **Not verified:** exact Waveshare GPIO/I2C pins, ADS1115 address straps, analog input voltage ranges, compile against target board/LVGL, ADC hardware tests, radio/boat operation. Do not enable propulsion until calibration, ADC, radio, command safety and boat-side failsafe tests pass.
+
+
+## Remote concept R6 update (2026-11-20)
+- Styling/layout is now being aligned to `Remote/New_Handheld_Remote/CONCEPT/Flytec_Remote_Concept_Reference.jpg` (wide ergonomic grip silhouette, raised display bezel, upper joystick pods, central power key, dual antenna exits).
+- User-confirmed physical button arrangement: **4 columns × 2 rows on each side** (8 keys per bank), replacing the previous 2 columns × 4 rows.
+- R6 concept SVG and mechanical/button-map documents are committed. These remain visual design references only; the enclosure CAD has not been dimensionally redesigned or checked for component fit yet.
