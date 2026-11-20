@@ -15,10 +15,29 @@ static void setStatus(const char *s);
 static Preferences missionPrefs; static bool storageReady=false,storageAttempted=false;
 static constexpr uint32_t STORE_MAGIC=0x42544D50UL;
 struct StoredMission { uint32_t magic; WaypointSlot points[SLOT_COUNT]; bool homeValid; float homeLat,homeLon; int8_t selected; uint32_t crc; };
+// ver026 storage record used four slots; migrate it when its CRC validates.
+struct LegacyStoredMission { uint32_t magic; WaypointSlot points[4]; bool homeValid; float homeLat,homeLon; int8_t selected; uint32_t crc; };
 static uint32_t crc32(const uint8_t *data,size_t len){uint32_t crc=0xFFFFFFFFUL;for(size_t i=0;i<len;i++){crc^=data[i];for(uint8_t b=0;b<8;b++)crc=(crc&1)?(crc>>1)^0xEDB88320UL:crc>>1;}return ~crc;}
 static bool validCoordinate(float lat,float lon){return isfinite(lat)&&isfinite(lon)&&lat>=-90&&lat<=90&&lon>=-180&&lon<=180;}
 static bool persist(){if(!storageReady)return false;StoredMission s={};s.magic=STORE_MAGIC;memcpy(s.points,slots,sizeof(slots));s.homeValid=homeValid;s.homeLat=homeLat;s.homeLon=homeLon;s.selected=(int8_t)selectedSlot;s.crc=crc32(reinterpret_cast<const uint8_t*>(&s),offsetof(StoredMission,crc));return missionPrefs.putBytes("mission",&s,sizeof(s))==sizeof(s);}
-static void loadPersisted(){if(storageAttempted)return;storageAttempted=true;storageReady=missionPrefs.begin("baitmission",false);if(!storageReady){setStatus("NVS OPEN FAILED — STORAGE DISABLED");return;}StoredMission s={};if(missionPrefs.getBytesLength("mission")!=sizeof(s)||missionPrefs.getBytes("mission",&s,sizeof(s))!=sizeof(s)||s.magic!=STORE_MAGIC||s.crc!=crc32(reinterpret_cast<const uint8_t*>(&s),offsetof(StoredMission,crc))){memset(slots,0,sizeof(slots));homeValid=false;selectedSlot=-1;setStatus("EMPTY / INVALID STORE — RESET");return;}for(uint8_t i=0;i<SLOT_COUNT;i++)if(s.points[i].valid&&!validCoordinate(s.points[i].lat,s.points[i].lon))s.points[i]={};memcpy(slots,s.points,sizeof(slots));homeValid=s.homeValid&&validCoordinate(s.homeLat,s.homeLon);homeLat=homeValid?s.homeLat:0;homeLon=homeValid?s.homeLon:0;selectedSlot=(s.selected>=0&&s.selected<SLOT_COUNT&&slots[(uint8_t)s.selected].valid)?s.selected:-1;setStatus("16-WAYPOINT PLAN RESTORED");}
+static void loadPersisted(){
+ if(storageAttempted)return;storageAttempted=true;storageReady=missionPrefs.begin("baitmission",false);
+ if(!storageReady){setStatus("NVS OPEN FAILED — STORAGE DISABLED");return;}
+ StoredMission s={};size_t len=missionPrefs.getBytesLength("mission");
+ if(len==sizeof(s)&&missionPrefs.getBytes("mission",&s,sizeof(s))==sizeof(s)&&s.magic==STORE_MAGIC&&s.crc==crc32(reinterpret_cast<const uint8_t*>(&s),offsetof(StoredMission,crc))){
+  for(uint8_t i=0;i<SLOT_COUNT;i++)if(s.points[i].valid&&!validCoordinate(s.points[i].lat,s.points[i].lon))s.points[i]={};
+  memcpy(slots,s.points,sizeof(slots));homeValid=s.homeValid&&validCoordinate(s.homeLat,s.homeLon);homeLat=homeValid?s.homeLat:0;homeLon=homeValid?s.homeLon:0;
+  selectedSlot=(s.selected>=0&&s.selected<SLOT_COUNT&&slots[(uint8_t)s.selected].valid)?s.selected:-1;setStatus("16-WAYPOINT PLAN RESTORED");return;
+ }
+ LegacyStoredMission legacy={};
+ if(len==sizeof(legacy)&&missionPrefs.getBytes("mission",&legacy,sizeof(legacy))==sizeof(legacy)&&legacy.magic==STORE_MAGIC&&legacy.crc==crc32(reinterpret_cast<const uint8_t*>(&legacy),offsetof(LegacyStoredMission,crc))){
+  for(uint8_t i=0;i<4;i++)if(legacy.points[i].valid&&validCoordinate(legacy.points[i].lat,legacy.points[i].lon))slots[i]=legacy.points[i];
+  homeValid=legacy.homeValid&&validCoordinate(legacy.homeLat,legacy.homeLon);homeLat=homeValid?legacy.homeLat:0;homeLon=homeValid?legacy.homeLon:0;
+  selectedSlot=(legacy.selected>=0&&legacy.selected<4&&slots[(uint8_t)legacy.selected].valid)?legacy.selected:-1;
+  bool upgraded=persist();setStatus(upgraded?"VER026 PLAN MIGRATED TO 16 SLOTS":"OLD PLAN LOADED — MIGRATION WRITE FAILED");return;
+ }
+ memset(slots,0,sizeof(slots));homeValid=false;selectedSlot=-1;setStatus("EMPTY / INVALID STORE — RESET");
+}
 
 static lv_obj_t *screen=nullptr,*returnScreen=nullptr,*gpsLabel=nullptr,*homeLabel=nullptr,*slotLabels[SLOT_COUNT]={},*statusLabel=nullptr,*selectedLabel=nullptr;static lv_timer_t *refreshTimer=nullptr;
 static lv_color_t bg(){return lv_color_hex(0x101820);}static lv_color_t panel(){return lv_color_hex(0x1C2935);}static lv_color_t blue(){return lv_color_hex(0x1565C0);}static lv_color_t green(){return lv_color_hex(0x2E7D32);}static lv_color_t red(){return lv_color_hex(0xC62828);}
