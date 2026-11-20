@@ -96,7 +96,7 @@ Boat:
 
 ## Release status
 - Repository branch: `hardware-ready-dual-radio-r1`; draft PR #1 remains open and unmerged.
-- ZIP snapshot ver022/009 is the current package pair; checksum manifest is committed. Integrity verification against downloaded archive bytes is pending. Existing ver004 archives are preserved.
+- Current package markers are Remote ver023 / Boat ver010. The ZIP pair and checksum manifest are pending workflow completion; independent byte-level integrity verification is pending. Existing ver004 archives are preserved.
 - Do not operate boat or connect actuator power. Bench tests only.
 
 - Consolidated remote pin map and connector CSV R4 are the current versions; older R2 docs marked superseded. Consolidated remote power BOM/capture spec R6 are current; R5 docs marked superseded.
@@ -208,5 +208,5 @@ Boat:
 - Remote ACK tracker is connected to non-manual command sends and inbound ACKs; exposes status for UI, not yet displayed.
 - Remote telemetry is applied per group with local freshness, GNSS sample pairing, primary provenance and release readiness gates.
 - Heartbeat payload fields and nonzero 16-bit action IDs corrected.
-- Boat-side telemetry/ACK emitter, command dedupe/executor and full safety lifecycle remain unimplemented. Session recovery after boat reset is fail-closed. Full firmware build and RF/hardware test pending.
+- Boat-side queue-level ACK and session-echo/duplicate-handling scaffolds are now present, but no telemetry source, command executor, EXECUTED ACK or actuator lifecycle is integrated. Session recovery remains weak without a challenge/response protocol. Full firmware build and RF/hardware test pending.
 - New review: `REMOTE_FIRMWARE_INTEGRATION_REVIEW_R2.md`; contract R3.
