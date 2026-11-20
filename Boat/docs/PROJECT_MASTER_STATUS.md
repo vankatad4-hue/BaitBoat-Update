@@ -87,6 +87,11 @@ Remote decodes authenticated telemetry/ACK and applies freshness/safety gates. B
 - ACCEPTED does not imply execution. No command application, interlocks, telemetry sender or actuator path.
 - Review: BOAT_ACK_SESSION_INTEGRATION_R1.md. Source is not compiled or tested on ESP32.
 
+## Boat ver012 queue/ACK integration scaffold milestone (2026-11-20)
+- Extracted bounded four-entry command queue into portable utility; BoatDualRadioPort now delegates enqueue/dequeue/pending lookup/session clear to it.
+- Implemented missing `commandPending()` and authenticated ACK frame sender `sendCommandAck()`; response frame uses matching command ID/type and same receiving radio. STOP/interlock fields remain unknown placeholders.
+- Added queue FIFO/full/wrap/epoch test. Test sources committed but not executed; network checkout unavailable.
+
 ## Boat ver011 protocol test milestone (2026-11-20)
 - Cross-radio command replay classification is now explicit and unit-testable. A stale sequence/new command ID is dropped; only exact pending/executed ID duplicates can receive duplicate/pending acknowledgements.
 - Added host tests for cross-radio classification, deduplication cache scope and eviction, failsafe decision logic, sequence wrap/stale handling, and backup command policy/throttle limit.
