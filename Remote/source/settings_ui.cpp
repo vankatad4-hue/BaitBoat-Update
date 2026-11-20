@@ -112,7 +112,7 @@ static void textAreaFocusEvent(lv_event_t *event)
 {
     if (lv_event_get_code(event) != LV_EVENT_FOCUSED || keyboard == nullptr)
         return;
-    lv_keyboard_set_textarea(keyboard, lv_event_get_target(event));
+    lv_keyboard_set_textarea(keyboard, lv_event_get_target_obj(event));
     lv_obj_remove_flag(keyboard, LV_OBJ_FLAG_HIDDEN);
 }
 
@@ -540,7 +540,11 @@ static void buildMapSection(lv_obj_t *parent)
 {
     makeLabel(parent, "ИЗТОЧНИК НА КАРТАТА", 18, 12);
     makeLabel(parent, "РЕЖИМ:", 18, 62);
-    mapSourceLabel = makeLabel(parent, mapSource_modeLabel(mapSource_getMode()), 250, 62);\n    mapWiFiLabel = makeLabel(parent, "WI-FI: ПРОВЕРКА | ИНТЕРНЕТ: НЕИЗВЕСТЕН", 18, 350);\n    refreshMapConnectivityStatus(nullptr);\n    if (mapStatusTimer) lv_timer_del(mapStatusTimer);\n    mapStatusTimer = lv_timer_create(refreshMapConnectivityStatus, 2000, nullptr);
+    mapSourceLabel = makeLabel(parent, mapSource_modeLabel(mapSource_getMode()), 250, 62);
+    mapWiFiLabel = makeLabel(parent, "WI-FI: ПРОВЕРКА | ИНТЕРНЕТ: НЕИЗВЕСТЕН", 18, 350);
+    refreshMapConnectivityStatus(nullptr);
+    if (mapStatusTimer) lv_timer_del(mapStatusTimer);
+    mapStatusTimer = lv_timer_create(refreshMapConnectivityStatus, 2000, nullptr);
     makeButton(parent, "AUTO / ONLINE / OFFLINE", 18, 105, 310, mapSourceCycleEvent);
     makeLabel(parent, "AUTO ИЗПОЛЗВА ONLINE ПРИ НАЛИЧНОСТ; ИНАЧЕ SD.", 18, 165);
     makeLabel(parent, "ONLINE Е ОПЦИЯ, НО НЕ Е ИНТЕГРИРАН.", 18, 198);
