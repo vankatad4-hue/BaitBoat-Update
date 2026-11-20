@@ -5,7 +5,7 @@ These test sketches are separate from normal firmware. They transmit only fixed 
 ## nRF24 pair
 - Remote CE=GPIO6, CSN=GPIO15, SPI GPIO11/12/13, channel76.
 - Disconnect/disable RS485 bus before GPIO15 CSN wiring; leave Sensor AD unused while GPIO6 is CE.
-- Boat CE/CSN macros remain -1; fill only after exact Tracker board pin audit.
+- Boat CE/CSN macros remain -1; all pin macros disabled until the exact board revision is audited. See [Controller pin audit](../docs/BOAT_CONTROLLER_PIN_AUDIT_R1.md) and [logical pin assignments R3](../docs/BOAT_RADIO_PIN_ASSIGNMENTS_R3.md).
 - Both modules should use matching PA level, channel, data rate, address pipes, and payload settings.
 - Test sketches send small fixed frames at low rate; RF24 hardware auto-ack can be observed in driver status. This is not app-level authentication or boat control.
 
@@ -17,6 +17,8 @@ These test sketches are separate from normal firmware. They transmit only fixed 
 - Keep antennas connected and test at low power/short range first. Duty limiter is RAM-only and not field-compliant.
 
 ## Compile / run
+
+**Compile gate:** The sketches have not yet been compiled. Use the board revision documented by the actual hardware and record Arduino-ESP32 core/RF24 versions. A successful compile does not authorize enabling pin macros or connecting actuators.
 1. Install Arduino-ESP32 core and RF24 library versions that match the project; record versions.
 2. Select correct ESP32-S3 board/USB settings.
 3. Open the sketch in its own folder and confirm relative source includes are resolved. If IDE doesn't compile included source, copy required .h/.cpp from the matching project source folder into the test sketch folder.
