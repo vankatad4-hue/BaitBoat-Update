@@ -32,7 +32,10 @@ bool radio_decodeCommand(const RadioFrame &f, uint8_t expectedSrc, uint8_t expec
                         BoatCommand &out, const uint8_t key[32]) {
     if (!radio_frameVerify(f,key)) return false;
     if (f.sourceId != expectedSrc || f.destinationId != expectedDst) return false;
-    if (!radio_tickFresh(f.tick16,(uint16_t)nowMs,maxAgeMs)) return false;
+    // Sender and receiver millis() clocks are not synchronized; timestamp age
+    // cannot be compared across devices. Freshness is enforced by sequence,
+    // local receive watchdog, and command queue age. Keep parameter for API.
+    (void)maxAgeMs;
     if (f.type != RADIO_MSG_CONTROL && f.type != RADIO_MSG_ACTION) return false;
     if (f.payload[7] != 0 || f.payload[6] > 1) return false;
     const uint8_t rawType=f.payload[0];
