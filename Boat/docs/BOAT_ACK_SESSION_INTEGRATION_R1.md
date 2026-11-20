@@ -17,6 +17,7 @@
 
 ## ACK behavior
 - Non-manual command successfully queued → ACCEPTED.
+- ACK frame builder is implemented in the port using validated payload encoding, authenticated frame sealing, command type/ID correlation and same-link return. STOP/interlock values remain unknown/zero placeholders.
 - Already-executed command ID → DUPLICATE.
 - Queue full → BUSY.
 - ACK is returned on the radio link that carried the command, with matching command type and 16-bit ID.
@@ -33,7 +34,7 @@
 - No ESP32 compile, unit test of the port, or hardware test has been performed.
 
 ## Next gate
-1. Host-test queue and duplicate handling using fake links, including same command arriving on both radios and queue-full behavior.
+1. Portable command queue tests cover FIFO/full/wrap/session-epoch pending lookup; source is committed but tests have not been executed. Still add fake-radio tests for port/session flow, same command on both radios, queue-full ACK behavior and frame-envelope correlation.
 2. Add a boat application state model and telemetry source contract; keep outputs disabled.
 3. Integrate the queue into a fail-closed application loop with STOP and link-watchdog priority.
 4. Implement ACCEPTED→EXECUTED/REJECTED lifecycle only after command policy/interlocks are independently tested.
