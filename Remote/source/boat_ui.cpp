@@ -395,6 +395,20 @@ static void createSonarPanel()
     );
 }
 
+// Touchscreen mode controls share the same command path as physical keys.
+static void touchManualEvent(lv_event_t *event)
+{
+    if (lv_event_get_code(event)==LV_EVENT_CLICKED) boatCommands_setMode(MODE_MANUAL);
+}
+static void touchAutopilotEvent(lv_event_t *event)
+{
+    if (lv_event_get_code(event)==LV_EVENT_CLICKED) boatCommands_setMode(MODE_AUTOPILOT);
+}
+static void touchReturnEvent(lv_event_t *event)
+{
+    if (lv_event_get_code(event)==LV_EVENT_CLICKED) boatCommands_setMode(MODE_RETURN_HOME);
+}
+
 // Open the joystick calibration screen.
 static void openJoystickCalibrationEvent(lv_event_t *event)
 {
@@ -461,6 +475,20 @@ static void createFooter()
         LV_EVENT_CLICKED,
         nullptr
     );
+
+    // Compact touchscreen mode controls. Boat-side command policy remains authoritative.
+    lv_obj_t *manualButton = lv_button_create(footerPanel);
+    lv_obj_set_size(manualButton, 88, 42); lv_obj_set_pos(manualButton, 175, 11);
+    lv_label_set_text(lv_label_create(manualButton), "MANUAL"); lv_obj_center(lv_obj_get_child(manualButton,0));
+    lv_obj_add_event_cb(manualButton,touchManualEvent,LV_EVENT_CLICKED,nullptr);
+    lv_obj_t *autoButton = lv_button_create(footerPanel);
+    lv_obj_set_size(autoButton, 105, 42); lv_obj_set_pos(autoButton, 270, 11);
+    lv_label_set_text(lv_label_create(autoButton), "AUTOPILOT"); lv_obj_center(lv_obj_get_child(autoButton,0));
+    lv_obj_add_event_cb(autoButton,touchAutopilotEvent,LV_EVENT_CLICKED,nullptr);
+    lv_obj_t *returnButton = lv_button_create(footerPanel);
+    lv_obj_set_size(returnButton, 100, 42); lv_obj_set_pos(returnButton, 382, 11);
+    lv_label_set_text(lv_label_create(returnButton), "RETURN"); lv_obj_center(lv_obj_get_child(returnButton,0));
+    lv_obj_add_event_cb(returnButton,touchReturnEvent,LV_EVENT_CLICKED,nullptr);
 
     // Show live input validity and calibration status, not a generic reminder.
     inputStatusLabel = createLabel(footerPanel, "STICKS: NOT CALIBRATED", 15, 8);
