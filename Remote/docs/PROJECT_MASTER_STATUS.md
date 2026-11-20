@@ -21,7 +21,7 @@ Retain Flytec V080 hull, motors, battery indicator and main switch; replace boat
 - Autopilot mission: save waypoint, send, release bait/hook, return; failsafe return-home only with valid navigation/system health.
 
 ## Remote schematic design progress (2026-11-20)
-- Waveshare PORT1 mapping reviewed against manufacturer schematic; assignment document `WAVESHARE_HEADER_MAPPING_AND_PIN_ASSIGNMENTS_R2.md`.
+- GPIO/peripheral assignments checked against official Waveshare online docs; PORT1 physical pin-number crosswalk remains provisional due schematic/document discrepancy. Confirm exact board revision/orientation before wiring; see `WAVESHARE_HEADER_MAPPING_AND_PIN_ASSIGNMENTS_R2.md`.
 - Capture-sheet design and net-level drafts created: `SCHEMATIC_CAPTURE_SHEETS_R1.md`, `SCHEMATIC_NETLIST_BLOCKS_R1.md`, `SCHEMATIC_CAPTURE_CHECKLIST_R1.md`.
 - Battery protection/power branches specified; controller power via onboard CS8501 boost, external TPS61023 fallback only; radio TPS63070 dedicated rail.
 - Controls: ADS1115 @0x48 for four joystick axes, MCP23017 @0x20 for buttons, second ADS1115 @0x49 for battery/NTC/optional radio rail monitoring, MCP23017 @0x21 for radio CE/CSN/IRQ candidate.
