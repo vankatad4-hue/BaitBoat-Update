@@ -54,7 +54,8 @@ void setup()
     boatState.sdCardReady = displayReady && displayPort_sdReady();
     boatState.offlineMapReady = offlineMap_begin(boatState.sdCardReady);
 
-    // Radio is deliberately offline until nRF24L01+ PA/LNA pins, power, channel and packet protocol are defined.
+    // Dual-radio transports remain offline until nRF24/LoRa pin, power, channel,
+    // packet protocol, authentication and failover implementation are complete.
     boatRadio_begin();
 
     // Initialise joystick processing once and register one reader.
