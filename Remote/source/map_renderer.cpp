@@ -11,7 +11,7 @@ static constexpr uint8_t MIN_ZOOM=5,MAX_ZOOM=19;
 struct TileSlot { int32_t x,y; uint8_t z; OfflineMapStyle style; uint16_t *pixels; lv_image_dsc_t dsc; lv_obj_t *image; bool valid; };
 static TileSlot tiles[TILE_SLOTS]={};
 static lv_obj_t *view=nullptr,*boat=nullptr,*home=nullptr,*wps[16]={},*route=nullptr,*zoomText=nullptr,*attributionLabel=nullptr;
-static lv_point_t routePoints[2];
+static lv_point_precise_t routePoints[2];
 static uint8_t zoomLevel=15; static OfflineMapStyle mapStyle=OFFLINE_MAP_STREET;
 static double centerLat=0,centerLon=0; static bool haveCenter=false;
 static int viewW=0,viewH=0;
