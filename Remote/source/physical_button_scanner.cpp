@@ -14,8 +14,20 @@ bool physicalButtons_begin(){
  uint8_t a=0,b=0,c=0;if(!rd(BTN_EXP,GPIOA,a)||!rd(BTN_EXP,GPIOB,b)||!rd(RADIO_IO,GPIOA,c))return false;stable=candidate=(uint16_t)a|((uint16_t)b<<8);confirmStable=confirmCandidate=(c&(1U<<OK_BIT))!=0;ready=true;return true;
 }
 void physicalButtons_update(uint32_t now){
- if(!ready)return;uint8_t a=0,b=0,c=0;if(!rd(BTN_EXP,GPIOA,a)||!rd(BTN_EXP,GPIOB,b)||!rd(RADIO_IO,GPIOA,c)){releaseGuard_cancel();return;}uint16_t raw=(uint16_t)a|((uint16_t)b<<8);
- for(uint8_t i=0;i<16;i++){bool rp=(raw&(1U<<i))==0,sp=(stable&(1U<<i))==0,cp=(candidate&(1U<<i))==0;if(rp!=cp){if(rp)candidate&=(uint16_t)~(1U<<i);else candidate|=(uint16_t)(1U<<i);debounceAt[i]=now;}else if(rp!=sp&&(uint32_t)(now-debounceAt[i])>=DEBOUNCE){if(rp)stable&=(uint16_t)~(1U<<i);else stable|=(uint16_t)(1U<<i);if(i>=8&&i<=11){ReleaseChannel q=(ReleaseChannel)(i-8);if(rp)releaseGuard_beginKey(q,now);else releaseGuard_endKey(now);}else if(cb)cb(i,rp);}}
- bool rk=(c&(1U<<OK_BIT))!=0;if(rk!=confirmCandidate){confirmCandidate=rk;confirmAt=now;}else if(rk!=confirmStable&&(uint32_t)(now-confirmAt)>=DEBOUNCE){confirmStable=rk;if(!rk)releaseGuard_beginConfirm(now);else releaseGuard_endConfirm(now);}releaseGuard_tick(now);
+ if(!ready)return;
+ uint8_t a=0,b=0,c=0;if(!rd(BTN_EXP,GPIOA,a)||!rd(BTN_EXP,GPIOB,b)||!rd(RADIO_IO,GPIOA,c)){releaseGuard_cancel();return;}
+ uint16_t raw=(uint16_t)a|((uint16_t)b<<8);
+ for(uint8_t i=0;i<16;i++){
+  bool rp=(raw&(1U<<i))==0,sp=(stable&(1U<<i))==0,cp=(candidate&(1U<<i))==0;
+  if(rp!=cp){if(rp)candidate&=(uint16_t)~(1U<<i);else candidate|=(uint16_t)(1U<<i);debounceAt[i]=now;}
+  else if(rp!=sp&&(uint32_t)(now-debounceAt[i])>=DEBOUNCE){
+   if(rp)stable&=(uint16_t)~(1U<<i);else stable|=(uint16_t)(1U<<i);
+   if(i>=8&&i<=11){ReleaseChannel q=(ReleaseChannel)(i-8);if(rp)releaseGuard_beginKey(q,now);else releaseGuard_endKey(now);}
+   else if(cb)cb(i,rp);
+  }
+ }
+ bool rk=(c&(1U<<OK_BIT))!=0;if(rk!=confirmCandidate){confirmCandidate=rk;confirmAt=now;}
+ else if(rk!=confirmStable&&(uint32_t)(now-confirmAt)>=DEBOUNCE){confirmStable=rk;if(!rk)releaseGuard_beginConfirm(now);else releaseGuard_endConfirm(now);}
+ releaseGuard_tick(now);
 }
 uint16_t physicalButtons_state(){return stable;}
