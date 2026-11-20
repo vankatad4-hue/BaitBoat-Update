@@ -659,7 +659,6 @@ void updateBoatScreen(const BoatState &state)
             state.heading
         );
         lv_label_set_text(gpsDetailsLabel, gpsDetailsText);
-        lv_obj_remove_flag(boatMarker, LV_OBJ_FLAG_HIDDEN);
     }
     else
     {
@@ -669,7 +668,6 @@ void updateBoatScreen(const BoatState &state)
         snprintf(mapStatusText, sizeof(mapStatusText), "GPS: NO FIX  |  %s", mapStorageText);
         lv_label_set_text(gpsMapStatusLabel, mapStatusText);
         lv_label_set_text(gpsDetailsLabel, "SAT: --   ACC: -- m   HDG: -- deg");
-        lv_obj_add_flag(boatMarker, LV_OBJ_FLAG_HIDDEN);
     }
 
     missionUI_initStorage();
