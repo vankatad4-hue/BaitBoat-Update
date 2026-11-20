@@ -64,3 +64,5 @@ This remains a development baseline and must not be used to operate the boat. Ke
 
 - **Portable host tests now pass:** run #7 for commit `ddcd9cb4` completed successfully across release-guard/scanner syntax, payload codec, ACK tracker and telemetry freshness. This is host-only verification, not target compilation.
 - Target build run #3 reached sketch compilation but stopped because LVGL 9.6's required `lv_conf.h` was missing. Added a project LVGL 9.6.0 config and workflow copy step; retry is in progress.
+
+- Target compile attempt #4 reached C++ preprocessing and identified `RF24.h` as an uninstalled dependency. Added RF24 1.4.11 to the pinned workflow; next compile run pending.
