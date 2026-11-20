@@ -13,7 +13,7 @@ This folder contains the hardware design workspace for the new handheld bait-boa
 - 1S4P Li-ion pack, four matched 18650 cells; cell model, BMS and protection validation pending.
 
 ## Workspace
-- CAD R6 concept: reference-inspired ergonomic shell with button banks corrected to **4 columns × 2 rows per side**; OpenSCAD sources plus a separately generated and locally validated prototype STL/preview package. GitHub CAD-export commit is still pending workflow verification. Exact component fit is pending.
+- CAD R6: reference-inspired parametric enclosure draft; button banks are **4 columns × 2 rows per side**; front/rear/button/assembly CAD parts and automated exports are added; OpenSCAD sources plus a separately generated and locally validated prototype STL/preview package. GitHub CAD-export commit is still pending workflow verification. Exact component fit is pending.
 - Right-bank upper four physical keys now dedicated to independent hopper-left, hopper-right, hook-left, hook-right. Release requires two-step hold-confirm; backup LoRa prohibited.
 - Release command IDs/codecs and native host test added; button scanning and boat actuator integration remain pending.
 - PCB: power design, connector plan, schematic drafts; R3 BOM and R5 button/expander map added.
@@ -51,6 +51,8 @@ Use the identical E22-900T22S UART module on both ends. This reduces protocol in
 
 - [R6 concept front preview SVG](CAD/REMOTE_CONCEPT_R6.svg)
 - [R6 mechanical concept document](MECHANICAL/REMOTE_CONCEPT_R6.md)
+- [R6 mechanical CAD layout/validation document](MECHANICAL/REMOTE_MECHANICAL_R6.md)
+- [R6 OpenSCAD source](CAD/Flytec_Remote_Enclosure_R6.scad)
 - [R6 button map (4×2 per side)](MECHANICAL/REMOTE_BUTTON_MAP_R6.md)
 - [Historical R5 layout preview](CAD/REMOTE_PREVIEW_R5.svg)
 - [Joystick ADC integration draft](../../docs/JOYSTICK_ADC_INTEGRATION_R1.md)
