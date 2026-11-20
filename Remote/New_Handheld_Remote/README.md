@@ -13,7 +13,7 @@ This folder contains the hardware design workspace for the new handheld bait-boa
 - 1S4P Li-ion pack, four matched 18650 cells; cell model, BMS and protection validation pending.
 
 ## Workspace
-- CAD R5: revised shell with upper-right release-key zone; front/rear/assembly OpenSCAD sources and generated prototype STL/preview package. Exact component fit is still pending.
+- CAD R5: revised shell with upper-right release-key zone; OpenSCAD sources plus a separately generated and locally validated prototype STL/preview package. GitHub CAD-export commit is still pending workflow verification. Exact component fit is pending.
 - Right-bank upper four physical keys now dedicated to independent hopper-left, hopper-right, hook-left, hook-right. Release requires two-step hold-confirm; backup LoRa prohibited.
 - Release command IDs/codecs and native host test added; button scanning and boat actuator integration remain pending.
 - PCB: power design, connector plan, schematic drafts.
