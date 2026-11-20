@@ -366,3 +366,13 @@ Boat:
 - Existing 1 km area, zoom 14–19 selection, storage estimate, coverage index, staged-pack validation, chunked import progress and fail-closed behavior retained.
 - Sources: `Remote/source/map_manager_ui.cpp`; commits `0908af0ebc95c905`, `1727fb5cf899e3ec`.
 - Not compiled or LVGL Pro-tested. Long progress/error strings and touch layout require simulator review.
+
+
+## Remote UI milestone — ver029.9 (2026-11-20)
+- Main operating UI: Bulgarian status, 50/50 map/sonar panes, controls and safety footer.
+- Sonar interface now includes a static demo echogram plot with depth guides and illustrative fish arches; no CHIRP module or real sonar data path is connected.
+- Mission UI: 16 waypoint storage slots; selected waypoint coordinate and GPS-derived distance/bearing (fresh fix only).
+- Settings localization pass; Wi-Fi/map/sonar options indicate unavailable integration rather than implying it works.
+- SVG previews and test checklist committed. LVGL Pro and firmware validation are pending.
+- Master changelog: `Remote/releases/CHANGELOG_MASTER_VER016.md` (VER015 superseded).
+- Current source remains unreleased ver028 baseline; no ver029 ZIP or SHA generated.
