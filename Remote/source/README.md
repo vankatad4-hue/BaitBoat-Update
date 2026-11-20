@@ -308,3 +308,5 @@ This release adds documentation only. Radio and joystick inputs remain non-opera
 - Packet/auth: `radio_protocol.*`, `radio_command_codec.*`, `radio_key_store.*` (key store deliberately fails closed).
 - LinkManager/UI: primary/backup/degraded/no-link/recovery and limited backup command policy.
 - Boat-side sources: `boat_dual_radio_port.*`, `boat_radio_safety.*`; no actuator integration.
+
+- LoRa backup TX scheduler sends at most one queued command/heartbeat per3s slot; STOP priority3, RETURN2, manual1. Stale lower-priority manual command cannot overwrite STOP. Module duty limiter remains RAM-only.
