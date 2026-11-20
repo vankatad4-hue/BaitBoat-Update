@@ -59,6 +59,49 @@ static uint32_t lastCommandTime = 0;
 static bool temporaryOverrideActive = false;
 static bool manualModeRequested = false;
 
+// Persistent control settings and validated joystick calibration (ESP32 NVS).
+static Preferences joystickPrefs;
+static bool axisSetValid(const AxisCalibration &a)
+{
+    return a.minimum >= ADC_MINIMUM && a.maximum <= ADC_MAXIMUM &&
+           a.centre > a.minimum && a.centre < a.maximum &&
+           a.centre-a.minimum >= MINIMUM_AXIS_SPAN &&
+           a.maximum-a.centre >= MINIMUM_AXIS_SPAN;
+}
+static bool fullCalibrationValid(const JoystickCalibration &v)
+{
+    return axisSetValid(v.leftX)&&axisSetValid(v.leftY)&&axisSetValid(v.rightX)&&axisSetValid(v.rightY)&&v.deadZone>=10&&v.deadZone<=120;
+}
+static void saveCalibrationNvs()
+{
+    joystickPrefs.begin("flytec-joy",false);
+    joystickPrefs.putInt("lxmin",calibration.leftX.minimum); joystickPrefs.putInt("lxctr",calibration.leftX.centre); joystickPrefs.putInt("lxmax",calibration.leftX.maximum);
+    joystickPrefs.putInt("lymin",calibration.leftY.minimum); joystickPrefs.putInt("lyctr",calibration.leftY.centre); joystickPrefs.putInt("lymax",calibration.leftY.maximum);
+    joystickPrefs.putInt("rxmin",calibration.rightX.minimum); joystickPrefs.putInt("rxctr",calibration.rightX.centre); joystickPrefs.putInt("rxmax",calibration.rightX.maximum);
+    joystickPrefs.putInt("rymin",calibration.rightY.minimum); joystickPrefs.putInt("ryctr",calibration.rightY.centre); joystickPrefs.putInt("rymax",calibration.rightY.maximum);
+    joystickPrefs.putInt("dead",calibration.deadZone);
+    joystickPrefs.putUChar("layout",(uint8_t)selectedLayout); joystickPrefs.putUChar("override",(uint8_t)selectedOverride);
+    joystickPrefs.end();
+}
+static void loadCalibrationNvs()
+{
+    joystickPrefs.begin("flytec-joy",true);
+    const bool saved=joystickPrefs.getBool("valid",false);
+    if(saved){
+      calibration.leftX={joystickPrefs.getInt("lxmin",0),joystickPrefs.getInt("lxctr",2048),joystickPrefs.getInt("lxmax",4095)};
+      calibration.leftY={joystickPrefs.getInt("lymin",0),joystickPrefs.getInt("lyctr",2048),joystickPrefs.getInt("lymax",4095)};
+      calibration.rightX={joystickPrefs.getInt("rxmin",0),joystickPrefs.getInt("rxctr",2048),joystickPrefs.getInt("rxmax",4095)};
+      calibration.rightY={joystickPrefs.getInt("rymin",0),joystickPrefs.getInt("ryctr",2048),joystickPrefs.getInt("rymax",4095)};
+    }
+    calibration.deadZone=constrain(joystickPrefs.getInt("dead",65),10,120);
+    const uint8_t layout=joystickPrefs.getUChar("layout",0),ov=joystickPrefs.getUChar("override",0);
+    joystickPrefs.end();
+    if(layout<=1)selectedLayout=(ControlLayout)layout;
+    if(ov<=1)selectedOverride=(AutopilotOverride)ov;
+    calibrationValid=saved&&fullCalibrationValid(calibration);
+    if(!calibrationValid) calibration={{0,2048,4095},{0,2048,4095},{0,2048,4095},{0,2048,4095},calibration.deadZone};
+}
+
 // --------------------------------------------------
 // RAW VALUE LIMITING
 // --------------------------------------------------
@@ -279,6 +322,9 @@ void joystick_begin()
 
     // Reset command timing.
     lastCommandTime = 0;
+
+    // Load persisted settings; invalid calibration remains fail-closed.
+    loadCalibrationNvs();
 
     // Publish the initial calibration.
     snapshot.calibration = calibration;
@@ -501,6 +547,9 @@ bool joystick_calibrateCentre()
     calibrationValid = false;
     snapshot.calibration = calibration;
     snapshot.calibrationValid = false;
+    joystickPrefs.begin("flytec-joy",false);
+    joystickPrefs.putBool("valid",false);
+    joystickPrefs.end();
 
     return true;
 }
@@ -606,6 +655,10 @@ bool joystick_endEndpointCapture()
     calibrationValid = true;
     snapshot.calibration = calibration;
     snapshot.calibrationValid = true;
+    joystickPrefs.begin("flytec-joy",false);
+    joystickPrefs.putBool("valid",true);
+    joystickPrefs.end();
+    saveCalibrationNvs();
 
     return true;
 }
