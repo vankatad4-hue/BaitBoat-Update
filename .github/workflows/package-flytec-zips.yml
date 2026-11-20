@@ -17,6 +17,10 @@ on:
       - '.github/workflows/package-flytec-zips.yml'
   workflow_dispatch:
 
+concurrency:
+  group: flytec-package-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
@@ -71,6 +75,7 @@ jobs:
             echo "Archives are already current; no commit required."
           else
             git commit -m "Package Flytec Remote ver${REMOTE_VERSION} and Boat ver${BOAT_VERSION}"
+            git pull --rebase origin "${GITHUB_REF_NAME}"
             git push
           fi
       - name: Upload Remote archive artifact
