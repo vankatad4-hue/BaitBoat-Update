@@ -11,5 +11,5 @@ PR workflow run #32 produced Remote/Boat ver005 archives and checksums. ZIP inte
 - Manifest SHA256 entries: Remote `14e19b8a9109f23e3e45aa4b38d2c744eb893cff2e81b657a0aae9de671a3e7d`; Boat `fb28589d9f74bf578f128637f6122930fa905926fc411db0658c791b990c040a`.
 - Archive files and checksum manifest were confirmed in GitHub. The binary ZIP payloads could not both be retrieved for local extraction/integrity verification in this session; treat them as generated snapshots with recorded checksums, not independently re-verified.
 
-## Technical validation boundary
+## Remote ver018 pending\nRemote marker has been bumped to 018 for the front-layout preview and status/documentation changes. The ver018 archive and manifest have not yet been confirmed generated.\n\n## Technical validation boundary
 These archives are source/documentation snapshots only. Arduino compile, native schematic/ERC/DRC, PCB, hardware bench and operational safety validation remain incomplete. No motor/solenoid operation.
