@@ -144,3 +144,11 @@ Archive correction: the former packaging workflow regenerated version-named ZIPs
 - Source compatibility audit added for LVGL 9.6 display adapter.
 - Arduino CLI target compile workflow committed with candidate pins. The run is not yet complete; no full Remote target build result is available.
 - Remote host CI has a known first-run failure: test fixture omitted fail-closed state fields. Corrected fixture committed, follow-up result pending.
+
+## Remote build preparation update — 2026-11-20
+
+- User-confirmed target is Waveshare ESP32-S3-Touch-LCD-4.3 Standard, SKU 25948.
+- LVGL 9.6 adapter audit and reproducible-build attempt are documented under `Remote/docs/`.
+- Remote portable host CI run #11 passes all current host tests.
+- Full target compile has reached the source compiler. Initial compiler findings (LVGL 9.6 precise line point type and missing footer-label declarations) were fixed; current target run #11 is pending.
+- Dependency pins now include RF24 1.4.11; LVGL configuration is tracked in source.
