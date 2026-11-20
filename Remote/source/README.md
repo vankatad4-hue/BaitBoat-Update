@@ -28,20 +28,22 @@ The project uses the LVGL 9 object model (`lv_display_*`, `lv_indev_*`, `lv_scre
 
 Open `Flytec_Remote.ino` from this folder. `Boat_menu_update.ino` was removed because it contained a second empty `setup()` and `loop()`.
 
-## Selected radio architecture (2026-11-16)
+## Updated dual-radio architecture (2026-11-20)
 
-- Use matching nRF24L01+ PA/LNA modules on both remote and boat, operating in the 2.4 GHz band. This supersedes the earlier SX1278/SX1262 LoRa proposals for the primary control/telemetry link.
-- Initial range-test data rate: 250 kbps; 1 Mbps and 2 Mbps are not assumed until field tests justify them.
-- Use SPI, a dedicated adequately rated 3.3 V supply, hardware auto-ack and bounded retries. Exact GPIOs, RF channel, antenna and module variant remain unassigned pending electrical and regulatory checks.
-- 500 m remains a target to validate, not a guaranteed range. Full sonar echogram data remains local; transmit compact telemetry only.
-- See `docs/RADIO_LINK_DESIGN.md` for electrical, RF, packet, security, failsafe and test requirements.
+- **Primary:** nRF24L01+ PA/LNA, matching modules on remote and boat, 2.4GHz, 250kbps initial setting.
+- **Backup:** LoRa UART module candidate EBYTE E22-900T22S-V2 / SX1262 family, configured for EU863–870, installed on both remote and boat.
+- Remote RIGHT antenna is LoRa 868MHz; LEFT antenna is nRF24 2.4GHz. Waveshare ESP32-S3 Wi-Fi/Bluetooth uses its onboard antenna.
+- LoRa carries heartbeat, low-rate telemetry, reduced-rate steering with speed cap, STOP and RETURN only. No sonar stream; mission-start and release commands disabled over backup by default.
+- Dual-link state machine, authenticated/replay-protected packets, duplicate suppression, failover hysteresis, command ACK/state confirmation and boat-local failsafe are specified but not implemented.
+- 500m remains an unvalidated target. Regulatory power/channel/duty-cycle and antenna gain/cable-loss compliance must be verified for Bulgaria/EU.
+- See `../docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R1.md` and `../docs/DUAL_RADIO_PROTOCOL_FIRMWARE_SPEC_R1.md`.
 
 ## Current modules
 
 - `Flytec_Remote.ino`: application entry point; one joystick callback and one initialisation sequence.
 - `boat_state.h/.cpp`: shared boat state; starts STOP-latched and unconfirmed.
 - `boat_commands.h/.cpp`: application command objects and transport callback.
-- `boat_radio.h/.cpp`: deliberately non-operational nRF24L01+ PA/LNA placeholder (selected radio; hardware transport not implemented).
+- `boat_radio.h/.cpp`: non-operational dual-radio API scaffold (nRF primary + LoRa backup); drivers, authenticated packet decoder, ACKs and failover are not implemented.
 - `boat_ui.h/.cpp`: main map/sonar placeholder screen and STOP/STICKS controls.
 - `joystick.h/.cpp`: four-axis normalisation, calibration and safety gates.
 - `joystick_calibration_ui.h/.cpp`: LVGL 9.6 calibration/settings screen.
@@ -53,7 +55,7 @@ Open `Flytec_Remote.ino` from this folder. `Boat_menu_update.ino` was removed be
 
 ## Safety state
 
-The remote starts with `emergencyStop=true` and `emergencyStopConfirmed=false`. A future validated telemetry handler must set the confirmation flag only after receiving an authenticated/valid boat status packet. The selected nRF24L01+ PA/LNA radio transport is still a non-operational stub and never connects or transmits. The joystick ADC reader returns false. Motor commands are additionally inhibited until a complete four-axis calibration succeeds.
+The remote starts with `emergencyStop=true` and `emergencyStopConfirmed=false`. A future validated telemetry handler must set the confirmation flag only after receiving an authenticated/valid boat status packet. Both nRF24 primary and LoRa backup transports remain non-operational stubs and never connect or transmit. The joystick ADC reader returns false. Motor commands are additionally inhibited until a complete four-axis calibration succeeds.
 
 Calibration values currently exist only in RAM; persistent Preferences/NVS storage has not yet been implemented.
 
@@ -98,7 +100,7 @@ The uploaded `ESP32-S3-Touch-LCD-4.3-Demo(1).zip` was inspected. Its `Arduino/ex
 
 ## Not ready for boat operation
 
-This is a source consolidation and API-alignment draft, not a verified firmware release. The C++ source files passed a syntax-only check against lightweight Arduino/LVGL interface stubs; this is not a substitute for compiling against the actual LVGL 9.6.0 library and Waveshare board package. GPIO assignments, joystick electrical levels, radio pins/protocol, telemetry authentication/acknowledgements, boat-side watchdog and motor/solenoid interlocks remain unimplemented. Do not connect it to motor drivers or operate the boat.
+This is a source consolidation and API-alignment draft, not a verified firmware release. The C++ source files passed a syntax-only check against lightweight Arduino/LVGL interface stubs; this is not a substitute for compiling against the actual LVGL 9.6.0 library and Waveshare board package. GPIO assignments, joystick electrical levels, radio pins/protocol, telemetry authentication/acknowledgements, dual-link failover, boat-side watchdog and motor/solenoid interlocks remain unimplemented. Do not connect it to motor drivers or operate the boat.
 
 
 ### Display adapter implementation notes
@@ -264,3 +266,9 @@ Boat-side controller/GNSS selection is now Heltec Wireless Tracker V1.2 (ESP32-S
 The remote uses a central carrier/interconnect PCB with removable cables for the nRF24L01+ PA/LNA, joystick modules, physical buttons and power module. The Waveshare ESP32-S3-Touch-LCD-4.3 remains the main display/controller. See `docs/CARRIER_PCB_CONNECTION_PLAN_VER004.md`. Connector pin orders are logical only; no new GPIO assignments are approved.
 
 This release adds documentation only. Radio and joystick inputs remain non-operational placeholders until hardware integration and testing.
+
+
+## Dual-link command-safety scaffold update (2026-11-20)
+- `boat_radio.h/.cpp` now expose primary/backup connection status, active-link and link-state enums. They deliberately return disconnected values until drivers/LinkManager are implemented.
+- `BoatCommand` now carries `sequence`, stable `commandId`, and `createdAtMs`; current sender stamps command ID equal to sequence and time. This is only an application scaffold, not wire-protocol authentication or boat-side duplicate suppression.
+- Do not connect to actuators. Release-command idempotency, backup-mode restrictions and authenticated acknowledgements remain implementation and test gates.
