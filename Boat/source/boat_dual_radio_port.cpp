@@ -3,7 +3,6 @@
 #include <esp_system.h>
 
 static constexpr uint8_t REMOTE_ID=0x01,BOAT_ID=0x02;
-static constexpr uint8_t BOAT_SESSION_EPOCH=1;
 
 BoatDualRadioPort::BoatDualRadioPort()
  : serial_(1),nrf_(BOAT_NRF_CE_PIN,BOAT_NRF_CSN_PIN,&SPI,76),
@@ -12,12 +11,12 @@ BoatDualRadioPort::BoatDualRadioPort()
       [](void*){return BOAT_E22_AUX_PIN>=0 && digitalRead(BOAT_E22_AUX_PIN)==HIGH;},
       [](bool released,void*){if(BOAT_E22_RESET_PIN>=0)digitalWrite(BOAT_E22_RESET_PIN,released?HIGH:LOW);},nullptr),
    nrfReady_(false),e22Configured_(false),qWrite_(0),qRead_(0),qCount_(0),
-   lastNrfRxMs_(0),lastE22RxMs_(0),authenticated_(false),sessionEpoch_((uint8_t)esp_random()) {
+   lastNrfRxMs_(0),lastE22RxMs_(0),authenticated_(false),sessionStarted_(false),sessionEpoch_((uint8_t)esp_random()) {
  if(sessionEpoch_==0)sessionEpoch_=1;
  memset(key_,0,sizeof(key_));memset(queue_,0,sizeof(queue_));
 }
 bool BoatDualRadioPort::begin() {
- nrfReady_=false;e22Configured_=false;authenticated_=radioKey_get(key_);
+ nrfReady_=false;e22Configured_=false;authenticated_=radioKey_get(key_);sessionStarted_=false;seqGuard_.reset();
 #if BOAT_NRF_CE_PIN >= 0 && BOAT_NRF_CSN_PIN >= 0
  nrfReady_=nrf_.begin(false);
 #endif
@@ -40,10 +39,11 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  if(!authenticated_ || !radio_frameVerify(f,key_) || f.sourceId!=REMOTE_ID || f.destinationId!=BOAT_ID) return;
  if(f.type==RADIO_MSG_SESSION_START) {
    if(!seqGuard_.accept(f.sessionEpoch,f.sequence,true)) return;
+   sessionStarted_=true;
    if(link==LINK_NRF_PRIMARY)lastNrfRxMs_=now;else lastE22RxMs_=now;
    return;
  }
- if(!seqGuard_.accept(f.sessionEpoch,f.sequence,false)) return;
+ if(!sessionStarted_ || !seqGuard_.accept(f.sessionEpoch,f.sequence,false)) return;
  if(link==LINK_NRF_PRIMARY)lastNrfRxMs_=now;else lastE22RxMs_=now;
  if(f.type==RADIO_MSG_HEARTBEAT || f.type==RADIO_MSG_TELEMETRY || f.type==RADIO_MSG_ACK || f.type==RADIO_MSG_LINK_PROBE)
      return;
