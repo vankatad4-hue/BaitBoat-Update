@@ -18,7 +18,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   package:
@@ -26,6 +26,9 @@ jobs:
     steps:
       - name: Checkout branch snapshot
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref }}
+          persist-credentials: true
       - name: Read archive versions
         id: version
         shell: bash
@@ -37,36 +40,57 @@ jobs:
           [[ "$BOAT_VERSION" =~ ^[0-9]{3}$ ]]
           echo "remote=$REMOTE_VERSION" >> "$GITHUB_OUTPUT"
           echo "boat=$BOAT_VERSION" >> "$GITHUB_OUTPUT"
-      - name: Create versioned ZIP archives
+      - name: Build archives and checksums
         shell: bash
         run: |
           set -euo pipefail
           REMOTE_VERSION="$(tr -d '\r\n ' < Remote/releases/VERSION)"
           BOAT_VERSION="$(tr -d '\r\n ' < Boat/releases/VERSION)"
-          mkdir -p out
+          mkdir -p out releases
           zip -r -X "out/Flytec_Remote_ver${REMOTE_VERSION}.zip" Remote \
             -x "Remote/releases/*.zip"
           zip -r -X "out/Flytec_Boat_ver${BOAT_VERSION}.zip" Boat \
             -x "Boat/releases/*.zip"
-          sha256sum out/*.zip | tee out/SHA256SUMS.txt
-      - name: Upload Remote archive
+          sha256sum out/*.zip | tee "out/SHA256SUMS_ver${REMOTE_VERSION}_${BOAT_VERSION}.txt"
+      - name: Preserve versioned archives in branch (push events only)
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          REMOTE_VERSION="$(tr -d '\r\n ' < Remote/releases/VERSION)"
+          BOAT_VERSION="$(tr -d '\r\n ' < Boat/releases/VERSION)"
+          cp "out/Flytec_Remote_ver${REMOTE_VERSION}.zip" "Remote/releases/"
+          cp "out/Flytec_Boat_ver${BOAT_VERSION}.zip" "Boat/releases/"
+          cp "out/SHA256SUMS_ver${REMOTE_VERSION}_${BOAT_VERSION}.txt" "releases/"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "Remote/releases/Flytec_Remote_ver${REMOTE_VERSION}.zip" \
+                  "Boat/releases/Flytec_Boat_ver${BOAT_VERSION}.zip" \
+                  "releases/SHA256SUMS_ver${REMOTE_VERSION}_${BOAT_VERSION}.txt"
+          if git diff --cached --quiet; then
+            echo "Archives are already current; no commit required."
+          else
+            git commit -m "Package Flytec Remote ver${REMOTE_VERSION} and Boat ver${BOAT_VERSION}"
+            git push
+          fi
+      - name: Upload Remote archive artifact
         uses: actions/upload-artifact@v4
         with:
           name: Flytec_Remote_ver${{ steps.version.outputs.remote }}
           path: out/Flytec_Remote_ver*.zip
           if-no-files-found: error
           retention-days: 90
-      - name: Upload Boat archive
+      - name: Upload Boat archive artifact
         uses: actions/upload-artifact@v4
         with:
           name: Flytec_Boat_ver${{ steps.version.outputs.boat }}
           path: out/Flytec_Boat_ver*.zip
           if-no-files-found: error
           retention-days: 90
-      - name: Upload checksums
+      - name: Upload checksums artifact
         uses: actions/upload-artifact@v4
         with:
           name: Flytec_ver${{ steps.version.outputs.remote }}_${{ steps.version.outputs.boat }}_SHA256
-          path: out/SHA256SUMS.txt
+          path: out/SHA256SUMS_ver*.txt
           if-no-files-found: error
           retention-days: 90
