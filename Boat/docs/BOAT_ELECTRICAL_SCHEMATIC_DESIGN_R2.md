@@ -1,5 +1,8 @@
 # Boat Electrical Schematic Design R2 — test hardware
 
+**Historical reference:** use [R5 board integration](BOAT_BOARD_INTEGRATION_R5.md) and [R5 BOM](BOAT_BOM_CANDIDATES_R5.md) for the active architecture. Earlier two-coil quantities and simultaneous-coil sizing assumptions are superseded by four independent channels, maximum one active, separate hardware cutoff, and direct Tracker PWM/DIR.
+
+
 Supersedes R1 LoRa pairing assumptions. Initial prototype uses matching E22-900T22S modules on both endpoints; Heltec Tracker's onboard SX1262 is not used for backup in R2.
 
 ## Pack and main bus

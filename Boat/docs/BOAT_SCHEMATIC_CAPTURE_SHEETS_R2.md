@@ -1,5 +1,8 @@
 # Boat Electrical Schematic Capture Sheets R2
 
+**Historical reference:** use [R5 board integration](BOAT_BOARD_INTEGRATION_R5.md) and [R5 BOM](BOAT_BOM_CANDIDATES_R5.md) for the active architecture. Earlier two-coil quantities and simultaneous-coil sizing assumptions are superseded by four independent channels, maximum one active, separate hardware cutoff, and direct Tracker PWM/DIR.
+
+
 ## Sheet 01 — pack, BMS, fuse and master switch
 J_PACK keyed connector, reported3S4P battery/BMS20A (confirm). PACK+→BMS output→F_MAIN candidate20A (final after current/wire coordination)→retained switch→BUS_3S. PACK−→star high-current return. Retain battery indicator; verify range/polarity. Add test pads BUS_3S,PACK−,BMS output. Main fuse close to pack.
 

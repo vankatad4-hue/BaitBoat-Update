@@ -1,5 +1,8 @@
 # Boat Hardware BOM Candidates R1
 
+**Historical reference:** use [R5 board integration](BOAT_BOARD_INTEGRATION_R5.md) and [R5 BOM](BOAT_BOM_CANDIDATES_R5.md) for the active architecture. Earlier two-coil quantities and simultaneous-coil sizing assumptions are superseded by four independent channels, maximum one active, separate hardware cutoff, and direct Tracker PWM/DIR.
+
+
 | Ref | Qty | Candidate | Purpose | Validation |
 |---|---:|---|---|---|
 | U_CTRL | 1 | Heltec Wireless Tracker V1.2 (ESP32-S3 + UC6580 GNSS) | Controller/GNSS | Exact SKU, pinout and power input |
