@@ -4,7 +4,7 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 
 ## Versioning
 - ZIP: `Flytec_Remote_verXXX.zip`.
-- Preserve older archives; current marker `releases/VERSION` is `021`.
+- Preserve older archives; current marker `releases/VERSION` is `022`.
 - Increment for every package change and follow `../../docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Controller/display baseline
@@ -35,7 +35,7 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 - `boat_ui.*`, `settings_ui.*`: UI scaffold; map and sonar displays are not operational data views.
 - `offline_map.*`, `map_projection.*`: tile validation/read and projection utilities, not a complete geographic map renderer.
 - `boat_telemetry.*`: partial telemetry state application with local group freshness, coordinate sample pairing and primary-link safety provenance; wired to Remote receive dispatch.
-- `radio_payload_codec.*`: strict eight-byte HEARTBEAT/ACK/TELEMETRY payload validators; integrated in authenticated receive dispatch.
+- `radio_payload_codec.*`: strict eight-byte HEARTBEAT/ACK/TELEMETRY payload validators; integrated in authenticated receive dispatch.\n- `radio_payload_encoder.*`: portable payload encoders, host round-trip tests, mirrored on Boat.
 - `radio_ack_tracker.*`: bounded command lifecycle tracker (waiting/accepted/executed/rejected/timeout); wired to non-manual command send and authenticated ACK receive.
 
 ## Bench test sketches
