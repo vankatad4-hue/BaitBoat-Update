@@ -1,6 +1,6 @@
 # Offline map area download specification — ver029
 
-This is the implementation contract for the approved 1 km² SD offline-map feature. It is not yet implemented in firmware.
+This is the implementation contract for the approved 1 km² SD offline-map feature. Firmware downloading is not implemented. A desktop planning utility is now available at `tools/map_area_planner.py` and calculates bounds, XYZ tile coverage and storage estimates; it outputs a JSON plan only.
 
 ## Area selection
 - Default shape: square, 1000 m × 1000 m, centred on current GPS location (or user-selected centre).
@@ -43,3 +43,13 @@ For each selected zoom z, convert north/west and south/east bounds to XYZ tile i
 - Download cancel/pause/reboot resume tests; SD full, write failure, network loss and corrupt tile tests.
 - UI stays responsive and telemetry/radio task latency remains within its safety budget.
 - Online provider attribution, quota/HTTP errors, API credential provisioning and no persistent online Google tile storage are verified.
+
+
+## Development progress
+- [x] Source preference scaffold AUTO / ONLINE / OFFLINE persisted in NVS.
+- [x] Map UI source-cycle button and explicit message when ONLINE is unavailable; SD fallback is currently the only renderer.
+- [x] Python area planner generates a JSON plan for the selected centre, square size and zoom levels, with per-zoom tile counts, unique tile list and storage estimate.
+- [x] Unit tests added for latitude geometry, unique tiles, dateline wrapping and storage calculation.
+- [ ] Offline source licensing catalogue, actual area download, resumable tile jobs, coverage index and pack verification.
+- [ ] Google online provider adapter and credentials/attribution integration.
+- [ ] Target compile and physical Waveshare tests.
