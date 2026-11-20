@@ -58,6 +58,8 @@ static uint32_t lastCommandTime = 0;
 // Autopilot override state.
 static bool manualArmed = false;
 static bool manualModeRequested = false;
+static bool overrideMoved=false;
+static uint32_t lastResumeAttempt=0;
 
 // Persistent control settings and validated joystick calibration (ESP32 NVS).
 static Preferences joystickPrefs;
@@ -782,8 +784,11 @@ void joystick_update()
     }
 
     // --------------------------------------------------
+    // Send neutral evidence while stopped/prepared, never a motor command.
+    const auto missionPhase=boatRadio_missionPhase();
+    if(!calibrationMode&&calibrationValid&&snapshot.readingsValid&&missionPhase!=MC_OVERRIDE_ACTIVE)
+        boatRadio_sendMissionSticks(0,0,snapshot.neutral);
     // SAFETY GATES
-    // No autonomous override until the Boat mission executor acknowledges it.
     if(calibrationMode || !calibrationValid || !boatRadio_isConnected() ||
        !boatState.radioConnected || boatState.emergencyStop ||
        !boatState.emergencyStopConfirmed || boatState.failsafeActive ||
@@ -791,20 +796,28 @@ void joystick_update()
     {
         manualArmed=false;manualModeRequested=false;return;
     }
-    if(boatState.mode!=MODE_MANUAL)
-    {
+    const bool temporary=boatRadio_missionFeedbackFresh()&&missionPhase==MC_OVERRIDE_ACTIVE;
+    if(!temporary)overrideMoved=false;
+    if(boatState.mode!=MODE_MANUAL&&!temporary){
         manualArmed=false;
-        // Switch-to-manual is a request only; wait for confirmed manual mode.
-        if(boatState.mode==MODE_AUTOPILOT && selectedOverride==OVERRIDE_TO_MANUAL &&
-           !snapshot.neutral && !manualModeRequested)
-            manualModeRequested=boatCommands_setMode(MODE_MANUAL);
+        if(boatRadio_missionFeedbackFresh()&&(missionPhase==MC_OUTBOUND||missionPhase==MC_RETURNING)&&
+           !snapshot.neutral&&!manualModeRequested)
+            manualModeRequested=boatRadio_missionControl(selectedOverride==OVERRIDE_TO_MANUAL?MCTRL_SWITCH_MANUAL:MCTRL_TEMP_OVERRIDE);
         if(snapshot.neutral)manualModeRequested=false;
         return;
+    }
+    if(!temporary&&boatRadio_missionLocked()){manualArmed=false;return;}
+    if(temporary){
+        manualArmed=false;
+        if(!snapshot.neutral)overrideMoved=true;
+        if(snapshot.neutral&&overrideMoved&&millis()-lastResumeAttempt>=1000U){
+            lastResumeAttempt=millis();boatRadio_missionControl(MCTRL_RESUME);
+        }
     }
     manualModeRequested=false;
     // After startup, STOP, calibration, radio fault or mode change, require
     // neutral sticks before a subsequent displacement can command movement.
-    if(!manualArmed){
+    if(!temporary&&!manualArmed){
         if(snapshot.neutral)manualArmed=true;
         return;
     }
@@ -855,5 +868,6 @@ void joystick_update()
     }
 
     // Failed transmission requires a fresh neutral sample before retrying motion.
+    if(temporary){boatRadio_sendMissionSticks(leftMotor,rightMotor,snapshot.neutral);return;}
     if(!boatCommands_setManualMotors(leftMotor, rightMotor))manualArmed=false;
 }

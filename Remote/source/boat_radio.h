@@ -5,6 +5,7 @@
 #include "dual_radio_manager.h"
 #include "radio_ack_tracker.h"
 #include "mission_upload.h"
+#include "mission_control_wire.h"
 
 enum BoatRadioLink : uint8_t {
     RADIO_LINK_NONE = 0,
@@ -28,6 +29,14 @@ bool boatRadio_begin();
 bool boatRadio_prepareMission(MissionPlan plan);
 MissionUploadState boatRadio_missionUploadState();
 void boatRadio_cancelMissionPreparation();
+bool boatRadio_missionControl(MissionControlOp op);
+MissionControlPhase boatRadio_missionPhase();
+bool boatRadio_missionFeedbackFresh();
+bool boatRadio_missionControlPending();
+bool boatRadio_missionControlUnknown();
+MissionControlResult boatRadio_missionControlResult();
+bool boatRadio_missionLocked();
+bool boatRadio_sendMissionSticks(int16_t left,int16_t right,bool neutral);
 bool boatRadio_sendCommand(const BoatCommand &command);
 void boatRadio_update();
 bool boatRadio_isConnected();

@@ -5,6 +5,9 @@
 #include "boat_state.h"
 #include "radio_protocol.h"
 #include "mission_wire.h"
+#include "mission_control_client.h"
+#include "mission_stick.h"
+#include "joystick.h"
 #include "radio_command_codec.h"
 #include "radio_key_store.h"
 #include "radio_session_platform.h"
@@ -42,13 +45,15 @@ static bool g_rootReady=false;
 static SessionHandshake g_session;
 static uint32_t g_lastSessionRx=0,g_lastHandshakeTx=0;
 static MissionUpload g_missionUpload;
+static MissionControlClient g_missionControl;
+static uint32_t g_lastStickTx=0;
 static MissionPlan g_missionPlan{};
 static uint16_t g_missionId=0;
 static uint32_t g_missionStarted=0;
 static RadioSessionCounter g_boatSequenceGuard,g_boatPrimarySequenceGuard,g_boatBackupSequenceGuard;
 static void resetSession(uint32_t now){
     g_session.reset();radioSession_wipe(g_authKey,32);
-    g_txSequence=0;g_stopPending=false;g_missionId=0;g_missionUpload.fail();
+    g_txSequence=0;g_stopPending=false;g_missionId=0;g_missionUpload.fail();g_missionControl.reset();g_lastStickTx=now-50U;
     g_boatSequenceGuard.resetAfterHandshake();g_boatPrimarySequenceGuard.resetAfterHandshake();g_boatBackupSequenceGuard.resetAfterHandshake();
     g_ackTracker.reset(0);telemetryInit();
     boatState.emergencyStop=true;boatState.emergencyStopConfirmed=false;boatState.actuatorSafetyReady=false;
@@ -127,6 +132,7 @@ bool boatRadio_begin() {
 }
 
 bool boatRadio_sendCommand(const BoatCommand &command) {
+    if(command.type==CMD_EMERGENCY_STOP)g_missionControl.reset();
     if(command.type==CMD_EMERGENCY_STOP && (g_missionUpload.state()==UPLOAD_ACTIVE||g_missionUpload.state()==UPLOAD_PREPARED))g_missionUpload.fail();
     if(!g_begun) return false;
     const uint32_t now=millis();
@@ -162,15 +168,47 @@ static bool sendMissionPreparation(const uint8_t payload[8]){
     return radio_frameSeal(frame,g_authKey)&&g_nrf.sendFrame(frame);
 }
 bool boatRadio_prepareMission(MissionPlan plan){
-    if(!missionPreparationSafe())return false;
+    if(!missionPreparationSafe()||boatRadio_missionLocked())return false;
     if(++g_missionId==0)++g_missionId;
     plan.transaction=g_missionId;
     const uint32_t now=millis();
     if(!g_missionUpload.begin(plan,now,true))return false;
-    g_missionPlan=plan;g_missionStarted=now;return true;
+    g_missionControl.reset();g_missionPlan=plan;g_missionStarted=now;return true;
 }
 MissionUploadState boatRadio_missionUploadState(){return g_missionUpload.state();}
+static bool missionPrimaryReady(){
+ return sessionReady()&&g_nrfReady&&g_linkManager.active()==LINK_NRF_PRIMARY&&g_linkManager.primaryHealthy(millis());
+}
+MissionControlPhase boatRadio_missionPhase(){return g_missionControl.phase();}
+bool boatRadio_missionFeedbackFresh(){return missionPrimaryReady()&&g_missionControl.fresh(millis());}
+bool boatRadio_missionControlPending(){return g_missionControl.pending();}
+bool boatRadio_missionControlUnknown(){return g_missionControl.unknown();}
+MissionControlResult boatRadio_missionControlResult(){return g_missionControl.result();}
+bool boatRadio_missionLocked(){return g_missionUpload.state()==UPLOAD_ACTIVE||g_missionUpload.state()==UPLOAD_PREPARED||g_missionControl.locked();}
+bool boatRadio_missionControl(MissionControlOp op){
+ if(!missionPrimaryReady()||!g_missionControl.transaction())return false;
+ if(op!=MCTRL_CANCEL){
+  if(!boatRadio_missionFeedbackFresh()||!boatState.emergencyStopConfirmed||boatState.emergencyStop||boatState.failsafeActive||!boatState.actuatorSafetyReady)return false;
+  if(op==MCTRL_START||op==MCTRL_RESUME){const auto j=joystick_getSnapshot();if(!j.readingsValid||!j.calibrationValid||j.calibrationMode||!j.neutral)return false;}
+  if(op==MCTRL_START&&g_missionControl.phase()!=MC_PREPARED)return false;
+ }
+ return g_missionControl.request(op,millis());
+}
+bool boatRadio_sendMissionSticks(int16_t left,int16_t right,bool neutral){
+ if(!boatRadio_missionFeedbackFresh()||!g_missionControl.transaction())return false;
+ const auto phase=g_missionControl.phase();
+ if(phase!=MC_PREPARED&&phase!=MC_PAUSED&&phase!=MC_OVERRIDE_NEUTRAL&&phase!=MC_OVERRIDE_ACTIVE)return false;
+ // Before confirmed override, send neutral evidence only; never movement.
+ if(phase!=MC_OVERRIDE_ACTIVE){left=right=0;}
+ else if(boatState.emergencyStop||!boatState.emergencyStopConfirmed||boatState.failsafeActive||!boatState.actuatorSafetyReady)return false;
+ const uint32_t now=millis();if(now-g_lastStickTx<50U)return true;
+ MissionStickInput input={g_missionControl.transaction(),left,right,neutral};
+ RadioFrame frame;radio_frameInit(frame,RADIO_MSG_MISSION_STICKS,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,++g_txSequence,input.transaction,now,g_sessionEpoch);
+ if(!missionStickEncode(input,frame.payload)||!radio_frameSeal(frame,g_authKey))return false;
+ g_lastStickTx=now;return g_nrf.sendFrame(frame);
+}
 void boatRadio_cancelMissionPreparation(){
+    if(g_missionControl.transaction()){boatRadio_missionControl(MCTRL_CANCEL);return;}
     if(g_missionUpload.state()!=UPLOAD_ACTIVE&&g_missionUpload.state()!=UPLOAD_PREPARED)return;
     uint8_t payload[8];
     if(missionPlan_encode(g_missionPlan,MISSION_CANCEL,payload))sendMissionPreparation(payload);
@@ -179,10 +217,15 @@ void boatRadio_cancelMissionPreparation(){
 static bool dispatchValidatedPayload(ManagedLink link,const RadioFrame &frame,uint32_t now) {
     RadioDecodedPayload decoded{};
     switch(frame.type) {
+        case RADIO_MSG_MISSION_FEEDBACK:{
+            MissionControlFeedback feedback{};
+            if(link!=LINK_NRF_PRIMARY||!missionFeedbackDecode(frame.payload,feedback)||feedback.transaction!=frame.commandId)return false;
+            return g_missionControl.observe(feedback,now,true);
+        }
         case RADIO_MSG_MISSION_ACK:{
             uint16_t id;MissionOpcode op;MissionReceive result;
             if(link!=LINK_NRF_PRIMARY||!missionAck_decode(frame.payload,id,op,result)||id!=frame.commandId)return false;
-            g_missionUpload.acknowledge(id,op,result,now,true);
+            if(g_missionUpload.acknowledge(id,op,result,now,true)&&g_missionUpload.state()==UPLOAD_PREPARED){g_missionControl.bind(id);g_missionUpload.fail();}
             return true;
         }
         case RADIO_MSG_HEARTBEAT:
@@ -217,7 +260,7 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame){
         return;
     }
     if(!g_session.established()||frame.sessionEpoch!=g_sessionEpoch||!radio_frameVerify(frame,g_authKey))return;
-    if(frame.type!=RADIO_MSG_HEARTBEAT&&frame.type!=RADIO_MSG_TELEMETRY&&frame.type!=RADIO_MSG_ACK&&frame.type!=RADIO_MSG_LINK_PROBE&&frame.type!=RADIO_MSG_MISSION_ACK)return;
+    if(frame.type!=RADIO_MSG_HEARTBEAT&&frame.type!=RADIO_MSG_TELEMETRY&&frame.type!=RADIO_MSG_ACK&&frame.type!=RADIO_MSG_LINK_PROBE&&frame.type!=RADIO_MSG_MISSION_ACK&&frame.type!=RADIO_MSG_MISSION_FEEDBACK)return;
     if(frame.type==RADIO_MSG_LINK_PROBE&&!payloadBytesZero(frame.payload,0,7))return;
     RadioSessionCounter &guard=link==LINK_NRF_PRIMARY?g_boatPrimarySequenceGuard:g_boatBackupSequenceGuard;
     if(!guard.accept(frame.sequence))return;
@@ -268,9 +311,14 @@ void boatRadio_update() {
     g_ackTracker.update(now);
     g_linkManager.tick(millis());
     const bool safe=missionPreparationSafe();
-    if((g_missionUpload.state()==UPLOAD_ACTIVE||g_missionUpload.state()==UPLOAD_PREPARED)&&(!safe||now-g_missionStarted>=9000U))boatRadio_cancelMissionPreparation();
+    if(g_missionUpload.state()==UPLOAD_ACTIVE&&(!safe||now-g_missionStarted>=9000U))boatRadio_cancelMissionPreparation();
     uint8_t missionPayload[8];
     if(g_missionUpload.next(now,safe,missionPayload))sendMissionPreparation(missionPayload);
+    MissionControlRequest request{};
+    if(g_missionControl.next(now,request)&&missionPrimaryReady()){
+        RadioFrame f;radio_frameInit(f,RADIO_MSG_MISSION_CONTROL,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,++g_txSequence,request.transaction,now,g_sessionEpoch);
+        if(missionControlEncode(request,f.payload)&&radio_frameSeal(f,g_authKey))g_nrf.sendFrame(f);
+    }
 }
 
 bool boatRadio_isConnected(){return g_session.established()&&g_linkManager.connected(millis());}
