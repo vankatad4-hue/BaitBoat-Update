@@ -36,10 +36,11 @@ Flytec_Boat_verXXX.zip and Flytec_Remote_verXXX.zip. Never overwrite prior relea
 - Remote/New_Handheld_Remote/PCB/5V_CONTROLLER_POWER_ARCHITECTURE_REVIEW_R1.md
 - Remote/New_Handheld_Remote/PCB/BOOST_CONVERTER_SELECTION_REVIEW_R3.md
 - Remote/New_Handheld_Remote/PCB/BATTERY_INPUT_PROTECTION_DESIGN_R4.md
-- Remote/New_Handheld_Remote/PCB/POWER_SHEET_CAPTURE_SPEC_R3.md
-- Remote/New_Handheld_Remote/PCB/REMOTE_POWER_BOM_CANDIDATES_R3.md
+- Remote/New_Handheld_Remote/PCB/POWER_SHEET_CAPTURE_SPEC_R4.md
+- Remote/New_Handheld_Remote/PCB/REMOTE_POWER_BOM_CANDIDATES_R4.md
 - Remote/New_Handheld_Remote/PCB/POWER_SCHEMATIC_NET_DRAFT_R6.md
 - Remote/New_Handheld_Remote/PCB/POWER_DISTRIBUTION_DESIGN_R4.md
+- Remote/New_Handheld_Remote/PCB/REMOTE_POWER_AND_CONTROL_BLOCK_DIAGRAM_R1.md
 - Remote/New_Handheld_Remote/PCB/REMOTE_PERIPHERAL_INTERFACE_PINOUT_DRAFT_R1.md
 - Remote/New_Handheld_Remote/PCB/WAVESHARE_GPIO_RESOURCE_AUDIT_R1.md
 - Remote/New_Handheld_Remote/PCB/POWER_SHEET_CAPTURE_SPEC_R4.md
