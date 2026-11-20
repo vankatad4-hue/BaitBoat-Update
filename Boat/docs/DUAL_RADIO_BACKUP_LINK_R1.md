@@ -1,3 +1,5 @@
+**SUPERSEDED:** Boat backup is a separate matching EBYTE E22-900T22S module (not the integrated Tracker SX1262). Current pairing and traffic restrictions are documented in `BOAT_LORA_HARDWARE_DECISION_R3.md` and the remote R3 redundancy specification.
+
 # Boat-side LoRa redundancy implementation requirements R1
 
 This file is the boat-side counterpart to the remote dual-radio decision. Boat hardware must include both radio modules and their antennas; remote-only LoRa is not a link.
