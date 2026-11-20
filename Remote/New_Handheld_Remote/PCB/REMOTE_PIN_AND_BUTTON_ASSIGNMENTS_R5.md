@@ -14,7 +14,8 @@
 | Port | Bit | Physical | Active |
 |---|---:|---|---|
 | GPA0–GPA7 | 0–7 | L1–L8, left bank | Low |
-| GPB0–GPB6 | 8–14 | R1–R7, right bank | Low\n| GPB7 | 15 | Spare | Reserved |
+| GPB0–GPB6 | 8–14 | R1–R7, right bank | Low
+| GPB7 | 15 | Spare | Reserved |
 
 All key inputs use pull-ups; switch closure connects input to ground. Software debounce 25ms. Physical scanner polls and dispatches press/release transitions.
 
@@ -29,7 +30,7 @@ All key inputs use pull-ups; switch closure connects input to ground. Software d
 | GPA5–GPA7 | 5–7 | Spare | Reserved |
 | GPB0–GPB7 | 8–15 | Spare | Reserved |
 
-Scanner configures GPA4 as input and enables its pull-up while preserving other direction/pull-up bits. Confirm is independent of the 16-key bank.
+Scanner configures GPA4 as input and enables its pull-up while preserving other direction/pull-up bits. OK is independent of the 15 scanned-key bank.
 
 ## Release event mapping
 R1 GPIOB0 = left hopper; R2 GPIOB1 = right hopper; R3 GPIOB2 = left hook; R4 GPIOB3 = right hook. R5/R6/R7 use GPB4/5/6; GPB7 is spare. Physical OK is the right-bank bottom-right key, scanned independently on MCP23017 0x21 GPA4. Each release requires 1.2s key hold, release, then separate OK 0.8s hold within 4s. No release is allowed on backup LoRa or while boat interlock status is unknown
