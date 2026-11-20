@@ -59,7 +59,7 @@ Open `Flytec_Remote.ino` from this folder. `Boat_menu_update.ino` was removed be
 
 ## Safety state
 
-The remote starts with `emergencyStop=true` and `emergencyStopConfirmed=false`. A future validated telemetry handler must set the confirmation flag only after receiving an authenticated/valid boat status packet. No radio hardware driver is registered. Link state remains disconnected and command sends return false. The joystick ADC reader returns false. Motor commands are additionally inhibited until a complete four-axis calibration succeeds.
+The remote starts with `emergencyStop=true` and `emergencyStopConfirmed=false`. A future validated telemetry handler must set the confirmation flag only after receiving an authenticated/valid boat status packet. nRF and E22 hardware transport classes are present. The nRF uses provisional CE6/CSN15 and shared SPI11/12/13. E22 config is performed through SC16IS750 I2C bridge. Secure key storage returns false, so authenticated link state remains disconnected and command sends fail closed. The joystick ADC reader returns false. Motor commands are additionally inhibited until a complete four-axis calibration succeeds.
 
 Calibration values currently exist only in RAM; persistent Preferences/NVS storage has not yet been implemented.
 
