@@ -241,3 +241,5 @@ Boat:
 - The mission UI's save-current and set-home require fresh GNSS (<2s). Selection and marker edits persist.
 - Mission start remains blocked. No boat mission execution, geofence/route validation, release command or authenticated operational path.
 - Source version marker Remote ver026. ZIP/checksum and target build/hardware test are pending.
+
+- Hardware verification checklist: `Remote/docs/MISSION_NVS_TEST_PLAN_VER026.md` (not yet run).
