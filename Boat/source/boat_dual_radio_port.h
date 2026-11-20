@@ -64,7 +64,7 @@ private:
     QueuedCommand queue_[4];
     uint8_t qWrite_,qRead_,qCount_;
     uint32_t lastNrfRxMs_,lastE22RxMs_;
-    uint32_t lastNrfHeartbeatTxMs_,lastE22HeartbeatTxMs_;
+    uint32_t lastNrfHeartbeatTxMs_,lastE22HeartbeatTxMs_,lastE22HeartbeatAttemptMs_;
     uint16_t txSequence_;
     bool authenticated_;
     bool sessionStarted_;
