@@ -9,7 +9,7 @@ These drawings are visual aids based on the R6.1 enclosure concept. The connecti
 
 ### R6.1 concept features shown
 - Central 4.3-inch touch display, dual joysticks
-- Two button banks arranged 4 columns × 2 rows (16 total); four release controls highlighted in the top row of the right bank
+- Two button banks arranged 2 columns × 4 rows (16 total); four release controls occupy the upper 2×2 of the right bank
 - Dedicated OK and power controls
 - Two rear antenna exits, removable rear cover and grip pads
 - Internal projection of Waveshare ESP32-S3 display board, carrier PCB, proposed 1S4P battery arrangement, nRF24 primary radio and E22 backup radio
