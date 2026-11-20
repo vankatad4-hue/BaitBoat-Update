@@ -8,7 +8,7 @@ This folder contains the hardware design workspace for the new handheld bait-boa
 - Two joysticks above two button banks; 16 buttons total, 2×4 per side.
 - Ergonomic grips; no shoulder/rear buttons.
 - **Primary:** nRF24L01+ PA/LNA 2.4GHz radio; LEFT external antenna.
-- **Backup:** EBYTE E22-900T22S UART/SX1262 module candidate in EU868; RIGHT external antenna. Boat uses the Heltec Wireless Tracker candidate's integrated SX1262 (no extra module by default), pending exact revision/band confirmation and PHY interoperability test.
+- **Backup:** EBYTE E22-900T22S UART/SX1262 module candidate in EU868; RIGHT external antenna. Boat will use an identical E22 UART module for first prototype. Tracker's integrated SX1262 remains unused unless compatibility is proven.
 - Waveshare ESP32-S3 Wi-Fi/Bluetooth uses its onboard antenna; no external Wi-Fi antenna path.
 - 1S4P Li-ion pack, four matched 18650 cells; cell model, BMS and protection validation pending.
 
@@ -40,3 +40,7 @@ Documents are engineering planning/net-level design records, not fabrication-rea
 - Test build and validation sequence: `PCB/REMOTE_HARDWARE_TEST_BUILD_R2.md`.
 - BOM: `PCB/REMOTE_BOM_R2.md`.
 - Mechanical envelope: `MECHANICAL/REMOTE_ENVELOPE_R2.md`.
+
+
+## Radio pairing revision R3
+Use the identical E22-900T22S UART module on both ends. This reduces protocol interoperability risk compared with mixing E22 transparent UART with a raw SX1262 driver. See `../docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R3.md`.
