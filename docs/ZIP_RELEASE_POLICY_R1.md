@@ -55,3 +55,7 @@ Snapshot of the current dual-radio development branch, including hardware captur
 
 ## Archive integrity safeguard (2026-11-20)
 Routine source pushes previously regenerated ZIPs under unchanged release filenames. Treat current branch archives as unverified. The guarded workflow only commits versioned archives after VERSION marker changes; see `docs/ZIP_BUILD_STATUS_R1.md`.
+
+
+## Updated build/release gate
+Remote CI target compile #19 passed (run 44781879101) on commit 3f189cb1ac65a764aec678893f1df857d113c815, with artifact upload. It is a development compile only; do not interpret as hardware readiness or release validation. Continue to use Remote 028 / Boat 014 until a deliberately frozen package is generated, archive integrity and SHA-256 are checked independently, and release evidence is recorded. Current ZIPs remain unverified snapshots. Next source audit is runtime/map-import/cache lifecycle; test and compile after changes before considering a package bump.
