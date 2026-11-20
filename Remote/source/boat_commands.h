@@ -11,7 +11,11 @@ enum BoatCommandType : uint8_t
     CMD_SET_MODE,
     CMD_MANUAL_MOTORS,
     CMD_BAIT_RELEASE,
-    CMD_HOOK_RELEASE
+    CMD_HOOK_RELEASE,
+    CMD_RELEASE_HOPPER_LEFT = 7,
+    CMD_RELEASE_HOPPER_RIGHT = 8,
+    CMD_RELEASE_HOOK_LEFT = 9,
+    CMD_RELEASE_HOOK_RIGHT = 10
 };
 
 // Complete application-level command.
@@ -56,5 +60,11 @@ bool boatCommands_releaseBait();
 
 // Request hook release.
 bool boatCommands_releaseHook();
+
+// Independent fail-closed release commands for each mechanism.
+bool boatCommands_releaseHopperLeft();
+bool boatCommands_releaseHopperRight();
+bool boatCommands_releaseHookLeft();
+bool boatCommands_releaseHookRight();
 
 #endif
