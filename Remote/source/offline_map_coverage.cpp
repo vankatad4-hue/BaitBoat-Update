@@ -46,6 +46,12 @@ bool mapCoverage_begin(const char *root)
     if (!root || !*root) return false;
     File f = SD.open((String(root)+"/coverage_index.csv").c_str(), FILE_READ);
     if (!f) return false;
+    // Bound total input, not just parsed rows: blank lines also consume time.
+    if (f.size() > (static_cast<uint32_t>(INDEX_LIMIT) + 1U) * 48U)
+    {
+        f.close();
+        return false;
+    }
     rows = (CoverageRecord *)heap_caps_malloc(sizeof(CoverageRecord) * INDEX_LIMIT, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     if (!rows) { f.close(); return false; }
 
