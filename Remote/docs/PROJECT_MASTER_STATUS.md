@@ -75,7 +75,7 @@ Boat:
 ## Versioned ZIP status
 - [Build and checksum status](../../docs/ZIP_BUILD_STATUS_R1.md)
 - Preserved baseline archives: Remote `Flytec_Remote_ver004.zip`, Boat `Flytec_Boat_ver004.zip`.
-- Next snapshot markers are Remote `006` and Boat `006`; the packaging workflow creates versioned ZIPs and SHA256 artifacts from the branch snapshot. These are pending successful workflow verification, not yet confirmed generated/downloadable archives.
+- Next snapshot markers are Remote `017` and Boat `006`; the packaging workflow creates versioned ZIPs and SHA256 artifacts from the branch snapshot. These are pending successful workflow verification, not yet confirmed generated/downloadable archives.
 - Packaging policy: `docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Boat controller pin audit
@@ -96,8 +96,8 @@ Boat:
 
 ## Release status
 - Repository branch: `hardware-ready-dual-radio-r1`; draft PR #1 remains open and unmerged.
-- ZIP snapshot ver006 is pending Actions workflow verification. Existing ver004 archives are preserved.
-- Release archives ver004 remain unchanged. ver005 is the next snapshot and not yet verified.
+- ZIP snapshot ver017 is pending Actions workflow verification. Existing ver004 archives are preserved.
+- ver016/006 are the latest committed snapshots; ver017 is pending.
 - Do not operate boat or connect actuator power. Bench tests only.
 
 - Consolidated remote pin map and connector CSV R4 are the current versions; older R2 docs marked superseded. Consolidated remote power BOM/capture spec R6 are current; R5 docs marked superseded.
@@ -124,7 +124,7 @@ Boat:
 
 ## Remote concept R6 update (2026-11-20)
 - Styling/layout is now being aligned to `Remote/New_Handheld_Remote/CONCEPT/Flytec_Remote_Concept_Reference.jpg` (wide ergonomic grip silhouette, raised display bezel, upper joystick pods, central power key, dual antenna exits).
-- User-confirmed physical button arrangement: **4 columns × 2 rows on each side** (8 keys per bank), replacing the previous 2 columns × 4 rows.
+- User-confirmed physical button arrangement: **2 columns × 4 rows on each side** (8 keys per bank), replacing the previous 2 columns × 4 rows.
 - R6 concept SVG and mechanical/button-map documents are committed. These remain visual design references only; the enclosure CAD has not been dimensionally redesigned or checked for component fit yet.
 
 
@@ -135,7 +135,7 @@ Boat:
 
 
 ## R6 enclosure CAD validation (2026-11-20)
-- Reworked R6 parametric enclosure with target 310×209mm perimeter, 66.5mm rear tray, 3.5mm front panel, raised 2mm preliminary collars around release keys, separate physical OK/confirm switch below the display, and power switch above display.
+- Reworked R6 parametric enclosure with target 310×209mm perimeter, 66.5mm rear tray, 3.5mm front panel, raised 2mm preliminary collars around release keys, OK/confirm key in the right-bank bottom-right position, electrically separate on MCP23017 0x21 GPA4, and power switch above display.
 - Antenna pass-through positions shifted to Y=82mm. Four release-button apertures are enlarged to 18mm; collar OD21mm/ID17.6mm.
 - Local OpenSCAD renders/exports succeeded for front, rear, cap set and assembly. Mesh check: front and rear watertight, each single connected mesh; button-cap plate watertight with 17 individual caps.
 - Local files are preliminary validation only. The real CAD workflow has been updated to export R6 front/rear/buttons, angled preview, and orthographic front-layout preview. GitHub Actions results and generated repository STLs/ZIP are still pending verification.
@@ -178,12 +178,6 @@ Boat:
 - `REMOTE_TELEMETRY_COMMAND_CONTRACT_R1.md` proposes telemetry and command ACK payloads; not implemented.
 
 
-## Archive cross-review and payload codec milestone (2026-11-20)
-- Re-read archived Remote/Boat ver001–005, Remote ver009, R6.3 internal-layout and R6.4 concept-preview packages.
-- Added R6.5 electrical netlist cross-review: key outstanding issue is the proposed 1S4P (~10Ah) pack versus the project note that the Waveshare onboard charger recommends battery capacity below 2000mAh. Charger/current/power-path/thermal compatibility must be verified before battery connection or USB charging.
-- Added portable eight-byte HEARTBEAT/ACK/TELEMETRY payload decoder on both endpoint source trees, with strict reserved-bit/range checks and host tests. Corrected contract duplicate sonar subtype in R2.
-- Decoder is not integrated into frame dispatch, ACK lifecycle, telemetry freshness/coordinate pairing, or boat-side telemetry generation. No commands or actuators are enabled by this milestone.
-- Next: wire authenticated receive dispatch to decoder; implement ACK correlation/pending/timeout; update heartbeat sender fields; apply partial telemetry with per-group freshness; then host-test malformed, stale, duplicate and failover cases.
 
 
 ## Archive cross-review and payload codec milestone (2026-11-20)
@@ -192,3 +186,15 @@ Boat:
 - Added portable eight-byte HEARTBEAT/ACK/TELEMETRY payload decoder on both endpoint source trees, with strict reserved-bit/range checks and host tests. Corrected contract duplicate sonar subtype in R2.
 - Decoder is not integrated into frame dispatch, ACK lifecycle, telemetry freshness/coordinate pairing, or boat-side telemetry generation. No commands or actuators are enabled by this milestone.
 - Next: wire authenticated receive dispatch to decoder; implement ACK correlation/pending/timeout; update heartbeat sender fields; apply partial telemetry with per-group freshness; then host-test malformed, stale, duplicate and failover cases.
+
+
+## R6.6 physical button/OK crosswalk (2026-11-20)
+- Approved layout is two columns × four rows per bank. One power key above display; OK is right-bank bottom-right, no duplicate power key.
+- Total: 15 scanned key inputs on MCP23017 0x20 plus separate OK on MCP23017 0x21 GPA4. GPB7 spare.
+- CAD source and scanner updated. Generated STLs/preview still require rebuild; no physical fit/test.
+- Added `REMOTE_BUTTON_IO_CROSSWALK_R6_6.md` and `PHYSICAL_BUTTON_MAP_R6_6.md`.
+
+## Firmware utility progress (2026-11-20)
+- Added portable strict payload decoder on Remote and Boat for heartbeat, ACK, telemetry status, battery/speed, coordinate, navigation and sonar-summary payloads.
+- Added Remote ACK lifecycle tracker with pending/accepted/executed/rejected/timeout states and backup-link restrictions.
+- Host tests pass locally for payload decoder and ACK tracker with GCC C++11, warnings-as-errors and address/undefined sanitizers. These utilities are not integrated into radio dispatch, UI or boat application. No full firmware build.
