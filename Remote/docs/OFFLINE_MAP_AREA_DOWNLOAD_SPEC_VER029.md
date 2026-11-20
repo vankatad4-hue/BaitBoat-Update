@@ -1,6 +1,6 @@
 # Offline map area download specification — ver029
 
-This is the implementation contract for the approved 1 km² SD offline-map feature. Firmware downloading is not implemented. A desktop planning utility is now available at `tools/map_area_planner.py` and calculates bounds, XYZ tile coverage and storage estimates; it outputs a JSON plan only.
+This is the implementation contract for the approved 1 km² SD offline-map feature. Firmware downloading is not implemented. Desktop tools include `tools/map_area_planner.py` (JSON tile/storage plan) and `tools/mbtiles_area_export.py` (extracts selected tiles from a locally supplied MBTiles archive, converts to RGB565 and writes missing-tile plus attribution/licence metadata). Neither tool downloads imagery.
 
 ## Area selection
 - Default shape: square, 1000 m × 1000 m, centred on current GPS location (or user-selected centre).
