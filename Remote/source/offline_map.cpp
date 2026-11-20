@@ -1,4 +1,5 @@
 #include "offline_map.h"
+#include "offline_map_coverage.h"
 
 #include <Arduino.h>
 #include <FS.h>
@@ -56,7 +57,7 @@ bool offlineMap_begin(bool sdCardReady)
         return false;                               // Keep the map grid as a safe visual fallback.
     }
 
-    g_map_pack_available = offlineMap_checkManifest(); // Verify the map-pack format marker.
+    g_map_pack_available = offlineMap_checkManifest() && mapCoverage_begin(); // Verify the map-pack format marker.
     Serial.println(g_map_pack_available ? "MAP: Offline map pack found." : "MAP: No offline map pack installed."); // Log status.
     return g_map_pack_available;                    // Return true only when a compatible map pack is present.
 }
@@ -64,7 +65,7 @@ bool offlineMap_begin(bool sdCardReady)
 // Report whether a compatible map pack is installed.
 bool offlineMap_hasMapData()
 {
-    return g_map_pack_available;                    // Return the cached manifest validation result.
+    return g_map_pack_available;                    // Manifest and coverage index must both validate.
 }
 
 // Copy the validated attribution string to a caller-owned buffer.
@@ -77,10 +78,10 @@ bool offlineMap_getAttribution(char *buffer, size_t bufferSize)
     return true;
 }
 
-// Read one raw RGB565 tile from the selected map style and zoom level.
+void offlineMap_getCoverageStats(uint16_t &planned,uint16_t &present,uint16_t &missing){mapCoverage_getStats(planned,present,missing);}\n\n// Read one raw RGB565 tile from the selected map style and zoom level.
 uint16_t *offlineMap_readTile(OfflineMapStyle style, uint8_t zoom, uint32_t tileX, uint32_t tileY)
 {
-    if (!g_sd_available || !g_map_pack_available)   // Reject requests until storage and manifest are valid.
+    if (!g_sd_available || !g_map_pack_available || !mapCoverage_tilePresent(zoom,tileX,tileY))   // Require pack/index and indexed tile presence.
     {
         return nullptr;                              // No tile can be loaded safely.
     }
