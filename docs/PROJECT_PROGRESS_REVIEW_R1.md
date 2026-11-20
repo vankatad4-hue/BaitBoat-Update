@@ -122,7 +122,7 @@ Archive correction: the former packaging workflow regenerated version-named ZIPs
 
 
 ## Source consistency & compile-preparation audit R1 — 2026-11-20
-- Full source consistency findings and blockers are documented in `docs/SOURCE_CONSISTENCY_AUDIT_R1.md`.
+- Source consistency findings and blockers from this review pass are documented in `docs/SOURCE_CONSISTENCY_AUDIT_R1.md`.
 - Found a session-handshake reliability issue: startup marker and reply could be lost without retry. Remote now retries each configured link until per-link confirmation (primary 500 ms, E22 3 s and duty-limited); Boat resends same-session response idempotently. Source changes committed, not compiled or integration-tested.
 - No reproducible target build manifest/dependency lock is present. Remote requires LVGL 9.6, but exact display library versions are not pinned.
 - Remote host-test workflow is missing; Boat portable tests do not exercise full dual-radio port/session/ACK integration.
