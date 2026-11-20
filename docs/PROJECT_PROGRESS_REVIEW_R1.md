@@ -159,3 +159,7 @@ Archive correction: the former packaging workflow regenerated version-named ZIPs
 - Confirmed installed versions from compiler output: ESP32 Arduino core 3.0.2, LVGL 9.6.0, ESP32_Display_Panel 1.0.0, ESP32_IO_Expander 1.0.1, esp-lib-utils 0.1.2, RF24 1.4.11.
 - Three compile findings were corrected: LVGL event-target API use in joystick calibration; map renderer line-point type for LVGL 9.6; escaped-newline comment accidentally suppressing Map Manager `copyChunk()` declaration.
 - Corrective commits: `1afd17d5`, `00840087`, `7213f04e`. Target rebuild pending. Do not claim full compilation.
+
+
+### Remote target compile #14 follow-up
+Target Compile #14 failed due to undeclared module variable `g_map_attribution` in `offline_map.cpp`. Added the missing private 256-byte buffer in commit `9aa20b0d987f94ea5b49e46509ae0ba10cc9d36b`. Compile #15 is the verification run; status pending.
