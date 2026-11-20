@@ -6,14 +6,22 @@
 // supply every safety input; default/false readiness inhibits all starts.
 class BoatMissionController {
 public:
- void resetSession(){engine_=MissionExecution{};plan_={};phase_=MC_IDLE;stagedAt_=0;lastRequest_=0;lastOp_=0;lastResult_=MC_STATUS;}
+ void resetSession(){engine_=MissionExecution{};plan_={};phase_=MC_IDLE;stagedAt_=0;lastRequest_=0;lastOp_=0;lastResult_=MC_STATUS;diverted_=false;}
  bool stage(const MissionPlan &p,uint32_t now,bool authenticated,bool stationaryStopVerified){
   if(!authenticated||!stationaryStopVerified||!missionPlan_valid(p)||
      (phase_!=MC_IDLE&&phase_!=MC_PREPARED&&phase_!=MC_COMPLETE&&phase_!=MC_ABORTED&&phase_!=MC_MANUAL_REQUESTED)||
      (plan_.transaction&&p.transaction<=plan_.transaction))return false;
-  plan_=p;phase_=MC_PREPARED;stagedAt_=now;lastRequest_=0;lastOp_=0;lastResult_=MC_STATUS;return true;
+  diverted_=false;plan_=p;phase_=MC_PREPARED;stagedAt_=now;lastRequest_=0;lastOp_=0;lastResult_=MC_STATUS;return true;
  }
  void emergencyAbort(){if(plan_.transaction){engine_.abort();phase_=MC_ABORTED;if(lastOp_!=MCTRL_CANCEL)lastResult_=MC_REJECTED;}}
+ // Local fail-safe authorization belongs to the previously started mission,
+ // not to a new radio session. No radio request can resume its old target.
+ bool divertHome(const ExecInputs &in,bool appReady){
+  if(!appReady||!engine_.divertHome(in)){emergencyAbort();return false;}
+  diverted_=true;phase_=MC_RETURNING;lastResult_=MC_REJECTED;return true;
+ }
+ bool diverted()const{return diverted_&&phase_==MC_RETURNING;}
+ MissionNavigationResult navigation(const ExecInputs &in)const{return engine_.navigation(in);}
  uint16_t lastRequestId()const{return lastRequest_;}
  MissionControlFeedback status()const{return {plan_.transaction,phase_,0,0,MC_STATUS};}
  bool request(const MissionControlRequest &r,const ExecInputs &in,uint32_t now,bool authenticated,bool appReady,bool sticksNeutral,MissionControlFeedback &ack){
@@ -25,7 +33,7 @@ public:
   }
   bool accepted=false;
   if(r.op==MCTRL_CANCEL){engine_.abort();phase_=MC_ABORTED;accepted=true;}
-  else if(appReady&&in.primaryFresh&&!in.stopActive){
+  else if(!diverted_&&appReady&&in.primaryFresh&&!in.stopActive){
    switch(r.op){
    case MCTRL_START:
     if(phase_==MC_PREPARED&&now-stagedAt_<10000U&&sticksNeutral&&engine_.start(plan_,in,now,true)){phase_=MC_OUTBOUND;accepted=true;}
@@ -61,6 +69,9 @@ public:
    return stop;
   }
   if(phase_==MC_PREPARED){if(now-stagedAt_>=10000U||!in.primaryFresh){phase_=MC_ABORTED;}return stop;}
+  if(!in.primaryFresh&&!in.backupFresh&&(phase_==MC_OUTBOUND||phase_==MC_PAUSED||phase_==MC_OVERRIDE_ACTIVE||phase_==MC_OVERRIDE_NEUTRAL||phase_==MC_RETURNING)){
+   if(!diverted_){divertHome(in,appReady);return stop;}
+  }
   if((phase_==MC_OVERRIDE_ACTIVE||phase_==MC_OVERRIDE_NEUTRAL)&&!in.primaryFresh){
    // Do not carry a stale manual override into a backup-only session.
    engine_.abort();phase_=MC_ABORTED;return stop;
@@ -84,6 +95,7 @@ public:
  // executor must validate and lease each fresh authenticated stick command.
  bool temporaryOverrideConfirmed()const{return phase_==MC_OVERRIDE_ACTIVE;}
 private:
+ bool diverted_=false;
  MissionExecution engine_;MissionPlan plan_{};MissionControlPhase phase_=MC_IDLE;uint32_t stagedAt_=0;
  uint16_t lastRequest_=0;uint8_t lastOp_=0;MissionControlResult lastResult_=MC_STATUS;
 };

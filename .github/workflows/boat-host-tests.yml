@@ -96,3 +96,7 @@ jobs:
           cp Remote/source/mission_control_client.h /tmp/flytec_mission_client/
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I/tmp/flytec_mission_client -IBoat/source Boat/source/mission_protocol.cpp Boat/tests/mission_transport_integration_test.cpp -o /tmp/boat_mission_integration
           /tmp/boat_mission_integration
+      - name: Autonomous return after radio session expiry
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/source/mission_protocol.cpp Boat/tests/mission_link_loss_test.cpp -o /tmp/boat_link_loss
+          /tmp/boat_link_loss

@@ -21,6 +21,14 @@ public:
   releaseToken_=0;releaseAt_=now;return true;
  }
  void abort(){phase_=EXEC_ABORTED;remaining_=0;}
+ // Irreversible diversion: discard all release work. Never travel with an
+ // unconfirmed release pulse, invalid Home navigation or active STOP.
+ bool divertHome(const ExecInputs &in){
+  if(phase_!=EXEC_OUTBOUND&&phase_!=EXEC_AT_TARGET&&phase_!=EXEC_RETURNING&&phase_!=EXEC_PAUSED)return false;
+  if(in.stopActive||!in.releaseIdle||!missionNavigation_evaluate(plan_,in.fix,true).valid){abort();return false;}
+  remaining_=0;phase_=EXEC_RETURNING;return true;
+ }
+ MissionNavigationResult navigation(const ExecInputs &in)const{return missionNavigation_evaluate(plan_,in.fix,phase_==EXEC_RETURNING);}
  bool pause(bool authenticated){
   if(!authenticated||(phase_!=EXEC_OUTBOUND&&phase_!=EXEC_RETURNING))return false;
   resumePhase_=phase_;phase_=EXEC_PAUSED;return true;
@@ -49,8 +57,7 @@ public:
    return stopped;
   }
   if(!in.primaryFresh&&!in.backupFresh){
-   if(!in.releaseIdle){abort();return stopped;}
-   remaining_=0;phase_=EXEC_RETURNING;
+   if(!divertHome(in)){abort();return stopped;}
    if(!navHome)return stopped; // recompute Home geometry next tick
   }
   if(phase_==EXEC_PAUSED)return stopped;

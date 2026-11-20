@@ -54,6 +54,11 @@ public:
     // Null provider denies execution; diagnostic sketch never registers one.
     void setMissionInputs(bool (*input)(ExecInputs &)){missionInput_=input;controller_.emergencyAbort();stickLease_.reset();}
     ExecOutput missionIntent()const{return missionIntent_;}
+    MissionControlPhase missionPhase()const{return controller_.status().phase;}
+    uint16_t missionTransaction()const{return controller_.status().transaction;}
+    bool detachedReturnActive()const{return detachedReturn_;}
+    MissionNavigationResult missionNavigation()const{ExecInputs in{};return missionInputs(in,millis())?controller_.navigation(in):MissionNavigationResult{};}
+    void localEmergencyStop(){abortMission();detachedReturn_=false;commandQueue_.clear();mission_.reset();}
     bool missionOverrideOutput(int16_t &left,int16_t &right)const;
     bool missionReleaseComplete(uint16_t transaction,uint16_t token,bool success);
     void update();
@@ -96,7 +101,8 @@ private:
     bool authenticated_;
     bool sessionStarted_;
     bool lastNrfRxValid_,lastE22RxValid_;
-    void resetSession();
+    bool detachedReturn_=false;
+    void resetSession(bool preserveReturn=false);
     bool sessionReady() const {return sessionStarted_&&txSequence_<RadioSessionCounter::REKEY_AT-1;}
     void receive(ManagedLink link,const RadioFrame &frame);
     bool enqueue(const BoatCommand &cmd,ManagedLink link,bool duplicate);
