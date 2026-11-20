@@ -290,7 +290,7 @@ Boat:
 - Tests added for coverage-index export, not executed. Firmware compile and hardware tests pending. Remote version remains 028; ver029 development not packaged.
 
 
-- Consolidated Remote history is maintained at `Remote/releases/CHANGELOG_MASTER_VER014.md` (history document revision VER008; source marker still ver028).
+- Consolidated Remote history is maintained at `Remote/releases/CHANGELOG_MASTER_VER015.md` (history document revision VER008; source marker still ver028).
 
 - ver029.3 robustness follow-up: coverage index uses PSRAM/binary search, import validates tile byte lengths/count and cache refresh. Added map-tools test workflow; CI result not confirmed.
 
@@ -359,3 +359,10 @@ Boat:
 - Existing Wi-Fi, display, controls, sonar, map source selector and system navigation preserved.
 - Source: `Remote/source/settings_ui.cpp`; commit `9f5afc60294790c2`.
 - Remaining category-body labels are still mixed English/Bulgarian and require a separate localization review. Not compiled or LVGL Pro-tested.
+
+
+## Offline Map Manager UI polish — 2026-11-20
+- Map Manager screen now uses the shared dark marine palette, rounded panel and blue outline, consistent blue touch buttons and Bulgarian labels for centre nudges, GPS centre, zoom selection, estimates, pack status, coverage, import and back.
+- Existing 1 km area, zoom 14–19 selection, storage estimate, coverage index, staged-pack validation, chunked import progress and fail-closed behavior retained.
+- Sources: `Remote/source/map_manager_ui.cpp`; commits `0908af0ebc95c905`, `1727fb5cf899e3ec`.
+- Not compiled or LVGL Pro-tested. Long progress/error strings and touch layout require simulator review.
