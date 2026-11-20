@@ -65,3 +65,8 @@ Candidate band for backup safety/control: 869.4–869.65MHz, harmonized conditio
 - primary loss, backup acquisition, failback hysteresis, both lost failsafe.
 - no solenoid actuation in backup, duplicate or stale frames.
 - measure airtime and enforce duty cycle; legal EIRP with actual antennas.
+
+
+## Clock and session safety correction
+- Sender and receiver millis() clocks are independent. The 16-bit sender tick is not a cross-device freshness clock; do not compare it to receiver millis(). The current command decoder uses local receipt time and sequence checks instead. Receiver watchdogs measure time since locally received authenticated frames.
+- Session epoch is now inside the authenticated frame header. However, session negotiation/epoch reset and replay protection across remote/boat reboot are still not implemented; session epoch currently remains a placeholder constant in sender scaffolds. Do not treat replay protection as complete.
