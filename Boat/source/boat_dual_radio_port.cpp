@@ -37,13 +37,14 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  const uint32_t now=millis();
  if(!authenticated_ || !radio_frameVerify(f,key_) || f.sourceId!=REMOTE_ID || f.destinationId!=BOAT_ID ||
     !radio_tickFresh(f.tick16,(uint16_t)now,2500)) return;
+ if(!seqGuard_.accept(f.sessionEpoch,f.sequence)) return;
+ if(link==LINK_NRF_PRIMARY)lastNrfRxMs_=now;else lastE22RxMs_=now;
+ if(f.type==RADIO_MSG_HEARTBEAT || f.type==RADIO_MSG_TELEMETRY || f.type==RADIO_MSG_ACK || f.type==RADIO_MSG_LINK_PROBE)
+     return;
  BoatCommand cmd;
  if(!radio_decodeCommand(f,REMOTE_ID,BOAT_ID,now,2500,link==LINK_LORA_BACKUP,cmd,key_)) return;
- if(!seqGuard_.accept(f.sessionEpoch,f.sequence)) return;
  const bool duplicate=dedupe_.hasExecuted(f.sourceId,f.sessionEpoch,f.commandId);
- if(enqueue(cmd,link,duplicate)) {
-   if(link==LINK_NRF_PRIMARY)lastNrfRxMs_=now;else lastE22RxMs_=now;
- }
+ enqueue(cmd,link,duplicate);
 }
 bool BoatDualRadioPort::enqueue(const BoatCommand &cmd,ManagedLink link,bool duplicate) {
  if(qCount_>=4)return false;
