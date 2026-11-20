@@ -2,11 +2,11 @@
 
 **Branch:** `hardware-ready-dual-radio-r1`  
 **Date:** 2026-11-20  
-**State:** Candidate configuration identified; build manifest intentionally not frozen.
+**State:** User-confirmed hardware selection; dependency/build manifest remains unfrozen pending version compatibility checks.
 
 ## Remote candidate target
 
-Current source targets **Waveshare ESP32-S3-Touch-LCD-4.3, standard (SKU 25948)**, not the newer 4.3B variant. This identification comes from the source comments and the earlier design selection. It must be reconfirmed before purchase/build.
+**User confirmed:** We will use **Waveshare ESP32-S3-Touch-LCD-4.3 Standard, SKU 25948**. This is not the 4.3B or BOX variant. The unit has not yet been purchased or physically inspected, so its actual revision/markings must still be checked on receipt.
 
 Source adapter:
 - `Remote/source/display_port.cpp`
@@ -33,7 +33,7 @@ Choosing arbitrary latest versions is unsafe: Waveshare's board examples and lib
 
 ## Candidate compile plan
 
-1. Confirm SKU 25948 is the intended Remote display (standard, not 4.3B or BOX).
+1. On receipt, verify the physical SKU/board revision and connector layout match the standard SKU 25948.
 2. Retrieve official demo package and identify its exact ESP32_Display_Panel and ESP_IO_Expander versions and board config.
 3. Select an ESP32 Arduino core supported by that dependency set; lock the version.
 4. Integrate LVGL 9.6.0 and the project's configuration; compile a display-port smoke target first.
@@ -57,3 +57,8 @@ Boat controller remains a candidate Heltec Wireless Tracker ESP32-S3 with onboar
 - Waveshare resources/examples: https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3/Resources-And-Documents
 - Waveshare usage guide: https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3/Instructions-For-Use
 - Waveshare FAQ: https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3/FAQ
+
+## User hardware selection confirmation — 2026-11-20
+- User explicitly confirmed the standard Waveshare ESP32-S3-Touch-LCD-4.3 unit specified above.
+- Hardware selection is no longer a design question. Purchase/physical verification remains outstanding.
+- Build dependency pinning and compilation remain the next software gate; no changes to display architecture are needed.
