@@ -1,39 +1,25 @@
 /*
-  Flytec V080 boat-side firmware — starter scaffold
-  Archive: Flytec_Boat_ver003.zip
-
-  SAFETY:
-  Selected hardware (not yet implemented): Heltec Wireless Tracker V1.2
-  (ESP32-S3FN8 + UC6580 GNSS), GY-91-style MPU-9250 + BMP280, and external
-  nRF24L01+ PA/LNA. Tracker SX1262 LoRa is not the selected command radio.
-
-  This sketch intentionally does not configure or drive motor, solenoid, GNSS,
-  sensor or nRF24L01+ PA/LNA radio pins.
-  It is not operational boat-control firmware.
-  Do not connect it to powered actuator stages or use it to operate the boat.
-*/
-
+ * Flytec Boat non-actuating target application.
+ * GPIO assignments are deliberately disabled until the precise Tracker revision,
+ * board wiring and external hardware interlocks are verified.
+ * No motor/solenoid pins are configured. Do not connect actuator power.
+ */
 #include <Arduino.h>
-
-static void initialiseSafeState()
-{
-  // TODO: Implement hardware-specific safe-state initialization only after
-  // the final PCB schematic, pin map, and external driver logic are verified.
-  // Keep all actuator outputs disabled during initialisation.
+#include "boat_dual_radio_port.h"
+static BoatDualRadioPort radio;
+void setup(){
+ Serial.begin(115200);
+ Serial.println("Flytec Boat: diagnostic-only firmware; actuator output disabled.");
+ const bool ready=radio.begin();
+ Serial.println(ready?"Radio transport configured; awaiting secure session.":"Radio pin configuration unavailable.");
+ // No physical stationary/STOP sensor validation exists yet, so leave
+ // the mission preparation gate unset (default deny).
 }
-
-void setup()
-{
-  Serial.begin(115200);       // Start diagnostic serial output.
-  delay(100);                 // Allow the serial interface to settle.
-  initialiseSafeState();      // Keep actuator control unimplemented and safe.
-  Serial.println("Flytec boat firmware scaffold - NOT FOR BOAT OPERATION");
-}
-
-void loop()
-{
-  // TODO: Add non-actuating diagnostics and subsystem health checks.
-  // Do not add motor or solenoid commands until the safety architecture
-  // and hardware interfaces have been reviewed and tested.
-  delay(100);
+void loop(){
+ radio.update();
+ BoatCommand command{};bool duplicate=false;ManagedLink link=LINK_NONE;
+ // Consume diagnostics without executing any accepted command or issuing
+ // execution acknowledgements. Queue receipt never represents actuation.
+ while(radio.takeCommand(command,duplicate,link)){}
+ delay(1);
 }

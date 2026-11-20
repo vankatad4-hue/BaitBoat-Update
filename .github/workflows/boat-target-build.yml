@@ -1,0 +1,49 @@
+name: Boat target compile — ESP32-S3 diagnostic only
+on:
+  push:
+    branches: [hardware-ready-dual-radio-r1]
+    paths:
+      - 'Boat/source/**'
+      - '.github/workflows/boat-target-build.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: boat-target-build-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: arduino/setup-arduino-cli@v2
+      - name: Install pinned ESP32 and radio dependencies
+        run: |
+          arduino-cli config init
+          arduino-cli config add board_manager.additional_urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+          arduino-cli core update-index
+          arduino-cli lib update-index
+          arduino-cli core install esp32:esp32@3.0.2
+          arduino-cli lib install "RF24@1.4.11"
+      - name: Stage diagnostic application
+        run: |
+          mkdir -p /tmp/FlytecBoatBuild
+          cp Boat/source/*.cpp Boat/source/*.h /tmp/FlytecBoatBuild/
+          cp Boat/source/firmware/Flytec_Boat.ino /tmp/FlytecBoatBuild/FlytecBoatBuild.ino
+      - name: Compile Boat application (unassigned GPIO, no actuation)
+        run: |
+          set -o pipefail
+          arduino-cli compile --verbose --export-binaries --fqbn 'esp32:esp32:esp32s3' /tmp/FlytecBoatBuild 2>&1 | tee /tmp/boat-target-build.log
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: flytec-boat-diagnostic-firmware
+          path: /tmp/FlytecBoatBuild/build/esp32.esp32.esp32s3/**
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: boat-target-build-log
+          path: /tmp/boat-target-build.log
+          if-no-files-found: ignore
