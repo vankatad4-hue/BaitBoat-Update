@@ -477,7 +477,6 @@ static void controlDeadZoneEvent(lv_event_t *event)
     joystick_setDeadZone(value);
     char label[64]; snprintf(label,sizeof(label),"Dead zone: %d ADC counts",value);
     lv_label_set_text(controlDeadZoneLabel,label);
-    saveControlPrefs();
 }
 static void openCalibrationEvent(lv_event_t *event)
 {
