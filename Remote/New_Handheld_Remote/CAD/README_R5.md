@@ -14,3 +14,5 @@ Cap-label source fixed for OpenSCAD parser compatibility; rerun exports for this
 Button-cap STL exports are text-free; identify each cap by filename and the R5 button map, avoiding OpenSCAD font-version dependencies.
 
 Latest R5 fit geometry: maximum shell width310.1mm, height209mm; overall depth69.5mm including raised release guards. CAD STL meshes were locally checked for watertightness. These are still fit prototypes.
+
+Automated GitHub export builds front/rear shells, the multi-cap plate and preview. Individual named release-cap STLs are included in the manual print package; the automated build intentionally avoids font/parser-dependent variants.
