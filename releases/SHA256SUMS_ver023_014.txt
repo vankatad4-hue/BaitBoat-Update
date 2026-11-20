@@ -1,0 +1,2 @@
+ab8ddee6e260d3794af3f66e014c2a7a969b1cd6a55aaf8120cccbf01b2f220d  out/Flytec_Boat_ver014.zip
+8f04f0ef2e21b6e10cdec913e585b827c0858b9e6829c78a1c65c4813b691ef2  out/Flytec_Remote_ver023.zip
