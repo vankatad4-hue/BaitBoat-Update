@@ -1,6 +1,6 @@
 # Google Online Map Renderer — Phase 1 Integration Contract (VER029.7)
 
-**Status:** Implementation planning milestone; no Google tile requests or online rendering code enabled.
+**Status:** Phase 1 settings UI partly implemented; no Google tile requests or online rendering code enabled.
 **Baseline:** Remote ver028 / Boat ver014, branch `hardware-ready-dual-radio-r1`.
 **Policy:** Google Maps imagery may only be displayed online under applicable Maps Tile API terms. No persistent tile cache, SD storage, bulk requests, tile stitching/export, or image analysis.
 
@@ -31,3 +31,10 @@
 
 ## Release gate
 No Google online mode shall be advertised as functional until API key provisioning, external billing/quota configuration, TLS certificate validation, decoder, online viewport rendering and target tests are verified. No API key or test credential may enter repository files or release ZIPs.
+
+
+## P1 implementation note (2026-11-20)
+- The Settings → MAP UI now cycles and displays persisted AUTO / ONLINE / OFFLINE preference.
+- It explains AUTO fallback intent, offline-only behavior and that Wi-Fi association does not prove internet access.
+- The UI explicitly marks Google provider unavailable and unconfigured.
+- P1 is only partially complete: preference presentation is wired; provider/service interface and internet-health reporting are still absent.
