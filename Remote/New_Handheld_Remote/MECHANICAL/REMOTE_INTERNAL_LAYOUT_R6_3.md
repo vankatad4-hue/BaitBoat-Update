@@ -2,7 +2,7 @@
 
 **Status:** Layout planning only. Electronics have not been purchased and dimensions are not yet verified.
 
-## Coordinate reference
+## Layout diagram and CAD view\n- [R6.3 internal layout SVG](../CONCEPT/RENDER_R6_3/Remote_Internal_Layout_R6_3.svg)\n- CAD source has an `internal` visualization mode showing provisional envelope blocks.\n\n## Coordinate reference
 Use the R6.3 CAD origin at the enclosure center; X is left/right, Y is up/down on the front view, Z is depth from the front face. Front controls are already placed in R6.3.
 
 ## Component zones
