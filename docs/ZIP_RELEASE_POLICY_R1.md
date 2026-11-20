@@ -1,8 +1,8 @@
 # Versioned ZIP Packaging
 
 ## Current next package version
-- Remote: `Remote/releases/VERSION` → `005`
-- Boat: `Boat/releases/VERSION` → `005`
+- Remote: `Remote/releases/VERSION` → `006`
+- Boat: `Boat/releases/VERSION` → `006`
 - Existing ver004 archives are preserved; never overwrite them.
 
 ## Rules
@@ -15,5 +15,5 @@
 7. On push events, the workflow commits generated ZIPs and SHA256 manifest into the branch's releases folders; on PR events it uploads artifacts without committing. Confirm workflow completion and checksum integrity before calling a ZIP verified. The ZIP is a deliverable snapshot, not a fabrication/operational approval.
 8. Keep older release archives unchanged and preserve their version history.
 
-## ver005 package scope
+## ver006 package scope
 Snapshot of the current dual-radio development branch, including hardware capture docs, source scaffolding, bench tests, safety limitations, and the controller pin audit. It is explicitly bench/development only.
