@@ -1,3 +1,5 @@
+# SUPERSEDED by REMOTE_HARDWARE_PIN_ASSIGNMENTS_R4.md
+
 # Remote Hardware Pin Assignment R2 — test harness proposal
 
 **Target:** Waveshare ESP32-S3-Touch-LCD-4.3 Standard (SKU 25948). The GPIO functions below are from official board documentation; physical PORT1 header numbers still require schematic revision/continuity confirmation. R2 uses an I2C UART bridge to avoid allocating a direct UART on the board's RS485/CAN/USB-multiplexed pins.
