@@ -150,3 +150,5 @@ When continuing in a new chat:
 - First target compile reached the actual Arduino sketch compiler but stopped on missing LVGL `lv_conf.h`; config file and workflow installation step added. The next target run is in progress; full firmware compilation remains unverified.
 
 - Target compile attempt #4 progressed past LVGL config setup and failed at missing `RF24.h`. RF24 1.4.11 was added to workflow dependencies; compile retry pending.
+
+- Display flush callback was hardened to avoid signaling LVGL through a null display pointer. Compile verification is still pending.
