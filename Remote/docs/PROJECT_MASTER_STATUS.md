@@ -210,3 +210,11 @@ Boat:
 - Heartbeat payload fields and nonzero 16-bit action IDs corrected.
 - Boat-side session-echo, per-radio sequence guards, pending-command deduplication and queue-level ACCEPTED/DUPLICATE/BUSY ACK scaffolds are present, but no telemetry source, command executor, EXECUTED ACK or actuator lifecycle is integrated. Session recovery remains weak without a challenge/response protocol. Full firmware build and RF/hardware test pending.
 - New review: `REMOTE_FIRMWARE_INTEGRATION_REVIEW_R2.md`; contract R3.
+
+
+## Remote UI/input milestone — ver024 (2026-11-20)
+- Added touchscreen mode request controls (MANUAL / AUTOPILOT / RETURN HOME) in the operating footer. They use the existing command request API; authoritative acceptance/execution remains boat-side and unimplemented.
+- Live joystick input diagnostics show calibration state, ADC read fault, raw values when uncalibrated, normalized values and neutral/active status when calibrated.
+- Compact safety strip shows STOP state/confirmation, failsafe or low battery, interlock readiness and pending ACK count.
+- Battery percentage now displays unknown when telemetry is absent/stale rather than falsely showing zero.
+- **Validation boundary:** source review only; full target compile and hardware tests remain pending. No commands can operate with unprovisioned authentication key; no boat execution path is integrated.
