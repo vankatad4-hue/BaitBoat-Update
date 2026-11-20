@@ -26,6 +26,7 @@ private:
     TwoWire &wire_;
     uint8_t address_;
     int peekByte_;
+    uint8_t rxLevelCache_;
     bool ready_;
     bool writeReg(uint8_t reg, uint8_t value);
     bool readReg(uint8_t reg, uint8_t &value);
