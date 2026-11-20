@@ -22,7 +22,7 @@ This folder contains the hardware design workspace for the new handheld bait-boa
 ## Power baseline (updated)
 - Controller/display 5V: Waveshare board onboard CS8501 boost through single-cell battery interface; external boost is fallback only. Never parallel boost outputs.
 - nRF24 rail: dedicated TPS63070 RADIO_3V3 buck-boost.
-- LoRa E22 supply: BAT_PROT directly (module 2.7–5.5V range), with local bulk bypass; configure output power conservatively and verify at pack voltage. 5V is required by module documentation for guaranteed maximum output, but maximum output is not the target.
+- LoRa E22 VCC: dedicated BAT_PROT→TPS61023→5V converter; CS8501 is reserved for controller/display. Module UART/M0/M1/AUX remain3.3V logic. Never parallel converter outputs.
 - 1S4P pack, protection fuse and reverse-polarity MOS candidates pending validation.
 - Charging circuit remains outside custom design scope; board USB/charging behavior still requires bench verification.
 
