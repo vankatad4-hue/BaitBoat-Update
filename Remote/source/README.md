@@ -291,3 +291,6 @@ This release adds documentation only. Radio and joystick inputs remain non-opera
 - `boat_radio.cpp` configures the remote LoRa module on boot and processes authenticated inbound link frames. It refuses TX and never establishes a link until secure key provisioning is supplied.
 - Backup control rate is now 0.5Hz to fit the initial 20ms airtime estimate on the 1% channel. This estimate must be measured and limiter persisted before field use.
 - nRF24 primary hardware transport still not implemented.
+
+- nRF24 transport implementation is present in `nrf24_link.*` but disabled by fail-closed pin defaults (-1); hardware CE/CSN pin assignment and RF24 library version must be confirmed. Shared SPI and SD arbitration are not tested.
+- E22 driver currently uses a 25ms airtime estimate and 1% channel budget in RAM. Backup command interval is 3s. Airtime persistence across reboot is not implemented, so it is lab-only.
