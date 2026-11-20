@@ -46,29 +46,37 @@ ACK is correlated to the matching command ID/type and session. ACK result=execut
 - `payload[3..4]` = speed cm/s, unsigned little-endian; 0xFFFF unknown.
 - `payload[5..7]` = reserved zero.
 
-### TELEMETRY subtype 3 — GNSS coordinate fragment A
+### TELEMETRY subtype 3 — GNSS latitude
 - `payload[0]` = 3.
-- `payload[1..3]` = latitude in signed 24-bit units of 1e-5 degrees (range −90 to +90 degrees).
-- `payload[4..6]` = longitude in signed 24-bit units of 1e-5 degrees (range −180 to +180 degrees).
-- `payload[7]` = coordinate sample counter, increments per GNSS sample.
-This encoding cannot represent all signed longitude/latitude at 1e-5 degree precision in 24 bits (longitude needs 25 bits); **therefore subtype 3 is rejected as unsuitable and must not be implemented**.
+- `payload[1]` = coordinate sample counter (modulo 256).
+- `payload[2..5]` = signed 32-bit latitude in units of 1e-7 degrees; valid −900000000..900000000.
+- `payload[6..7]` = horizontal accuracy in metres ×100, unsigned; 0xFFFF unknown.
 
-### TELEMETRY subtype 3 — revised compact coordinate
-- `payload[0]` = 3.
-- `payload[1..3]` = latitude signed 24-bit, units 1e-4 degrees; valid −900000..900000.
-- `payload[4..6]` = longitude signed 24-bit, units 1e-4 degrees; valid −1800000..1800000.
-- `payload[7]` = GNSS sample counter (modulo 256).
-Precision is approximately 11m at the equator. Suitable for overview/return guidance only; not precision waypoint arrival. Waypoint/autopilot must use a higher precision representation or multiple frames.
-
-### TELEMETRY subtype 4 — heading and navigation
+### TELEMETRY subtype 4 — GNSS longitude
 - `payload[0]` = 4.
+- `payload[1]` = same coordinate sample counter as subtype 3.
+- `payload[2..5]` = signed 32-bit longitude in units of 1e-7 degrees; valid −1800000000..1800000000.
+- `payload[6..7]` = reserved zero.
+Latitude and longitude records must be paired by sample counter; discard mismatched or stale pairs. This retains roughly centimetre-level numeric resolution (actual GNSS accuracy is much worse) without truncating coordinate ranges.
+
+### TELEMETRY subtype 5 — heading and navigation
+- `payload[0]` = 5.
 - `payload[1..2]` = heading centidegrees 0..35999; 0xFFFF unknown.
-- `payload[3..4]` = GNSS horizontal accuracy cm; 0xFFFF unknown.
+- `payload[3..4]` = speed cm/s; 0xFFFF unknown.
 - `payload[5]` = navigation status enum: 0 idle, 1 route active, 2 waypoint arrival, 3 return-home active, 4 navigation degraded, 5 failsafe.
 - `payload[6]` = waypoint/route index.
 - `payload[7]` = sample counter.
 
-### TELEMETRY subtype 5 — sonar summary (not echogram)
+### TELEMETRY subtype 6 — sonar summary (not echogram)
+- `payload[0]` = 6.
+- `payload[1..2]` = depth cm; 0xFFFF unknown.
+- `payload[3..4]` = sonar range cm; 0xFFFF unknown.
+- `payload[5]` = sonar health/status.
+- `payload[6]` = fish/alarm summary bitfield.
+- `payload[7]` = sample counter.
+This low-rate summary is not raw CHIRP data and cannot render a fish-arch echogram.
+
+### TELEMETRY subtype 6 — sonar summary (not echogram)
 - `payload[0]` = 5.
 - `payload[1..2]` = depth cm; 0xFFFF unknown.
 - `payload[3..4]` = sonar range cm; 0xFFFF unknown.
