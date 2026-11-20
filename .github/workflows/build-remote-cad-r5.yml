@@ -35,7 +35,7 @@ jobs:
           xvfb-run -a openscad -o Remote_Internal_Top_R6_1.png --imgsize=1400,900 --camera=0,0,0,0,0,0,450 --projection=o -D 'part="internal"' Flytec_Remote_Enclosure_R6.scad
           cd ../../..
           zip -r -9 Remote_CAD_R5_R6_1_Print_Package.zip Remote/New_Handheld_Remote/CAD Remote/New_Handheld_Remote/MECHANICAL/REMOTE_MECHANICAL_R5.md Remote/New_Handheld_Remote/MECHANICAL/PHYSICAL_BUTTON_MAP_R5.md Remote/New_Handheld_Remote/MECHANICAL/REMOTE_CONCEPT_R6.md Remote/New_Handheld_Remote/MECHANICAL/REMOTE_BUTTON_MAP_R6.md Remote/New_Handheld_Remote/MECHANICAL/REMOTE_MECHANICAL_R6.md Remote/New_Handheld_Remote/CAD/README_R5.md Remote/New_Handheld_Remote/MECHANICAL/REMOTE_MECHANICAL_R6_1.md
-          sha256sum Remote_CAD_R5_R6_Print_Package.zip > Remote_CAD_R5_R6_1_SHA256.txt
+          sha256sum Remote_CAD_R5_R6_1_Print_Package.zip > Remote_CAD_R5_R6_1_SHA256.txt
       - name: Commit generated print files and version bump
         run: |
           git config user.name 'github-actions[bot]'
