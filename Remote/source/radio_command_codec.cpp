@@ -67,12 +67,11 @@ bool radio_decodeCommand(const RadioFrame &f, uint8_t expectedSrc, uint8_t expec
     return true;
 }
 
-bool RadioSequenceGuard::accept(uint8_t epoch, uint16_t sequence) {
+bool RadioSequenceGuard::accept(uint8_t epoch, uint16_t sequence, bool allowEpochReset) {
     if (!initialized_) { initialized_=true; epoch_=epoch; lastSequence_=sequence; return true; }
     if (epoch != epoch_) {
-        // A new epoch is accepted only after an explicit session-sync layer.
-        // This low-level guard deliberately rejects implicit epoch changes.
-        return false;
+        if (!allowEpochReset) return false;
+        epoch_=epoch;lastSequence_=sequence;return true;
     }
     const uint16_t delta=(uint16_t)(sequence-lastSequence_);
     if (delta==0 || delta>=0x8000) return false; // duplicate, backwards or stale
