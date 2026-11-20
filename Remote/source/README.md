@@ -294,3 +294,5 @@ This release adds documentation only. Radio and joystick inputs remain non-opera
 
 - nRF24 transport implementation is present in `nrf24_link.*` but disabled by fail-closed pin defaults (-1); hardware CE/CSN pin assignment and RF24 library version must be confirmed. Shared SPI and SD arbitration are not tested.
 - E22 driver currently uses a 25ms airtime estimate and 1% channel budget in RAM. Backup command interval is 3s. Airtime persistence across reboot is not implemented, so it is lab-only.
+
+- R3 nRF pin defaults: CE GPIO6 (Sensor AD repurposed), CSN GPIO15 (RS485 TX path disabled/isolated), shared SPI GPIO11/12/13, channel76. IRQ routes to MCP23017 0x21 GPA1. These are provisional bench assignments pending board crosswalk and continuity verification.
