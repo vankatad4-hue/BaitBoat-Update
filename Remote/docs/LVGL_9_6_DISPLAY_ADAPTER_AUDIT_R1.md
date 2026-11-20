@@ -51,3 +51,10 @@ Target confirmed: yes.
 Build workflow committed: yes.  
 Full target compile: pending.  
 Physical board validation: not performed.
+
+## CI attempts and corrective actions
+
+- Attempt 1 failed before compiling source: Arduino CLI requires the sketch directory name and primary `.ino` basename to match. Workflow now stages a temporary folder named `FlytecRemoteBuild` and renames the entry sketch accordingly.
+- The same workflow now captures compiler output into an artifact log.
+- Host CI first failed because the unit test used a reduced `BoatState` stub layout that differed from the full struct compiled into the guard module (ODR/layout mismatch). The test now links the actual `boat_state.cpp` and full header.
+- The next host run exposed a bad invalid-latitude vector: the test encoded 50.0000001°, which is valid, rather than 91°. Corrected vector encodes 910,000,000 E7.
