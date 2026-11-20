@@ -25,6 +25,7 @@ These pins are recorded for reproducibility and must be validated from the CI co
 | ESP32_Display_Panel | 1.0.0 |
 | ESP32_IO_Expander | 1.0.1 |
 | esp-lib-utils | 0.1.2 |
+| RF24 | 1.4.11 |
 
 The supplied vendor demo bundle includes an LVGL 8.x port. Its LVGL-port files are intentionally excluded; only the board-level panel, touch and expander interfaces are used by the custom LVGL 9.6 adapter.
 
