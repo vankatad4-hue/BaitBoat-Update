@@ -38,3 +38,12 @@ Command-codec and sequence-guard tests supply stub frame-authentication/freshnes
 g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I Boat/tests/stubs Boat/source/boat_command_queue.cpp Boat/tests/boat_command_queue_test.cpp -o /tmp/boat_queue_test
 /tmp/boat_queue_test
 ```
+
+## Fail-closed command policy
+
+```sh
+g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I Boat/tests/stubs Boat/source/boat_command_policy.cpp Boat/tests/boat_command_policy_test.cpp -o /tmp/boat_policy_test
+/tmp/boat_policy_test
+```
+
+This is a portable decision model only; it does not actuate hardware.
