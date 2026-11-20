@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="1000" viewBox="0 0 1320 1000">
+<rect width="100%" height="100%" fill="#fff"/>
+<text x="660" y="42" text-anchor="middle" font-family="Arial" font-size="26" font-weight="bold" fill="#20252a">FLYTEC V080 REMOTE — R6.6 FRONT LAYOUT</text>
+<text x="250" y="90" text-anchor="middle" font-family="Arial" font-size="17">2.4 GHz PRIMARY</text><text x="1070" y="90" text-anchor="middle" font-family="Arial" font-size="17">868 MHz BACKUP</text>
+<path d="M145 250 L110 350 L110 560 L145 660 L200 740 L285 790 L365 770 L430 720 L500 675 L820 675 L890 720 L955 770 L1035 790 L1120 740 L1175 660 L1210 560 L1210 350 L1175 250 L1125 170 L1040 135 L950 150 L840 220 L760 265 L560 265 L480 220 L370 150 L280 135 L195 170 Z" fill="#e7e9ec" stroke="#252a30" stroke-width="4"/>
+<g fill="#d0d4d8" stroke="#40474e" stroke-width="3"><circle cx="240" cy="245" r="78"/><circle cx="240" cy="245" r="48" fill="#7b858f"/><circle cx="240" cy="245" r="17" fill="#343a40"/><circle cx="1080" cy="245" r="78"/><circle cx="1080" cy="245" r="48" fill="#7b858f"/><circle cx="1080" cy="245" r="17" fill="#343a40"/></g>
+<circle cx="660" cy="285" r="36" fill="#8bb6dc" stroke="#235b8a" stroke-width="4"/><text x="660" y="291" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#173b58">PWR</text>
+<rect x="450" y="335" width="420" height="285" rx="10" fill="#111c27" stroke="#353c45" stroke-width="5"/><rect x="465" y="350" width="390" height="255" fill="#1e3850" stroke="#6c7e8f" stroke-width="2"/>
+<line x1="660" y1="350" x2="660" y2="605" stroke="#9ab4c7" stroke-width="2"/><path d="M485 535 L645 410" stroke="#68a5d4" stroke-width="6"/><path d="M485 575 L630 515" stroke="#6c9c67" stroke-width="8"/><path d="M675 425 L830 490" stroke="#e1a044" stroke-width="5"/><path d="M675 540 L830 565" stroke="#e46d4e" stroke-width="5"/>
+<g font-family="Arial" font-size="15" text-anchor="middle" fill="#20252a">
+<!-- left bank -->
+<g fill="#c8cdd2" stroke="#454c52" stroke-width="3">
+<circle cx="245" cy="505" r="36"/><circle cx="295" cy="505" r="36"/><circle cx="245" cy="575" r="36"/><circle cx="295" cy="575" r="36"/><circle cx="245" cy="645" r="36"/><circle cx="295" cy="645" r="36"/><circle cx="245" cy="715" r="36"/><circle cx="295" cy="715" r="36"/>
+</g><text x="245" y="510">L1</text><text x="295" y="510">L2</text><text x="245" y="580">L3</text><text x="295" y="580">L4</text><text x="245" y="650">L5</text><text x="295" y="650">L6</text><text x="245" y="720">L7</text><text x="295" y="720">L8</text>
+<!-- right bank releases -->
+<g fill="#d9d9d9" stroke="#ba3e3e" stroke-width="5"><circle cx="1025" cy="505" r="41"/><circle cx="1085" cy="505" r="41"/><circle cx="1025" cy="575" r="41"/><circle cx="1085" cy="575" r="41"/></g>
+<g fill="#c7cbd0" stroke="#777e85" stroke-width="1.5"><circle cx="1025" cy="505" r="25"/><circle cx="1085" cy="505" r="25"/><circle cx="1025" cy="575" r="25"/><circle cx="1085" cy="575" r="25"/></g>
+<text x="1025" y="510">B-L</text><text x="1085" y="510">B-R</text><text x="1025" y="580">H-L</text><text x="1085" y="580">H-R</text>
+<!-- utility -->
+<g fill="#c8cdd2" stroke="#454c52" stroke-width="3"><circle cx="1025" cy="645" r="36"/><circle cx="1085" cy="645" r="36"/><circle cx="1025" cy="715" r="36"/></g><text x="1025" y="650">R5</text><text x="1085" y="650">R6</text><text x="1025" y="720">R7</text>
+<circle cx="1085" cy="715" r="40" fill="#a9d5b0" stroke="#2c7445" stroke-width="4"/><text x="1085" y="721" font-size="19" font-weight="bold" fill="#183d27">OK</text>
+</g>
+<circle cx="240" cy="155" r="10" fill="#ddd" stroke="#333" stroke-width="3"/><circle cx="1080" cy="155" r="10" fill="#ddd" stroke="#333" stroke-width="3"/>
+<rect x="635" y="855" width="50" height="15" rx="3" fill="#333"/>
+<text x="660" y="900" text-anchor="middle" font-family="Arial" font-size="16" fill="#252a30">USB-C • dual antenna • 2 joysticks • 15 scanned keys + dedicated OK input</text>
+<g font-family="Arial" font-size="15"><circle cx="390" cy="950" r="10" fill="#d9d9d9" stroke="#ba3e3e" stroke-width="4"/><text x="415" y="956">Independent release: hold key → release → hold OK</text><circle cx="820" cy="950" r="10" fill="#a9d5b0" stroke="#2c7445" stroke-width="3"/><text x="845" y="956">OK is right-bank bottom-right, wired separately</text></g>
+</svg>
