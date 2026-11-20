@@ -39,9 +39,9 @@ Addresses are planned, not proven. Perform an I2C scan on the exact Waveshare bo
 U_BUTTONS MCP23017 @0x20:
 - GPA0–GPA7 → left-bank L1–L8, active-low to GND, pullups enabled.
 - GPB0–GPB7 → right-bank R1–R8, active-low to GND, pullups enabled.
-- Physical arrangement: two columns × four rows per bank.
+- Physical arrangement: two columns × four rows per bank. The bottom-right right-bank position is OK/confirm, not a normal MCP0x20 button.
 - Debounce target 25 ms.
-- Button mapping from R5 CSV: L1 STOP; L2 Manual/Autopilot; L3 Return Home; L4 save waypoint; L5 waypoint selection; L6 map full-screen; L7 sonar full-screen; L8 settings. Right R1–R4 guarded independent releases; R5–R8 UI/status/cancel functions.
+- Button mapping from R5 CSV: L1 STOP; L2 Manual/Autopilot; L3 Return Home; L4 save waypoint; L5 waypoint selection; L6 map full-screen; L7 sonar full-screen; L8 settings. Right R1–R4 guarded independent releases; R5–R7 are UI/status/cancel functions; the physical OK key is separately wired to U_RADIO_IO GPA4
 - The OK button is physically separate and not part of the 16-key bank.
 
 U_RADIO_IO MCP23017 @0x21:
@@ -122,3 +122,7 @@ Initial configuration candidate: channel18/868.125MHz, 62.5kbps air rate, 32-byt
 - [ ] Validate power converter datasheet/reference, footprints and load/thermal.
 - [ ] Confirm pack fuse/BMS/cell/wire/connector ratings.
 - [ ] Create native KiCad schematic, annotate, ERC and review connector pinout.
+
+
+## R6.6 physical input crosswalk update
+The approved front arrangement is 2×4 keys on each side. The 16 physical positions are 8 left-bank keys + 7 right-bank scanned keys + OK at right-bank bottom-right. Thus MCP23017 0x20 uses 15 keys (GPB7 spare) and MCP23017 0x21 GPA4 scans OK independently. The scanner source was updated to poll only 15 IDs plus the dedicated OK input. CAD STL/preview exports must be regenerated from the corrected source.
