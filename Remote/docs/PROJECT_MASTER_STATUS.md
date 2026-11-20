@@ -417,3 +417,9 @@ Boat:
 - No reproducible target build manifest or dependency lock. Exact Waveshare/display-library compatibility and board SKU still require confirmation.
 - Remote host-test workflow is missing; no complete host test run is claimed.
 - Current markers remain Remote 028 / Boat 014; no ZIP/release bump. Branch archives remain unverified.
+
+
+## Target compiler follow-up — 2026-11-20
+- Target build run #11 reached C++ source compilation and failed; installed candidate versions are visible in its log.
+- Fixed LVGL9 event-target accessor, precise route-point array type, and restored the Map Manager copy-chunk helper declaration.
+- Rebuild pending. Host CI run #11 passed on the prior source; target compile and physical hardware verification remain outstanding.
