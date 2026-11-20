@@ -61,7 +61,7 @@ Current code scaffold includes:
 - Motor driver fit: `BOAT_MOTOR_DRIVER_FIT_REVIEW_R1.md`
 
 ## ZIP status
-- Current development snapshots: Remote ver023 / Boat ver014. Boat ver012 checksum and archive structure independently verified; Remote ver023 binary remains unverified.
+- Current development snapshots: Remote ver023 / Boat ver014. Boat ver014 checksum and archive structure independently verified; Remote ver023 binary remains unverified.
 - See repository `docs/ZIP_RELEASE_POLICY_R1.md`.
 
 Do not connect motor/solenoid power or operate the boat.
