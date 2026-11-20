@@ -75,3 +75,10 @@
 
 ### Documentation synchronization HEAD
 - Branch HEAD after checkpoint/status synchronization: `04d9a9ff59ac10894a80951b2d5a548f66f9f22e`. No firmware source changes occurred after target compile run #14 started; it compiles source SHA `7213f04e4d18f3bc4a546f4c4febfe0bbedffc59`.
+
+
+## Target compile correction — attribution buffer
+- Compile #14 exposed undeclared `g_map_attribution` in `Remote/source/offline_map.cpp`.
+- Added module-private zero-initialized 256-byte attribution storage; no API change.
+- Commit: `9aa20b0d987f94ea5b49e46509ae0ba10cc9d36b`.
+- Target Compile #15 pending. VER022 remains a development changelog marker; no release marker increment.
