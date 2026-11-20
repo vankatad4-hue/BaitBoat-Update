@@ -46,10 +46,10 @@ U_RADIO TPS63070 (verify exact package/pin numbering from current datasheet and 
 - L1/L2 pins → L_RADIO 1.5µH XFL4020-152MEC candidate.
 - VOUT pins → RADIO_3V3.
 - FB → RADIO_FB; R_TOP=470k from RADIO_3V3 to FB; R_BOTTOM=150k FB→GND; nominal ~3.307V per existing calculation, recheck against datasheet reference.
-- VSEL→GND candidate for selected output configuration; FB2→GND candidate; PS/SYNC strap candidate; verify current datasheet pin treatment before capture.
+- VSEL→GND and FB2→GND (unused voltage scaling) per TI pin guidance; PS/SYNC→RADIO_3V3 to select power-save mode (confirm logic levels/config against datasheet).
 - VAUX 100nF to GND local.
 - CIN: 2×10µF 25V X7S 0805 + 10µF 25V X5R 0603 candidates; COUT: 3×22µF 16V X6S 0805 + 10µF 0603 candidates. Calculate effective capacitance under DC bias, stability, ripple and layout requirements.
-- EN=RADIO_EN. MCU control TBD; default off via 100k pulldown to GND and 1k series candidate only after GPIO source is chosen. Ensure EN not driven by unpowered controller.
+- EN=RADIO_EN from U_RADIO_IO MCP23017 GPA3; 100k pulldown to GND, optional 1k series if reviewed. Expander is powered by controller 3V3, so converter defaults OFF before I2C init; firmware enables only after expander config. Ensure EN is not driven while controller is unpowered.
 - PG open-drain optional RADIO_PGOOD; do not connect until GPIO/pullup plan approved.
 - J_RADIO rail decoupling: 100nF + 10–47µF near module; radio connector supply from RADIO_3V3 only, never 5V.
 - Test points TP_RADIO_3V3, TP_SW nodes only if safe/appropriate, TP_RADIO_EN.
@@ -74,7 +74,7 @@ I2C nets from Waveshare PORT1: GPIO8=I2C_SDA; GPIO9=I2C_SCL. Shared with onboard
 ## Sheet 06 — Radio control expander (VALIDATION REQUIRED)
 - U_RADIO_IO MCP23017 @0x21; A0=VDD, A1/A2=GND; verify address strap combination against datasheet; I2C shared.
 - VDD=3V3, GND, 100nF local; RESET tied to shared reset net with 10k pull-up (or reset sequencing documented).
-- GPA0=RADIO_CE, GPA1=RADIO_CSN, GPA2=RADIO_IRQ_N; remaining I/O spare.
+- GPA0=RADIO_CE, GPA1=RADIO_CSN, GPA2=RADIO_IRQ_N, GPA3=RADIO_EN; remaining I/O spare. RADIO_EN drives TPS63070 EN with 100k pulldown; keep converter OFF during reset until controller initializes the expander.
 - CE and CSN outputs; IRQ input. IRQ_N active low, pull-up only if required after module/bus check. Polling baseline; interrupt output optional but not currently routed to ESP GPIO.
 - **Not approved for final radio firmware yet:** I2C expander toggles may create millisecond latency. It may be sufficient for CE mode selection and CSN framing, but test register transaction timing, CE pulse widths, packet TX/RX, IRQ polling, retry/ACK behavior and 250kbps radio throughput. If tests fail, choose a verified spare MCU GPIO or alternate control strategy; do not assume GPIO35–37 are free.
 
