@@ -36,7 +36,7 @@ void BoatDualRadioPort::update() {
 void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  const uint32_t now=millis();
  if(!authenticated_ || !radio_frameVerify(f,key_) || f.sourceId!=REMOTE_ID || f.destinationId!=BOAT_ID ||
-    !radio_tickFresh(f.tick16,(uint16_t)now,2500)) return;
+    ) return;
  if(!seqGuard_.accept(f.sessionEpoch,f.sequence)) return;
  if(link==LINK_NRF_PRIMARY)lastNrfRxMs_=now;else lastE22RxMs_=now;
  if(f.type==RADIO_MSG_HEARTBEAT || f.type==RADIO_MSG_TELEMETRY || f.type==RADIO_MSG_ACK || f.type==RADIO_MSG_LINK_PROBE)
@@ -74,7 +74,7 @@ bool BoatDualRadioPort::sendHeartbeat(ManagedLink link,uint16_t seq,uint32_t now
  return sendFrame(link,f);
 }
 bool BoatDualRadioPort::primaryFresh(uint32_t now)const{return nrfReady_ && lastNrfRxMs_ && (uint32_t)(now-lastNrfRxMs_)<=250;}
-bool BoatDualRadioPort::backupFresh(uint32_t now)const{return e22Configured_ && lastE22RxMs_ && (uint32_t)(now-lastE22RxMs_)<=2500;}
+bool BoatDualRadioPort::backupFresh(uint32_t now)const{return e22Configured_ && lastE22RxMs_ && (uint32_t)(now-lastE22RxMs_)<=6000;}
 BoatFailsafeDecision BoatDualRadioPort::evaluateFailsafe(uint32_t now,bool mission,bool gnss,bool heading,bool battery,bool geofence)const {
  BoatLinkSafetyInputs in={primaryFresh(now),backupFresh(now),mission,gnss,heading,battery,geofence};
  return boatEvaluateLinkFailsafe(in);
