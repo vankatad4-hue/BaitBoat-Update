@@ -77,5 +77,10 @@ Do not connect motor/solenoid power or operate the boat.
 Remote now decodes authenticated telemetry/ACK frames and applies freshness/safety gates. Boat firmware still does not emit these payloads or execute/ACK commands. Mirrored codec is currently a portable validator only on the boat side. Do not connect actuators.
 
 
+## Boat payload encoder milestone (2026-11-20)
+- Added portable wire encoders for HEARTBEAT, ACK, and all six telemetry payload subtypes.
+- Added host tests for valid round-trips and malformed/range inputs. These tests are protocol-only and do not validate radio frames or hardware.
+- Boat ver009 notes record this addition. No ESP32 compile or device testing.
+
 ## Package revision status
-Latest generated pair is Remote ver021 / Boat ver008. Next bookkeeping markers are Remote ver022 / Boat ver009. Boat payload decoder remains unused by Boat application; telemetry/ACK sender and command executor are still not implemented.
+Current package markers: Remote ver022 / Boat ver009. ZIPs and SHA256 manifest are generated/committed by the branch workflow; local byte-level extraction/checksum verification is pending. Boat payload decoder and new portable encoder remain utilities; telemetry/ACK sender, command executor and actuator application are still not implemented.
