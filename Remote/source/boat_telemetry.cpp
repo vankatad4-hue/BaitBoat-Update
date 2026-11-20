@@ -1,7 +1,7 @@
 #include "boat_telemetry.h"
 BoatTelemetry telemetry;
 static constexpr uint32_t STATUS_MAX_AGE=1500,BATTERY_MAX_AGE=5000,COORD_PAIR_MAX_GAP=500,GPS_MAX_AGE=2000,NAV_MAX_AGE=2000,SONAR_MAX_AGE=1500;
-static bool fresh(uint32_t now,uint32_t stamp,uint32_t maxAge){return stamp!=0&&(uint32_t)(now-stamp)<=maxAge;}
+static bool fresh(uint32_t now,uint32_t stamp,uint32_t maxAge){return (uint32_t)(now-stamp)<=maxAge;}
 void telemetryInit(){telemetry={};telemetry.batteryPercent=-1;telemetry.stopState=2;}
 void telemetryUpdate(const BoatTelemetry &d){telemetry=d;telemetry.receivedAtMs=millis();}
 bool telemetryApplyRadioPayload(const RadioDecodedPayload &p,bool primary,uint32_t now){
