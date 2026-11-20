@@ -92,7 +92,7 @@ static void channelToggle(lv_event_t *e){
 static void confirmPlan(lv_event_t *){
  if(!planPanel)return;
  draftPlan.releaseMask=planMask;
- const bool accepted=boatRadio_prepareMission(draftPlan);
+ const bool accepted=storageReady&&sdMissionAvailable()&&draftPlan.lake==lakeStorage_active()&&boatRadio_prepareMission(draftPlan);
  closePlanPanel();
  setStatus(accepted?"ПОДГОТОВКА — БЕЗ ДВИЖЕНИЕ":"ПОДГОТОВКАТА Е БЛОКИРАНА");
 }
