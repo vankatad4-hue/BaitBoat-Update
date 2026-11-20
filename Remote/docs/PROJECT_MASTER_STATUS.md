@@ -75,7 +75,7 @@ Boat:
 ## Versioned ZIP status
 - [Build and checksum status](../../docs/ZIP_BUILD_STATUS_R1.md)
 - Preserved baseline archives: Remote `Flytec_Remote_ver004.zip`, Boat `Flytec_Boat_ver004.zip`.
-- Current markers are Remote `022` and Boat `009`; matching ZIPs and SHA256 manifest are committed. Independent extraction/checksum verification is still pending.
+- Current markers are Remote `023` and Boat `010`; matching ZIPs and SHA256 manifest are committed. Independent extraction/checksum verification is still pending.
 - Packaging policy: `docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Boat controller pin audit
