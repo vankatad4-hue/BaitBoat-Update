@@ -46,3 +46,9 @@ Documents are engineering planning/net-level design records, not fabrication-rea
 
 ## Radio pairing revision R3
 Use the identical E22-900T22S UART module on both ends. This reduces protocol interoperability risk compared with mixing E22 transparent UART with a raw SX1262 driver. See `../docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R3.md`.
+
+## R5 preview and joystick input
+
+- [Front-panel preview SVG](CAD/REMOTE_PREVIEW_R5.svg)
+- [Joystick ADC integration draft](../../docs/JOYSTICK_ADC_INTEGRATION_R1.md)
+- ADS1115 driver added to source; actual wiring/address remains provisional and hardware validation is pending.
