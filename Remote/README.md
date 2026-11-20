@@ -32,12 +32,18 @@ Remote source includes nRF/E22 transports, SC16 bridge, CRC/HMAC protocol, comma
 - [Remote electrical pin CSV R4](New_Handheld_Remote/PCB/REMOTE_ELECTRICAL_PIN_CONNECTIONS_R4.csv)
 - [Mechanical envelope R4](New_Handheld_Remote/MECHANICAL/REMOTE_MECHANICAL_ENVELOPE_R4.md)
 - [Radio architecture R3](../docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R3.md)
-- [Protocol spec R2](../docs/DUAL_RADIO_PROTOCOL_FIRMWARE_SPEC_R3.md)
+- [Protocol spec R3](../docs/DUAL_RADIO_PROTOCOL_FIRMWARE_SPEC_R3.md)
+- [E22 configuration decode R1](docs/E22_CONFIGURATION_DECODE_R1.md)
 
 ## Test sketches
 - [Remote nRF bench test](hardware_test/nRF24_Bench/nRF24_Bench.ino)
 - [Remote E22/SC16 bench test](hardware_test/E22_SC16IS750_Bench/E22_SC16IS750_Bench.ino)
 - [Hardware test instructions](hardware_test/README.md)
+
+## ZIP snapshots
+- Latest preserved archive: `releases/Flytec_Remote_ver004.zip`.
+- Current package version marker: `releases/VERSION` = `005`.
+- Packaging automation: [ZIP release policy](../../docs/ZIP_RELEASE_POLICY_R1.md) and `.github/workflows/package-flytec-zips.yml`. Workflow artifacts are generated after branch changes; integrity must be verified before calling them released.
 
 ## Status
 Not a fabrication release. Native KiCad/ERC/DRC, PCB, mechanical mockup, pin audit, power/thermal/RF test and secure protocol integration remain open. Do not operate boat.
