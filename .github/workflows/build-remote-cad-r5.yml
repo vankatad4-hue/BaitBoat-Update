@@ -4,6 +4,10 @@ on:
     branches: [hardware-ready-dual-radio-r1]
     paths: ['Remote/New_Handheld_Remote/CAD/**','Remote/New_Handheld_Remote/MECHANICAL/**']
   workflow_dispatch:
+concurrency:
+  group: flytec-cad-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
 jobs:
