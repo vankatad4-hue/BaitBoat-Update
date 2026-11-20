@@ -23,3 +23,12 @@ BoatFailsafeDecision boatEvaluateLinkFailsafe(const BoatLinkSafetyInputs &in) {
         return BOAT_FS_RETURN_HOME;
     return BOAT_FS_STOP_PROPULSION;
 }
+
+BoatCrossRadioCommandDecision boatClassifyCrossRadioCommand(bool sequenceAccepted,
+                                                            bool alreadyExecuted,
+                                                            bool pending) {
+    if(sequenceAccepted) return BOAT_CROSSRADIO_NEW_COMMAND;
+    if(alreadyExecuted) return BOAT_CROSSRADIO_DUPLICATE_EXECUTED;
+    if(pending) return BOAT_CROSSRADIO_DUPLICATE_PENDING;
+    return BOAT_CROSSRADIO_DROP_STALE;
+}
