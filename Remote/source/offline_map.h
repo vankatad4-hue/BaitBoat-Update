@@ -21,7 +21,7 @@ bool offlineMap_begin(bool sdCardReady);
 bool offlineMap_hasMapData();
 
 // Copy the validated pack attribution into caller storage. Returns false if absent.
-bool offlineMap_getAttribution(char *buffer, size_t bufferSize);
+bool offlineMap_getAttribution(char *buffer, size_t bufferSize);\nvoid offlineMap_getCoverageStats(uint16_t &planned,uint16_t &present,uint16_t &missing);
 
 // Load one raw RGB565 tile into PSRAM. Caller must release it with offlineMap_freeTile().
 // Tile path: /maps/street/<z>/<x>/<y>.rgb565 or /maps/satellite/<z>/<x>/<y>.rgb565
