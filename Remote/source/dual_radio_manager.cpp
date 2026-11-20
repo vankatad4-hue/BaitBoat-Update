@@ -26,7 +26,7 @@ void DualRadioManager::reportValidRx(ManagedLink link, bool authenticated, uint3
     LinkHealth &h = (link == LINK_NRF_PRIMARY) ? primary_ : backup_;
     h.lastValidMs = now;
     h.authenticated = authenticated;
-    if (authenticated) h.failureStreak = 0;
+    if (authenticated) { h.failureStreak = 0; if (h.goodStreak < 255) ++h.goodStreak; }
     else { h.goodStreak = 0; if (h.failureStreak < 255) ++h.failureStreak; }
 }
 
@@ -51,8 +51,7 @@ bool DualRadioManager::connected(uint32_t now) const { return primaryHealthy(now
 
 void DualRadioManager::tick(uint32_t now) {
     const bool p = primaryHealthy(now), b = backupHealthy(now);
-    if (p) { if (primary_.goodStreak < 255) ++primary_.goodStreak; }
-    else primary_.goodStreak = 0;
+    if (!p) primary_.goodStreak = 0;
 
     switch (state_) {
     case LINK_DISCONNECTED:
@@ -78,8 +77,7 @@ void DualRadioManager::tick(uint32_t now) {
             if (b) { active_=LINK_LORA_BACKUP; state_=LINK_BACKUP; }
             else { active_=LINK_NONE; state_=LINK_NO_LINK; }
         } else {
-            if (recoveryStreak_ < 255) ++recoveryStreak_;
-            if (recoveryStreak_ >= RECOVERY_GOOD_REQUIRED &&
+            if (primary_.goodStreak >= RECOVERY_GOOD_REQUIRED &&
                 (uint32_t)(now-recoveryStartMs_) >= RECOVERY_HOLDOFF_MS) {
                 active_=LINK_NRF_PRIMARY; state_=LINK_PRIMARY;
             }
