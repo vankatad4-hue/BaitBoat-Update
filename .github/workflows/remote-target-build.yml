@@ -54,10 +54,20 @@ jobs:
           mv /tmp/FlytecRemoteBuild/Flytec_Remote.ino /tmp/FlytecRemoteBuild/FlytecRemoteBuild.ino
           cp /tmp/FlytecRemoteBuild/lv_conf.h "$HOME/Arduino/lv_conf.h"
 
-      - name: Compile complete Remote sketch (16 MB flash, OPI PSRAM)
+      - name: Compile complete Remote sketch (16 MB flash, OPI PSRAM, huge application partition)
         run: |
           set -o pipefail
-          arduino-cli compile --verbose --fqbn 'esp32:esp32:esp32s3:FlashSize=16M,PSRAM=opi' /tmp/FlytecRemoteBuild 2>&1 | tee /tmp/remote-target-build.log
+          # Default partition is only 1.25 MiB; the app requires a larger partition.
+          # huge_app allocates more app space. Offline map data stays on SD card.
+          arduino-cli compile --verbose --export-binaries --fqbn 'esp32:esp32:esp32s3:FlashSize=16M,PSRAM=opi,PartitionScheme=huge_app' /tmp/FlytecRemoteBuild 2>&1 | tee /tmp/remote-target-build.log
+
+      - name: Upload compiled firmware binaries
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flytec-remote-firmware
+          path: /tmp/FlytecRemoteBuild/build/esp32.esp32.esp32s3/**
+          if-no-files-found: warn
 
       - name: Upload compiler log
         if: always()
