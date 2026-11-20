@@ -13,4 +13,5 @@ void mapRenderer_zoomIn();
 void mapRenderer_zoomOut();
 uint8_t mapRenderer_getZoom();
 void mapRenderer_setStyle(OfflineMapStyle style);
+void mapRenderer_invalidateTiles();
 #endif
