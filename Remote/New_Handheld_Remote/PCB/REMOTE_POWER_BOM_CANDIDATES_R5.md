@@ -1,3 +1,5 @@
+# SUPERSEDED by REMOTE_POWER_BOM_CANDIDATES_R6.md
+
 # Remote Power + Controls BOM Candidate R5
 
 **Candidate list only. Validate MPN/package/footprint/datasheet and ratings before procurement.**
