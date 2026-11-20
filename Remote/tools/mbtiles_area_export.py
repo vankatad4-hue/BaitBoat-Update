@@ -21,7 +21,12 @@ def rgb565_le(image):
         out[i*2]=v&0xff;out[i*2+1]=(v>>8)&0xff
     return out
 
+def single_line(value):
+    return str(value).replace("\\r", " ").replace("\\n", " ").strip()
+
 def export_area(mbtiles_path,output_dir,style,lat,lon,side_m,zooms,provider,attribution,licence_url):
+    provider=single_line(provider); attribution=single_line(attribution); licence_url=single_line(licence_url)
+    if not zooms: raise ValueError("At least one zoom level is required")
     plan=build_plan(lat,lon,side_m,zooms,provider,attribution,licence_url)
     wanted={(t["z"],t["x"],t["y"]) for t in plan["tiles"]}
     root=Path(output_dir); tile_root=root/"maps"/style; tile_root.mkdir(parents=True,exist_ok=True)
@@ -46,8 +51,8 @@ def export_area(mbtiles_path,output_dir,style,lat,lon,side_m,zooms,provider,attr
         f"style={style}",f"name={plan['mbtiles_name']}",f"bounds={plan['bounds_wgs84']}",
         f"zoom_levels={','.join(map(str,plan['zooms']))}",f"planned_tile_count={len(wanted)}",
         f"exported_tile_count={exported}",f"missing_tile_count={len(missing)}",
-        f"pack_complete={'true' if not missing else 'false'}",f"provider={provider}",
-        f"attribution={attribution}",f"licence_url={licence_url}"]
+        f"pack_complete={'true' if not missing else 'false'}",f"provider={single_line(provider)}",
+        f"attribution={single_line(attribution)}",f"licence_url={single_line(licence_url)}"]
     (root/"maps"/"manifest.txt").write_text("\n".join(manifest)+"\n",encoding="utf-8")
     return plan
 
