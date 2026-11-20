@@ -323,7 +323,7 @@ static void deadZoneEvent(lv_event_t *event)
     }
 
     // Get the slider object.
-    lv_obj_t *slider = lv_event_get_target(event);
+    lv_obj_t *slider = lv_event_get_target_obj(event);
 
     // Read the selected dead-zone value.
     int value = lv_slider_get_value(slider);
