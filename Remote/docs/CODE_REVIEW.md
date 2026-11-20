@@ -61,3 +61,6 @@ This remains a development baseline and must not be used to operate the boat. Ke
 
 - Follow-up CI root cause: release-guard test used a reduced BoatState test stub with a different field layout from the full struct used by the compiled module. Test now links the actual BoatState source/header. The next run uncovered a wrong latitude test vector (50° instead of 91°); vector corrected.
 - Target compile first failed on Arduino's sketch-folder/main-`.ino` naming convention before compiling firmware. Workflow stages a correctly named sketch folder/file and captures build log; retry is pending.
+
+- **Portable host tests now pass:** run #7 for commit `ddcd9cb4` completed successfully across release-guard/scanner syntax, payload codec, ACK tracker and telemetry freshness. This is host-only verification, not target compilation.
+- Target build run #3 reached sketch compilation but stopped because LVGL 9.6's required `lv_conf.h` was missing. Added a project LVGL 9.6.0 config and workflow copy step; retry is in progress.
