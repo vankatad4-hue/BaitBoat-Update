@@ -81,3 +81,8 @@ jobs:
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/button_stubs -IRemote/source -IRemote/tests/stubs \
             Remote/source/boat_state.cpp Remote/source/physical_button_scanner.cpp Remote/source/release_button_guard.cpp Remote/tests/physical_button_test.cpp -o /tmp/remote_button_input
           /tmp/remote_button_input
+      - name: Map copy failure and cancellation
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/lake_stubs -IRemote/source \
+            Remote/source/map_copy.cpp Remote/source/lake_storage.cpp Remote/tests/map_copy_test.cpp -o /tmp/remote_map_copy
+          /tmp/remote_map_copy
