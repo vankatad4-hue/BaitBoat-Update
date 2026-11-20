@@ -8,6 +8,7 @@
 
 static bool g_sd_available = false;                 // SD filesystem was mounted by the display adapter.
 static bool g_map_pack_available = false;           // Map manifest was found and validated.
+static char g_map_attribution[256] = {0};            // Validated map-pack source attribution.
 
 // Require a valid pack header, complete coverage flag and source attribution/licence metadata.
 static bool offlineMap_checkManifest()
