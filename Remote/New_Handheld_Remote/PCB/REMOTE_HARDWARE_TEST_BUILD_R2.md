@@ -66,3 +66,7 @@ GPIO6 is CE, GPIO15 is CSN; earlier R2 text suggesting GPIO6 CSN and expander CE
 
 ## E22 power source gate
 Use CS8501 5V rail for E22 VCC; 5V guarantees output power per module manual. UART/M0/M1/AUX remain 3.3V logic. Use 150mA peak reservation until measured at 10dBm. Bench the controller rail with display/backlight and nRF/LoRa burst simultaneously; add separate converter if needed.
+
+
+## E22 dedicated power branch R5
+Controller/display uses CS8501 5V output only. E22 VCC uses a separate BAT_PROT→TPS61023→LORA_5V boost branch; UART/M0/M1/AUX logic remains3.3V. Never parallel the two converter outputs. Scope rail and measure input/output currents with 10dBm E22 TX and nRF bursts.
