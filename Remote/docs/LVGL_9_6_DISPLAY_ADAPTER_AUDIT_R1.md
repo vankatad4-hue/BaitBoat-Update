@@ -81,3 +81,7 @@ Run #11 installed the candidate dependencies and reached the C++ compiler, but t
 - Map Manager `copyChunk()` was inadvertently commented out due to a literal escaped newline after its preceding comment; the source was corrected to use a real newline.
 
 These corrections are committed; rebuild pending. Installed versions observed in the log match the candidate versions listed above, but successful compatibility/link validation remains outstanding.
+
+
+## Target Compile #14 follow-up
+The workflow progressed into C++ compilation and failed in the separate offline-map module because `g_map_attribution` lacked a declaration. The correction adds a private 256-byte zero-initialized buffer in `offline_map.cpp` (commit `9aa20b0d987f94ea5b49e46509ae0ba10cc9d36b`). This is not an LVGL API issue; compile #15 is pending.
