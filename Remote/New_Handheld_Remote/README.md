@@ -27,7 +27,7 @@ This folder contains the hardware design workspace for the new handheld bait-boa
 - Charging circuit remains outside custom design scope; board USB/charging behavior still requires bench verification.
 
 ## Dual-radio redundancy
-Primary nRF24 remains the high-rate responsive link. LoRa is backup for heartbeat, low-rate telemetry, capped low-rate steering, STOP and RETURN. Mission-start and bait/hook release are disabled on backup by default. Dual-link failover, handover hysteresis, duplicate suppression, authenticated/replay-safe packets, independent boat failsafe, and link-state UI are software requirements. See `../docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R1.md`.
+Primary nRF24 remains the high-rate responsive link. LoRa is backup for heartbeat, low-rate telemetry, capped low-rate steering, STOP and RETURN. Mission-start and bait/hook release are disabled on backup by default. Dual-link failover, handover hysteresis, duplicate suppression, authenticated/replay-safe packets, independent boat failsafe, and link-state UI are software requirements. See `../docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R3.md`.
 
 ## Status / limitations
 Documents are engineering planning/net-level design records, not fabrication-ready schematics or BOM. Native KiCad capture, pin/footprint audit, ERC, PCB layout, actual radio drivers, key provisioning, packet ACK/failover, firmware compile and bench/field tests remain incomplete.
