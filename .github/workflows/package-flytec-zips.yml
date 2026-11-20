@@ -51,10 +51,15 @@ jobs:
           REMOTE_VERSION="$(tr -d '\r\n ' < Remote/releases/VERSION)"
           BOAT_VERSION="$(tr -d '\r\n ' < Boat/releases/VERSION)"
           mkdir -p out releases
-          zip -r -X "out/Flytec_Remote_ver${REMOTE_VERSION}.zip" Remote \
-            -x "Remote/releases/*.zip"
-          zip -r -X "out/Flytec_Boat_ver${BOAT_VERSION}.zip" Boat \
-            -x "Boat/releases/*.zip"
+          # Sorted file lists and normalized timestamps make ZIP bytes reproducible.
+          find Remote -type f ! -path 'Remote/releases/*.zip' -print | LC_ALL=C sort > out/remote-files.txt
+          find Boat -type f ! -path 'Boat/releases/*.zip' -print | LC_ALL=C sort > out/boat-files.txt
+          while IFS= read -r file; do touch -t 198001010000 "$file"; done < out/remote-files.txt
+          while IFS= read -r file; do touch -t 198001010000 "$file"; done < out/boat-files.txt
+          zip -X -D "out/Flytec_Remote_ver${REMOTE_VERSION}.zip" -@ < out/remote-files.txt
+          zip -X -D "out/Flytec_Boat_ver${BOAT_VERSION}.zip" -@ < out/boat-files.txt
+          unzip -tq "out/Flytec_Remote_ver${REMOTE_VERSION}.zip"
+          unzip -tq "out/Flytec_Boat_ver${BOAT_VERSION}.zip"
           sha256sum out/*.zip | tee "out/SHA256SUMS_ver${REMOTE_VERSION}_${BOAT_VERSION}.txt"
       - name: Preserve versioned archives in branch (push events only)
         if: github.event_name == 'push'
@@ -66,6 +71,9 @@ jobs:
           cp "out/Flytec_Remote_ver${REMOTE_VERSION}.zip" "Remote/releases/"
           cp "out/Flytec_Boat_ver${BOAT_VERSION}.zip" "Boat/releases/"
           cp "out/SHA256SUMS_ver${REMOTE_VERSION}_${BOAT_VERSION}.txt" "releases/"
+          cmp "out/Flytec_Remote_ver${REMOTE_VERSION}.zip" "Remote/releases/Flytec_Remote_ver${REMOTE_VERSION}.zip"
+          cmp "out/Flytec_Boat_ver${BOAT_VERSION}.zip" "Boat/releases/Flytec_Boat_ver${BOAT_VERSION}.zip"
+          (cd out && sha256sum -c "SHA256SUMS_ver${REMOTE_VERSION}_${BOAT_VERSION}.txt")
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "Remote/releases/Flytec_Remote_ver${REMOTE_VERSION}.zip" \
