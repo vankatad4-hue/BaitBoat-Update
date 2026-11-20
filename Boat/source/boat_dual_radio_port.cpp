@@ -54,10 +54,13 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
    if(f.sequence!=0 || f.commandId!=0 || f.payload[0]!=f.sessionEpoch) return;
    for(uint8_t i=1;i<8;i++) if(f.payload[i]!=0) return;
    if(sessionStarted_ && f.sessionEpoch==sessionEpoch_) {
-     if(linkSessionSeen) return;
-     if(!linkGuard.accept(f.sessionEpoch,0,true)) return;
-     linkSessionSeen=true;lastRx=now;rxValid=true;
-     // Reply using the remote's session epoch so both radios agree on it.
+     // Repeated authenticated markers are idempotent. Re-send the response so
+     // a lost reply cannot strand the remote in an unconfirmed session.
+     if(!linkSessionSeen) {
+       if(!linkGuard.accept(f.sessionEpoch,0,true)) return;
+       linkSessionSeen=true;
+     }
+     lastRx=now;rxValid=true;
      sendSessionStart(link,now);
      return;
    }
