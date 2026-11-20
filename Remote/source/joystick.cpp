@@ -56,7 +56,7 @@ static JoystickRaw capturedMaximum;
 static uint32_t lastCommandTime = 0;
 
 // Autopilot override state.
-static bool temporaryOverrideActive = false;
+static bool manualArmed = false;
 static bool manualModeRequested = false;
 
 // Persistent control settings and validated joystick calibration (ESP32 NVS).
@@ -317,7 +317,7 @@ void joystick_begin()
     endpointCapture = false;
 
     // Reset autopilot override flags.
-    temporaryOverrideActive = false;
+    manualArmed = false;
     manualModeRequested = false;
 
     // Reset command timing.
@@ -360,7 +360,8 @@ void joystick_setLayout(ControlLayout layout)
         return;
     }
 
-    // Store the new layout.
+    // Require a fresh neutral sample after any layout change.
+    manualArmed = false;
     selectedLayout = layout;
     saveCalibrationNvs();
 }
@@ -421,7 +422,7 @@ bool joystick_calibrationEnter()
     endpointCapture = false;
 
     // Reset override state.
-    temporaryOverrideActive = false;
+    manualArmed = false;
     manualModeRequested = false;
 
     return true;
@@ -727,6 +728,7 @@ void joystick_update()
     // A valid hardware callback is required.
     if (readCallback == nullptr)
     {
+        manualArmed = false;
         snapshot.readingsValid = false;
         snapshot.neutral = false;
         return;
@@ -738,6 +740,7 @@ void joystick_update()
     if (!readCallback(raw))
     {
         // Mark readings invalid.
+        manualArmed = false;
         snapshot.readingsValid = false;
         snapshot.neutral = false;
 
@@ -751,6 +754,7 @@ void joystick_update()
         raw.rightX < ADC_MINIMUM || raw.rightX > ADC_MAXIMUM ||
         raw.rightY < ADC_MINIMUM || raw.rightY > ADC_MAXIMUM)
     {
+        manualArmed = false;
         snapshot.readingsValid = false;
         snapshot.neutral = false;
         return;
@@ -779,93 +783,30 @@ void joystick_update()
 
     // --------------------------------------------------
     // SAFETY GATES
-    // --------------------------------------------------
-
-    // Calibration must never produce motor commands.
-    if (calibrationMode)
+    // No autonomous override until the Boat mission executor acknowledges it.
+    if(calibrationMode || !calibrationValid || !boatRadio_isConnected() ||
+       !boatState.radioConnected || boatState.emergencyStop ||
+       !boatState.emergencyStopConfirmed || boatState.failsafeActive ||
+       !boatState.actuatorSafetyReady)
     {
+        manualArmed=false;manualModeRequested=false;return;
+    }
+    if(boatState.mode!=MODE_MANUAL)
+    {
+        manualArmed=false;
+        // Switch-to-manual is a request only; wait for confirmed manual mode.
+        if(boatState.mode==MODE_AUTOPILOT && selectedOverride==OVERRIDE_TO_MANUAL &&
+           !snapshot.neutral && !manualModeRequested)
+            manualModeRequested=boatCommands_setMode(MODE_MANUAL);
+        if(snapshot.neutral)manualModeRequested=false;
         return;
     }
-
-    // Do not control motors with invalid readings.
-    if (!snapshot.readingsValid)
-    {
+    manualModeRequested=false;
+    // After startup, STOP, calibration, radio fault or mode change, require
+    // neutral sticks before a subsequent displacement can command movement.
+    if(!manualArmed){
+        if(snapshot.neutral)manualArmed=true;
         return;
-    }
-
-    // Do not control motors until real axis calibration has passed.
-    if (!calibrationValid)
-    {
-        return;
-    }
-
-    // Do not control motors with disconnected radio.
-    if (!boatRadio_isConnected())
-    {
-        return;
-    }
-
-    // Do not control motors when emergency STOP is active.
-    if (boatState.emergencyStop)
-    {
-        return;
-    }
-
-    // Do not control motors until STOP state is confirmed.
-    if (!boatState.emergencyStopConfirmed)
-    {
-        return;
-    }
-
-    // --------------------------------------------------
-    // AUTOPILOT OVERRIDE
-    // --------------------------------------------------
-
-    bool moving = !snapshot.neutral;
-
-    if (boatState.mode == MODE_AUTOPILOT)
-    {
-        // No stick movement: allow autopilot to continue.
-        if (!moving)
-        {
-            if (temporaryOverrideActive)
-            {
-                boatCommands_setMode(MODE_AUTOPILOT);
-                temporaryOverrideActive = false;
-            }
-
-            manualModeRequested = false;
-            return;
-        }
-
-        // Operator selected switch-to-manual behaviour.
-        if (selectedOverride == OVERRIDE_TO_MANUAL)
-        {
-            if (!manualModeRequested)
-            {
-                if (!boatCommands_setMode(MODE_MANUAL))
-                {
-                    return;
-                }
-
-                manualModeRequested = true;
-            }
-            if (boatState.mode != MODE_MANUAL)
-{
-    return;
-}
-        }
-        else
-        {
-            // Temporary manual override.
-            temporaryOverrideActive = true;
-        }
-    }
-    else
-    {
-        // Reset override flags outside autopilot.
-        temporaryOverrideActive = false;
-        manualModeRequested = false;
     }
 
     // --------------------------------------------------
@@ -913,6 +854,6 @@ void joystick_update()
         rightMotor = constrain(rightMotor, -1000, 1000);
     }
 
-    // Send the manual motor command.
-    boatCommands_setManualMotors(leftMotor, rightMotor);
+    // Failed transmission requires a fresh neutral sample before retrying motion.
+    if(!boatCommands_setManualMotors(leftMotor, rightMotor))manualArmed=false;
 }
