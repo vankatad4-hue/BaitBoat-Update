@@ -52,3 +52,15 @@ Supply from CS8501 5V rail is provisional. Simultaneous-load test first; separat
 - U_E22 VCC: CS8501 5V rail (candidate branch; datasheet indicates ≥5V guarantees output power). UART and mode/status logic remain 3.3V. Reserve 150mA TX peak until actual 10dBm current measured.
 - C_E22: 100µF+10µF+100nF local candidates. Scope rail under simultaneous display/backlight+nRF+LoRa TX.
 - Separate 5V converter only if CS8501 margin fails; do not parallel boost outputs.
+
+
+## E22 dedicated supply R5
+| Ref | Candidate | Function / validation |
+|---|---|---|
+| U_LORA_BOOST | TPS61023 1S-to-5V boost (external converter) | Dedicated E22 VCC only; component values/layout per TI reference design; validate 150mA peak and rail transient/thermal |
+| C_LORA_IN | 2×10µF + 100nF | Converter input; effective capacitance/DC-bias check |
+| C_LORA_OUT | 2×22µF + 100µF + 100nF | Converter output/module local; ESR and stability verify |
+| L_LORA | Reference-design inductor | Select from TPS61023 datasheet/application design; saturation/current rating verify |
+| D_LORA | Reference-design diode, if topology requires | Select exact reference design |
+
+CS8501 rail remains controller/display only. The LoRa converter is a separate battery branch and must not be connected in parallel to CS8501 output.
