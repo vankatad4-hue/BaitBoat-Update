@@ -30,7 +30,7 @@ struct BoatState
     uint8_t gpsSatellites; // Number of satellites used in the solution.
     float gpsAccuracyMeters; // Estimated horizontal position accuracy in metres.
     uint32_t gpsLastUpdateMs; // Local receipt time of the latest valid GPS telemetry.
-    bool sonarActive;      // Sonar operating status.
+    bool sonarActive;      // Sonar operating status.\n    bool headingValid;     // Heading valid only when fresh status/nav flags agree.\n    bool lowBattery;       // Boat-reported low battery flag.\n    bool failsafeActive;  // Boat-reported failsafe flag/mode.
 
     bool sdCardReady;      // True when the remote TF card is mounted.
     bool offlineMapReady;  // True when the offline-map manifest is installed.
