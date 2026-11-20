@@ -66,3 +66,8 @@ Current code scaffold includes:
 - See repository `docs/ZIP_RELEASE_POLICY_R1.md`.
 
 Do not connect motor/solenoid power or operate the boat.
+
+
+## Shared payload decoder mirror (2026-11-20)
+- Added portable HEARTBEAT/ACK/TELEMETRY payload validator files mirrored with Remote source.
+- Decoder is currently unused by boat receive path; telemetry generation and application ACK remain unimplemented. No compile/hardware validation of endpoint firmware.
