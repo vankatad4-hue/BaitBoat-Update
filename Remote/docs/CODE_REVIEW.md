@@ -58,3 +58,6 @@ This remains a development baseline and must not be used to operate the boat. Ke
 - Source-level LVGL 9.6 adapter audit recorded in `LVGL_9_6_DISPLAY_ADAPTER_AUDIT_R1.md`; exact library API signatures remain pending target compile.
 - Added target Arduino CLI workflow and candidate dependency pins. The first run is still in progress; no compile success is claimed.
 - Remote host CI was inspected: first run failed at release-guard unit test because its fixture did not populate the new fail-closed state fields (`emergencyStopConfirmed` and `actuatorSafetyReady`). The test fixture was corrected to initialise the safety state explicitly. The next CI run is pending.
+
+- Follow-up CI root cause: release-guard test used a reduced BoatState test stub with a different field layout from the full struct used by the compiled module. Test now links the actual BoatState source/header. The next run uncovered a wrong latitude test vector (50° instead of 91°); vector corrected.
+- Target compile first failed on Arduino's sketch-folder/main-`.ino` naming convention before compiling firmware. Workflow stages a correctly named sketch folder/file and captures build log; retry is pending.
