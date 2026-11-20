@@ -1,30 +1,24 @@
-# Boat controller pin/interface allocation R1
+# Boat Radio Pin Assignment R2 — logical only
 
-**Controller candidate:** Heltec Wireless Tracker V1.2. This is a pin-plan only until the exact purchased board/revision and its schematic/pin map are confirmed. It integrates ESP32-S3, SX1262 LoRa, and UC6580 GNSS; therefore backup LoRa may use the native radio.
+Exact MCU pin numbers are intentionally TBD until the purchased Heltec Wireless Tracker board revision/schematic is checked. The board's integrated SX1262, GNSS, USB, strapping, and other resources are reserved; initial backup link uses a separate E22 module pair.
 
-## External carrier requirements
-### nRF24 primary
-- SPI MOSI/SCK/MISO from MCU pins chosen after board-pin audit.
-- CSN and CE must be direct MCU GPIOs; avoid I2C expander for timing.
-- IRQ is a direct GPIO/interrupt if available; otherwise polling with measured latency.
-- 3V3 rail sized for PA/LNA burst current, local bulk + 100nF.
-- 2.4GHz 50Ω antenna connector.
+## nRF24 primary
+- SPI MOSI/SCK/MISO from verified controller SPI bus.
+- Direct CSN and CE MCU GPIOs; direct IRQ input preferred.
+- Pin values must not overlap Tracker's integrated SX1262 SPI, GNSS UART, USB or boot strapping.
+- External radio module on carrier with dedicated 3.3V rail and local decoupling.
+- Initial RF profile: channel 76 (2476MHz), 250kbps, PA_LOW, fixed 32-byte frame, CRC16, auto-ack/retry. Validate coexistence and local EU 2.4GHz power limits.
 
-### Integrated LoRa
-- SX1262 uses board-integrated radio and dedicated RF path; use Heltec library or exact compatible driver for that hardware revision.
-- LoRa antenna via board's LoRa IPEX/U.FL RF connector, 868MHz regional antenna.
-- Verify frequency support and output power config. GNSS RF connector is not the LoRa connector.
+## E22 backup UART
+- UART TX/RX direct MCU pins, 9600 8N1 initial. GPIO numbers TBD.
+- M0/M1 default low (normal transparent mode), AUX input, NRST accessible.
+- 5V supply from electronics buck; local bypass.
+- Dedicated 868MHz antenna port; separate from nRF and GNSS.
+- Identical remote/boat config: channel18=868.125MHz, air data62.5kbps, 32-byte subpacket, output10dBm, transparent mode, address/network zero.
 
-### GNSS and safety
-- GNSS UART/antenna and power GPIO use native board resources; don't remap before pin-map audit.
-- GNSS/heading health and battery voltage are required before return-home failsafe.
-- Boat-local failsafe controls motor outputs; remote link loss must not be required to invoke it.
-
-## Pin freeze checklist
-1. Confirm exact Heltec board revision and frequency.
-2. Read its schematic/pin map.
-3. Check integrated SX1262 pins are reserved.
-4. Select nRF SPI and direct CE/CSN/IRQ pins that do not collide with GNSS, display, USB, or strapping.
-5. Confirm carrier connector pin numbers against schematic/continuity.
-6. Document actual pin numbers, then freeze.
-
+## Physical pin freeze
+1. Exact Heltec Tracker version/PCB revision confirmed.
+2. Schematic pin map crosschecked with board and continuity.
+3. SPI/UART choices avoid onboard SX1262 and GNSS resources.
+4. Voltage levels and boot straps verified.
+5. Test harness connector crosswalk recorded and reviewed before carrier PCB/harness manufacture.
