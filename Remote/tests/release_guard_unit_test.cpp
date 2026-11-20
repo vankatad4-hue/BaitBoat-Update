@@ -56,4 +56,15 @@ int main()
     releaseGuard_beginConfirm(14300);
     releaseGuard_endConfirm(15100);
     assert(sent == 0);
+    sent = -1;
+    boatState.mode = MODE_AUTOPILOT;
+    releaseGuard_beginKey(RELEASE_HOPPER_LEFT, 16000);
+    assert(releaseGuard_state() == RELEASE_GUARD_IDLE && sent == -1);
+    boatState.mode = MODE_MANUAL;
+    releaseGuard_beginKey(RELEASE_HOOK_RIGHT, 17000);
+    releaseGuard_endKey(18200);
+    releaseGuard_beginConfirm(18300);
+    boatState.failsafeActive = true;
+    releaseGuard_endConfirm(19200);
+    assert(sent == -1);
 }
