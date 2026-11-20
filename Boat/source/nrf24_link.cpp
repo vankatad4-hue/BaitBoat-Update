@@ -53,7 +53,7 @@ void NRF24Link::update() {
    RadioFrame f; radio_.read(&f,sizeof(f));
    if(f.magic[0]==RADIO_FRAME_MAGIC0 && f.magic[1]==RADIO_FRAME_MAGIC1 &&
      radio_crc16((const uint8_t*)&f,offsetof(RadioFrame,crc16))==f.crc16) {
-     rxFrame_=f;rxAvailable_=true;++rxCount_;
+     if(rxQueueCount_<4){rxQueue_[rxTail_]=f;rxTail_=(uint8_t)((rxTail_+1U)%4U);++rxQueueCount_;++rxCount_;}
    }
  }
 }
