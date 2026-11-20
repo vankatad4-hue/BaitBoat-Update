@@ -1,0 +1,2 @@
+# Flytec V080 retrofit — project
+Branch: hardware-ready-dual-radio-r1. Canonical continuation: docs/CONTINUATION_CHECKPOINT_VER001.md. Remote: Waveshare ESP32-S3-Touch-LCD-4.3 Standard; Boat: modular carrier, dual radio. Current milestone: eight-lake SD profiles and offline-map stabilization. See Remote/releases/CHANGELOG_MASTER_VER024.md for development history. Hardware and autonomous execution are not approved. This is a repository project marker, not a ChatGPT Project or GitHub Projects board.

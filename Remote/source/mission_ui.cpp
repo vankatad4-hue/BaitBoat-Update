@@ -1,4 +1,5 @@
 #include "mission_ui.h"
+#include "mission_storage.h"
 #include "boat_state.h"
 #include "lake_storage.h"
 #include <Arduino.h>
@@ -8,68 +9,32 @@
 #include <math.h>
 #include <stddef.h>
 
-static constexpr uint8_t SLOT_COUNT = 16;
-struct WaypointSlot { bool valid; float lat, lon; bool baitMark, hookMark; };
 static WaypointSlot slots[SLOT_COUNT] = {};
 static bool homeValid=false; static float homeLat=0,homeLon=0; static int selectedSlot=-1;
 static void setStatus(const char *s);
 static bool storageReady=false,storageAttempted=false;
-static constexpr uint32_t STORE_MAGIC=0x42544D50UL;
-struct StoredMission { uint32_t magic; WaypointSlot points[SLOT_COUNT]; bool homeValid; float homeLat,homeLon; int8_t selected; uint32_t crc; };
-// ver026 storage record used four slots; migrate it when its CRC validates.
-struct LegacyStoredMission { uint32_t magic; WaypointSlot points[4]; bool homeValid; float homeLat,homeLon; int8_t selected; uint32_t crc; };
-static uint32_t crc32(const uint8_t *data,size_t len){uint32_t crc=0xFFFFFFFFUL;for(size_t i=0;i<len;i++){crc^=data[i];for(uint8_t b=0;b<8;b++)crc=(crc&1)?(crc>>1)^0xEDB88320UL:crc>>1;}return ~crc;}
-static bool validCoordinate(float lat,float lon){return isfinite(lat)&&isfinite(lon)&&lat>=-90&&lat<=90&&lon>=-180&&lon<=180;}
 static bool sdMissionAvailable(){return lakeStorage_ready();}
-static bool readRecord(const char *path, StoredMission &record){
- File in=SD.open(path,FILE_READ);if(!in)return false;
- bool ok=in.size()==sizeof(record)&&in.read(reinterpret_cast<uint8_t*>(&record),sizeof(record))==sizeof(record);in.close();
- return ok&&record.magic==STORE_MAGIC&&record.crc==crc32(reinterpret_cast<const uint8_t*>(&record),offsetof(StoredMission,crc));
-}
-static bool writeSdMission(const StoredMission &record){
- if(!sdMissionAvailable())return false;
- String tmp=lakeStorage_path("/waypoints.tmp"), dst=lakeStorage_path("/waypoints.bin"), bak=lakeStorage_path("/waypoints.bak");
- if(SD.exists(tmp.c_str())&&!SD.remove(tmp.c_str()))return false;
- File out=SD.open(tmp.c_str(),FILE_WRITE);if(!out)return false;
- size_t written=out.write(reinterpret_cast<const uint8_t*>(&record),sizeof(record));out.flush();out.close();
- StoredMission check={};
- if(written!=sizeof(record)||!readRecord(tmp.c_str(),check))return false;
- if(SD.exists(dst.c_str())){
-  if(readRecord(dst.c_str(),check)){
-   if(SD.exists(bak.c_str())&&!SD.remove(bak.c_str()))return false;
-   if(!SD.rename(dst.c_str(),bak.c_str()))return false;
-  }else if(!SD.remove(dst.c_str()))return false;
- }
- return SD.rename(tmp.c_str(),dst.c_str());
-}
-static bool readSdMission(StoredMission &record){
- if(!sdMissionAvailable())return false;
- return readRecord(lakeStorage_path("/waypoints.bin").c_str(),record)||
-        readRecord(lakeStorage_path("/waypoints.bak").c_str(),record);
-}
 static void applyStored(const StoredMission &r);
 static bool persist(){
- StoredMission r={};r.magic=STORE_MAGIC;memcpy(r.points,slots,sizeof(slots));r.homeValid=homeValid;r.homeLat=homeLat;r.homeLon=homeLon;r.selected=(int8_t)selectedSlot;r.crc=crc32(reinterpret_cast<const uint8_t*>(&r),offsetof(StoredMission,crc));
- if(writeSdMission(r))return true;
- StoredMission old={}; if(readSdMission(old)){applyStored(old);}else{memset(slots,0,sizeof(slots));homeValid=false;selectedSlot=-1;storageReady=false;}return false;
+ StoredMission r={};r.magic=STORE_MAGIC;memcpy(r.points,slots,sizeof(slots));r.homeValid=homeValid;r.homeLat=homeLat;r.homeLon=homeLon;r.selected=(int8_t)selectedSlot;r.crc=missionStorage_crc32(reinterpret_cast<const uint8_t*>(&r),offsetof(StoredMission,crc));
+ if(missionStorage_write(r))return true;
+ StoredMission old={}; if(missionStorage_read(old)){applyStored(old);}else{memset(slots,0,sizeof(slots));homeValid=false;selectedSlot=-1;storageReady=false;}return false;
 }
 static void applyStored(const StoredMission &r){
- for(uint8_t i=0;i<SLOT_COUNT;i++)if(r.points[i].valid&&!validCoordinate(r.points[i].lat,r.points[i].lon))slots[i]={};
- memcpy(slots,r.points,sizeof(slots));for(uint8_t i=0;i<SLOT_COUNT;i++)if(slots[i].valid&&!validCoordinate(slots[i].lat,slots[i].lon))slots[i]={};
- homeValid=r.homeValid&&validCoordinate(r.homeLat,r.homeLon);homeLat=homeValid?r.homeLat:0;homeLon=homeValid?r.homeLon:0;
- selectedSlot=(r.selected>=0&&r.selected<SLOT_COUNT&&slots[(uint8_t)r.selected].valid)?r.selected:-1;
+ StoredMission safe=r;missionStorage_sanitize(safe);
+ memcpy(slots,safe.points,sizeof(slots));homeValid=safe.homeValid;homeLat=safe.homeLat;homeLon=safe.homeLon;selectedSlot=safe.selected;
 }
 static void loadPersisted(){
  if(storageAttempted)return;storageAttempted=true;
  memset(slots,0,sizeof(slots));homeValid=false;homeLat=homeLon=0;selectedSlot=-1;
  storageReady=sdMissionAvailable();if(!storageReady)return;
  StoredMission record={};
- if(readSdMission(record)){applyStored(record);return;}
+ if(missionStorage_read(record)){applyStored(record);return;}
  // Never replace a corrupt profile with another lake's data or a legacy record.
  if(SD.exists(lakeStorage_path("/waypoints.bin").c_str())||
     SD.exists(lakeStorage_path("/waypoints.bak").c_str())){storageReady=false;return;}
- if(lakeStorage_active()==0 && readRecord("/missions/waypoints.bin",record)){
-  if(writeSdMission(record))applyStored(record);else storageReady=false;
+ if(lakeStorage_active()==0 && missionStorage_readRecord("/missions/waypoints.bin",record)){
+  if(missionStorage_write(record))applyStored(record);else storageReady=false;
  }
 }
 void missionUI_reloadStorage(){storageAttempted=false;loadPersisted();}
@@ -99,15 +64,15 @@ static void refresh(){
 }
 static void setStatus(const char *s){if(statusLabel)lv_label_set_text(statusLabel,s);}
 static void selectSlot(lv_event_t *e){if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;if(!storageReady||!sdMissionAvailable()){setStatus("SD ГРЕШКА");return;}int i=(int)(intptr_t)lv_event_get_user_data(e);if(i<0||i>=SLOT_COUNT||!slots[i].valid){setStatus("ПРАЗНО — ЗАПИШИ АКТУАЛЕН GPS");return;}selectedSlot=i;bool ok=persist();refresh();setStatus(ok?"ТОЧКАТА Е ИЗБРАНА / SD ЗАПИСАНА":"ГРЕШКА ПРИ SD ЗАПИС");}
-static void saveCurrent(lv_event_t *e){if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;if(!storageReady||!sdMissionAvailable()){setStatus("SD ГРЕШКА");return;}if(!currentFixIsFresh()||!validCoordinate(boatState.latitude,boatState.longitude)){setStatus("БЛОКИРАНО: НУЖЕН Е GPS ПОД 2 СЕК.");return;}int i=(selectedSlot>=0)?selectedSlot:-1;if(i<0||slots[i].valid){i=-1;for(int n=0;n<SLOT_COUNT;n++)if(!slots[n].valid){i=n;break;}}if(i<0){setStatus("16 ТОЧКИ СА ЗАПЪЛНЕНИ — ИЗТРИЙ ИЛИ ИЗБЕР");return;}slots[i]={true,boatState.latitude,boatState.longitude,false,false};selectedSlot=i;bool ok=persist();refresh();setStatus(ok?"ТОЧКАТА Е ЗАПИСАНА НА SD":"SD ГРЕШКА — ЗАПИСЪТ НЕ Е ПОТВЪРДЕН");}
+static void saveCurrent(lv_event_t *e){if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;if(!storageReady||!sdMissionAvailable()){setStatus("SD ГРЕШКА");return;}if(!currentFixIsFresh()||!missionStorage_validCoordinate(boatState.latitude,boatState.longitude)){setStatus("БЛОКИРАНО: НУЖЕН Е GPS ПОД 2 СЕК.");return;}int i=(selectedSlot>=0)?selectedSlot:-1;if(i<0||slots[i].valid){i=-1;for(int n=0;n<SLOT_COUNT;n++)if(!slots[n].valid){i=n;break;}}if(i<0){setStatus("16 ТОЧКИ СА ЗАПЪЛНЕНИ — ИЗТРИЙ ИЛИ ИЗБЕР");return;}slots[i]={true,boatState.latitude,boatState.longitude,false,false};selectedSlot=i;bool ok=persist();refresh();setStatus(ok?"ТОЧКАТА Е ЗАПИСАНА НА SD":"SD ГРЕШКА — ЗАПИСЪТ НЕ Е ПОТВЪРДЕН");}
 static void setHome(lv_event_t *e){if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;if(!storageReady||!sdMissionAvailable()){setStatus("SD ГРЕШКА");return;}if(!currentFixIsFresh()){setStatus("ДОМ: НУЖЕН Е АКТУАЛЕН GPS");return;}homeLat=boatState.latitude;homeLon=boatState.longitude;homeValid=true;bool ok=persist();refresh();setStatus(ok?"ДОМЪТ Е ЗАПИСАН НА SD":"SD WRITE FAILED");}
 static void clearSlot(lv_event_t *e){if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;if(!storageReady||!sdMissionAvailable()){setStatus("SD ГРЕШКА");return;}if(selectedSlot<0||!slots[selectedSlot].valid){setStatus("ИЗБЕРИ ТОЧКА ЗА ИЗТРИВАНЕ");return;}slots[selectedSlot]={};selectedSlot=-1;bool ok=persist();refresh();setStatus(ok?"ТОЧКАТА Е ИЗТРИТА / SD ЗАПИСАНА":"SD WRITE FAILED");}
 static void toggleFlag(lv_event_t *e,bool bait){if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;if(!storageReady||!sdMissionAvailable()){setStatus("SD ГРЕШКА");return;}if(selectedSlot<0||!slots[selectedSlot].valid){setStatus("ПЪРВО ИЗБЕРИ ТОЧКА");return;}if(bait)slots[selectedSlot].baitMark=!slots[selectedSlot].baitMark;else slots[selectedSlot].hookMark=!slots[selectedSlot].hookMark;bool ok=persist();refresh();setStatus(ok?"МАРКЕРЪТ Е ЗАПИСАН — САМО ПЛАНИРАНЕ":"SD WRITE FAILED");}
 static void toggleBait(lv_event_t *e){toggleFlag(e,true);}static void toggleHook(lv_event_t *e){toggleFlag(e,false);}
 static void startMission(lv_event_t *e){if(lv_event_get_code(e)==LV_EVENT_CLICKED)setStatus("СТАРТЪТ Е БЛОКИРАН — СИГУРНОСТТА НЕ Е ГОТОВА");}
-static void back(lv_event_t *e){if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;if(refreshTimer){lv_timer_delete(refreshTimer);refreshTimer=nullptr;}if(returnScreen)lv_screen_load(returnScreen);screen=nullptr;}
+static void back(lv_event_t *e){if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;if(refreshTimer){lv_timer_delete(refreshTimer);refreshTimer=nullptr;}lv_obj_t *old=screen;screen=nullptr;statusLabel=nullptr;if(returnScreen)lv_screen_load(returnScreen);if(old)lv_obj_delete_async(old);}
 static void timerRefresh(lv_timer_t *t){(void)t;refresh();}
-void missionUI_open(lv_obj_t *main){returnScreen=main;loadPersisted();screen=lv_obj_create(nullptr);lv_obj_set_style_bg_color(screen,bg(),LV_PART_MAIN);lv_obj_remove_flag(screen,LV_OBJ_FLAG_SCROLLABLE);label(screen,"НАВИГАЦИОННИ ТОЧКИ — 16 МЕСТА",12,8,770);gpsLabel=label(screen,"ПРОВЕРКА НА GPS",12,35,770);homeLabel=label(screen,"ДОМ: НЕ Е ЗАДАДЕН",12,60,770);
+void missionUI_open(lv_obj_t *main){if(screen)return;returnScreen=main;loadPersisted();screen=lv_obj_create(nullptr);lv_obj_set_style_bg_color(screen,bg(),LV_PART_MAIN);lv_obj_remove_flag(screen,LV_OBJ_FLAG_SCROLLABLE);label(screen,"НАВИГАЦИОННИ ТОЧКИ — 16 МЕСТА",12,8,770);gpsLabel=label(screen,"ПРОВЕРКА НА GPS",12,35,770);homeLabel=label(screen,"ДОМ: НЕ Е ЗАДАДЕН",12,60,770);
  lv_obj_t *p=lv_obj_create(screen);lv_obj_set_pos(p,8,88);lv_obj_set_size(p,784,246);lv_obj_set_style_radius(p,8,LV_PART_MAIN);lv_obj_set_style_bg_color(p,panel(),LV_PART_MAIN);lv_obj_set_style_pad_all(p,5,LV_PART_MAIN);lv_obj_set_style_border_width(p,1,LV_PART_MAIN);lv_obj_set_style_border_color(p,lv_color_hex(0x2366A4),LV_PART_MAIN);label(p,"ИЗБЕРИ ТОЧКА — SD / РЕЗЕРВНО КОПИЕ",4,3,760);
  for(uint8_t i=0;i<SLOT_COUNT;i++){int col=i%4,row=i/4;int x=col*190+5,y=row*50+25;slotLabels[i]=label(p,"Т00 ПРАЗЕН",x,y,118);lv_obj_t *s=button(p,"ИЗБ.",x+122,y-5,54,34,blue());lv_obj_add_event_cb(s,selectSlot,LV_EVENT_CLICKED,(void*)(intptr_t)i);}
  selectedLabel=label(screen,"ИЗБРАНА ТОЧКА: НЯМА",12,337,770);targetMetricsLabel=label(screen,"ИЗБЕРИ ЗАПИСАНА ТОЧКА ЗА НАВИГАЦИЯ",12,358,770);lv_obj_t *save=button(screen,"ЗАПИС GPS",10,382,130,38,green());lv_obj_add_event_cb(save,saveCurrent,LV_EVENT_CLICKED,nullptr);lv_obj_t *h=button(screen,"ЗАДАЙ ДОМ",148,382,125,38,blue());lv_obj_add_event_cb(h,setHome,LV_EVENT_CLICKED,nullptr);lv_obj_t *c=button(screen,"ИЗТРИЙ",281,382,100,38,red());lv_obj_add_event_cb(c,clearSlot,LV_EVENT_CLICKED,nullptr);lv_obj_t *b=button(screen,"ЗАХРАНКА",389,382,100,38,blue());lv_obj_add_event_cb(b,toggleBait,LV_EVENT_CLICKED,nullptr);lv_obj_t *k=button(screen,"КУКА",497,382,100,38,blue());lv_obj_add_event_cb(k,toggleHook,LV_EVENT_CLICKED,nullptr);lv_obj_t *start=button(screen,"СТАРТ",605,382,90,38,red());lv_obj_add_event_cb(start,startMission,LV_EVENT_CLICKED,nullptr);lv_obj_t *bb=button(screen,"НАЗАД",700,382,90,38,blue());lv_obj_add_event_cb(bb,back,LV_EVENT_CLICKED,nullptr);statusLabel=label(screen,"ИЗПЪЛНЕНИЕТО НА МИСИЯ Е ИЗКЛЮЧЕНО",12,430,770);refresh();lv_screen_load(screen);refreshTimer=lv_timer_create(timerRefresh,250,nullptr);}

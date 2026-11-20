@@ -39,6 +39,7 @@ int main(){
     SD.failRenameFrom="/Lake_01/map_slot.tmp";assert(!lakeStorage_commitMap(lakeStorage_mapStage()));
     assert(lakeStorage_begin(true));assert(lakeStorage_mapRoot()==lakeStorage_path("/maps-alt"));SD.failRenameFrom.clear();
     assert(lakeStorage_commitMap(lakeStorage_mapStage()));assert(lakeStorage_mapRoot()==lakeStorage_path("/maps"));
+    assert(lakeStorage_prepareMapStage());SD.files["/Lake_01/map_slot.bin"][0]^=0xff;assert(lakeStorage_mapRoot()==lakeStorage_path("/maps"));
     SD.failRenameFrom="/Lake_01/name.tmp";assert(!lakeStorage_setName(0,"replacement"));
     char name[48];assert(lakeStorage_getName(0,name,sizeof(name))&&strcmp(name,"Test lake 0")==0);SD.failRenameFrom.clear();
     SD.shortWrite=true;assert(!lakeStorage_setName(0,"short write"));assert(!lakeStorage_select(1));SD.shortWrite=false;

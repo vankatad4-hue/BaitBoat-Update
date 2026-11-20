@@ -59,6 +59,7 @@ bool offlineMap_begin(bool sdCardReady)
     g_sd_available = sdCardReady && lakeStorage_ready();                   // Remember the mount result from display_port.cpp.
     g_map_pack_available = false;                   // Clear any previous map-pack status.
     g_map_attribution[0] = '\0';
+    mapCoverage_begin(nullptr);
 
     if (!g_sd_available)                            // No mounted card means no offline map data can be read.
     {

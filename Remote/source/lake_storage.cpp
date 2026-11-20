@@ -154,3 +154,19 @@ bool lakeStorage_setName(uint8_t lake,const char *name){
     }
     return SD.rename(tmp.c_str(),dst.c_str());
 }
+
+bool lakeStorage_prepareMapStage(){
+    uint8_t activeSlot,check;
+    if(!mapSlot(activeSlot))return false;
+    String dst=lakeStorage_path("/map_slot.bin"),bak=lakeStorage_path("/map_slot.bak");
+    // If neither record exists, keep the implicit first slot (and legacy fallback).
+    if(!SD.exists(dst.c_str())&&!SD.exists(bak.c_str()))return true;
+    if(readSelection(bak.c_str(),check)&&check==activeSlot)return true;
+    // Only replace backup while a valid active selector still exists.
+    if(!readSelection(dst.c_str(),check)||check!=activeSlot)return false;
+    if(SD.exists(bak.c_str())&&!SD.remove(bak.c_str()))return false;
+    File out=SD.open(bak.c_str(),FILE_WRITE);if(!out)return false;
+    uint8_t bytes[2]={activeSlot,(uint8_t)(activeSlot^0xff)};
+    size_t n=out.write(bytes,2);out.flush();out.close();
+    return n==2&&readSelection(bak.c_str(),check)&&check==activeSlot;
+}

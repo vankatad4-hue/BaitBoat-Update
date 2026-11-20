@@ -54,3 +54,8 @@ jobs:
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/lake_stubs -IRemote/source \
             Remote/source/lake_storage.cpp Remote/tests/lake_storage_test.cpp -o /tmp/remote_lake_storage
           /tmp/remote_lake_storage
+      - name: Mission record serialization and recovery
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/lake_stubs -IRemote/source \
+            Remote/source/lake_storage.cpp Remote/source/mission_storage.cpp Remote/tests/mission_storage_test.cpp -o /tmp/remote_mission_storage
+          /tmp/remote_mission_storage
