@@ -38,7 +38,7 @@ static uint8_t g_loraPendingPriority=0;
 static RadioFrame g_loraPendingFrame;
 static uint8_t g_authKey[32];
 static RadioSequenceGuard g_boatSequenceGuard;
-static bool g_boatSessionStarted=false;
+static bool g_boatSessionStarted=false;\nstatic uint8_t g_boatSessionEpoch=0;
 
 static BoatRadioLink toPublicLink(ManagedLink link) {
     if(link==LINK_NRF_PRIMARY) return RADIO_LINK_NRF24_PRIMARY;
@@ -93,7 +93,7 @@ bool boatRadio_begin() {
     g_loraConfigured=false;g_nrfReady=false;g_begun=false;
     memset(g_authKey,0,sizeof(g_authKey));
     g_sessionEpoch=(uint8_t)esp_random(); if(g_sessionEpoch==0)g_sessionEpoch=1;
-    g_txSequence=0;g_lastPrimaryHeartbeat=0;g_lastBackupTxMs=0;g_lastBackupTxAttemptMs=0;g_backupTxSent=false;g_loraPending=false;g_loraPendingPriority=0;g_boatSequenceGuard.reset();g_boatSessionStarted=false;g_ackTracker.reset(0);telemetryInit();
+    g_txSequence=0;g_lastPrimaryHeartbeat=0;g_lastBackupTxMs=0;g_lastBackupTxAttemptMs=0;g_backupTxSent=false;g_loraPending=false;g_loraPendingPriority=0;g_boatSequenceGuard.reset();g_boatSessionStarted=false;g_boatSessionEpoch=0;g_ackTracker.reset(0);telemetryInit();
 
     // Display/SD setup initializes shared SPI/I2C. nRF CE/CSN pins are provisional.
     g_nrfReady=g_nrf.begin(true);
@@ -156,14 +156,14 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame) {
         frame.sourceId==BOAT_DEVICE_ID&&frame.destinationId==REMOTE_DEVICE_ID&&
         (frame.type==RADIO_MSG_SESSION_START||frame.type==RADIO_MSG_HEARTBEAT||
          frame.type==RADIO_MSG_TELEMETRY||frame.type==RADIO_MSG_ACK||frame.type==RADIO_MSG_LINK_PROBE)&&
-        (frame.type!=RADIO_MSG_SESSION_START||(frame.sequence==0&&frame.payload[0]==frame.sessionEpoch));
+        (frame.type!=RADIO_MSG_SESSION_START||(frame.sequence==0&&frame.payload[0]==frame.sessionEpoch&&frame.sessionEpoch==g_sessionEpoch));
     if(!envelopeValid){g_linkManager.reportFailure(link);return;}
     if(frame.type==RADIO_MSG_SESSION_START) {
         if(!g_boatSequenceGuard.accept(frame.sessionEpoch,frame.sequence,true)){g_linkManager.reportFailure(link);return;}
         g_boatSessionStarted=true;g_ackTracker.reset(frame.sessionEpoch);telemetryInit();
         g_linkManager.reportValidRx(link,true,now);return;
     }
-    if(!g_boatSessionStarted||!g_boatSequenceGuard.accept(frame.sessionEpoch,frame.sequence,false)){
+    if(!g_boatSessionStarted||frame.sessionEpoch!=g_boatSessionEpoch||!g_boatSequenceGuard.accept(frame.sessionEpoch,frame.sequence,false)){
         g_linkManager.reportFailure(link);return;
     }
     if(!dispatchValidatedPayload(link,frame,now)){g_linkManager.reportFailure(link);return;}
