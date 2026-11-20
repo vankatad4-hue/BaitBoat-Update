@@ -10,7 +10,7 @@ This library tracks the project hardware as selected, candidate, or unresolved. 
 |---|---|---|---|
 | Remote | Waveshare ESP32-S3-Touch-LCD-4.3 Standard (board schematic/user guide) | Selected, not purchased | Waveshare wiki downloads; schematic PDF is model-specific |
 | Remote | ESP32-S3 / board modules, touch GT911, IO expander CH422G | Integrated on display board | Board documentation and chip datasheets |
-| Remote | nRF24L01+ PA/LNA radio module | Selected candidate; exact module vendor/revision TBD | Nordic nRF24L01+ datasheet; module-level documentation TBD |
+| Remote/Boat | Nordic nRF24L01+ RF IC (module is PA/LNA variant) | Selected candidate; module vendor/revision TBD | Nordic nRF24L01P datasheet plus module-specific docs TBD |
 | Remote/Boat | EBYTE E22-900T22S UART LoRa | Selected, model/revision verify | Official Ebyte manual |
 | Remote | SC16IS750 I2C-UART bridge | Candidate | NXP datasheet |
 | Remote | 1S4P 18650 pack, 2500mAh cells proposed | Cell model unresolved | Cell datasheets TBD; no pack PDF available yet |
@@ -33,6 +33,10 @@ This library tracks the project hardware as selected, candidate, or unresolved. 
 - EBYTE E22-900T22S manual (official source link): https://www.cdebyte.com/pdf-down.aspx?id=4217
 - Waveshare ESP32-S3-Touch-LCD-4.3B schematic (B variant reference only; board variant must match): https://files.waveshare.com/wiki/ESP32-S3-Touch-LCD-4.3B/ESP32-S3-Touch-LCD-4.3B-Sch.pdf
 - Cytron MDD20A datasheet: https://download.kamami.pl/p587223-MDD20A%20Datasheet.pdf
+- Nordic nRF24L01+ datasheet: https://infocenter.nordicsemi.com/pdf/nRF24L01P_PS_v1.0.pdf
+- NXP SC16IS750 datasheet: https://www.nxp.com/docs/en/data-sheet/SC16IS750.pdf
+- Bosch BMP280 datasheet: https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp280-ds001.pdf
+- Diodes Inc. DMTH3002LK3 datasheet: https://www.diodes.com/assets/Datasheets/DMTH3002LK3.pdf
 - Heltec Wireless Tracker product resource page (links revision docs): https://heltec.org/project/wireless-tracker/
 - Heltec Tracker documentation portal: https://docs.heltec.org/
 
