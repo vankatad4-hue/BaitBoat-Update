@@ -4,8 +4,8 @@
 static const uint8_t REMOTE_PIPE[5]={'R','M','T','E','1'};
 static const uint8_t BOAT_PIPE[5]={'B','O','A','T','1'};
 
-NRF24Link::NRF24Link(int ce,int csn,SPIClass *spi,uint8_t ch)
- : radio_(ce,csn,1000000),spiBus_(spi),cePin_(ce),csnPin_(csn),channel_(ch),
+NRF24Link::NRF24Link(int ce,int csn,SPIClass *spi,uint8_t ch,int sck,int miso,int mosi)
+ : radio_(ce,csn,1000000),spiBus_(spi),cePin_(ce),csnPin_(csn),channel_(ch),spiSck_(sck),spiMiso_(miso),spiMosi_(mosi),
    ready_(false),txPending_(false),lastTxSuccess_(false),txCount_(0),rxCount_(0),
    txFailCount_(0),rxHead_(0),rxTail_(0),rxQueueCount_(0),txAddress_(nullptr),rxAddress_(nullptr) {
  memset(rxQueue_,0,sizeof(rxQueue_));
@@ -15,6 +15,7 @@ bool NRF24Link::begin(bool remoteRole) {
  if(cePin_<0 || csnPin_<0 || !spiBus_) return false;
  txAddress_=remoteRole?BOAT_PIPE:REMOTE_PIPE;
  rxAddress_=remoteRole?REMOTE_PIPE:BOAT_PIPE;
+ if(spiSck_>=0 && spiMiso_>=0 && spiMosi_>=0) spiBus_->begin(spiSck_,spiMiso_,spiMosi_,csnPin_);
  if(!radio_.begin(spiBus_)) return false;
  radio_.setChannel(channel_);
  radio_.setDataRate(RF24_250KBPS);
