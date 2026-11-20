@@ -67,6 +67,16 @@ bool offlineMap_hasMapData()
     return g_map_pack_available;                    // Return the cached manifest validation result.
 }
 
+// Copy the validated attribution string to a caller-owned buffer.
+bool offlineMap_getAttribution(char *buffer, size_t bufferSize)
+{
+    if (buffer == nullptr || bufferSize == 0 || !g_map_pack_available || g_map_attribution[0] == '\0')
+        return false;
+    strncpy(buffer, g_map_attribution, bufferSize - 1);
+    buffer[bufferSize - 1] = '\0';
+    return true;
+}
+
 // Read one raw RGB565 tile from the selected map style and zoom level.
 uint16_t *offlineMap_readTile(OfflineMapStyle style, uint8_t zoom, uint32_t tileX, uint32_t tileY)
 {
