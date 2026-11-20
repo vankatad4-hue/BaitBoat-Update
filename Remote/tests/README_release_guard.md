@@ -11,3 +11,7 @@ Run: `g++ -std=c++11 -Wall -Wextra -Werror -IRemote/source Remote/source/radio_p
 
 ## Telemetry freshness tests
 Run: `g++ -std=c++11 -Wall -Wextra -Werror -IRemote/tests/stubs -IRemote/source Remote/source/boat_telemetry.cpp Remote/source/radio_payload_codec.cpp Remote/tests/boat_telemetry_test.cpp -o telemetry_test && ./telemetry_test`. Tests primary provenance, STOP/interlock readiness, coordinate sample pairing, GPS freshness, heading validity, battery and sonar summary. It does not test the hardware radio path.
+
+
+## Continuous integration
+The `.github/workflows/remote-host-tests.yml` workflow runs these portable checks on Remote source/test changes to the development branch and PRs targeting main. It is not a firmware target build; display/LVGL and radio hardware libraries are excluded. A passing CI result validates only the listed host tests.
