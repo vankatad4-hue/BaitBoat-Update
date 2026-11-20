@@ -62,3 +62,11 @@ Read `../docs/PROJECT_MASTER_STATUS.md` for the full project state, requirements
 
 ## Remote radio receive integration R2
 Authenticated receive frames are dispatched to strict payload decoders. Remote ACK lifecycle records are correlated and exposed to the UI API; telemetry is applied with local group freshness and primary-link safety provenance. Boat-side generation/execution is still missing, and the complete firmware has not been compiled. See `../docs/REMOTE_FIRMWARE_INTEGRATION_REVIEW_R2.md`.
+
+
+## UI/input milestone — Remote ver024
+- Main screen footer now provides touchscreen MANUAL, AUTOPILOT and RETURN HOME requests, alongside STOP and calibration navigation.
+- Live stick telemetry reports raw readings before calibration and normalized values/neutral-active state after calibration. ADC failure is displayed explicitly.
+- Footer safety summary reports STOP confirmation state, low-battery/failsafe/interlock state and pending non-manual command ACK count.
+- Battery display is unknown (`--`) until fresh percentage telemetry is available.
+- This is feedback/request UI only. Boat application command execution remains absent, key provisioning is fail-closed, and the source has not been compiled for the exact Waveshare/LVGL target.
