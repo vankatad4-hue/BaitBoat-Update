@@ -1,7 +1,7 @@
 # Versioned ZIP Packaging
 
 ## Current next package version
-- Remote: `Remote/releases/VERSION` → `009`
+- Remote: `Remote/releases/VERSION` → `017`
 - Boat: `Boat/releases/VERSION` → `006`
 - Existing ver004 archives are preserved; never overwrite them.
 
@@ -14,6 +14,9 @@
 6. Packaging is automated by `.github/workflows/package-flytec-zips.yml`. On changes to the project folders on the development branch it creates GitHub Actions artifacts, plus SHA256 checksums. Artifact retention is 90 days.
 7. On push events, the workflow commits generated ZIPs and SHA256 manifest into the branch's releases folders; on PR events it uploads artifacts without committing. Confirm workflow completion and checksum integrity before calling a ZIP verified. The ZIP is a deliverable snapshot, not a fabrication/operational approval.
 8. Keep older release archives unchanged and preserve their version history.
+
+## ver016 package scope
+Payload codec and command ACK tracker scaffolds, R6.5 archive/netlist review, and R6.3/R6.4 revision reconciliation.
 
 ## ver009 package scope
 Synchronize parametric R5 CAD source with the generated print model and update the button-cap CAD.
