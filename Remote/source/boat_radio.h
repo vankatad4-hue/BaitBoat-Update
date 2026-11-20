@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include "boat_commands.h"
 #include "dual_radio_manager.h"
+#include "radio_ack_tracker.h"
 
 enum BoatRadioLink : uint8_t {
     RADIO_LINK_NONE = 0,
@@ -29,6 +30,8 @@ BoatRadioLink boatRadio_getActiveLink();
 BoatRadioState boatRadio_getState();
 bool boatRadio_primaryConnected();
 bool boatRadio_backupConnected();
+bool boatRadio_getCommandAck(uint16_t commandId,RadioCommandAckRecord &record);
+uint8_t boatRadio_pendingCommandAcks();
 
 // Hardware-driver integration hooks. A valid RX must pass frame validation and
 // HMAC authentication before reporting authenticated=true.
