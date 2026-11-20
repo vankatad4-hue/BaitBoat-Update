@@ -427,3 +427,10 @@ Boat:
 
 ## Compile correction tracking
 Target Compile #14 failed on missing declaration for `g_map_attribution` in the offline map module. Added the private 256-byte attribution buffer (commit `9aa20b0d987f94ea5b49e46509ae0ba10cc9d36b`). Target Compile #15 pending; complete target compilation remains unvalidated.
+
+
+## CI build status — 2026-11-20 (latest)
+- Remote target compile #19 / run ID 44781879101 passed on commit 3f189cb1ac65a764aec678893f1df857d113c815; full sketch compile/link and firmware artifact upload succeeded.
+- Build uses ESP32-S3 16MB Flash, OPI PSRAM, huge_app partition. Size 1,430,957 bytes / 45%; globals 178,136 bytes / 54% (149,544 bytes remaining). No C++ errors or warnings reported.
+- This validates CI compilation only. Actual display/touch, Wi-Fi, SD, radio, input and safety behavior require physical testing. Keep key provisioning and control TX disabled/fail-closed.
+- Next: audit settings/Wi-Fi timer teardown/re-entry, Map Manager parser/import safety, renderer cache/PSRAM and LVGL lifecycle; fix issues and rebuild.
