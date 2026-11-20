@@ -288,3 +288,6 @@ Boat:
 - Map Manager UI: GPS centre, manual coordinate nudges, 1km square, zoom 14–19, storage estimate, pack/index status and area coverage bar.
 - Staged import from SD `/map-import/` into `/maps/` is implemented in source using 4KiB chunk copies, per-tile size validation and manifest-last install; status shows tile/byte progress and renderer cache is invalidated after validation.
 - Tests added for coverage-index export, not executed. Firmware compile and hardware tests pending. Remote version remains 028; ver029 development not packaged.
+
+
+- Consolidated Remote history is maintained at `Remote/releases/CHANGELOG_MASTER_VER003.md` (history document revision VER003; source marker still ver028).
