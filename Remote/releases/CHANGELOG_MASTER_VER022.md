@@ -66,3 +66,8 @@
 - Corrected the LVGL9 event target accessor to `lv_event_get_target_obj()`; updated route line points to `lv_point_precise_t`; restored the Map Manager `copyChunk()` helper that had been commented out by a literal escaped newline.
 - Exact installed candidate versions observed: ESP32 Arduino core 3.0.2, LVGL 9.6.0, ESP32_Display_Panel 1.0.0, ESP32_IO_Expander 1.0.1, esp-lib-utils 0.1.2, RF24 1.4.11.
 - Commits: `1afd17d5`, `00840087`, `7213f04e`. Retry compile pending; no compile success claimed.
+
+
+## Corrective rebuild launched — 2026-11-20
+- Target compile run #14 (ID 44776348680) is in progress on head `7213f04e`, including all three fixes above. Host-test run #14 on that SHA passed.
+- Await compiler completion before updating readiness or claiming full target compile.
