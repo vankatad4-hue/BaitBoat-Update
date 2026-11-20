@@ -21,9 +21,9 @@
 - ACCEPTED is queue acceptance only. There is no connected command executor, telemetry source, EXECUTED ACK, actuator output or navigation/failsafe application.
 
 ## Release/archive review
-- Current markers: Remote ver023 / Boat ver011. Boat ver011 ZIP is independently verified; Remote ver023 ZIP binary remains unavailable for independent verification.
+- Current markers: Remote ver023 / Boat ver012 (ver012 ZIP rebuild pending). Boat ver011 ZIP is independently verified; Remote ver023 ZIP binary remains unavailable for independent verification.
 - Generated ZIPs and manifest are present for the previous ver010/023 snapshots; the Boat ver011 package workflow is pending.
-- Boat ver011 ZIP: independently SHA-256 verified against the manifest. Structure checked: 65 entries, sorted names, normalized timestamps, no nested ZIP; VERSION, ver011 note and 4 test source files present. Remote ver023 ZIP binary was not retrievable and remains unverified.
+- Boat ver011 ZIP: independently SHA-256 verified against manifest (65 entries, sorted names, normalized timestamps, no nested ZIP). It is now the previous snapshot; Boat ver012 package rebuild is pending. Remote ver023 ZIP binary was not retrievable and remains unverified.
 - Remote ver023 ZIP: present, but the binary could not be retrieved through the available file fetch path; checksum is manifest-only and not independently verified.
 - Archives are source snapshots, not fabrication or operational approvals.
 
@@ -76,5 +76,6 @@
 - Separate dummy-load motor-driver and solenoid tests, with no bait mechanisms connected.
 - Safety review, then HIL; controlled water tests only after independent failsafe validation.
 
-## Latest engineering finding\n- Previous cross-radio logic let CONTROL/ACTION frames bypass the cross-radio sequence guard entirely. This was narrowed: sequence-rejected commands now pass only if exact command ID is pending or executed; stale sequence/new ID is discarded. This reduces replay risk but is not complete anti-replay protection.\n\n## Stop conditions
+## Latest engineering finding
+- The Boat port previously declared but did not define pending-command lookup and ACK sender; these definitions are now implemented. The queue was extracted into a portable four-entry utility and the port delegates to it. This has not been compiled.\n- Previous cross-radio logic let CONTROL/ACTION frames bypass the cross-radio sequence guard entirely. This was narrowed: sequence-rejected commands now pass only if exact command ID is pending or executed; stale sequence/new ID is discarded. This reduces replay risk but is not complete anti-replay protection.\n\n## Stop conditions
 No propulsion, release, live battery charging in the proposed enclosure, or water operation until the exact hardware is identified, secure key/session is implemented, command executor/interlocks/failsafe are tested, electrical design is reviewed, and firmware/hardware test evidence is recorded.
