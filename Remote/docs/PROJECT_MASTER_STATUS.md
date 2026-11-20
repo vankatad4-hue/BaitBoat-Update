@@ -75,7 +75,7 @@ Boat:
 ## Versioned ZIP status
 - [Build and checksum status](../../docs/ZIP_BUILD_STATUS_R1.md)
 - Preserved baseline archives: Remote `Flytec_Remote_ver004.zip`, Boat `Flytec_Boat_ver004.zip`.
-- Next snapshot markers are Remote `017` and Boat `006`; the packaging workflow creates versioned ZIPs and SHA256 artifacts from the branch snapshot. These are pending successful workflow verification, not yet confirmed generated/downloadable archives.
+- Next snapshot markers are Remote `018` and Boat `006`; the packaging workflow creates versioned ZIPs and SHA256 artifacts from the branch snapshot. These are pending successful workflow verification, not yet confirmed generated/downloadable archives.
 - Packaging policy: `docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Boat controller pin audit
@@ -97,7 +97,7 @@ Boat:
 ## Release status
 - Repository branch: `hardware-ready-dual-radio-r1`; draft PR #1 remains open and unmerged.
 - ZIP snapshot ver017/006 ZIPs are committed with SHA256 manifest; integrity verification is pending. Existing ver004 archives are preserved.
-- ver017/006 are the latest committed snapshots; checksum manifest is committed; independent ZIP integrity verification remains pending.
+- ver017/006 are the latest committed snapshots; checksum manifest is committed; ver018 pending.
 - Do not operate boat or connect actuator power. Bench tests only.
 
 - Consolidated remote pin map and connector CSV R4 are the current versions; older R2 docs marked superseded. Consolidated remote power BOM/capture spec R6 are current; R5 docs marked superseded.
@@ -198,3 +198,7 @@ Boat:
 - Added portable strict payload decoder on Remote and Boat for heartbeat, ACK, telemetry status, battery/speed, coordinate, navigation and sonar-summary payloads.
 - Added Remote ACK lifecycle tracker with pending/accepted/executed/rejected/timeout states and backup-link restrictions.
 - Host tests pass locally for payload decoder and ACK tracker with GCC C++11, warnings-as-errors and address/undefined sanitizers. These utilities are not integrated into radio dispatch, UI or boat application. No full firmware build.
+
+
+## R6.6 preview asset
+- Added `CONCEPT/REMOTE_R6_6_FRONT_LAYOUT.svg`, a repository-saved vector preview of the updated two-column/four-row banks, one power key and right-bottom OK input. A PNG layout preview is also rendered locally.
