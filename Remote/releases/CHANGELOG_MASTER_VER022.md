@@ -82,3 +82,11 @@
 - Added module-private zero-initialized 256-byte attribution storage; no API change.
 - Commit: `9aa20b0d987f94ea5b49e46509ae0ba10cc9d36b`.
 - Target Compile #15 pending. VER022 remains a development changelog marker; no release marker increment.
+
+
+## VER023 development update — 2026-11-20
+- Target compile #19 passed (run 44781879101; commit 3f189cb1ac65a764aec678893f1df857d113c815). Full Remote compile/link and artifact upload succeeded with huge_app partition.
+- Build metrics: 1,430,957-byte sketch (45% app); 178,136-byte global RAM (54%, 149,544 bytes remaining). No compiler errors or C++ warnings reported.
+- Host suite #44779439310 and packaging workflow #44779439396 passed on source SHA 2289e84ad73e1931f18f357d0e437fed5e0d6c12. The subsequent change was workflow-only.
+- Compile is not hardware testing; Remote board is not yet owned/verified. Boat firmware still lacks application executor and is not compiled.
+- Next engineering phase: inspect/fix Wi-Fi/settings timer lifecycle; offline-map import/index parser validation and file-copy recovery; map renderer cache/PSRAM/descriptor lifecycle; then rerun host/target CI. No release marker bump; ZIP snapshots remain unverified.
