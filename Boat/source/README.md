@@ -5,7 +5,7 @@ Updated 2026-11-20. The repository is canonical; this is not operational firmwar
 ## Release naming
 - ZIP: `Flytec_Boat_verXXX.zip`
 - Preserve all older releases.
-- Package version marker: `releases/VERSION` (currently `009`).
+- Package version marker: `releases/VERSION` (currently `010`).
 - Increment by one for every modification included in a distributed package; see root `docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Current controller and radios
@@ -28,6 +28,13 @@ Updated 2026-11-20. The repository is canonical; this is not operational firmwar
 - `hardware_test/E22_UART_Bench/E22_UART_Bench.ino`
 - Both disabled until exact pin assignments are set. Fixed diagnostic frames only; no actuators.
 - See `hardware_test/README.md`.
+
+## Boat ACK/session integration milestone (ver010)
+- Boat echoes the remote session epoch and sends session-start replies on configured radios.
+- Independent primary/backup sequence guards; command-ID deduplication handles cross-radio retries.
+- Pending command IDs are deduplicated; non-manual queue results return ACCEPTED/DUPLICATE/BUSY ACKs.
+- ACCEPTED is only queue receipt. No application consumes the queue and no EXECUTED ACK is generated.
+- Review: `../docs/BOAT_ACK_SESSION_INTEGRATION_R1.md`.
 
 ## Portable payload encoder milestone (ver009)
 - Added encoder counterparts for the existing eight-byte HEARTBEAT, ACK and TELEMETRY payload contract.
