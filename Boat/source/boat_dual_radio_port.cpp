@@ -118,8 +118,8 @@ bool BoatDualRadioPort::sendFrame(ManagedLink link,const RadioFrame &f) {
 bool BoatDualRadioPort::sendHeartbeat(ManagedLink link,uint32_t now) {
  if(!authenticated_)return false;
  RadioFrame f;radio_frameInit(f,RADIO_MSG_HEARTBEAT,BOAT_ID,REMOTE_ID,++txSequence_,0,now,sessionEpoch_);
- f.payload[0]=nrfReady_?1:0;f.payload[1]=e22Configured_?1:0;
- f.payload[2]=0;f.payload[3]=0; // boat state fields to be assigned by application
+ f.payload[0]=(uint8_t)(1U|(nrfReady_?2U:0U)|(e22Configured_?4U:0U)); // alive + radio availability; STOP state unknown
+ f.payload[1]=1; // protocol build-major placeholder; reserved payload bytes remain zero
  if(!radio_frameSeal(f,key_))return false;
  return sendFrame(link,f);
 }
