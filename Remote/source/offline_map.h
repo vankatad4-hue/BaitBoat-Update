@@ -17,8 +17,11 @@ static constexpr size_t OFFLINE_MAP_TILE_BYTES = 256UL * 256UL * 2UL;
 // Initialise the map catalogue after displayPort_begin() has mounted the SD card.
 bool offlineMap_begin(bool sdCardReady);
 
-// True when the required map-pack manifest is present on the card.
+// True only when manifest, completeness flag, zooms and attribution/licence validate.
 bool offlineMap_hasMapData();
+
+// Copy the validated pack attribution into caller storage. Returns false if absent.
+bool offlineMap_getAttribution(char *buffer, size_t bufferSize);
 
 // Load one raw RGB565 tile into PSRAM. Caller must release it with offlineMap_freeTile().
 // Tile path: /maps/street/<z>/<x>/<y>.rgb565 or /maps/satellite/<z>/<x>/<y>.rgb565
