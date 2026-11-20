@@ -2,6 +2,7 @@
 #include <lvgl.h>
 
 #include "joystick.h"
+#include "joystick_adc.h"
 #include "boat_state.h"
 #include "boat_ui.h"
 #include "boat_commands.h"
@@ -55,10 +56,9 @@ static void emergencyStop()
 
 static bool readJoystickHardware(JoystickRaw &raw)
 {
-    // GPIO assignments are intentionally unconfigured.
-    // Returning false inhibits all joystick motor commands.
-    (void)raw;
-    return false;
+    // Read four analog axes through the ADS1115. A failed or stale read
+    // returns false so joystick_update() suppresses all motor commands.
+    return joystickAdc_read(raw.leftX, raw.leftY, raw.rightX, raw.rightY);
 }
 
 // --------------------------------------------------
