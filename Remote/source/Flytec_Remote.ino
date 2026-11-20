@@ -30,8 +30,8 @@ static void physicalButtonEvent(uint8_t id, bool pressed)
         case 7: Serial.println("Settings are available through the touchscreen."); break;
         case 12: Serial.println("Release status panel placeholder."); break;
         case 13: Serial.println("Release-lock status placeholder."); break;
-        case 14: Serial.println("Map/sonar split placeholder."); break;
-        case 15: releaseGuard_cancel(); break;
+        case 14: Serial.println("Back/cancel placeholder."); releaseGuard_cancel(); break;
+        case 15: /* physical OK key is scanned separately on MCP23017 0x21 GPA4 */ break;
         default: break;
     }
 }
