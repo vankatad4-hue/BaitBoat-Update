@@ -61,7 +61,7 @@ module front_panel(){
     translate([0,confirm_y,-.1]) cylinder(d=confirm_d,h=front_th+.2);
     translate([0,power_y,-.1]) cylinder(d=power_d,h=front_th+.2);
     // Lower-center USB-C opening.
-    translate([0,-H/2-.1,front_th/2]) cube([usb_w,usb_h,front_th+1],center=true);
+    translate([0,-86,front_th/2]) cube([usb_w,usb_h,front_th+1],center=true);
     screw_holes();
   }
   // Raised safety collars around bait/hook buttons.
@@ -108,7 +108,7 @@ module rear_shell(){
     // Rear antenna bulkhead pass-throughs.
     antenna_centres() translate([0,0,body_depth-wall-.1]) cylinder(d=antenna_d,h=wall+.3);
     // USB port tunnel through bottom perimeter.
-    translate([0,-H/2-.1,body_depth/2]) cube([usb_w,usb_h,wall+2],center=true);
+    translate([0,-86,body_depth/2]) cube([usb_w,usb_h,wall+2],center=true);
     // ventilation slots in lower rear (avoid battery zone as layout changes)
     for(i=[-2:2]) translate([i*9,-78,body_depth-wall-.1]) cube([3,18,wall+.3],center=true);
   }
