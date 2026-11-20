@@ -13,6 +13,11 @@
 static WaypointSlot slots[SLOT_COUNT] = {};
 static bool homeValid=false; static float homeLat=0,homeLon=0; static int selectedSlot=-1;
 static void setStatus(const char *s);
+static lv_obj_t *planPanel=nullptr;
+static lv_obj_t *channelButtons[4]={};
+static uint8_t planMask=0;
+static MissionPlan draftPlan{};
+static MissionUploadState lastUploadState=UPLOAD_IDLE;
 static bool storageReady=false,storageAttempted=false;
 static bool sdMissionAvailable(){return lakeStorage_ready();}
 static void applyStored(const StoredMission &r);
@@ -65,29 +70,62 @@ static void refresh(){
 }
 static void setStatus(const char *s){if(statusLabel)lv_label_set_text(statusLabel,s);}
 static void selectSlot(lv_event_t *e){if(boatRadio_missionUploadState()==UPLOAD_ACTIVE||boatRadio_missionUploadState()==UPLOAD_PREPARED){setStatus("ПЪРВО ОТКАЖИ ПОДГОТОВКАТА");return;}if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;if(!storageReady||!sdMissionAvailable()){setStatus("SD ГРЕШКА");return;}int i=(int)(intptr_t)lv_event_get_user_data(e);if(i<0||i>=SLOT_COUNT||!slots[i].valid){setStatus("ПРАЗНО — ЗАПИШИ АКТУАЛЕН GPS");return;}selectedSlot=i;bool ok=persist();refresh();setStatus(ok?"ТОЧКАТА Е ИЗБРАНА / SD ЗАПИСАНА":"ГРЕШКА ПРИ SD ЗАПИС");}
-void missionUI_saveCurrent(){if(boatRadio_missionUploadState()==UPLOAD_ACTIVE||boatRadio_missionUploadState()==UPLOAD_PREPARED){setStatus("ПЪРВО ОТКАЖИ ПОДГОТОВКАТА");return;}if(!storageReady||!sdMissionAvailable()){setStatus("SD ГРЕШКА");return;}if(!currentFixIsFresh()||!missionStorage_validCoordinate(boatState.latitude,boatState.longitude)){setStatus("БЛОКИРАНО: НУЖЕН Е GPS ПОД 2 СЕК.");return;}int i=(selectedSlot>=0)?selectedSlot:-1;if(i<0||slots[i].valid){i=-1;for(int n=0;n<SLOT_COUNT;n++)if(!slots[n].valid){i=n;break;}}if(i<0){setStatus("16 ТОЧКИ СА ЗАПЪЛНЕНИ — ИЗТРИЙ ИЛИ ИЗБЕР");return;}slots[i]={true,boatState.latitude,boatState.longitude,false,false};selectedSlot=i;bool ok=persist();refresh();setStatus(ok?"ТОЧКАТА Е ЗАПИСАНА НА SD":"SD ГРЕШКА — ЗАПИСЪТ НЕ Е ПОТВЪРДЕН");}
+void missionUI_saveCurrent(){if(planPanel)return;if(boatRadio_missionUploadState()==UPLOAD_ACTIVE||boatRadio_missionUploadState()==UPLOAD_PREPARED){setStatus("ПЪРВО ОТКАЖИ ПОДГОТОВКАТА");return;}if(!storageReady||!sdMissionAvailable()){setStatus("SD ГРЕШКА");return;}if(!currentFixIsFresh()||!missionStorage_validCoordinate(boatState.latitude,boatState.longitude)){setStatus("БЛОКИРАНО: НУЖЕН Е GPS ПОД 2 СЕК.");return;}int i=(selectedSlot>=0)?selectedSlot:-1;if(i<0||slots[i].valid){i=-1;for(int n=0;n<SLOT_COUNT;n++)if(!slots[n].valid){i=n;break;}}if(i<0){setStatus("16 ТОЧКИ СА ЗАПЪЛНЕНИ — ИЗТРИЙ ИЛИ ИЗБЕР");return;}slots[i]={true,boatState.latitude,boatState.longitude,false,false};selectedSlot=i;bool ok=persist();refresh();setStatus(ok?"ТОЧКАТА Е ЗАПИСАНА НА SD":"SD ГРЕШКА — ЗАПИСЪТ НЕ Е ПОТВЪРДЕН");}
 static void saveCurrent(lv_event_t *e){if(lv_event_get_code(e)==LV_EVENT_CLICKED)missionUI_saveCurrent();}
 static void setHome(lv_event_t *e){if(boatRadio_missionUploadState()==UPLOAD_ACTIVE||boatRadio_missionUploadState()==UPLOAD_PREPARED){setStatus("ПЪРВО ОТКАЖИ ПОДГОТОВКАТА");return;}if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;if(!storageReady||!sdMissionAvailable()){setStatus("SD ГРЕШКА");return;}if(!currentFixIsFresh()||!missionStorage_validCoordinate(boatState.latitude,boatState.longitude)){setStatus("ДОМ: НУЖЕН Е АКТУАЛЕН GPS");return;}homeLat=boatState.latitude;homeLon=boatState.longitude;homeValid=true;bool ok=persist();refresh();setStatus(ok?"ДОМЪТ Е ЗАПИСАН НА SD":"SD WRITE FAILED");}
 static void clearSlot(lv_event_t *e){if(boatRadio_missionUploadState()==UPLOAD_ACTIVE||boatRadio_missionUploadState()==UPLOAD_PREPARED){setStatus("ПЪРВО ОТКАЖИ ПОДГОТОВКАТА");return;}if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;if(!storageReady||!sdMissionAvailable()){setStatus("SD ГРЕШКА");return;}if(selectedSlot<0||!slots[selectedSlot].valid){setStatus("ИЗБЕРИ ТОЧКА ЗА ИЗТРИВАНЕ");return;}slots[selectedSlot]={};selectedSlot=-1;bool ok=persist();refresh();setStatus(ok?"ТОЧКАТА Е ИЗТРИТА / SD ЗАПИСАНА":"SD WRITE FAILED");}
 static void toggleFlag(lv_event_t *e,bool bait){if(boatRadio_missionUploadState()==UPLOAD_ACTIVE||boatRadio_missionUploadState()==UPLOAD_PREPARED){setStatus("ПЪРВО ОТКАЖИ ПОДГОТОВКАТА");return;}if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;if(!storageReady||!sdMissionAvailable()){setStatus("SD ГРЕШКА");return;}if(selectedSlot<0||!slots[selectedSlot].valid){setStatus("ПЪРВО ИЗБЕРИ ТОЧКА");return;}if(bait)slots[selectedSlot].baitMark=!slots[selectedSlot].baitMark;else slots[selectedSlot].hookMark=!slots[selectedSlot].hookMark;bool ok=persist();refresh();setStatus(ok?"МАРКЕРЪТ Е ЗАПИСАН — САМО ПЛАНИРАНЕ":"SD WRITE FAILED");}
 static void toggleBait(lv_event_t *e){toggleFlag(e,true);}static void toggleHook(lv_event_t *e){toggleFlag(e,false);}
-// Legacy bait/hook marks do not identify a side; do not guess release channels.
+// Per-upload explicit selection; historical marks are never inferred as commands.
+static void closePlanPanel(){
+ if(!planPanel)return;
+ lv_obj_t *old=planPanel;planPanel=nullptr;for(auto &button:channelButtons)button=nullptr;
+ planMask=0;draftPlan={};lv_obj_delete_async(old);
+}
+static void channelToggle(lv_event_t *e){
+ if(!planPanel)return;
+ uint8_t index=(uint8_t)(intptr_t)lv_event_get_user_data(e);
+ if(index>=4)return;
+ planMask^=(uint8_t)(1U<<index);
+ lv_obj_set_style_bg_color(channelButtons[index],(planMask&(1U<<index))?green():blue(),LV_PART_MAIN);
+}
+static void confirmPlan(lv_event_t *){
+ if(!planPanel)return;
+ draftPlan.releaseMask=planMask;
+ const bool accepted=boatRadio_prepareMission(draftPlan);
+ closePlanPanel();
+ setStatus(accepted?"ПОДГОТОВКА — БЕЗ ДВИЖЕНИЕ":"ПОДГОТОВКАТА Е БЛОКИРАНА");
+}
 static void startMission(lv_event_t *e){
- if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;
+ if(lv_event_get_code(e)!=LV_EVENT_CLICKED||planPanel)return;
  const MissionUploadState state=boatRadio_missionUploadState();
- if(state==UPLOAD_ACTIVE||state==UPLOAD_PREPARED){boatRadio_cancelMissionPreparation();setStatus("ПОДГОТОВКАТА Е ПРЕКРАТЕНА ЛОКАЛНО");return;}
+ if(state==UPLOAD_ACTIVE||state==UPLOAD_PREPARED){boatRadio_cancelMissionPreparation();setStatus("ОТКАЗ ЛОКАЛНО — БЕЗ ПОТВЪРЖДЕНИЕ");return;}
  if(!storageReady||!sdMissionAvailable()||selectedSlot<0||selectedSlot>=SLOT_COUNT||!slots[selectedSlot].valid||!homeValid){setStatus("НУЖНИ СА ТОЧКА И ДОМ");return;}
  const WaypointSlot &w=slots[selectedSlot];
- if(w.baitMark||w.hookMark){setStatus("ИЗБЕРИ КОНКРЕТНИ МЕХАНИЗМИ — МАРКЕРИТЕ НЕ СА КОМАНДИ");return;}
  if(!missionStorage_validCoordinate(w.lat,w.lon)||!missionStorage_validCoordinate(homeLat,homeLon)){setStatus("НЕВАЛИДНИ КООРДИНАТИ");return;}
- MissionPlan plan={0,lakeStorage_active(),(uint8_t)selectedSlot,0,300,
+ draftPlan={0,lakeStorage_active(),(uint8_t)selectedSlot,0,300,
    (int32_t)llround((double)w.lat*1e7),(int32_t)llround((double)w.lon*1e7),
    (int32_t)llround((double)homeLat*1e7),(int32_t)llround((double)homeLon*1e7)};
- setStatus(boatRadio_prepareMission(plan)?"ПОДГОТОВКА — БЕЗ ДВИЖЕНИЕ":"ПОДГОТОВКАТА Е БЛОКИРАНА");
+ planMask=0;
+ planPanel=lv_obj_create(screen);lv_obj_set_size(planPanel,800,480);lv_obj_set_pos(planPanel,0,0);
+ lv_obj_set_style_bg_color(planPanel,bg(),LV_PART_MAIN);lv_obj_set_style_bg_opa(planPanel,LV_OPA_COVER,LV_PART_MAIN);
+ lv_obj_clear_flag(planPanel,LV_OBJ_FLAG_SCROLLABLE);
+ label(planPanel,"ПОДГОТОВКА НА МИСИЯ — САМО ПЛАН",12,12,740);
+ label(planPanel,"Избери механизми за тази мисия. По подразбиране: всички изключени.",12,55,740);
+ const char *names[4]={"ЛЯВА ЗАХРАНКА","ДЯСНА ЗАХРАНКА","ЛЯВА КУКА","ДЯСНА КУКА"};
+ for(uint8_t i=0;i<4;++i){
+  channelButtons[i]=button(planPanel,names[i],20+(i%2)*365,115+(i/2)*78,345,62,blue());
+  lv_obj_add_event_cb(channelButtons[i],channelToggle,LV_EVENT_CLICKED,(void*)(intptr_t)i);
+ }
+ label(planPanel,"Зелено: избрано. Синьо: изключено. Движението остава блокирано.",12,285,740);
+ lv_obj_t *ok=button(planPanel,"ПОДГОТВИ",20,355,335,65,green());
+ lv_obj_add_event_cb(ok,confirmPlan,LV_EVENT_CLICKED,nullptr);
+ lv_obj_t *cancel=button(planPanel,"ОТКАЗ",385,355,335,65,blue());
+ lv_obj_add_event_cb(cancel,[](lv_event_t*){closePlanPanel();},LV_EVENT_CLICKED,nullptr);
 }
-bool missionUI_close(){if(!screen||lv_screen_active()!=screen)return false;boatRadio_cancelMissionPreparation();if(refreshTimer){lv_timer_delete(refreshTimer);refreshTimer=nullptr;}lv_obj_t *old=screen;screen=nullptr;statusLabel=nullptr;if(returnScreen)lv_screen_load(returnScreen);if(old)lv_obj_delete_async(old);return true;}
+bool missionUI_close(){if(!screen||lv_screen_active()!=screen)return false;if(planPanel){closePlanPanel();return true;}boatRadio_cancelMissionPreparation();if(refreshTimer){lv_timer_delete(refreshTimer);refreshTimer=nullptr;}lv_obj_t *old=screen;screen=nullptr;statusLabel=nullptr;if(returnScreen)lv_screen_load(returnScreen);if(old)lv_obj_delete_async(old);return true;}
 static void back(lv_event_t *e){if(lv_event_get_code(e)==LV_EVENT_CLICKED)missionUI_close();}
-static void timerRefresh(lv_timer_t *t){(void)t;refresh();if(!screen)return;switch(boatRadio_missionUploadState()){case UPLOAD_ACTIVE:setStatus("ИЗПРАЩАНЕ НА ПЛАН — НАТИСНИ ПЛАН ЗА ОТКАЗ");break;case UPLOAD_PREPARED:setStatus("ПЛАНЪТ Е ПРИЕТ — ДВИЖЕНИЕТО Е БЛОКИРАНО");break;default:break;}}
+static void timerRefresh(lv_timer_t *t){(void)t;refresh();if(!screen)return;const MissionUploadState state=boatRadio_missionUploadState();switch(state){case UPLOAD_ACTIVE:setStatus("ИЗПРАЩАНЕ НА ПЛАН — НАТИСНИ ПЛАН ЗА ОТКАЗ");break;case UPLOAD_PREPARED:setStatus("ПЛАНЪТ Е ПРИЕТ — ДВИЖЕНИЕТО Е БЛОКИРАНО");break;case UPLOAD_FAILED:if(lastUploadState!=state)setStatus("ПОДГОТОВКАТА Е ПРЕКРАТЕНА / НЕПОТВЪРДЕНА");break;default:break;}lastUploadState=state;}
 void missionUI_open(lv_obj_t *main){if(screen)return;returnScreen=main;loadPersisted();screen=lv_obj_create(nullptr);lv_obj_set_style_bg_color(screen,bg(),LV_PART_MAIN);lv_obj_remove_flag(screen,LV_OBJ_FLAG_SCROLLABLE);label(screen,"НАВИГАЦИОННИ ТОЧКИ — 16 МЕСТА",12,8,770);gpsLabel=label(screen,"ПРОВЕРКА НА GPS",12,35,770);homeLabel=label(screen,"ДОМ: НЕ Е ЗАДАДЕН",12,60,770);
  lv_obj_t *p=lv_obj_create(screen);lv_obj_set_pos(p,8,88);lv_obj_set_size(p,784,246);lv_obj_set_style_radius(p,8,LV_PART_MAIN);lv_obj_set_style_bg_color(p,panel(),LV_PART_MAIN);lv_obj_set_style_pad_all(p,5,LV_PART_MAIN);lv_obj_set_style_border_width(p,1,LV_PART_MAIN);lv_obj_set_style_border_color(p,lv_color_hex(0x2366A4),LV_PART_MAIN);label(p,"ИЗБЕРИ ТОЧКА — SD / РЕЗЕРВНО КОПИЕ",4,3,760);
  for(uint8_t i=0;i<SLOT_COUNT;i++){int col=i%4,row=i/4;int x=col*190+5,y=row*50+25;slotLabels[i]=label(p,"Т00 ПРАЗЕН",x,y,118);lv_obj_t *s=button(p,"ИЗБ.",x+122,y-5,54,34,blue());lv_obj_add_event_cb(s,selectSlot,LV_EVENT_CLICKED,(void*)(intptr_t)i);}
@@ -97,7 +135,7 @@ bool missionUI_getWaypoint(uint8_t i,float *lat,float *lon,bool *bait,bool *hook
 bool missionUI_getHome(float *lat,float *lon){if(!storageReady||!sdMissionAvailable()||!homeValid)return false;if(lat)*lat=homeLat;if(lon)*lon=homeLon;return true;}
 int8_t missionUI_getSelectedIndex(){return (storageReady&&sdMissionAvailable()&&selectedSlot>=0&&selectedSlot<SLOT_COUNT&&slots[selectedSlot].valid)?(int8_t)selectedSlot:-1;}
 
-void missionUI_selectNext(){if(boatRadio_missionUploadState()==UPLOAD_ACTIVE||boatRadio_missionUploadState()==UPLOAD_PREPARED){setStatus("ПЪРВО ОТКАЖИ ПОДГОТОВКАТА");return;}
+void missionUI_selectNext(){if(planPanel)return;if(boatRadio_missionUploadState()==UPLOAD_ACTIVE||boatRadio_missionUploadState()==UPLOAD_PREPARED){setStatus("ПЪРВО ОТКАЖИ ПОДГОТОВКАТА");return;}
  if(!storageReady||!sdMissionAvailable()){setStatus("SD ГРЕШКА");return;}
  for(int n=1;n<=SLOT_COUNT;++n){
   int i=(selectedSlot+n)%SLOT_COUNT;
