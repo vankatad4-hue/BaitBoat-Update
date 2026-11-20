@@ -423,3 +423,7 @@ Boat:
 - Target build run #11 reached C++ source compilation and failed; installed candidate versions are visible in its log.
 - Fixed LVGL9 event-target accessor, precise route-point array type, and restored the Map Manager copy-chunk helper declaration.
 - Rebuild pending. Host CI run #11 passed on the prior source; target compile and physical hardware verification remain outstanding.
+
+
+## Compile correction tracking
+Target Compile #14 failed on missing declaration for `g_map_attribution` in the offline map module. Added the private 256-byte attribution buffer (commit `9aa20b0d987f94ea5b49e46509ae0ba10cc9d36b`). Target Compile #15 pending; complete target compilation remains unvalidated.
