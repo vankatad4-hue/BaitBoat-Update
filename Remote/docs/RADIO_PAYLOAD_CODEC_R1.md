@@ -1,4 +1,4 @@
-# Radio payload codec R1
+# Radio payload codec R2
 
 Portable eight-byte payload validators were added to both endpoint source trees:
 - `Remote/source/radio_payload_codec.h/.cpp`
@@ -8,4 +8,4 @@ Functions decode HEARTBEAT, ACK subtype 0, and TELEMETRY subtypes 1–6. They re
 
 Host tests: `Remote/tests/radio_payload_codec_test.cpp`. The same test is compiled against the Remote and Boat copies with GCC C++11, `-Wall -Wextra -Werror`.
 
-**Not yet integrated:** inbound frame dispatch, command ACK correlation/lifecycle, telemetry group freshness/coordinate pairing, boat telemetry transmission and UI state updates. These files are parsing primitives only; they do not authorize any command or actuate hardware.
+**Integration update:** Remote inbound frame dispatch now uses the decoders after HMAC/session validation. Telemetry payloads are applied to per-group state with freshness and primary-link provenance. ACK payloads feed the command tracker. Boat-side telemetry/ACK generation remains unimplemented. These decoders do not authorize commands or actuate hardware.
