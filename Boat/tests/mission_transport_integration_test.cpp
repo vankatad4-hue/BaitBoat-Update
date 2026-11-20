@@ -1,6 +1,6 @@
 #include "../source/mission_controller.h"
 #include "../source/mission_stick.h"
-#include "../../Remote/source/mission_control_client.h"
+#include "mission_control_client.h"
 #include <cassert>
 #include <iostream>
 // Application-level integration, with authentication and physical inputs
