@@ -59,3 +59,7 @@ python3 Remote/tools/mbtiles_area_export.py lake.mbtiles ./sd-map --style satell
 ```
 
 The exporter needs Pillow. Inspect `./sd-map/maps/area_plan.json` and the manifest; do not copy an incomplete pack (missing tile count must be zero) to the remote. Confirm the source licence allows offline storage and use before running.
+
+
+## Coverage index ver029.1
+The MBTiles area exporter now writes `/maps/coverage_index.csv` (`z,x,y,present`) including missing planned tile entries. The remote requires a valid index at boot and checks indexed coverage before tile reads. Firmware index limit is 6000 rows. Map Manager shows coverage counts and selected area coverage. This is not a downloader or staged-pack installer; no import transfer progress exists yet.
