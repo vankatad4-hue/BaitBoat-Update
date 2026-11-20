@@ -41,8 +41,8 @@ Do not connect motor/solenoid power or operate boat. Hardware pins, power, RF co
 
 
 ## Versioned project ZIPs
-- Current development snapshots: Remote `ver023`, Boat `ver010`; ZIPs and SHA-256 manifest are committed.
-- Boat ver010 ZIP SHA-256 independently matches the manifest; its structure and key files were checked. Remote ver023 binary was not retrievable for independent verification.
+- Current development snapshots: Remote `ver023`, Boat `ver011`; ZIPs and SHA-256 manifest are committed.
+- Boat ver010 ZIP was previously verified. Boat ver011 package regeneration is pending. Remote ver023 binary remains unverified.
 - These are development snapshots, not hardware or operational releases. See [ZIP build status](docs/ZIP_BUILD_STATUS_R1.md) and [ZIP release policy](docs/ZIP_RELEASE_POLICY_R1.md).
 
 **Pin audit result:** the Heltec Wireless Tracker revision is not identified; all boat radio GPIO assignments remain disabled/TBD. The integrated SX1262/GNSS/TFT/USB and boot/strap resources are reserved pending physical board identification.
