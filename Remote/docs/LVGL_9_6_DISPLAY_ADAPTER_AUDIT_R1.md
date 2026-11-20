@@ -58,3 +58,6 @@ Physical board validation: not performed.
 - The same workflow now captures compiler output into an artifact log.
 - Host CI first failed because the unit test used a reduced `BoatState` stub layout that differed from the full struct compiled into the guard module (ODR/layout mismatch). The test now links the actual `boat_state.cpp` and full header.
 - The next host run exposed a bad invalid-latitude vector: the test encoded 50.0000001°, which is valid, rather than 91°. Corrected vector encodes 910,000,000 E7.
+
+- Remote host-test CI run #7 completed **successfully** after fixing the test layout and latitude test vector; telemetry formatting warnings found under `-Werror` were also corrected. Host-only coverage now passes; this does not validate the ESP32 target.
+- Target compile run #3 successfully installed the pinned toolchain/libraries and staged the sketch, but failed because LVGL requires an explicit `lv_conf.h`. Added a versioned LVGL 9.6.0 configuration file and copy step for the next target compile attempt.
