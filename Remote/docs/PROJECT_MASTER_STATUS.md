@@ -125,3 +125,5 @@ Native KiCad capture and ERC/DRC, exact physical PORT1 crosswalk, final footprin
 - Boat source now contains nRF driver, E22 port, dual-radio receive queue and failsafe/dedupe helpers; all boat GPIO defaults unset. No operational boat application or actuator integration.
 - Remote and boat HMAC key store returns false by default; all authenticated link/command paths fail closed. Secure provisioning/rotation and session negotiation are still needed.
 - Native KiCad schematic, ERC/DRC and PCB still not generated. Files are detailed electrical capture/test specs, not native fabrication data.
+
+- Protocol correction: sender-local tick is no longer compared with receiver millis(). Freshness uses sequence + local receive watchdog; session negotiation/epoch reset remains unresolved and must be implemented before release.
