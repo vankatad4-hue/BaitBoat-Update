@@ -9,6 +9,7 @@
 #include "boat_radio_safety.h"
 #include "radio_payload_encoder.h"
 #include "boat_command_queue.h"
+#include "mission_wire.h"
 
 // All physical GPIO values must be audited/frozen for the exact Tracker SKU.
 // Default -1 macros intentionally keep radio hardware disabled.
@@ -41,6 +42,9 @@ class BoatDualRadioPort {
 public:
     BoatDualRadioPort();
     bool begin();
+    // Application-owned verification of physical STOP/stationary state.
+    void setMissionPreparationGate(bool (*gate)()) { missionGate_=gate; mission_.reset(); }
+    bool preparedMission(MissionPlan &out,uint32_t now) const { return missionGate_ && missionGate_() && primaryFresh(now) && mission_.getPrepared(out,now); }
     void update();
     bool takeCommand(BoatCommand &cmd,bool &duplicateAction,ManagedLink &receivedOn);
     void markActionExecuted(uint8_t sender,uint8_t epoch,uint16_t commandId);
@@ -64,6 +68,8 @@ private:
     bool sessionStartSeenPrimary_,sessionStartSeenBackup_;
     BoatCommandDeduplicator dedupe_;
     BoatCommandQueue commandQueue_;
+    MissionAssembler mission_;
+    bool (*missionGate_)()=nullptr;
     uint32_t lastNrfRxMs_,lastE22RxMs_;
     uint32_t lastNrfHeartbeatTxMs_,lastE22HeartbeatTxMs_,lastE22HeartbeatAttemptMs_;
     uint16_t txSequence_;
