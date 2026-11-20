@@ -38,7 +38,9 @@ static uint8_t g_loraPendingPriority=0;
 static RadioFrame g_loraPendingFrame;
 static uint8_t g_authKey[32];
 static RadioSequenceGuard g_boatSequenceGuard;
-static bool g_boatSessionStarted=false;\nstatic uint8_t g_boatSessionEpoch=0;
+static bool g_boatSessionStarted=false;
+static uint8_t g_boatSessionEpoch=0;
+static uint8_t g_boatSessionEpoch=0;
 
 static BoatRadioLink toPublicLink(ManagedLink link) {
     if(link==LINK_NRF_PRIMARY) return RADIO_LINK_NRF24_PRIMARY;
@@ -159,8 +161,11 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame) {
         (frame.type!=RADIO_MSG_SESSION_START||(frame.sequence==0&&frame.payload[0]==frame.sessionEpoch&&frame.sessionEpoch==g_sessionEpoch));
     if(!envelopeValid){g_linkManager.reportFailure(link);return;}
     if(frame.type==RADIO_MSG_SESSION_START) {
+        // Repeated authenticated SESSION_START on the second transport is a duplicate;
+        // do not reset sequence/telemetry/ACK state again.
+        if(g_boatSessionStarted&&frame.sessionEpoch==g_boatSessionEpoch){g_linkManager.reportValidRx(link,true,now);return;}
         if(!g_boatSequenceGuard.accept(frame.sessionEpoch,frame.sequence,true)){g_linkManager.reportFailure(link);return;}
-        g_boatSessionStarted=true;g_ackTracker.reset(frame.sessionEpoch);telemetryInit();
+        g_boatSessionStarted=true;g_boatSessionEpoch=frame.sessionEpoch;g_ackTracker.reset(frame.sessionEpoch);telemetryInit();
         g_linkManager.reportValidRx(link,true,now);return;
     }
     if(!g_boatSessionStarted||frame.sessionEpoch!=g_boatSessionEpoch||!g_boatSequenceGuard.accept(frame.sessionEpoch,frame.sequence,false)){
