@@ -100,3 +100,10 @@ No propulsion, release, live battery charging in the proposed enclosure, or wate
 - START MISSION remains blocked; this screen does not transmit waypoint/release/autopilot commands.
 - Mission-screen preview committed. Missing ver024 footer status-label declarations were corrected.
 - Build and hardware tests pending; ZIP/package output has not been independently verified.
+
+
+## Remote ver026 — persistent waypoints and map markers
+- Waypoint/home/BAIT-HOOK plan flags stored in NVS Preferences with CRC32 integrity and coordinate validation.
+- Relative waypoint/home markers added to the main map placeholder; only nearby markers within ±150m are shown and GPS invalid hides them.
+- This is a relative visualization, not a true map or safe navigation display. Mission execution is disabled.
+- Remote source marker ver026; package rebuild/checksum and firmware compile/hardware validation not yet verified.
