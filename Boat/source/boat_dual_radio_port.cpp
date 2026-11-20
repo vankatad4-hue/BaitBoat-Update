@@ -18,6 +18,7 @@ BoatDualRadioPort::BoatDualRadioPort()
  memset(key_,0,sizeof(key_));
 }
 bool BoatDualRadioPort::begin() {
+ mission_.reset();
  nrfReady_=false;e22Configured_=false;authenticated_=radioKey_get(key_);sessionStarted_=false;primarySeqGuard_.reset();backupSeqGuard_.reset();crossRadioSeqGuard_.reset();sessionStartSeenPrimary_=false;sessionStartSeenBackup_=false;lastNrfRxValid_=false;lastE22RxValid_=false;commandQueue_.clear();txSequence_=0;lastNrfHeartbeatTxMs_=0;lastE22HeartbeatTxMs_=0;lastE22HeartbeatAttemptMs_=0;
 #if BOAT_NRF_CE_PIN >= 0 && BOAT_NRF_CSN_PIN >= 0
  nrfReady_=nrf_.begin(false);
@@ -36,6 +37,7 @@ bool BoatDualRadioPort::begin() {
 }
 void BoatDualRadioPort::update() {
  const uint32_t now=millis();
+ if(!missionGate_||!missionGate_()||!primaryFresh(now))mission_.reset();
  if(nrfReady_){nrf_.update();RadioFrame f;while(nrf_.receiveFrame(f))receive(LINK_NRF_PRIMARY,f);}
  if(e22Configured_){e22_.update();RadioFrame f;while(e22_.receiveFrame(f))receive(LINK_LORA_BACKUP,f);}
  if(authenticated_ && sessionStarted_) {
@@ -70,7 +72,7 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
    primarySeqGuard_.reset();backupSeqGuard_.reset();crossRadioSeqGuard_.reset();
    sessionStartSeenPrimary_=false;sessionStartSeenBackup_=false;
    lastNrfRxValid_=false;lastE22RxValid_=false;
-   commandQueue_.clear();txSequence_=0;
+   commandQueue_.clear();mission_.reset();txSequence_=0;
    if(!linkGuard.accept(f.sessionEpoch,0,true)) return;
    linkSessionSeen=true;lastRx=now;rxValid=true;
    sendSessionStart(LINK_NRF_PRIMARY,now);
@@ -82,6 +84,17 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  const bool isCommand=(f.type==RADIO_MSG_CONTROL || f.type==RADIO_MSG_ACTION);
  const bool crossSequenceAccepted=crossRadioSeqGuard_.accept(f.sessionEpoch,f.sequence,false);
  if(!crossSequenceAccepted && !isCommand) return;
+ if(f.type==RADIO_MSG_MISSION_PREPARE){
+   if(link!=LINK_NRF_PRIMARY||!crossSequenceAccepted||!linkSessionSeen)return;
+   const uint16_t id=(uint16_t)f.payload[1]|((uint16_t)f.payload[2]<<8);
+   const MissionOpcode op=(MissionOpcode)f.payload[0];
+   if(!id||id!=f.commandId||op<MISSION_BEGIN||op>MISSION_CANCEL)return;
+   const bool stopped=missionGate_&&missionGate_();
+   const MissionReceive result=mission_.ingest(f.payload,now,true,stopped);
+   RadioFrame ack;radio_frameInit(ack,RADIO_MSG_MISSION_ACK,BOAT_ID,REMOTE_ID,++txSequence_,id,now,sessionEpoch_);
+   if(missionAck_encode(id,op,result,ack.payload)&&radio_frameSeal(ack,key_))sendFrame(link,ack);
+   return;
+ }
  if(f.type==RADIO_MSG_HEARTBEAT || f.type==RADIO_MSG_TELEMETRY || f.type==RADIO_MSG_ACK || f.type==RADIO_MSG_LINK_PROBE) return;
  BoatCommand cmd;
  if(!radio_decodeCommand(f,REMOTE_ID,BOAT_ID,now,2500,link==LINK_LORA_BACKUP,cmd,key_)) return;
