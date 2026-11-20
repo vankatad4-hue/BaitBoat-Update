@@ -20,3 +20,5 @@ Automated GitHub export builds front/rear shells, the multi-cap plate and previe
 Assembly preview now includes display-glass and joystick placeholders to visualize the assembled handheld; these are not printed shell components.
 
 CAD export retriggered after shared workflow concurrency fix; generated meshes and print ZIP will be versioned by the build workflow.
+
+Queued build enabled (non-cancelling shared concurrency); latest CAD export requested after workflow race fix.
