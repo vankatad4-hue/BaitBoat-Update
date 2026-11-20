@@ -5,7 +5,7 @@ Updated: 2026-11-20. Development branch; no firmware compile, hardware test, ERC
 ## Selected architecture
 - Retain Flytec V080 hull, main switch, battery indicator, two 550 brushed motors.
 - Replace boat control electronics.
-- Remote: Waveshare ESP32-S3-Touch-LCD-4.3 Standard, 800×480/LVGL9.6.0, touchscreen, two joysticks,16 physical buttons,OK/confirm.
+- Remote: Waveshare ESP32-S3-Touch-LCD-4.3 Standard, 800×480/LVGL9.6.0, touchscreen, two joysticks,16 physical positions (15 scanned keys + separately scanned OK).
 - Primary radio: nRF24L01+ PA/LNA on both ends,2.4GHz,250kbps initial.
 - Backup: matching EBYTE E22-900T22S UART LoRa modules on remote and boat. Tracker integrated SX1262 unused for first test.
 - Remote LEFT antenna=2.4GHz nRF; RIGHT=868MHz LoRa. ESP32 Wi-Fi/Bluetooth uses onboard antenna.
@@ -15,7 +15,7 @@ Updated: 2026-11-20. Development branch; no firmware compile, hardware test, ERC
 - R5 shell CAD envelope310×209×69.5mm; two-piece front/rear shell prototype, central 4.3in display, twin sticks, two **2×4 button banks (two columns across, four rows high per side)**, OK and power keys, dual antenna exits.
 - Right bank top four keys are independent H-L/H-R/K-L/K-R release controls. Combined release commands are disabled/rejected.
 - MCP23017 physical button scanning/debounce, mapping and release/OK event wiring are in remote loop; GPIO crosswalk and actual hardware remain unverified.
-- Remote release commands require authenticated primary link, STOP-confirmed released and boat interlock telemetry. Host-tested 1.2s release-key + 0.8s OK confirm within4s guard exists. `actuatorSafetyReady` is false by default and is not set by current telemetry, so release remains disabled.
+- Remote release commands require authenticated primary link, STOP-confirmed released and boat interlock telemetry. Host-tested 1.2s release-key + 0.8s OK confirm within4s guard exists. `actuatorSafetyReady` only becomes true with fresh authenticated primary-origin STOP/interlock telemetry; boat-side telemetry sender is not implemented, so the release guard remains fail-closed.
 - CAD source: `Remote/New_Handheld_Remote/CAD/`; mechanical and physical key map R5 documents.
 
 ## Remote hardware R4
@@ -75,7 +75,7 @@ Boat:
 ## Versioned ZIP status
 - [Build and checksum status](../../docs/ZIP_BUILD_STATUS_R1.md)
 - Preserved baseline archives: Remote `Flytec_Remote_ver004.zip`, Boat `Flytec_Boat_ver004.zip`.
-- Next snapshot markers are Remote `019` and Boat `006`; the packaging workflow creates versioned ZIPs and SHA256 artifacts from the branch snapshot. These are pending successful workflow verification, not yet confirmed generated/downloadable archives.
+- Current markers are Remote `019` and Boat `006`; matching ZIPs and SHA256 manifest are committed. They are generated snapshots but have not been independently extracted/integrity-tested in this turn.
 - Packaging policy: `docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Boat controller pin audit
@@ -97,7 +97,7 @@ Boat:
 ## Release status
 - Repository branch: `hardware-ready-dual-radio-r1`; draft PR #1 remains open and unmerged.
 - ZIP snapshot ver017/006 ZIPs are committed with SHA256 manifest; integrity verification is pending. Existing ver004 archives are preserved.
-- ver017/006 are the latest committed snapshots; checksum manifest is committed; ver018 pending.
+- ver019/006 are the latest committed snapshots; checksum manifest is committed; ver020/007 pending.
 - Do not operate boat or connect actuator power. Bench tests only.
 
 - Consolidated remote pin map and connector CSV R4 are the current versions; older R2 docs marked superseded. Consolidated remote power BOM/capture spec R6 are current; R5 docs marked superseded.
@@ -137,7 +137,7 @@ Boat:
 ## R6 enclosure CAD validation (2026-11-20)
 - Reworked R6 parametric enclosure with target 310×209mm perimeter, 66.5mm rear tray, 3.5mm front panel, raised 2mm preliminary collars around release keys, OK/confirm key in the right-bank bottom-right position, electrically separate on MCP23017 0x21 GPA4, and power switch above display.
 - Antenna pass-through positions shifted to Y=82mm. Four release-button apertures are enlarged to 18mm; collar OD21mm/ID17.6mm.
-- Local OpenSCAD renders/exports succeeded for front, rear, cap set and assembly. Mesh check: front and rear watertight, each single connected mesh; button-cap plate watertight with 17 individual caps.
+- A reconstructed local R6.6 source mirror exported front, rear and button-cap meshes; front/rear watertight, and button plate has 16 caps. Assembly/internal preview exports timed out. The repository SCAD was not transferred byte-for-byte for independent compile verification.
 - Local files are preliminary validation only. The real CAD workflow has been updated to export R6 front/rear/buttons, angled preview, and orthographic front-layout preview. GitHub Actions results and generated repository STLs/ZIP are still pending verification.
 
 
@@ -167,7 +167,7 @@ Boat:
 
 ## Archive review and R6.4 reconciliation (2026-11-20)
 - Reviewed version archives Boat/Remote ver001–005, Remote ver009, and GitHub Import ver004. Remote ver005 was an integrity-verified Actions snapshot; Remote ver009 contains newer R5 electrical/CAD work but remains an unvalidated development bundle.
-- Correct R5 baseline retained: MCP23017 0x20 for 16 discrete button inputs (not a 4×4 matrix); MCP23017 0x21 for radio/OK IO; ADS1115 0x4A joystick axes and 0x4B monitoring; SC16IS750 0x48 E22 UART bridge; nRF SPI GPIO11/12/13 shared with TF, CE GPIO6 and CSN GPIO15 direct candidates only after onboard circuits are isolated; E22 UART stays on bridge.
+- Correct R5 baseline retained: MCP23017 0x20 for 15 discrete inputs (8 left + 7 right; GPB7 spare), not a matrix; MCP23017 0x21 for radio IO and separate physical OK at GPA4; ADS1115 0x4A joystick axes and 0x4B monitoring; SC16IS750 0x48 E22 UART bridge; nRF SPI GPIO11/12/13 shared with TF, CE GPIO6 and CSN GPIO15 direct candidates only after onboard circuits are isolated; E22 UART stays on bridge.
 - Recent preliminary matrix/ADS1015/alternate GPIO documents are explicitly marked superseded by this reconciliation.
 - New records: Remote archive reconciliation and next gate Remote/New_Handheld_Remote/ELECTRICAL/ARCHIVE_RECONCILIATION_AND_NEXT_GATE_R6_4.md; consolidated schematic netlist review draft REMOTE_SCHEMATIC_NETLIST_R6_4.md.
 - Next engineering gate: reconcile connector pinout/netlist and power draft, then native schematic capture and ERC. No compiled or bench-tested hardware status changes.
@@ -191,7 +191,7 @@ Boat:
 ## R6.6 physical button/OK crosswalk (2026-11-20)
 - Approved layout is two columns × four rows per bank. One power key above display; OK is right-bank bottom-right, no duplicate power key.
 - Total: 15 scanned key inputs on MCP23017 0x20 plus separate OK on MCP23017 0x21 GPA4. GPB7 spare.
-- CAD source and scanner updated. Generated STLs/preview still require rebuild; no physical fit/test.
+- CAD source and scanner updated. Repository workflow STL/preview exports still require verification; no physical fit/test.
 - Added `REMOTE_BUTTON_IO_CROSSWALK_R6_6.md` and `PHYSICAL_BUTTON_MAP_R6_6.md`.
 
 ## Firmware utility progress (2026-11-20)
