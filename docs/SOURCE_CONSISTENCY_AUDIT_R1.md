@@ -94,3 +94,9 @@ Remote radio adapter includes compatibility hooks such as `boatRadio_setTranspor
 - Remote session-start markers now retry on each configured radio until that radio's reply is seen.
 - Boat same-session marker handling now re-sends its response for idempotent retries.
 - No release marker was bumped; these are development-branch source changes, not a hardware-ready release.
+
+
+## Target Compile #14 error and correction
+- **F-03 (compile blocker, corrected in source):** `Remote/source/offline_map.cpp` used `g_map_attribution` without declaring it. Target Compile #14 logged repeated compiler errors at attribution reset, manifest parsing, and getter/copy sites.
+- Correction: module-private `static char g_map_attribution[256] = {0};` added at file scope. Commit `9aa20b0d987f94ea5b49e46509ae0ba10cc9d36b`.
+- Verification gate: Target Compile #15 must compile/link successfully before marking this finding validated.
