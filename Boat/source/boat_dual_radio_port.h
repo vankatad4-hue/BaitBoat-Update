@@ -12,6 +12,9 @@
 #include "mission_wire.h"
 #include "radio_session_platform.h"
 
+// Link values match the Remote manager and queue records.
+enum ManagedLink : uint8_t { LINK_NONE=0, LINK_NRF_PRIMARY=1, LINK_LORA_BACKUP=2 };
+
 // All physical GPIO values must be audited/frozen for the exact Tracker SKU.
 // Default -1 macros intentionally keep radio hardware disabled.
 #ifndef BOAT_NRF_CE_PIN
