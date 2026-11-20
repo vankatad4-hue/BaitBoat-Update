@@ -20,7 +20,7 @@ Native KiCad capture pending; net-level drafts are not completed schematics.
 - External TPS61023 fallback: BOOST_CONVERTER_SELECTION_REVIEW_R3.md and TPS61023 calculation/pin map files
 - Radio rail: TPS63070 calculations R2; pin map R3
 - Battery protection: BATTERY_INPUT_PROTECTION_DESIGN_R4.md
-- Capture guide: POWER_SHEET_CAPTURE_SPEC_R4.md
+- Capture guide: POWER_SHEET_CAPTURE_SPEC_R4.md; REMOTE_POWER_AND_CONTROL_BLOCK_DIAGRAM_R1.md
 - BOM: REMOTE_POWER_BOM_CANDIDATES_R4.md
 - Net draft: POWER_SCHEMATIC_NET_DRAFT_R6.md; POWER_DISTRIBUTION_DESIGN_R4.md; REMOTE_PERIPHERAL_INTERFACE_PINOUT_DRAFT_R1.md; WAVESHARE_GPIO_RESOURCE_AUDIT_R1.md
 
