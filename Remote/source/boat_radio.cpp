@@ -64,15 +64,21 @@ static bool radioSendTransport(ManagedLink link,const BoatCommand &command) {
             ((command.type==CMD_SET_MODE && command.mode==MODE_RETURN_HOME)?2U:
              (command.type==CMD_MANUAL_MOTORS?1U:0U));
         if(priority==0U)return false;
-        if(g_backupTxSent && (uint32_t)(now-g_lastBackupTxMs)<3000U) {
-            if(!g_loraPending || priority>=g_loraPendingPriority){g_loraPendingFrame=frame;g_loraPending=true;g_loraPendingPriority=priority;}
+        // Keep only the highest-priority pending backup action; latest manual
+        // control replaces older manual frames. STOP cannot be overwritten.
+        if(g_loraPending) {
+            if(priority>=g_loraPendingPriority){g_loraPendingFrame=frame;g_loraPendingPriority=priority;}
+            g_loraPending=true;
+            if(g_backupTxSent && (uint32_t)(now-g_lastBackupTxMs)<3000U) return true;
+            if(g_lora.sendFrame(g_loraPendingFrame,now)){g_lastBackupTxMs=now;g_backupTxSent=true;g_loraPending=false;g_loraPendingPriority=0;}
             return true;
         }
+        if(g_backupTxSent && (uint32_t)(now-g_lastBackupTxMs)<3000U) {
+            g_loraPendingFrame=frame;g_loraPending=true;g_loraPendingPriority=priority;return true;
+        }
         if(g_lora.sendFrame(frame,now)){g_lastBackupTxMs=now;g_backupTxSent=true;return true;}
-        if(!g_loraPending || priority>=g_loraPendingPriority){g_loraPendingFrame=frame;g_loraPending=true;g_loraPendingPriority=priority;}
-        return true;
-    }
-    return false;
+        g_loraPendingFrame=frame;g_loraPending=true;g_loraPendingPriority=priority;return true;
+    }    return false;
 }
 
 bool boatRadio_begin() {
