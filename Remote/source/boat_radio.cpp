@@ -43,6 +43,21 @@ static RadioSequenceGuard g_boatBackupSequenceGuard;
 static bool g_sessionStartSeenPrimary=false,g_sessionStartSeenBackup=false;
 static bool g_boatSessionStarted=false;
 static uint8_t g_boatSessionEpoch=0;
+static uint32_t g_lastSessionStartPrimaryMs=0,g_lastSessionStartBackupMs=0;
+static constexpr uint32_t SESSION_START_PRIMARY_RETRY_MS=500;
+static constexpr uint32_t SESSION_START_BACKUP_RETRY_MS=3000;
+
+static bool sendSessionStartMarker(ManagedLink link,uint32_t now)
+{
+    if(!radioKey_get(g_authKey)) return false;
+    RadioFrame start;
+    radio_frameInit(start,RADIO_MSG_SESSION_START,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,0,0,now,g_sessionEpoch);
+    start.payload[0]=g_sessionEpoch;
+    if(!radio_frameSeal(start,g_authKey)) return false;
+    if(link==LINK_NRF_PRIMARY && g_nrfReady) return g_nrf.sendFrame(start);
+    if(link==LINK_LORA_BACKUP && g_loraConfigured) return g_lora.sendFrame(start,now);
+    return false;
+}
 
 static BoatRadioLink toPublicLink(ManagedLink link) {
     if(link==LINK_NRF_PRIMARY) return RADIO_LINK_NRF24_PRIMARY;
@@ -113,9 +128,11 @@ bool boatRadio_begin() {
     g_begun=g_nrfReady || g_loraConfigured;
     // Authenticated boot/session marker; TX remains disabled until key is provisioned.
     if(g_begun && radioKey_get(g_authKey)) {
-        RadioFrame start; radio_frameInit(start,RADIO_MSG_SESSION_START,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,0,0,millis(),g_sessionEpoch);
-        start.payload[0]=g_sessionEpoch;
-        if(radio_frameSeal(start,g_authKey)) { if(g_nrfReady)g_nrf.sendFrame(start); if(g_loraConfigured && g_lora.sendFrame(start,millis())){g_lastBackupTxMs=millis();g_backupTxSent=true;} }
+        const uint32_t startNow=millis();
+        if(g_nrfReady && sendSessionStartMarker(LINK_NRF_PRIMARY,startNow)) g_lastSessionStartPrimaryMs=startNow;
+        if(g_loraConfigured && sendSessionStartMarker(LINK_LORA_BACKUP,startNow)) {
+            g_lastSessionStartBackupMs=startNow;g_lastBackupTxMs=startNow;g_backupTxSent=true;
+        }
     }
     return g_begun; // configured hardware, not a connected/authenticated boat link
 }
@@ -202,6 +219,20 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame) {
 void boatRadio_update() {
     if(!g_begun) return;
     const uint32_t now=millis();
+    if(radioKey_get(g_authKey) && g_begun && g_boatSessionStarted) {
+        if(g_nrfReady && !g_sessionStartSeenPrimary &&
+           (uint32_t)(now-g_lastSessionStartPrimaryMs)>=SESSION_START_PRIMARY_RETRY_MS) {
+            if(sendSessionStartMarker(LINK_NRF_PRIMARY,now)) g_lastSessionStartPrimaryMs=now;
+        }
+        if(g_loraConfigured && !g_sessionStartSeenBackup &&
+           (uint32_t)(now-g_lastSessionStartBackupMs)>=SESSION_START_BACKUP_RETRY_MS &&
+           (uint32_t)(now-g_lastBackupTxAttemptMs)>=250U) {
+            g_lastBackupTxAttemptMs=now;
+            if(sendSessionStartMarker(LINK_LORA_BACKUP,now)) {
+                g_lastSessionStartBackupMs=now;g_lastBackupTxMs=now;g_backupTxSent=true;
+            }
+        }
+    }
     if(radioKey_get(g_authKey)) {
         if(g_nrfReady && (uint32_t)(now-g_lastPrimaryHeartbeat)>=100U) {
             g_lastPrimaryHeartbeat=now;RadioFrame hb;radio_frameInit(hb,RADIO_MSG_HEARTBEAT,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,++g_txSequence,0,now,g_sessionEpoch);
