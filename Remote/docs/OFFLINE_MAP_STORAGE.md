@@ -63,3 +63,10 @@ The exporter needs Pillow. Inspect `./sd-map/maps/area_plan.json` and the manife
 
 ## Coverage index ver029.1
 The MBTiles area exporter now writes `/maps/coverage_index.csv` (`z,x,y,present`) including missing planned tile entries. The remote requires a valid index at boot and checks indexed coverage before tile reads. Firmware index limit is 6000 rows. Map Manager shows coverage counts and selected area coverage. This is not a downloader or staged-pack installer; no import transfer progress exists yet.
+
+
+## Coverage index + import path
+- Exported pack includes `maps/coverage_index.csv` with `z,x,y,present` rows, including missing planned tiles. Incomplete packs are rejected for installation.
+- On-device index is loaded into PSRAM (maximum 6000 rows), sorted XYZ keys are validated, and binary search gates tile reads.
+- Staged installation source path on SD: `/map-import/`; destination: `/maps/`. Import uses 4KiB writes and installs index/manifest last. The manifest is removed before overwriting the active pack, so an interrupted import is fail-closed.
+- Manager shows GPS/manual centre, fixed 1km area, zoom 14–19, storage estimate, index stats, coverage and import progress. No network downloader is included.
