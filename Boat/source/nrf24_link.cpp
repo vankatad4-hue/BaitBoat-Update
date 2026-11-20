@@ -7,8 +7,8 @@ static const uint8_t BOAT_PIPE[5]={'B','O','A','T','1'};
 NRF24Link::NRF24Link(int ce,int csn,SPIClass *spi,uint8_t ch)
  : radio_(ce,csn,1000000),spiBus_(spi),cePin_(ce),csnPin_(csn),channel_(ch),
    ready_(false),txPending_(false),lastTxSuccess_(false),txCount_(0),rxCount_(0),
-   txFailCount_(0),rxAvailable_(false),txAddress_(nullptr),rxAddress_(nullptr) {
- memset(&rxFrame_,0,sizeof(rxFrame_));
+   txFailCount_(0),rxHead_(0),rxTail_(0),rxQueueCount_(0),txAddress_(nullptr),rxAddress_(nullptr) {
+ memset(rxQueue_,0,sizeof(rxQueue_));
 }
 bool NRF24Link::begin(bool remoteRole) {
  ready_=false;
@@ -44,7 +44,7 @@ void NRF24Link::update() {
      RadioFrame f; radio_.read(&f,sizeof(f));
      if(f.magic[0]==RADIO_FRAME_MAGIC0 && f.magic[1]==RADIO_FRAME_MAGIC1 &&
        radio_crc16((const uint8_t*)&f,offsetof(RadioFrame,crc16))==f.crc16) {
-       rxFrame_=f;rxAvailable_=true;++rxCount_;
+       if(rxQueueCount_<4){rxQueue_[rxTail_]=f;rxTail_=(uint8_t)((rxTail_+1U)%4U);++rxQueueCount_;++rxCount_;}
      }
    }
  }
@@ -68,6 +68,6 @@ bool NRF24Link::sendFrame(const RadioFrame &frame) {
 }
 bool NRF24Link::receiveFrame(RadioFrame &frame) {
  update();
- if(!rxAvailable_) return false;
- frame=rxFrame_;rxAvailable_=false;return true;
+ if(rxQueueCount_==0) return false;
+ frame=rxQueue_[rxHead_];rxHead_=(uint8_t)((rxHead_+1U)%4U);--rxQueueCount_;return true;
 }
