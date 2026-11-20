@@ -129,41 +129,10 @@ static bool releaseRequestAllowed()
 }
 
 // --------------------------------------------------
-// LEGACY COMBINED BAIT RELEASE (NOT USED BY THE NEW BUTTON MAP)
-// --------------------------------------------------
-
-bool boatCommands_releaseBait()
-{
-    // Combined hopper release is intentionally disabled in this revision.
-    return false;
-    // Create a bait-release command;
-    BoatCommand command = {};
-
-    command.type = CMD_BAIT_RELEASE;
-    command.activate = true;
-
-    // Send the request.
-    return sendCommand(command);
-}
-
-// --------------------------------------------------
-// LEGACY COMBINED HOOK RELEASE (NOT USED BY THE NEW BUTTON MAP)
-// --------------------------------------------------
-
-bool boatCommands_releaseHook()
-{
-    // Combined hook release is intentionally disabled in this revision.
-    return false;
-    // Create a hook-release command;
-    BoatCommand command = {};
-
-    command.type = CMD_HOOK_RELEASE;
-    command.activate = true;
-
-    // Send the request.
-    return sendCommand(command);
-}
-
+// Combined hopper/hook commands are intentionally disabled; the new
+// independent channel functions below are the only release API.
+bool boatCommands_releaseBait(){ return false; }
+bool boatCommands_releaseHook(){ return false; }
 
 static bool sendIndependentRelease(BoatCommandType type)
 {
