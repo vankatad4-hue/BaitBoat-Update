@@ -58,7 +58,7 @@ Remote wiring, capture sheets, pin assignments, power drafts/BOM candidates, con
 Boat Cytron MDD20A candidate outline (88.9×78.74mm) exceeds preliminary 77×79mm carrier area; separate placement/mechanical revision required. Motor startup/stall current and solenoid coil data are missing. Battery/charger/converter thermal validation missing.
 
 ## 8. Release/archive workflow correction
-Old workflow regenerated ZIPs under unchanged version names on development pushes. Guard now commits versioned archives only when a VERSION marker changes; routine commits produce workflow artifacts. Latest workflow run #880 succeeded at checkpoint (head 9f7b0344). The branch's existing ver028/ver014 ZIPs have not been restored from an earlier immutable baseline and **must be treated as unverified snapshots**. No release integrity claim.
+Old workflow regenerated ZIPs under unchanged version names on development pushes. Guard now commits versioned archives only when a VERSION marker changes; routine commits produce workflow artifacts. Workflow run #880 succeeded after the guard was added (head 9f7b0344). The documentation synchronization triggered run #888, currently pending at head c11f9048c1; check its status when resuming. The branch's existing ver028/ver014 ZIPs have not been restored from an earlier immutable baseline and **must be treated as unverified snapshots**. No release integrity claim.
 Latest workflow:
 https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/44748284171
 
@@ -94,3 +94,9 @@ When continuing in a new chat:
 2. Check current branch head and workflow status; don't assume the listed SHA/run is still latest.
 3. Work on the next ordered task, inspect the exact source/docs first, commit updates to branch, and update the checkpoint/changelog/status.
 4. Never say compiled/tested unless a successful build/test run or user-provided evidence exists.
+
+
+## Documentation sync addendum
+- Updated root README, Remote/Boat master status, project progress review, ZIP status, import status, release policy, source READMEs and historical ver005 status files to point to this checkpoint and align current markers.
+- Consolidated changelog is VER021. Old VER020 was superseded.
+- Last observed branch HEAD: `c11f9048c1` (historical build status notes). Packaging run #888 pending; run #880 previously successful.
