@@ -24,6 +24,9 @@ static lv_obj_t *settingsContent = nullptr;
 static lv_timer_t *wifiScanTimer = nullptr;
 static lv_timer_t *wifiConnectTimer = nullptr;
 static uint32_t wifiConnectStartedAt = 0;
+static lv_obj_t *mapSourceLabel = nullptr;
+static lv_obj_t *mapWiFiLabel = nullptr;
+static lv_timer_t *mapStatusTimer = nullptr;
 // Sonar preference widgets; values are persisted locally until boat-side sync exists.
 static lv_obj_t *sonarRange = nullptr;
 static lv_obj_t *sonarУСИЛВАНЕ = nullptr;
@@ -516,7 +519,14 @@ static void buildControlsSection(lv_obj_t *parent)
 }
 
 // Map source preference selector. ONLINE is reserved until provider implementation.
-static lv_obj_t *mapSourceLabel = nullptr;\nstatic lv_obj_t *mapWiFiLabel = nullptr;\nstatic lv_timer_t *mapStatusTimer = nullptr;\nstatic void refreshMapConnectivityStatus(lv_timer_t *timer)\n{\n    (void)timer;\n    if (mapWiFiLabel) lv_label_set_text(mapWiFiLabel, WiFi.status() == WL_СВЪРЖИED ? "Wi-Fi: СВЪРЖИED | Internet: UNKNOWN" : "Wi-Fi: DISСВЪРЖИED | Internet: UNKNOWN");\n}
+static void refreshMapConnectivityStatus(lv_timer_t *timer)
+{
+    (void)timer;
+    if (mapWiFiLabel)
+        lv_label_set_text(mapWiFiLabel, WiFi.status() == WL_CONNECTED
+            ? "Wi-Fi: СВЪРЗАН | Internet: UNKNOWN"
+            : "Wi-Fi: НЕ Е СВЪРЗАН | Internet: UNKNOWN");
+}
 static void mapSourceCycleEvent(lv_event_t *event)
 {
     (void)event;
