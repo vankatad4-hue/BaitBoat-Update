@@ -117,3 +117,10 @@ All connectors keyed, locking, labelled, pin-1 marked.
 ## Sheet 11 — RF and EMC
 LEFT bulkhead nRF24 2.4GHz, RIGHT LoRa 868MHz. Separate 50Ω coax; never swap antennas.
 Grounded RF keepout around connector/feed. Do not run high-speed display/SD or switch-node traces beneath RF feed/module antenna region. Antennas separated; test enclosure and hand detuning. Battery and converter layout near antennas may require revision.
+
+
+## R3 LoRa module settings and airtime
+- E22 module configuration: address/network 0, REG0=0x67 (9600 UART/62.5kbps air), REG1=0xC3 (32-byte subpacket/10dBm TX), REG2=0x12 (868.125MHz), REG3–REG5=0. Initial command `C0 00 09 00 00 00 67 C3 12 00 00 00`; verify readback on both modules.
+- E22 M1=1/M0=0 configuration; M1=M0=0 normal transparent mode; both high means sleep.
+- E22 channel 18 868.125MHz sits in 1% duty-cycle sub-band. The 869.4–869.65MHz 10% band is not reachable using the E22's 1MHz channel step. Strict 1% airtime limit is required.
+- Remote module supply BAT_PROT, not CS8501 5V branch, reduces load. Output power 10dBm initial; ERP/EIRP with actual antenna must still be verified.
