@@ -19,7 +19,10 @@ void initialiseBoatState()
     boatState.gpsSatellites = 0;
     boatState.gpsAccuracyMeters = 0.0f;
     boatState.gpsLastUpdateMs = 0;
-    boatState.sonarActive = false;\n    boatState.headingValid = false;\n    boatState.lowBattery = false;\n    boatState.failsafeActive = false;
+    boatState.sonarActive = false;
+    boatState.headingValid = false;
+    boatState.lowBattery = false;
+    boatState.failsafeActive = false;
     boatState.sdCardReady = false;
     boatState.offlineMapReady = false;
 
