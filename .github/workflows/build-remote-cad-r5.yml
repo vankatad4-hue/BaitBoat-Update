@@ -1,4 +1,4 @@
-name: Build Remote CAD R5
+name: Build Remote CAD R5 and R6
 on:
   push:
     branches: [hardware-ready-dual-radio-r1]
@@ -22,29 +22,33 @@ jobs:
         run: |
           cd Remote/New_Handheld_Remote/CAD
           openscad -o Front_Panel_R5.stl -D 'part="front"' Flytec_Remote_Enclosure_R5.scad
+          openscad -o Front_Panel_R6.stl -D 'part="front"' Flytec_Remote_Enclosure_R6.scad
           openscad -o Rear_Shell_R5.stl -D 'part="rear"' Flytec_Remote_Enclosure_R5.scad
+          openscad -o Rear_Shell_R6.stl -D 'part="rear"' Flytec_Remote_Enclosure_R6.scad
           openscad -o Button_Set_R5.stl Printable_Button_Set_R5.scad
+          openscad -o Button_Set_R6.stl -D 'part="buttons"' Flytec_Remote_Enclosure_R6.scad
           xvfb-run -a openscad -o Remote_Assembly_Preview_R5.png --imgsize=1200,900 --viewall --autocenter -D 'part="assembly"' Flytec_Remote_Enclosure_R5.scad
+          xvfb-run -a openscad -o Remote_Assembly_Preview_R6.png --imgsize=1200,900 --viewall --autocenter -D 'part="assembly"' Flytec_Remote_Enclosure_R6.scad
           cd ../../..
-          zip -r -9 Remote_CAD_R5_Print_Package.zip Remote/New_Handheld_Remote/CAD Remote/New_Handheld_Remote/MECHANICAL/REMOTE_MECHANICAL_R5.md Remote/New_Handheld_Remote/MECHANICAL/PHYSICAL_BUTTON_MAP_R5.md
-          sha256sum Remote_CAD_R5_Print_Package.zip > Remote_CAD_R5_SHA256.txt
+          zip -r -9 Remote_CAD_R5_R6_Print_Package.zip Remote/New_Handheld_Remote/CAD Remote/New_Handheld_Remote/MECHANICAL/REMOTE_MECHANICAL_R5.md Remote/New_Handheld_Remote/MECHANICAL/PHYSICAL_BUTTON_MAP_R5.md Remote/New_Handheld_Remote/MECHANICAL/REMOTE_CONCEPT_R6.md Remote/New_Handheld_Remote/MECHANICAL/REMOTE_BUTTON_MAP_R6.md
+          sha256sum Remote_CAD_R5_R6_Print_Package.zip > Remote_CAD_R5_R6_SHA256.txt
       - name: Commit generated print files and version bump
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add Remote/New_Handheld_Remote/CAD/*.stl Remote/New_Handheld_Remote/CAD/*.png Remote_CAD_R5_Print_Package.zip Remote_CAD_R5_SHA256.txt
+          git add Remote/New_Handheld_Remote/CAD/*.stl Remote/New_Handheld_Remote/CAD/*.png Remote_CAD_R5_R6_Print_Package.zip Remote_CAD_R5_R6_SHA256.txt
           if ! git diff --cached --quiet; then
             current_version=$(tr -d '\r\n ' < Remote/releases/VERSION)
             next_version=$((10#$current_version + 1))
             printf '%03d\n' "$next_version" > Remote/releases/VERSION
             git add Remote/releases/VERSION
-            git commit -m 'Generate CAD R5 print assets and bump Remote package version'
+            git commit -m 'Generate CAD R5/R6 print assets and bump Remote package version'
             git fetch origin hardware-ready-dual-radio-r1
             git rebase origin/hardware-ready-dual-radio-r1
             git push
           fi
       - uses: actions/upload-artifact@v4
         with:
-          name: Flytec_Remote_CAD_R5_Print_Files
-          path: Remote_CAD_R5_Print_Package.zip
+          name: Flytec_Remote_CAD_R5_R6_Print_Files
+          path: Remote_CAD_R5_R6_Print_Package.zip
           retention-days: 90
