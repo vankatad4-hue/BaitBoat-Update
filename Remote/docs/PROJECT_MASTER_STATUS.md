@@ -127,3 +127,14 @@ Native KiCad capture and ERC/DRC, exact physical PORT1 crosswalk, final footprin
 - Native KiCad schematic, ERC/DRC and PCB still not generated. Files are detailed electrical capture/test specs, not native fabrication data.
 
 - Protocol correction: sender-local tick is no longer compared with receiver millis(). Freshness uses sequence + local receive watchdog; session negotiation/epoch reset remains unresolved and must be implemented before release.
+
+
+## R4 current electrical and software baseline
+- Initial LoRa prototype uses identical E22-900T22S UART modules on both endpoints. Heltec Tracker integrated SX1262 is unused. E22 configuration channel18=868.125MHz, 62.5kbps, 32-byte subpacket, 10dBm, transparent mode. 1% duty band; estimate25ms/frame and 3s interval; persistent accounting missing.
+- Remote nRF pins provisional CE6/CSN15, SPI11/12/13, channel76. GPIO6 Sensor AD repurposed; GPIO15 RS485 TX repurposed with RS485 bus disconnected. Physical PORT1 crosswalk remains unverified.
+- Remote E22 bridge SC16IS750 @0x48. Remote hardware code initializes E22 and nRF; key storage fails closed, so no authenticated link or command TX.
+- Boat source has E22 direct UART/nRF dual-port, command queue, duplicate cache and failsafe helper, but all pin macros unset, key provisioning unavailable and main control/actuator integration absent.
+- Remote/boat test sketches: E22 UART bench and nRF24 bench, CRC-only fixed probe packets; no actuator payloads.
+- Remote envelope target 300×210×70mm; test-fit required. Carrier PCB/schematic native CAD not created.
+- Boat motor-driver candidate Cytron MDD20A exceeds the 77×79mm measured carrier footprint; separate location or mechanical redesign. Current measurements, solenoid current, converter/fuse/cable sizes pending.
+- Full hardware schematic specs, block diagrams, pin connection CSVs, BOM candidates and test-build docs are committed on branch `hardware-ready-dual-radio-r1`. These are not KiCad-native or ERC/DRC verified.
