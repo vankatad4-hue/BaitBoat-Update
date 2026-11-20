@@ -101,3 +101,14 @@ Connector selection, pin numbering, footprints, mounting and mechanical clearanc
 7. Shared SPI/TF-card coexistence.
 8. Native KiCad capture, ERC, footprint/pin audit, independent review.
 9. Bench bring-up before PCB release.
+
+
+## Sheet 09 — LoRa backup radio (added 2026-11-20)
+- Add a UART LoRa module connector/footprint for candidate EBYTE E22-900T22S-V2 (SX1262, EU868-capable SKU; validate exact datasheet/firmware/configuration before procurement).
+- Signals: LORA_5V, GND, LORA_UART_TX (module TX→MCU RX), LORA_UART_RX (MCU TX→module RX, 3.3V logic), LORA_AUX→MCU input, LORA_M0/LORA_M1 mode controls or documented straps, LORA_RF_868 to dedicated 50Ω antenna connector.
+- Do not use nRF SPI nets. UART and GPIO pins must be allocated after exact board GPIO/header audit; do not assume unused pins.
+- Supply candidate: filtered 5V branch from onboard CS8501 rail, local 100µF + 10µF + 100nF. Module TX current estimate ~110mA; simultaneous display/backlight+nRF+LoRa load test is mandatory. If rail margin fails, design a separate 1S→5V boost branch, not parallel with existing boost.
+- RIGHT antenna exit: 868MHz EU LoRa; LEFT exit: nRF24 2.4GHz. ESP32 Wi-Fi/Bluetooth uses Waveshare onboard antenna; no external Wi-Fi antenna connector in this revision. Confirm mechanical and RF separation.
+- Regulatory: power output must be set to legal sub-band limit for Bulgaria/EU, antenna gain and cable loss included; airtime/duty-cycle/LBT rules apply. 22dBm module capability is not a default permitted setting.
+- LoRa is backup-only; no sonar stream. Use low-rate heartbeat, link status, low-rate steering with speed cap, STOP/RETURN; mission/release commands disabled on backup by default. Link failover and packet authentication/replay protection are software requirements.
+- Matching LoRa module and antenna must also be installed on the boat; remote module alone cannot provide redundancy.
