@@ -1,8 +1,9 @@
 # Versioned ZIP Packaging
 
-## Current next package version
-- Remote: `Remote/releases/VERSION` → `023`
-- Boat: `Boat/releases/VERSION` → `010`
+## Current package markers / next release numbers
+- Remote marker: `Remote/releases/VERSION` → `028` (next package bump: `029`)
+- Boat marker: `Boat/releases/VERSION` → `014` (next package bump: `015`)
+- These numbers identify snapshots only; the existing branch ZIPs are unverified due to the historical overwrite workflow. See `docs/ZIP_BUILD_STATUS_R1.md`.
 - Existing ver004 archives are preserved; never overwrite them.
 
 ## Rules
@@ -51,3 +52,6 @@ Remote R5 enclosure CAD source, mechanical/button map, independent release comma
 
 ## ver006 package scope
 Snapshot of the current dual-radio development branch, including hardware capture docs, source scaffolding, bench tests, safety limitations, and the controller pin audit. It is explicitly bench/development only.
+
+## Archive integrity safeguard (2026-11-20)
+Routine source pushes previously regenerated ZIPs under unchanged release filenames. Treat current branch archives as unverified. The guarded workflow only commits versioned archives after VERSION marker changes; see `docs/ZIP_BUILD_STATUS_R1.md`.
