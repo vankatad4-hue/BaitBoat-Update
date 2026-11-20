@@ -26,17 +26,30 @@ static void loadTileInto(TileSlot &t,int32_t x,int32_t y,uint8_t z){
  memset(&t.dsc,0,sizeof(t.dsc));t.dsc.header.cf=LV_COLOR_FORMAT_RGB565;t.dsc.header.w=OFFLINE_MAP_TILE_SIZE;t.dsc.header.h=OFFLINE_MAP_TILE_SIZE;t.dsc.data_size=OFFLINE_MAP_TILE_BYTES;t.dsc.data=(const uint8_t*)buf;
  lv_image_set_src(t.image,&t.dsc);lv_obj_remove_flag(t.image,LV_OBJ_FLAG_HIDDEN);
 }
-static void drawTiles(){
+static void drawTiles()
+{
  if(!view||!haveCenter||!offlineMap_hasMapData()){for(auto&t:tiles)hideTile(t);return;}
- MapWorldPixel c=mapProjection_toWorldPixel(centerLat,centerLon,zoomLevel);
- double left=c.x-viewW/2.0,top=c.y-viewH/2.0;
- int32_t firstX=(int32_t)floor(left/256.0),firstY=(int32_t)floor(top/256.0);
+ const MapWorldPixel c=mapProjection_toWorldPixel(centerLat,centerLon,zoomLevel);
+ const double left=c.x-viewW/2.0,top=c.y-viewH/2.0;
+ const int32_t firstX=(int32_t)floor(left/256.0),firstY=(int32_t)floor(top/256.0);
  const int32_t n=(1L<<zoomLevel);
- for(int dy=0;dy<3;dy++)for(int dx=0;dx<3;dx++){
-  uint8_t idx=(uint8_t)(dy*3+dx);TileSlot &t=tiles[idx];hideTile(t);
-  int32_t displayX=firstX+dx,ty=firstY+dy;if(ty<0||ty>=n)continue;int32_t tileX=(displayX%n+n)%n;
-  loadTileInto(t,tileX,ty,zoomLevel);if(!t.pixels)continue;
-  lv_obj_set_pos(t.image,(int)round(displayX*256.0-left),(int)round(ty*256.0-top));lv_obj_remove_flag(t.image,LV_OBJ_FLAG_HIDDEN);
+ uint8_t loadsThisUpdate=0;
+ // Keep the radio/control loop responsive: perform at most one 128-KiB SD tile
+ // load during a renderer update. Other tile slots are filled on subsequent UI ticks.
+ for(int dy=0;dy<3;dy++)for(int dx=0;dx<3;dx++)
+ {
+  const uint8_t idx=(uint8_t)(dy*3+dx);TileSlot &t=tiles[idx];hideTile(t);
+  const int32_t displayX=firstX+dx,ty=firstY+dy;if(ty<0||ty>=n)continue;
+  const int32_t tileX=(displayX%n+n)%n;
+  const bool matches=t.valid&&t.x==tileX&&t.y==ty&&t.z==zoomLevel&&t.style==mapStyle;
+  if(!matches)
+  {
+   if(loadsThisUpdate>=1)continue;
+   loadTileInto(t,tileX,ty,zoomLevel);++loadsThisUpdate;
+  }
+  if(!t.pixels)continue;
+  lv_obj_set_pos(t.image,(int)round(displayX*256.0-left),(int)round(ty*256.0-top));
+  lv_obj_remove_flag(t.image,LV_OBJ_FLAG_HIDDEN);
  }
 }
 static bool projectPoint(float lat,float lon,int &x,int &y){
