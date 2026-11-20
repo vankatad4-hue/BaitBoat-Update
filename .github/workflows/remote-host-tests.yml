@@ -88,3 +88,8 @@ jobs:
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/lake_stubs -IRemote/source \
             Remote/source/map_copy.cpp Remote/source/lake_storage.cpp Remote/tests/map_copy_test.cpp -o /tmp/remote_map_copy
           /tmp/remote_map_copy
+      - name: Cooperative offline SD tile loader
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/lake_stubs -IRemote/source \
+            Remote/source/offline_map.cpp Remote/source/offline_map_coverage.cpp Remote/source/map_pack_manifest.cpp Remote/source/lake_storage.cpp Remote/tests/offline_tile_test.cpp -o /tmp/remote_tile_loader
+          /tmp/remote_tile_loader
