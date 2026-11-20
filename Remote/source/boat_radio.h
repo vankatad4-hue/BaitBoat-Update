@@ -1,19 +1,15 @@
 #ifndef BOAT_RADIO_H
 #define BOAT_RADIO_H
-
 #include <Arduino.h>
 #include "boat_commands.h"
+#include "dual_radio_manager.h"
 
-// Dual-radio architecture. Hardware transports are still non-operational stubs.
-enum BoatRadioLink : uint8_t
-{
+enum BoatRadioLink : uint8_t {
     RADIO_LINK_NONE = 0,
     RADIO_LINK_NRF24_PRIMARY,
     RADIO_LINK_LORA_BACKUP
 };
-
-enum BoatRadioState : uint8_t
-{
+enum BoatRadioState : uint8_t {
     RADIO_STATE_DISCONNECTED = 0,
     RADIO_STATE_PRIMARY,
     RADIO_STATE_DEGRADED,
@@ -22,24 +18,21 @@ enum BoatRadioState : uint8_t
     RADIO_STATE_RECOVERY
 };
 
-// Initialise radio drivers and link supervisor. Returns false until drivers
-// and an authenticated boat response are implemented.
+// Link-manager API is implemented. Hardware transports remain disabled until
+// verified pin allocation, RF module wiring, key provisioning and drivers exist.
 bool boatRadio_begin();
-
-// Transmit one application command through LinkManager. Command IDs must be
-// preserved across transport retries/failover; action commands are idempotent.
 bool boatRadio_sendCommand(const BoatCommand &command);
-
-// Poll both transports without blocking the UI/control loop.
 void boatRadio_update();
-
-// Aggregate connection flag: true only after valid response from either link.
 bool boatRadio_isConnected();
-
-// Diagnostics/UI API. Stub implementation returns disconnected/NONE.
 BoatRadioLink boatRadio_getActiveLink();
 BoatRadioState boatRadio_getState();
 bool boatRadio_primaryConnected();
 bool boatRadio_backupConnected();
 
+// Hardware-driver integration hooks. A valid RX must pass frame validation and
+// HMAC authentication before reporting authenticated=true.
+void boatRadio_setTransport(RadioSendFn transport);
+void boatRadio_setReady(ManagedLink link, bool ready);
+void boatRadio_reportValidPacket(ManagedLink link, bool authenticated, uint32_t receivedAtMs);
+void boatRadio_reportFailure(ManagedLink link);
 #endif
