@@ -28,7 +28,7 @@
 - L=1.5µH between L1/L2.
 - Divider 470k VOUT→FB, 150k FB→GND.
 - Input caps per documented draft; output bank per draft; VAUX 100nF.
-- EN: define controlled behavior; candidate MCU enable with pull-down so radio remains OFF during reset, but confirm this permits required startup. PG optional.
+- EN: MCU-controlled after boot, 1k series candidate and 100k pulldown; converter/radio OFF during reset. Verify EN threshold and GPIO. PG optional.
 - J_RADIO: 3V3, GND, SPI SCK/MOSI/MISO, CSN, CE, IRQ; pin order TBD.
 - Radio connector local 100nF + 10–47µF.
 
