@@ -34,6 +34,7 @@ static bool offlineMap_checkManifest(const char *root){
 // Initialise offline-map storage and validate its map-pack manifest.
 bool offlineMap_begin(bool sdCardReady)
 {
+    offlineMap_cancelTile();
     g_sd_available = sdCardReady && lakeStorage_ready();                   // Remember the mount result from display_port.cpp.
     g_map_pack_available = false;                   // Clear any previous map-pack status.
     g_map_attribution[0] = '\0';
@@ -71,56 +72,48 @@ bool offlineMap_getAttribution(char *buffer, size_t bufferSize)
 
 void offlineMap_getCoverageStats(uint16_t &planned,uint16_t &present,uint16_t &missing){mapCoverage_getStats(planned,present,missing);}
 
-// Read one raw RGB565 tile from the selected map style and zoom level.
-uint16_t *offlineMap_readTile(OfflineMapStyle style, uint8_t zoom, uint32_t tileX, uint32_t tileY)
-{
-    if (!lakeStorage_ready() || !g_sd_available || !g_map_pack_available || style!=g_style || !mapCoverage_tilePresent(zoom,tileX,tileY))   // Require pack/index and indexed tile presence.
-    {
-        return nullptr;                              // No tile can be loaded safely.
+// One cooperative reader; all calls occur on the existing UI/control loop.
+static File tileInput;
+static uint16_t *tileBuffer=nullptr;
+static size_t tileOffset=0;
+void offlineMap_cancelTile(){
+    if(tileInput)tileInput.close();
+    if(tileBuffer)heap_caps_free(tileBuffer);
+    tileBuffer=nullptr;tileOffset=0;
+}
+bool offlineMap_startTile(OfflineMapStyle style,uint8_t zoom,uint32_t x,uint32_t y){
+    offlineMap_cancelTile();
+    if(!offlineMap_hasMapData()||style!=g_style||zoom>22||
+       x>=(1UL<<zoom)||y>=(1UL<<zoom)||!mapCoverage_tilePresent(zoom,x,y))return false;
+    char path[96];
+    int len=snprintf(path,sizeof(path),"%s/%s/%u/%lu/%lu.rgb565",g_map_root.c_str(),
+        style==OFFLINE_MAP_SATELLITE?"satellite":"street",(unsigned)zoom,(unsigned long)x,(unsigned long)y);
+    if(len<0||(size_t)len>=sizeof(path))return false;
+    tileInput=SD.open(path,FILE_READ);
+    if(!tileInput||tileInput.size()!=OFFLINE_MAP_TILE_BYTES){offlineMap_cancelTile();return false;}
+    tileBuffer=static_cast<uint16_t*>(heap_caps_malloc(OFFLINE_MAP_TILE_BYTES,MALLOC_CAP_SPIRAM|MALLOC_CAP_8BIT));
+    if(!tileBuffer){offlineMap_cancelTile();return false;}
+    return true;
+}
+int offlineMap_stepTile(uint16_t *&completed){
+    completed=nullptr;
+    if(!tileBuffer||!tileInput||!offlineMap_hasMapData()){offlineMap_cancelTile();return -1;}
+    constexpr size_t chunk=4096;
+    size_t remaining=OFFLINE_MAP_TILE_BYTES-tileOffset;
+    size_t count=remaining<chunk?remaining:chunk;
+    if(tileInput.read(reinterpret_cast<uint8_t*>(tileBuffer)+tileOffset,count)!=count){
+        offlineMap_cancelTile();return -1;
     }
-
-    if (zoom > 22 || tileX >= (1UL << zoom) || tileY >= (1UL << zoom)) // Reject invalid Web-Mercator tile coordinates.
-    {
-        return nullptr;                              // Avoid constructing an invalid path.
-    }
-    if (style != OFFLINE_MAP_STREET && style != OFFLINE_MAP_SATELLITE) // Reject unknown map-style enum values.
-    {
-        return nullptr;                              // Do not silently reinterpret invalid values as street tiles.
-    }
-
-    const char *styleFolder = (style == OFFLINE_MAP_SATELLITE) ? "satellite" : "street"; // Select style directory.
-    char path[96];                                  // Hold the full tile path without dynamic String allocation.
-    snprintf(path, sizeof(path), "%s/%s/%u/%lu/%lu.rgb565", g_map_root.c_str(), styleFolder, static_cast<unsigned>(zoom), static_cast<unsigned long>(tileX), static_cast<unsigned long>(tileY)); // Build tile path.
-
-    File tileFile = SD.open(path, FILE_READ);        // Open the requested tile in read-only mode.
-    if (!tileFile)                                  // A missing tile is not replaced with a fake land/water image.
-    {
-        return nullptr;                              // Let the renderer show its neutral missing-tile background.
-    }
-
-    if (tileFile.size() != OFFLINE_MAP_TILE_BYTES)   // Every tile must be exactly 256x256 RGB565 pixels.
-    {
-        tileFile.close();                            // Close malformed or unsupported tile files.
-        return nullptr;                              // Reject partial, compressed or wrong-format tiles.
-    }
-
-    uint16_t *pixels = static_cast<uint16_t *>(heap_caps_malloc(OFFLINE_MAP_TILE_BYTES, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT)); // Allocate tile memory in PSRAM.
-    if (pixels == nullptr)                          // Check that the 128 KiB allocation succeeded.
-    {
-        tileFile.close();                            // Close the file before returning.
-        return nullptr;                              // The caller can retry after cache eviction.
-    }
-
-    const size_t bytesRead = tileFile.read(reinterpret_cast<uint8_t *>(pixels), OFFLINE_MAP_TILE_BYTES); // Read the complete tile.
-    tileFile.close();                                // Release the filesystem handle promptly.
-
-    if (bytesRead != OFFLINE_MAP_TILE_BYTES)        // Reject short reads caused by damaged media or I/O errors.
-    {
-        heap_caps_free(pixels);                      // Return the incomplete tile buffer to PSRAM.
-        return nullptr;                              // Never display incomplete image data.
-    }
-
-    return pixels;                                  // Caller owns the PSRAM tile until offlineMap_freeTile().
+    tileOffset+=count;
+    if(tileOffset!=OFFLINE_MAP_TILE_BYTES)return 0;
+    if(tileInput.available()){offlineMap_cancelTile();return -1;}
+    tileInput.close();completed=tileBuffer;tileBuffer=nullptr;tileOffset=0;return 1;
+}
+uint16_t *offlineMap_readTile(OfflineMapStyle style,uint8_t zoom,uint32_t x,uint32_t y){
+    if(!offlineMap_startTile(style,zoom,x,y))return nullptr;
+    uint16_t *result=nullptr;
+    while(offlineMap_stepTile(result)==0){}
+    return result;
 }
 
 // Release a tile buffer after the renderer no longer references it.
