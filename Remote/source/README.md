@@ -4,7 +4,7 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 
 ## Versioning
 - ZIP: `Flytec_Remote_verXXX.zip`.
-- Preserve older archives; the packaged baseline is ver028. Current development source is ver029.10; do not update `releases/VERSION` or create a release ZIP until packaging and verification are complete.
+- Preserve older archives; the packaged baseline is ver028. Current development source is ver029.12; do not update `releases/VERSION` or create a release ZIP until packaging and verification are complete.
 - Increment for every package change and follow `../../docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Controller/display baseline
@@ -129,3 +129,5 @@ Development pushes no longer overwrite repository versioned ZIPs unless Remote o
 
 ## Archive integrity note
 The legacy packaging workflow previously regenerated the unchanged ver028/ver014 ZIP names on every source push, repeatedly committing them. The branch archives therefore must not be treated as immutable verified releases. The workflow guard is now in place and verified on a run; restoration of an earlier release archive is not yet done. Source remains unreleased development.
+
+UI follow-up: sonar plot scales and redraws on split/fullscreen; remaining sonar option labels translated; waypoint distance math has floating-point clamping. Compile/test still pending.
