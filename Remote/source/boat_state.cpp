@@ -37,4 +37,5 @@ void initialiseBoatState()
     // Start in a latched-safe state until telemetry confirms boat status.
     boatState.emergencyStop = true;
     boatState.emergencyStopConfirmed = false;
+    boatState.actuatorSafetyReady = false;
 }
