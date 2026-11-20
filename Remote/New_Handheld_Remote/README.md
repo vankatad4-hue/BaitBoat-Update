@@ -66,3 +66,11 @@ Use the identical E22-900T22S UART module on both ends. This reduces protocol in
 - [Historical R5 layout preview](CAD/REMOTE_PREVIEW_R5.svg)
 - [Joystick ADC integration draft](../../docs/JOYSTICK_ADC_INTEGRATION_R1.md)
 - ADS1115 driver added to source; actual wiring/address remains provisional and hardware validation is pending.
+
+
+## R6.4 archive reconciliation
+- Archive review: [ARCHIVE_RECONCILIATION_AND_NEXT_GATE_R6_4.md](ELECTRICAL/ARCHIVE_RECONCILIATION_AND_NEXT_GATE_R6_4.md)
+- Consolidated schematic/netlist review draft: [REMOTE_SCHEMATIC_NETLIST_R6_4.md](ELECTRICAL/REMOTE_SCHEMATIC_NETLIST_R6_4.md)
+- R6.4 pin/wiring/IO brainstorming files are marked superseded where they conflict with the established ver009/R5 design.
+- Correct baseline: 16 individual MCP23017 buttons @0x20; second MCP23017 @0x21 for OK/radio IO; ADS1115 @0x4A and @0x4B; SC16IS750 @0x48 for E22 UART; nRF SPI shared with TF, direct CE GPIO6 and CSN GPIO15 provisional subject to isolation.
+- Next: schematic/netlist consistency review → native schematic capture → ERC → verified footprints → PCB. No hardware/firmware test validation.
