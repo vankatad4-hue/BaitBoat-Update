@@ -43,7 +43,7 @@ public:
     bool takeCommand(BoatCommand &cmd,bool &duplicateAction,ManagedLink &receivedOn);
     void markActionExecuted(uint8_t sender,uint8_t epoch,uint16_t commandId);
     bool sendFrame(ManagedLink link,const RadioFrame &frame);
-    bool sendHeartbeat(ManagedLink link,uint16_t sequence,uint32_t nowMs);
+    bool sendHeartbeat(ManagedLink link,uint32_t nowMs);
     bool sendSessionStart(ManagedLink link,uint32_t nowMs);
     bool primaryReady() const { return nrfReady_; }
     bool backupReady() const { return e22Configured_; }
@@ -64,6 +64,8 @@ private:
     QueuedCommand queue_[4];
     uint8_t qWrite_,qRead_,qCount_;
     uint32_t lastNrfRxMs_,lastE22RxMs_;
+    uint32_t lastNrfHeartbeatTxMs_,lastE22HeartbeatTxMs_;
+    uint16_t txSequence_;
     bool authenticated_;
     bool sessionStarted_;
     void receive(ManagedLink link,const RadioFrame &frame);
