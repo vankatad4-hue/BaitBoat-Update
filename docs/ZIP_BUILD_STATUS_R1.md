@@ -38,3 +38,11 @@ No complete ESP32 target compile, LVGL Pro simulation, native KiCad ERC/DRC, har
 
 ## Target Compile #14 / #15
 Compile #14 (`44776348680`) failed in C++ source compilation due to missing `g_map_attribution` declaration. Source correction commit `9aa20b0d987f94ea5b49e46509ae0ba10cc9d36b` adds a private 256-byte buffer. Target Compile #15 pending. ZIP/package workflow success must not be treated as firmware target compile success.
+
+
+## Latest target build (2026-11-20)
+- Target compile run #19 / ID 44781879101 passed on commit 3f189cb1ac65a764aec678893f1df857d113c815. Full Remote sketch compiled/linked and firmware artifact uploaded.
+- Corrected the application partition selection to `PartitionScheme=huge_app` for ESP32-S3 16MB flash/OPI PSRAM; workflow exports binaries.
+- Sketch 1,430,957 bytes (45% of 3,145,728-byte app partition); global RAM 178,136 bytes (54%, 149,544 bytes remaining). No C++ errors/warnings reported.
+- Build configuration is CI-verified for compile, but exact physical SKU/revision, LCD/touch/SD/Wi-Fi runtime and hardware API behavior remain unverified. This is not a release qualification.
+- Next: audit Wi-Fi/settings timer lifecycle, map import validation and renderer memory/cache behavior; then re-run target build after fixes.
