@@ -20,7 +20,7 @@ public:
     uint32_t rxCount() const { return rxCount_; }
     uint32_t rejectedDutyCount() const { return rejectedDutyCount_; }
 private:
-    static constexpr uint32_t EST_AIRTIME_MS=20; // conservative until measured
+    static constexpr uint32_t EST_AIRTIME_MS=25; // conservative until measured
     static constexpr uint32_t MAX_AIRTIME_PER_HOUR_MS=36000; // 1% band duty budget
     static constexpr uint8_t SUBPACKET_BYTES=32;
     Stream &uart_;
