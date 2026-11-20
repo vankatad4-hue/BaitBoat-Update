@@ -62,14 +62,3 @@ struct RadioDecodedPayload {
 bool radio_decodeHeartbeatPayload(const uint8_t payload[8], RadioDecodedPayload &out);
 bool radio_decodeAckPayload(const uint8_t payload[8], RadioDecodedPayload &out);
 bool radio_decodeTelemetryPayload(const uint8_t payload[8], RadioDecodedPayload &out);
-
-// Portable little-endian payload encoders. On invalid input, zero the output
-// and return false. These encode payloads only, not authenticated RadioFrames.
-bool radio_encodeHeartbeatPayload(uint8_t flags,uint8_t buildMajor,uint8_t out[8]);
-bool radio_encodeAckPayload(uint8_t result,uint8_t commandType,uint16_t commandId,uint8_t stopState,uint8_t interlockFlags,uint8_t out[8]);
-bool radio_encodeTelemetryStatusPayload(uint8_t mode,uint8_t stopState,uint8_t safetyFlags,uint8_t batteryPercent,uint8_t gpsFixType,uint8_t satellites,uint8_t out[8]);
-bool radio_encodeBatterySpeedPayload(uint16_t millivolts,uint16_t speedCmPerSecond,uint8_t out[8]);
-bool radio_encodeLatitudePayload(uint8_t sample,int32_t latitudeE7,uint16_t accuracyCm,uint8_t out[8]);
-bool radio_encodeLongitudePayload(uint8_t sample,int32_t longitudeE7,uint8_t out[8]);
-bool radio_encodeNavigationPayload(uint16_t headingCentidegrees,uint16_t speedCmPerSecond,uint8_t navigationStatus,uint8_t waypointIndex,uint8_t sample,uint8_t out[8]);
-bool radio_encodeSonarSummaryPayload(uint16_t depthCm,uint16_t rangeCm,uint8_t health,uint8_t alarmFlags,uint8_t sample,uint8_t out[8]);
