@@ -128,7 +128,7 @@ void loop()
     boatRadio_update();
 
     // Apply the latest telemetry; GPS fixes automatically expire after 2 seconds.
-    telemetryApplyToBoatState(boatState);
+    telemetryApplyToBoatState(boatState,millis());
 
     // Publish radio supervisor status to the UI.
     boatState.radioConnected = boatRadio_isConnected();
