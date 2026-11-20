@@ -137,3 +137,10 @@ Archive correction: the former packaging workflow regenerated version-named ZIPs
 - Added `.github/workflows/remote-host-tests.yml` to compile/run release guard, physical button scanner syntax, payload codec, ACK tracker and telemetry tests with strict compiler warnings.
 - Workflow trigger is branch push and PR to main on Remote source/test changes.
 - First CI outcome not yet observed. This workflow does not compile the complete ESP32/LVGL firmware.
+
+## Latest build preparation — 2026-11-20
+
+- User confirmed the exact Remote target: Waveshare ESP32-S3-Touch-LCD-4.3 Standard, SKU 25948.
+- Source compatibility audit added for LVGL 9.6 display adapter.
+- Arduino CLI target compile workflow committed with candidate pins. The run is not yet complete; no full Remote target build result is available.
+- Remote host CI has a known first-run failure: test fixture omitted fail-closed state fields. Corrected fixture committed, follow-up result pending.
