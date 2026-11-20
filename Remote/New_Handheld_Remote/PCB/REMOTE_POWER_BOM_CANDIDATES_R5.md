@@ -33,3 +33,16 @@
 | Testpoints | battery/rails/bus/analog | Access for bring-up |
 
 Controller/display 5V boost is on the Waveshare board (CS8501); external TPS61023 is fallback only. Onboard board load spec 5V/450mA and battery boost/charge current documentation must be bench-confirmed for this use.
+
+
+## LoRa backup radio addendum (R1)
+| Ref | Candidate | Function / notes |
+|---|---|---|
+| U_LORA | EBYTE E22-900T22S-V2 (SX1262 UART; candidate only) | EU868-capable family; 22dBm maximum, 3.3V UART, verify regional SKU and configure legal output power |
+| J_LORA | Module connector/footprint per exact module revision | 5V/GND/UART TX/RX/AUX/M0/M1; antenna uses matched 50Ω connector/coax |
+| C_LORA | 100µF + 10µF + 100nF | Local decoupling candidates; test supply transient |
+| ANT_LORA | 868MHz EU-band 50Ω antenna | RIGHT external antenna port; antenna gain, cable loss and EIRP/ERP compliance must be included |
+| Boat U_LORA | Matching module on boat | Required for redundant link; remote-only installation is not functional redundancy |
+| Boat ANT_LORA | 868MHz 50Ω antenna | Install separated from nRF antenna, motor wiring and metal obstructions |
+
+Supply from CS8501 5V rail is provisional. Simultaneous-load test first; separate boost if needed, never parallel converters.
