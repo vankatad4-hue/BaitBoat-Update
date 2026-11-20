@@ -1,4 +1,4 @@
-# Remote/Boat Telemetry and Command Contract R2
+# Remote/Boat Telemetry and Command Contract R3
 
 Status: design contract for integration; **not implemented or tested**. Both firmware sides must implement the same definitions before real control is enabled.
 
@@ -106,3 +106,11 @@ This low-rate summary is not raw CHIRP data and cannot render a fish-arch echogr
 - Subtype 5 is heading/navigation; subtype 6 is sonar summary only.
 - A portable payload decoder has been added to both source trees and host-tested. The decoder is not yet connected to the radio receive path or UI/ACK state.
 - HEARTBEAT wire payload remains inconsistent with the current sender scaffold; sender implementation must be updated to use the documented flags/build-major fields before integration.
+
+
+## R3 implementation status
+- Remote has strict payload decoding and authenticated receive dispatch for heartbeat, ACK and telemetry.
+- Remote ACK lifecycle is correlated by nonzero 16-bit action ID/type/session and link policy; accepted is intermediate, executed/rejected/timeout are distinct.
+- Remote telemetry updates are partial, locally timestamped, sample-paired for GNSS and freshness-limited. Only fresh primary-origin STOP/interlock status can set actuator readiness.
+- Session start is checked against the remote epoch and reserved bytes; sequence freshness is guarded per transport and cross-transport. Duplicate authenticated frames may update link health but do not update application state twice.
+- Boat telemetry/ACK generation and command execution/deduplication are not implemented. Session resync after boat restart without restarting the remote remains an open fail-closed limitation.
