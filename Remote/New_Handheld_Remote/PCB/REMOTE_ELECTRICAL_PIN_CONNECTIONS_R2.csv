@@ -47,3 +47,6 @@ Power,Protection,Q_REV,BAT_PROT,Reverse protection
 Power,Waveshare,J_BAT.1,BAT_PROT,Board battery positive,Polarity verify
 Power,Waveshare,J_BAT.2,GND,Board battery negative,Polarity verify
 Power,Converter,TPS63070,VOUT,RADIO_3V3,3.3V radio rail
+nRF24,Module,CE,NRF_CE,GPIO6 Sensor AD repurposed,Direct MCU GPIO; no sensor connected
+nRF24,Module,CSN,NRF_CSN,GPIO15 RS485 TX repurposed,Direct MCU GPIO; RS485 bus disconnected/driver disabled
+nRF24,Module,IRQ_N,NRF_IRQ_N,MCP23017 0x21 GPA1,Polling initially
