@@ -28,7 +28,7 @@ Motor/solenoid currents, battery/BMS, wiring/fuses, connector and pin assignment
 - Protected 1S4P Li-ion pack; charger excluded.
 - **5 V rail candidate adopted: TPS61023DRLR.** TI reference values: 1µH, 10µF input, 2×22µF output, 732k/100k feedback. Target 450mA continuous and 1A transient only; verify current, capacitance under bias, thermal, pinout and EN. No 1A continuous rating claimed.
 - **3.3 V radio rail:** TPS63070, 1.5µH candidate, 470k/150k feedback (3.3067V nominal), capacitors per TI baseline; radio bursts and effective C require tests.
-- Battery protection: BMS, 4A fast-acting fuse candidate, reverse P-MOS, ADC sense and NTC; exact parts pending.
+- Battery protection: BMS, 4A fast-acting fuse candidate, FDS6575 reverse P-MOS candidate (Drain=input, Source=protected output), ADC sense and NTC; exact parts pending.
 - At 3V loaded, estimates: about 1.20A combined continuous (5V/450mA and 3.3V/300mA at assumed 90% efficiencies); about 2.33A simultaneous transient (5V/1A at assumed 85% plus radio). Estimates only.
 - Native schematic, ERC, PCB, review and hardware bring-up remain incomplete.
 
@@ -36,10 +36,10 @@ Documents:
 - `Remote/New_Handheld_Remote/PCB/BOOST_CONVERTER_SELECTION_REVIEW_R2.md`
 - `Remote/New_Handheld_Remote/PCB/TPS61023_COMPONENT_CALCULATIONS_R1.md`
 - `Remote/New_Handheld_Remote/PCB/TPS61023_PIN_NET_MAP_R1.md`
-- `Remote/New_Handheld_Remote/PCB/BATTERY_INPUT_PROTECTION_DESIGN_R3.md`
-- `Remote/New_Handheld_Remote/PCB/POWER_SHEET_CAPTURE_SPEC_R1.md`
-- `Remote/New_Handheld_Remote/PCB/REMOTE_POWER_BOM_CANDIDATES_R1.md`
-- `Remote/New_Handheld_Remote/PCB/POWER_SCHEMATIC_NET_DRAFT_R4.md`
+- `Remote/New_Handheld_Remote/PCB/BATTERY_INPUT_PROTECTION_DESIGN_R4.md`
+- `Remote/New_Handheld_Remote/PCB/POWER_SHEET_CAPTURE_SPEC_R2.md`
+- `Remote/New_Handheld_Remote/PCB/REMOTE_POWER_BOM_CANDIDATES_R2.md`
+- `Remote/New_Handheld_Remote/PCB/POWER_SCHEMATIC_NET_DRAFT_R5.md`
 - `Remote/New_Handheld_Remote/PCB/TPS63070_PIN_NET_MAP_R3.md
 - `Remote/New_Handheld_Remote/PCB/TPS61023_COMPONENT_CALCULATIONS_R1.md`
 - `Remote/New_Handheld_Remote/PCB/TPS61023_PIN_NET_MAP_R1.md`
