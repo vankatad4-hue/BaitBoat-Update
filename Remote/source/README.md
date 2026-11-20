@@ -28,17 +28,14 @@ The project uses the LVGL 9 object model (`lv_display_*`, `lv_indev_*`, `lv_scre
 
 Open `Flytec_Remote.ino` from this folder. `Boat_menu_update.ino` was removed because it contained a second empty `setup()` and `loop()`.
 
-## Dual-radio architecture R2 (2026-11-20)
+## Dual-radio architecture R4 (2026-11-20)
 
-- **Primary:** nRF24L01+ PA/LNA, matching modules on remote and boat, 2.4GHz, 250kbps initial setting.
-- **Backup remote:** EBYTE E22-900T22S UART module candidate, EU868.
-- **Backup boat:** Heltec Wireless Tracker candidate's integrated SX1262, if exact revision/band confirmed; no extra E22 module by default.
-- Remote RIGHT antenna is LoRa 868MHz; LEFT antenna is nRF24 2.4GHz. Waveshare ESP32-S3 Wi-Fi/Bluetooth uses its onboard antenna.
-- LoRa PHY must be configured identically on remote E22 and boat's native SX1262; interoperability is not assumed. Backup is safety/low-rate traffic, no sonar, no bait/hook release or mission start.
-- Dual-link state machine, authenticated/replay-protected packets, duplicate suppression, failover hysteresis, command ACK/state confirmation and boat-local failsafe are specified but not implemented.
-- 500m remains an unvalidated target. Regulatory power/channel/duty-cycle and antenna gain/cable-loss compliance must be verified for Bulgaria/EU.
-- See `../docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R2.md`, `../docs/DUAL_RADIO_PROTOCOL_FIRMWARE_SPEC_R2.md`, and `../New_Handheld_Remote/PCB/REMOTE_HARDWARE_PIN_ASSIGNMENTS_R2.md`.
-
+- Primary nRF24L01+ PA/LNA, 2.4GHz, channel76, 250kbps, fixed 32-byte payload, PA_LOW initial.
+- Backup matching EBYTE E22-900T22S UART modules on remote and boat. Remote LoRa antenna RIGHT (868MHz), nRF antenna LEFT (2.4GHz). Wi-Fi/Bluetooth uses onboard antenna.
+- E22 channel18=868.125MHz, 62.5kbps air, 32-byte subpacket, 10dBm, transparent. This sub-band is 1% duty; default backup traffic ≤0.33Hz under 25ms estimate. Airtime and persistent duty accounting must be verified.
+- Remote E22 UART uses SC16IS750 I2C bridge @0x48. nRF uses direct CE GPIO6 / CSN GPIO15 provisional, SPI11/12/13 shared with TF; RS485 bus disconnected and Sensor AD unused.
+- LoRa is low-rate safety backup, no sonar; STOP/RETURN and limited steering only, releases and mission start blocked.
+- See the R3 dual-radio pairing and R2 hardware test-build docs.
 ## Current modules
 
 - `Flytec_Remote.ino`: application entry point; one joystick callback and one initialisation sequence.
@@ -102,9 +99,15 @@ Do not allocate any of the above pins to joystick inputs, buttons or radio funct
 
 The uploaded `ESP32-S3-Touch-LCD-4.3-Demo(1).zip` was inspected. Its `Arduino/examples/09_lvgl_Porting/09_lvgl_Porting.ino` uses `Board`, `board->init()`, `board->begin()`, `board->getLCD()` and `board->getTouch()`. The matching official `esp_panel_board_custom_conf.h` is included in this project folder so the library can detect and configure the standard Waveshare 4.3-inch board from the project directory (which takes priority over the library defaults). Its accompanying README explicitly targets LVGL 8.3.x, and its `lvgl_v8_port.cpp/.h` use removed LVGL 8 APIs. Those LVGL 8 port files are therefore NOT copied into this LVGL 9.6 project. Instead, `display_port.cpp` uses the board-level API from the uploaded example and the LVGL 9.6 `lv_display_*` / `lv_indev_*` APIs. The LVGL 9.6 draw buffer is a 40-row RGB565 partial buffer allocated in PSRAM. Touch reads the first GT911 point. The LVGL handler is serviced from `displayPort_loop()` every ~5 ms; no second FreeRTOS LVGL task is started.
 
-## Not ready for boat operation
+## Hardware/radio integration status — development only
 
-This is a source consolidation and API-alignment draft, not a verified firmware release. The C++ source files passed a syntax-only check against lightweight Arduino/LVGL interface stubs; this is not a substitute for compiling against the actual LVGL 9.6.0 library and Waveshare board package. GPIO assignments, joystick electrical levels, radio pins/protocol, telemetry authentication/acknowledgements, dual-link failover, boat-side watchdog and motor/solenoid interlocks remain unimplemented. Do not connect it to motor drivers or operate the boat.
+This branch contains real protocol/transport scaffolding but is not a tested firmware release:
+- nRF24 driver class and E22 UART driver are present. nRF pins are provisional and not electrically confirmed.
+- Remote SC16IS750 bridge and E22 profile configuration/readback are integrated at startup. The E22 module may be configured, but TX and authenticated link are disabled because secure key provisioning returns false.
+- CRC/HMAC packet codec, command codec, dual-link manager, UI link state, boat receive/queue scaffold, duplicate-action cache and failsafe evaluator are added.
+- No session negotiation, key provisioning, application ACK, telemetry scheduler, command execution, motor/solenoid integration, GNSS/autopilot failsafe integration or hardware compile/test is complete.
+- Joystick ADC reader still returns false; calibration is RAM-only; display/map/sonar remain separate incomplete work.
+- **Do not connect to motor/solenoid power or operate the boat.** The first tests are display-only and isolated radio bench sketches.
 
 
 ### Display adapter implementation notes
@@ -189,7 +192,7 @@ Do this before connecting any joystick, radio, motor driver or solenoid:
 ### Safety status
 
 The remote is still a non-operational development build:
-- nRF24L01+ PA/LNA radio transport is a placeholder and always reports disconnected. The selected starting data rate is 250 kbps; pins, channel and packet protocol are not yet assigned.
+- nRF24 transport is present but pin assignments remain provisional and key provisioning is unavailable; it cannot establish an authenticated connection.
 - Joystick ADC pin assignments are intentionally absent; the hardware reader returns `false`.
 - Joystick calibration and the radio/STOP acknowledgement path are not connected to a boat.
 - No boat-side watchdog, authenticated telemetry, motor control, or solenoid interlocks are implemented.
@@ -201,7 +204,7 @@ Do not connect this code to the boat's motor or solenoid power stages. The first
 
 The remote-side GPS display and telemetry model have been extended. `BoatTelemetry` includes fix type, satellite count and horizontal accuracy; telemetry receipt is timestamped; GPS is considered usable only with a 3D fix, valid coordinate ranges and telemetry no older than 2 seconds. The main map panel now displays coordinates and GPS quality and shows a boat marker only for a fresh fix.
 
-**The map is not yet a real geographic map.** The current viewport is a diagnostic grid, explicitly labelled as missing offline map data. The next step is to mount the Waveshare microSD interface and add an Arduino-compatible offline RGB565 tile loader. The nRF24L01+ PA/LNA transport is still a placeholder, so live GPS data is not yet received by this remote application. See `docs/GPS_AND_OFFLINE_MAP_PLAN.md`.
+**The map is not yet a real geographic map.** The current viewport is a diagnostic grid, explicitly labelled as missing offline map data. The next step is to mount the Waveshare microSD interface and add an Arduino-compatible offline RGB565 tile loader. The nRF24/E22 receive transport is not authenticated/connected, so live GPS data is not yet received by this remote application. See `docs/GPS_AND_OFFLINE_MAP_PLAN.md`.
 
 
 ## Offline map storage update
@@ -257,7 +260,7 @@ The detailed, consolidated record of the whole Flytec V080 retrofit—including 
 
 ### Current functional boundary
 
-The current archive remains a remote-side development baseline, not boat-ready firmware. The radio transport, joystick ADC hardware reader, live GPS packet reception, boat-side GPS/compass firmware, CHIRP sonar hardware interface, real geographic LVGL map renderer, waypoint persistence, and boat-side autopilot/failsafe remain unimplemented. Sonar preferences are local only. The visible map is still a diagnostic grid. Backlight supports ON/OFF only. Consult the master status document before assuming any planned feature is operational.
+The current archive remains a remote-side development baseline, not boat-ready firmware. Radio key/session/ACK and boat command execution, joystick ADC hardware reader, live GPS packet reception, boat-side GPS/compass firmware, CHIRP sonar hardware interface, real geographic LVGL map renderer, waypoint persistence, and boat-side autopilot/failsafe remain unimplemented. Sonar preferences are local only. The visible map is still a diagnostic grid. Backlight supports ON/OFF only. Consult the master status document before assuming any planned feature is operational.
 
 
 ## Latest hardware architecture update — ver003
@@ -279,10 +282,10 @@ This release adds documentation only. Radio and joystick inputs remain non-opera
 
 
 ## Hardware design revision R2
-- Added pin assignment proposal: `New_Handheld_Remote/PCB/REMOTE_HARDWARE_PIN_ASSIGNMENTS_R2.md`; nRF CSN direct GPIO6 candidate, CE through MCP23017 only for bench timing validation; LoRa E22 UART via SC16IS750 I2C-UART bridge @0x48 to avoid GPIO15/16 RS485 conflict. ADC addresses changed to 0x4A/0x4B. Exact physical header crosswalk remains pending.
+- Added pin proposal: `New_Handheld_Remote/PCB/REMOTE_HARDWARE_PIN_ASSIGNMENTS_R2.md`; nRF CE GPIO6, CSN GPIO15, SPI11/12/13; E22 via SC16IS750 @0x48; ADC addresses0x4A/0x4B. Physical crosswalk/continuity remains pending.
 - Added detailed schematic sheet spec, pin connections CSV, test build and BOM R2. Native KiCad capture/ERC/PCB still not completed.
 - Revised remote envelope target 300×210×70mm; physical fit check is required.
-- LoRa airtime/profile and Bulgarian/EU legality must be checked; initial backup command cadence is capped at 1Hz in software policy.
+- E22 channel18 868.125MHz is 1% duty sub-band; 25ms estimate, 3s TX interval. Persistent airtime counter and Bulgarian/EU legality are not finalized.
 
 
 ## R3 LoRa hardware transport scaffold
@@ -292,7 +295,16 @@ This release adds documentation only. Radio and joystick inputs remain non-opera
 - Backup control rate is now 0.5Hz to fit the initial 20ms airtime estimate on the 1% channel. This estimate must be measured and limiter persisted before field use.
 - nRF24 primary hardware transport still not implemented.
 
-- nRF24 transport implementation is present in `nrf24_link.*` but disabled by fail-closed pin defaults (-1); hardware CE/CSN pin assignment and RF24 library version must be confirmed. Shared SPI and SD arbitration are not tested.
+- nRF24 transport implementation is present in `nrf24_link.*`; provisional CE6/CSN15/channel76 and SPI11/12/13. RF24 library version, physical crosswalk and shared SPI/SD arbitration remain untested.
 - E22 driver currently uses a 25ms airtime estimate and 1% channel budget in RAM. Backup command interval is 3s. Airtime persistence across reboot is not implemented, so it is lab-only.
 
-- R3 nRF pin defaults: CE GPIO6 (Sensor AD repurposed), CSN GPIO15 (RS485 TX path disabled/isolated), shared SPI GPIO11/12/13, channel76. IRQ routes to MCP23017 0x21 GPA1. These are provisional bench assignments pending board crosswalk and continuity verification.
+- R3 nRF test pins: CE GPIO6 (Sensor AD unused), CSN GPIO15 (RS485 bus disconnected), SPI11/12/13, channel76. IRQ routes to MCP23017 0x21 GPA1. Verify crosswalk/continuity.
+
+
+## R4 current code inventory
+- nRF transport: `nrf24_link.*` (non-blocking TX status and bounded RX queue; pin setup provisional).
+- E22 transport: `e22_uart_link.*` (module config/readback, 32-byte frame parser/queue, 1% RAM-only airtime guard).
+- SC16 bridge: `sc16is750_bridge.*` (I2C UART, GPIO mode/reset/AUX, FIFO access).
+- Packet/auth: `radio_protocol.*`, `radio_command_codec.*`, `radio_key_store.*` (key store deliberately fails closed).
+- LinkManager/UI: primary/backup/degraded/no-link/recovery and limited backup command policy.
+- Boat-side sources: `boat_dual_radio_port.*`, `boat_radio_safety.*`; no actuator integration.
