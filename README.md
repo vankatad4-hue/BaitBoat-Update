@@ -14,7 +14,7 @@ Check relevant repository files first; implement approved changes; update docume
 - Retain Flytec V080 hull, 12V 550 brushed motors, battery indicator and main switch; replace control electronics.
 - Boat controller: Heltec Wireless Tracker V1.2 (ESP32-S3 + UC6580 GNSS) candidate.
 - Remote: Waveshare ESP32-S3-Touch-LCD-4.3 Standard, 800×480, LVGL 9.6.0, Arduino IDE.
-- Radio: dual link — primary nRF24L01+ PA/LNA 2.4GHz; backup remote E22 UART LoRa, boat integrated Heltec Tracker SX1262 candidate; PHY interop and 500m range unvalidated.
+- Radio: dual link — primary nRF24L01+ PA/LNA 2.4GHz; backup matching E22-900T22S UART LoRa modules on both endpoints. 500m range unvalidated.
 - Motor driver: Cytron MDD20A candidate, current validation required.
 - Sonar: CHIRP echogram/fish-arch module; selection/integration pending.
 
@@ -66,4 +66,9 @@ Flytec_Boat_verXXX.zip and Flytec_Remote_verXXX.zip. Never overwrite prior relea
 ## Hardware/software work branch
 A dedicated implementation branch `hardware-ready-dual-radio-r1` contains R2 test-build electrical specs, pin connections, revised enclosure envelope, packet codec and dual-link supervisor scaffold. Boat uses the integrated SX1262 candidate rather than a duplicate LoRa module by default. Hardware remains non-fabrication-ready until GPIO crosswalk, KiCad/ERC/DRC, motor current, solenoid current and RF compliance/interoperability gates pass.
 
-- Dual-radio R3 pairing: identical E22 UART modules on both endpoints for initial test; Tracker's integrated SX1262 is not used for this link unless interoperability is verified. See `Remote/docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R3.md`.
+- Dual-radio R3 pairing: identical E22 UART modules on both endpoints; Tracker's integrated SX1262 is unused in this initial test configuration. See `Remote/docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R3.md`.
+
+## Current implementation snapshot
+- Remote software now includes HMAC/CRC packet codec, command decoder, failover manager, E22 driver with SC16IS750 I2C-UART bridge, and nRF24 transport class. E22 configuration/readback is integrated at startup; nRF pin candidate CE6/CSN15, SPI11/12/13.
+- Secure key provisioning is deliberately not implemented; no authenticated link is accepted and command TX fails closed. E22 airtime accounting is RAM-only, so it is lab-only. Boat receive port and dedupe/failsafe helpers are scaffolds, not actuator integration.
+- Detailed test-build specs and dedicated E22 bench sketches are on development branch `hardware-ready-dual-radio-r1`; no release ZIP or native KiCad schematic has been produced.
