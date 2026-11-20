@@ -52,3 +52,10 @@ Do not connect motor/solenoid power or operate boat. Hardware pins, power, RF co
 Read **[Continuation Checkpoint VER001](docs/CONTINUATION_CHECKPOINT_VER001.md)** first when continuing work in another chat. It consolidates selected architecture, current source/UI work, blockers, verification status and ordered next tasks.
 
 Latest source/UI work is unreleased ver029 development; Remote marker 028 and Boat marker 014 remain unchanged. The branch ZIPs are unverified snapshots. Workflow #880 previously succeeded and version-archive preservation is guarded by marker changes; documentation sync runs #888 and #889 subsequently succeeded; latest #889. No complete ESP32 firmware compile, LVGL Pro render, PCB ERC/DRC or hardware test is confirmed.
+
+
+## Current development verification (2026-11-20)
+- Remote target CI compile #19 passed: https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/44781879101. Full compile/link and artifact upload; huge_app partition selected.
+- Build usage: 1,430,957 bytes firmware (45% app); 178,136 bytes globals (54%, 149,544 bytes remaining). No C++ errors or warnings reported.
+- Host tests and ZIP workflow passed on previous firmware-source commit; current change is build workflow/documentation only. Not hardware tested.
+- Continue from docs/CONTINUATION_CHECKPOINT_VER001.md; next task is runtime timer and offline-map import/renderer safety audit. Boat is still a non-operational scaffold.
