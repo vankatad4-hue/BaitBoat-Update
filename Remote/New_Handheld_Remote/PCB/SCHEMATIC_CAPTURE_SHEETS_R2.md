@@ -139,3 +139,9 @@ Grounded RF keepout around connector/feed. Do not run high-speed display/SD or s
 - CSN=GPIO15 RS485 TX path repurposed; RS485 cable disconnected and transceiver disabled/inactive.
 - SPI=GPIO11/12/13 shared with TF; initialize explicit pin mapping, test SPI arbitration.
 - IRQ_N=U_RADIO_IO GPA1; poll initially.
+
+
+## E22 supply net correction R4
+- E22 VCC=CS8501 5V branch (LORA_5V), with local bulk/ceramic bypass. The datasheet states 5V is needed to guarantee output power; 3.3V is logic only for UART/M0/M1/AUX.
+- E22 UART TX/RX and mode/status GPIO remain 3.3V logic. Never feed 5V UART into ESP/SC16 pins.
+- Reserve 150mA TX peak for initial power budget; actual 10dBm draw to be measured.
