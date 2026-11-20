@@ -1,3 +1,5 @@
+**SUPERSEDED by R3:** The initial prototype uses matching EBYTE E22-900T22S UART LoRa modules at remote and boat. Tracker integrated SX1262 is unused.
+
 # Boat LoRa hardware decision R2 — use the Tracker's integrated SX1262
 
 ## Correction to R1
