@@ -32,7 +32,7 @@ Remote source includes nRF/E22 transports, SC16 bridge, CRC/HMAC protocol, comma
 - [Remote electrical pin CSV R4](New_Handheld_Remote/PCB/REMOTE_ELECTRICAL_PIN_CONNECTIONS_R4.csv)
 - [Mechanical envelope R4](New_Handheld_Remote/MECHANICAL/REMOTE_MECHANICAL_ENVELOPE_R4.md)
 - [Radio architecture R3](../docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R3.md)
-- [Protocol spec R2](../docs/DUAL_RADIO_PROTOCOL_FIRMWARE_SPEC_R2.md)
+- [Protocol spec R2](../docs/DUAL_RADIO_PROTOCOL_FIRMWARE_SPEC_R3.md)
 
 ## Test sketches
 - [Remote nRF bench test](hardware_test/nRF24_Bench/nRF24_Bench.ino)
