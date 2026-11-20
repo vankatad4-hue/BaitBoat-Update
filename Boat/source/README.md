@@ -5,7 +5,7 @@ Updated 2026-11-20. The repository is canonical; this is not operational firmwar
 ## Release naming
 - ZIP: `Flytec_Boat_verXXX.zip`
 - Preserve all older releases.
-- Package version marker: `releases/VERSION` (currently `005`).
+- Package version marker: `releases/VERSION` (currently `006`).
 - Increment by one for every modification included in a distributed package; see root `docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Current controller and radios
