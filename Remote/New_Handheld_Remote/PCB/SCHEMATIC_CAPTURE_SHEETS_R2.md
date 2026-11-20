@@ -1,3 +1,5 @@
+# SUPERSEDED by SCHEMATIC_CAPTURE_SHEETS_R4.md
+
 # Remote Electrical Schematic Capture R2 — prototype interface design
 
 **Revision intent:** convert R1 net-level concepts into explicit connector, component, address and test requirements. This remains a schematic specification; no native KiCad symbols, ERC or PCB DRC has been run.
