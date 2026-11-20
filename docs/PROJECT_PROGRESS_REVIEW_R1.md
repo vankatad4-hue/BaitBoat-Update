@@ -131,3 +131,9 @@ Archive correction: the former packaging workflow regenerated version-named ZIPs
 - E22 duty accounting is estimated and RAM-only, so reboot reset and actual airtime/regulatory verification remain open.
 - ONLINE map source is a preference only; no renderer/provider is implemented and availability returns false.
 - This audit does not claim a build or test run. Target compilation is the next gate after exact hardware and dependencies are pinned.
+
+
+## Remote host-test CI added — 2026-11-20
+- Added `.github/workflows/remote-host-tests.yml` to compile/run release guard, physical button scanner syntax, payload codec, ACK tracker and telemetry tests with strict compiler warnings.
+- Workflow trigger is branch push and PR to main on Remote source/test changes.
+- First CI outcome not yet observed. This workflow does not compile the complete ESP32/LVGL firmware.
