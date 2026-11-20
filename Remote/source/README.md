@@ -51,3 +51,7 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 
 ## Canonical project record
 Read `../docs/PROJECT_MASTER_STATUS.md` for the full project state, requirements, hardware selections, blockers and release gates.
+
+## Joystick subsystem update
+
+`joystick_adc.cpp` reads four ADS1115 inputs (provisional 0x4A/AIN0–AIN3). The main sketch uses this reader; failed reads suppress stick output. Calibration and control preferences are stored in ESP32 NVS and only a fully validated endpoint capture sets the calibration-valid flag. Controls Settings exposes layout, override, dead-zone and calibration entry. See `../docs/JOYSTICK_ADC_INTEGRATION_R1.md`.
