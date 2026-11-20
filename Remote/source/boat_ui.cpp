@@ -322,37 +322,64 @@ static void mapManagerOpenEvent(lv_event_t *event){if(lv_event_get_code(event)!=
 // CREATE SONAR PANEL
 // --------------------------------------------------
 
+// Static visual-only echogram prototype. Every arch is marked DEMO; no sonar
+// measurements are fabricated or connected to boat telemetry.
+static lv_obj_t *sonarPlot = nullptr;
+static lv_obj_t *sonarStatus = nullptr;
+
+static void sonarLine(lv_obj_t *parent, const lv_point_t *pts, uint16_t n,
+                      lv_color_t color, uint8_t width)
+{
+    lv_obj_t *line = lv_line_create(parent);
+    lv_line_set_points(line, pts, n);
+    lv_obj_set_style_line_color(line, color, LV_PART_MAIN);
+    lv_obj_set_style_line_width(line, width, LV_PART_MAIN);
+    lv_obj_set_style_line_rounded(line, true, LV_PART_MAIN);
+}
+
 static void createSonarPanel()
 {
-    // Create the sonar panel on the right.
     sonarPanel = createPanel(contentPanel, 400, 5, 385, 315);
+    sonarTitle = createLabel(sonarPanel, "СОНАР • CHIRP", 12, 8);
+    createLabel(sonarPanel, "ДЪЛБОЧИНА  --.- m", 12, 30);
 
-    // Create the sonar heading.
-    sonarTitle = createLabel(
-        sonarPanel,
-        "СОНАР • CHIRP",
-        12,
-        10
-    );
+    sonarPlot = lv_obj_create(sonarPanel);
+    lv_obj_set_pos(sonarPlot, 42, 52);
+    lv_obj_set_size(sonarPlot, 330, 210);
+    lv_obj_set_style_bg_color(sonarPlot, lv_color_hex(0x06101B), LV_PART_MAIN);
+    lv_obj_set_style_border_width(sonarPlot, 1, LV_PART_MAIN);
+    lv_obj_set_style_border_color(sonarPlot, lv_color_hex(0x28618A), LV_PART_MAIN);
+    lv_obj_set_style_pad_all(sonarPlot, 0, LV_PART_MAIN);
+    lv_obj_clear_flag(sonarPlot, LV_OBJ_FLAG_SCROLLABLE);
 
-    // Add a placeholder until sonar integration is implemented.
-    createLabel(
-        sonarPanel,
-        "CHIRP ЕХОГРАМА — МОДУЛЪТ НЕ Е СВЪРЗАН",
-        35,
-        155
-    );
+    // Horizontal depth guides.
+    static const lv_point_t h0[]={{0,0},{329,0}}, h1[]={{0,52},{329,52}},
+      h2[]={{0,104},{329,104}}, h3[]={{0,156},{329,156}}, h4[]={{0,208},{329,208}};
+    const lv_color_t grid=lv_color_hex(0x244258);
+    sonarLine(sonarPlot,h0,2,grid,1); sonarLine(sonarPlot,h1,2,grid,1);
+    sonarLine(sonarPlot,h2,2,grid,1); sonarLine(sonarPlot,h3,2,grid,1);
+    sonarLine(sonarPlot,h4,2,grid,1);
+    static const lv_point_t v0[]={{0,0},{0,208}},v1[]={{82,0},{82,208}},
+      v2[]={{164,0},{164,208}},v3[]={{246,0},{246,208}},v4[]={{329,0},{329,208}};
+    sonarLine(sonarPlot,v0,2,grid,1);sonarLine(sonarPlot,v1,2,grid,1);
+    sonarLine(sonarPlot,v2,2,grid,1);sonarLine(sonarPlot,v3,2,grid,1);
+    sonarLine(sonarPlot,v4,2,grid,1);
 
-    // Allow the user to expand the sonar.
+    // Example fish-arch traces, deliberately illustrative only.
+    static const lv_point_t archA[]={{34,144},{62,120},{92,94},{124,82},{153,94},{184,120},{212,145}};
+    static const lv_point_t archB[]={{168,188},{189,165},{212,142},{236,128},{258,142},{279,165},{298,188}};
+    static const lv_point_t bottom[]={{8,198},{60,195},{110,200},{160,194},{210,199},{260,196},{320,201}};
+    sonarLine(sonarPlot,archA,7,lv_color_hex(0x35E3B0),2);
+    sonarLine(sonarPlot,archB,7,lv_color_hex(0xF5C84C),2);
+    sonarLine(sonarPlot,bottom,7,lv_color_hex(0xE67E45),2);
+
+    createLabel(sonarPanel,"0",8,52); createLabel(sonarPanel,"5",8,103);
+    createLabel(sonarPanel,"10",4,155); createLabel(sonarPanel,"15",4,207);
+    createLabel(sonarPanel,"DEMO • НЕ Е РЕАЛЕН СОНАР",12,270);
+    sonarStatus=createLabel(sonarPanel,"МОДУЛ / ДАННИ: НЕ Е СВЪРЗАН",12,289);
+
     lv_obj_add_flag(sonarPanel, LV_OBJ_FLAG_CLICKABLE);
-
-    // Register the sonar touch event.
-    lv_obj_add_event_cb(
-        sonarPanel,
-        sonarTouchEvent,
-        LV_EVENT_CLICKED,
-        nullptr
-    );
+    lv_obj_add_event_cb(sonarPanel, sonarTouchEvent, LV_EVENT_CLICKED, nullptr);
 }
 
 // Touchscreen mode controls share the same command path as physical keys.
