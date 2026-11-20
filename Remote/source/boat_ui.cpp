@@ -293,7 +293,8 @@ static void mapSourceCycleEvent(lv_event_t *event)
     if (mapSourceLabel) lv_label_set_text(mapSourceLabel, mapSource_modeLabel(mode));
     updateBoatScreen(boatState);
 }
-static void mapManagerOpenEvent(lv_event_t *event){if(lv_event_get_code(event)!=LV_EVENT_CLICKED)return;lv_obj_add_flag(headerPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(contentPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(footerPanel,LV_OBJ_FLAG_HIDDEN);mapManagerUI_open(mainScreen,boatState.latitude,boatState.longitude,boatState.gpsValid,[]{lv_obj_remove_flag(headerPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_remove_flag(contentPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_remove_flag(footerPanel,LV_OBJ_FLAG_HIDDEN);});}\nstatic void createMapPanel()
+static void mapManagerOpenEvent(lv_event_t *event){if(lv_event_get_code(event)!=LV_EVENT_CLICKED)return;lv_obj_add_flag(headerPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(contentPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(footerPanel,LV_OBJ_FLAG_HIDDEN);mapManagerUI_open(mainScreen,boatState.latitude,boatState.longitude,boatState.gpsValid,[]{lv_obj_remove_flag(headerPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_remove_flag(contentPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_remove_flag(footerPanel,LV_OBJ_FLAG_HIDDEN);});}
+static void createMapPanel()
 {
     mapPanel=createPanel(contentPanel,5,5,385,315);
     mapTitle=createLabel(mapPanel,"КАРТА",10,8);
@@ -638,14 +639,18 @@ void toggleSonarPanel()
         // Expand sonar to fill the content area.
         lv_obj_set_pos(sonarPanel, 5, 5);
 
-        lv_obj_set_size(sonarPanel, 780, 315);\n        lv_obj_set_size(sonarPlot, 720, 220);\n        drawSonarPlot(720,220);
+        lv_obj_set_size(sonarPanel, 780, 315);
+        lv_obj_set_size(sonarPlot, 720, 220);
+        drawSonarPlot(720,220);
     }
     else
     {
         // Restore the original sonar dimensions.
         lv_obj_set_pos(sonarPanel, 400, 5);
 
-        lv_obj_set_size(sonarPanel, 385, 315);\n        lv_obj_set_size(sonarPlot, 330, 210);\n        drawSonarPlot(330,210);
+        lv_obj_set_size(sonarPanel, 385, 315);
+        lv_obj_set_size(sonarPlot, 330, 210);
+        drawSonarPlot(330,210);
 
         // Show map again.
         lv_obj_remove_flag(
