@@ -37,7 +37,7 @@ void NRF24Link::update() {
    radio_.whatHappened(txOk,txFail,rxReady);
    if(txOk || txFail) {
      txPending_=false;lastTxSuccess_=txOk;
-     if(txFail) ++txFailCount_;
+     if(txFail) { ++txFailCount_; radio_.flush_tx(); }
      radio_.startListening();
    }
    if(rxReady && radio_.available()) {
