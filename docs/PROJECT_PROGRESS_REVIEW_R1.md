@@ -113,3 +113,9 @@ No propulsion, release, live battery charging in the proposed enclosure, or wate
 
 ## Remote ver027 update
 - Waypoint capacity increased to 16 (NVS) plus Home. SD/microSD card is designated for offline map packs. Existing map tile reader path documented; no renderer/map pack generator yet. Target compile, SD-card test and NVS test remain pending.
+
+
+## Updated checkpoint summary — 2026-11-20
+The latest UI development ver029.9–ver029.13 is recorded in Remote consolidated changelog VER021 and `Remote/docs/UI_BUILD_VER029_9.md`. It includes a Bulgarian main UI, mission planner 16 slots, calibration/settings/map-manager polish and a static DEMO echogram; none is LVGL Pro-rendered or target-compiled. The current canonical restart document is `CONTINUATION_CHECKPOINT_VER001.md`.
+
+Archive correction: the former packaging workflow regenerated version-named ZIPs during routine pushes. Existing branch ZIPs must be treated as unverified snapshots. Guarded workflow run #880 succeeded, but this does not restore historical release integrity. A clean release-marker bump/package/hash/inspection is required before issuing a release.
