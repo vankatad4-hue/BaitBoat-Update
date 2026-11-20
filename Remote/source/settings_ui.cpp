@@ -85,6 +85,12 @@ static void stopWiFiUiTimers()
         lv_timer_del(wifiConnectTimer);
         wifiConnectTimer = nullptr;
     }
+    if (mapStatusTimer != nullptr)
+    {
+        lv_timer_del(mapStatusTimer);
+        mapStatusTimer = nullptr;
+    }
+    mapWiFiLabel = nullptr;
 }
 
 // Hide the virtual keyboard without deleting the entered text.
