@@ -26,3 +26,10 @@ MDD20A remains a candidate for bench testing, not a confirmed final fit. The car
 - Low-voltage carrier remains measured/provisional 77×79×14mm; Heltec Tracker controller board and E22/nRF radio modules must be placed with connector/coax and thermal clearances, likely with external module/harness where needed.
 - The E22 module requires a separate 5V electronics branch; the 3S battery pack is not connected directly to E22 VCC. nRF module uses 3.3V rail.
 - MDD20A still cannot be placed within the 77×79 carrier area. Use separate mount or revise compartment dimensions. Motor current is unknown, so don't replace it with a low-current board without stall/start tests.
+
+
+## Candidate MDD20A verified specifications
+- Manufacturer datasheet: 6–30V input,20A continuous per channel,60A peak (overcurrent limit/temperature-dependent),PWM/DIR compatible with3.3V logic, no reverse-polarity protection.
+- PCB outline88.90×78.74mm; four3mm mounting holes. This is larger than the measured77×79mm carrier envelope in the long dimension. It must be mounted separately or the compartment/PCB envelope revised.
+- Datasheet: https://www.cytron.io/c-industry/p-20amp-6v-30v-dc-motor-driver-2-channels
+- MDD20A remains a candidate only until actual 550-motor startup/stall current and thermal behavior are measured; BMS20A reported is a separate current limit.
