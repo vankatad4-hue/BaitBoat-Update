@@ -7,4 +7,4 @@
 - `part` modes: front, rear, buttons, assembly, internal.
 - Button cap plate: 11 utility caps + 4 release caps + 1 OK cap.
 
-**Not manufacturing-ready:** actual board/switch/joystick/battery/module dimensions, connector access, PCB mounting, RF clearance, battery restraints, charging/thermal design, CAD fit, tolerance, print orientation and STL export remain unvalidated. The corrected SCAD source is committed; generated STL/preview assets must be rebuilt from it.
+**Not manufacturing-ready:** actual board/switch/joystick/battery/module dimensions, connector access, PCB mounting, RF clearance, battery restraints, charging/thermal design, CAD fit, tolerance, print orientation and STL export remain unvalidated. The corrected SCAD source is committed; front/rear/button meshes were locally checked using a reconstructed mirror; repository workflow exports and assembly/internal previews remain pending verification.
