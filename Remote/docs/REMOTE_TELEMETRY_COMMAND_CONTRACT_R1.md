@@ -1,4 +1,4 @@
-# Remote/Boat Telemetry and Command Contract R1
+# Remote/Boat Telemetry and Command Contract R2
 
 Status: design contract for integration; **not implemented or tested**. Both firmware sides must implement the same definitions before real control is enabled.
 
@@ -71,17 +71,8 @@ Latitude and longitude records must be paired by sample counter; discard mismatc
 - `payload[0]` = 6.
 - `payload[1..2]` = depth cm; 0xFFFF unknown.
 - `payload[3..4]` = sonar range cm; 0xFFFF unknown.
-- `payload[5]` = sonar health/status.
-- `payload[6]` = fish/alarm summary bitfield.
-- `payload[7]` = sample counter.
-This low-rate summary is not raw CHIRP data and cannot render a fish-arch echogram.
-
-### TELEMETRY subtype 6 — sonar summary (not echogram)
-- `payload[0]` = 5.
-- `payload[1..2]` = depth cm; 0xFFFF unknown.
-- `payload[3..4]` = sonar range cm; 0xFFFF unknown.
-- `payload[5]` = sonar health/status.
-- `payload[6]` = fish/alarm summary bitfield.
+- `payload[5]` = sonar health: 0 unknown, 1 healthy, 2 degraded, 3 fault.
+- `payload[6]` = alarm flags: bit0 fish/alarm indication, bit1 shallow-water alarm, bit2 bottom-lock indication, bit3 reserved for future; bits4–7 reserved zero.
 - `payload[7]` = sample counter.
 This low-rate summary is not raw CHIRP data and cannot render a fish-arch echogram.
 
@@ -108,3 +99,10 @@ This low-rate summary is not raw CHIRP data and cannot render a fish-arch echogr
 - Because 8-byte payloads are tight, telemetry must be sent as grouped frames. Coordinate precision above is deliberately inadequate for precise waypoint arrival; design a multi-frame higher-precision coordinate/waypoint record before implementing autopilot.
 - Command IDs are currently truncated to 16 bits by the codec. The dedupe cache must use session + 16-bit ID and correctly handle wrap; do not compare IDs as ordinary signed integers.
 - Implement common protocol definitions in shared code and add unit tests for each decoder and malformed/unknown payload.
+
+
+## R2 cross-review correction
+- Removed the duplicated sonar subsection that incorrectly repeated subtype 6 with subtype 5 values.
+- Subtype 5 is heading/navigation; subtype 6 is sonar summary only.
+- A portable payload decoder has been added to both source trees and host-tested. The decoder is not yet connected to the radio receive path or UI/ACK state.
+- HEARTBEAT wire payload remains inconsistent with the current sender scaffold; sender implementation must be updated to use the documented flags/build-major fields before integration.
