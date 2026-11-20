@@ -31,7 +31,7 @@ jobs:
       - name: Checkout branch snapshot
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref || github.ref }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: true
       - name: Read archive versions
@@ -48,19 +48,24 @@ jobs:
       - name: Detect release-version bump
         id: release
         shell: bash
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
         run: |
           set -euo pipefail
-          if [[ "${GITHUB_EVENT_NAME}" != "push" ]]; then
-            echo "version_changed=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          if git diff --quiet HEAD^ HEAD -- Remote/releases/VERSION Boat/releases/VERSION; then
-            echo "version_changed=false" >> "$GITHUB_OUTPUT"
-            echo "No release marker changed; archive preservation commit is disabled."
-          else
-            echo "version_changed=true" >> "$GITHUB_OUTPUT"
-            echo "Release marker changed; versioned archive may be committed."
-          fi
+          for side in Remote Boat; do
+            key="${side,,}"
+            changed=false
+            if [[ "$GITHUB_EVENT_NAME" == push && "$BEFORE_SHA" =~ ^[0-9a-f]{40}$ ]] && git cat-file -e "$BEFORE_SHA^{commit}" 2>/dev/null; then
+              if ! git diff --quiet "$BEFORE_SHA" HEAD -- "$side/releases/VERSION"; then
+                old="$(git show "$BEFORE_SHA:$side/releases/VERSION" | tr -d '\r\n ')"
+                new="$(tr -d '\r\n ' < "$side/releases/VERSION")"
+                [[ "$old" =~ ^[0-9]{3}$ && "$new" =~ ^[0-9]{3}$ ]]
+                [[ $((10#$new)) -eq $((10#$old + 1)) ]] || { echo "::error::$side version must increase by exactly one"; exit 1; }
+                changed=true
+              fi
+            fi
+            echo "$key=$changed" >> "$GITHUB_OUTPUT"
+          done
       - name: Build archives and checksums
         shell: bash
         run: |
@@ -78,42 +83,45 @@ jobs:
           unzip -tq "out/Flytec_Remote_ver${REMOTE_VERSION}.zip"
           unzip -tq "out/Flytec_Boat_ver${BOAT_VERSION}.zip"
           sha256sum out/*.zip | tee "out/SHA256SUMS_ver${REMOTE_VERSION}_${BOAT_VERSION}.txt"
-      - name: Preserve versioned archives in branch (push events only)
-        if: github.event_name == 'push' && steps.release.outputs.version_changed == 'true'
+      - name: Preserve immutable bumped archives (push events only)
+        if: github.event_name == 'push' && (steps.release.outputs.remote == 'true' || steps.release.outputs.boat == 'true')
+        env:
+          REMOTE_BUMP: ${{ steps.release.outputs.remote }}
+          BOAT_BUMP: ${{ steps.release.outputs.boat }}
         shell: bash
         run: |
           set -euo pipefail
-          REMOTE_VERSION="$(tr -d '\r\n ' < Remote/releases/VERSION)"
-          BOAT_VERSION="$(tr -d '\r\n ' < Boat/releases/VERSION)"
-          cp "out/Flytec_Remote_ver${REMOTE_VERSION}.zip" "Remote/releases/"
-          cp "out/Flytec_Boat_ver${BOAT_VERSION}.zip" "Boat/releases/"
-          cp "out/SHA256SUMS_ver${REMOTE_VERSION}_${BOAT_VERSION}.txt" "releases/"
-          cmp "out/Flytec_Remote_ver${REMOTE_VERSION}.zip" "Remote/releases/Flytec_Remote_ver${REMOTE_VERSION}.zip"
-          cmp "out/Flytec_Boat_ver${BOAT_VERSION}.zip" "Boat/releases/Flytec_Boat_ver${BOAT_VERSION}.zip"
-          sha256sum -c "out/SHA256SUMS_ver${REMOTE_VERSION}_${BOAT_VERSION}.txt"
+          # Never attach an archive to a newer source commit by rebasing.
+          git fetch origin "$GITHUB_REF_NAME"
+          [[ "$(git rev-parse FETCH_HEAD)" == "$GITHUB_SHA" ]] || { echo "::error::Branch moved; release snapshot was not published"; exit 1; }
+          for side in Remote Boat; do
+            if [[ "$side" == Remote ]]; then bumped="$REMOTE_BUMP"; else bumped="$BOAT_BUMP"; fi
+            [[ "$bumped" == true ]] || continue
+            version="$(tr -d '\r\n ' < "$side/releases/VERSION")"
+            archive="Flytec_${side}_ver${version}.zip"
+            dest="$side/releases/$archive"
+            [[ ! -e "$dest" ]] || { echo "::error::Existing immutable archive $dest"; exit 1; }
+            cp "out/$archive" "$dest"
+            cmp "out/$archive" "$dest"
+            sha256sum "$dest" > "$side/releases/Flytec_${side}_ver${version}_SHA256.txt"
+            sha256sum -c "$side/releases/Flytec_${side}_ver${version}_SHA256.txt"
+            git add "$dest" "$side/releases/Flytec_${side}_ver${version}_SHA256.txt"
+          done
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "Remote/releases/Flytec_Remote_ver${REMOTE_VERSION}.zip" \
-                  "Boat/releases/Flytec_Boat_ver${BOAT_VERSION}.zip" \
-                  "releases/SHA256SUMS_ver${REMOTE_VERSION}_${BOAT_VERSION}.txt"
-          if git diff --cached --quiet; then
-            echo "Archives are already current; no commit required."
-          else
-            git commit -m "Package Flytec Remote ver${REMOTE_VERSION} and Boat ver${BOAT_VERSION}"
-            git pull --rebase origin "${GITHUB_REF_NAME}"
-            git push
-          fi
+          git commit -m "Preserve immutable Flytec release archives"
+          git push origin "HEAD:refs/heads/$GITHUB_REF_NAME"
       - name: Upload Remote archive artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Flytec_Remote_ver${{ steps.version.outputs.remote }}
+          name: Flytec_Remote_snapshot_ver${{ steps.version.outputs.remote }}_${{ github.sha }}
           path: out/Flytec_Remote_ver*.zip
           if-no-files-found: error
           retention-days: 90
       - name: Upload Boat archive artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Flytec_Boat_ver${{ steps.version.outputs.boat }}
+          name: Flytec_Boat_snapshot_ver${{ steps.version.outputs.boat }}_${{ github.sha }}
           path: out/Flytec_Boat_ver*.zip
           if-no-files-found: error
           retention-days: 90
