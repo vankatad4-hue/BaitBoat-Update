@@ -11,14 +11,14 @@ BoatDualRadioPort::BoatDualRadioPort()
       [](void*){return BOAT_E22_AUX_PIN>=0 && digitalRead(BOAT_E22_AUX_PIN)==HIGH;},
       [](bool released,void*){if(BOAT_E22_RESET_PIN>=0)digitalWrite(BOAT_E22_RESET_PIN,released?HIGH:LOW);},nullptr),
    nrfReady_(false),e22Configured_(false),sessionEpoch_(0),sessionStartSeenPrimary_(false),sessionStartSeenBackup_(false),
-   qWrite_(0),qRead_(0),qCount_(0),lastNrfRxMs_(0),lastE22RxMs_(0),lastNrfHeartbeatTxMs_(0),
+   lastNrfRxMs_(0),lastE22RxMs_(0),lastNrfHeartbeatTxMs_(0),
    lastE22HeartbeatTxMs_(0),lastE22HeartbeatAttemptMs_(0),txSequence_(0),authenticated_(false),
    sessionStarted_(false),lastNrfRxValid_(false),lastE22RxValid_(false) {
 
- memset(key_,0,sizeof(key_));memset(queue_,0,sizeof(queue_));
+ memset(key_,0,sizeof(key_));
 }
 bool BoatDualRadioPort::begin() {
- nrfReady_=false;e22Configured_=false;authenticated_=radioKey_get(key_);sessionStarted_=false;primarySeqGuard_.reset();backupSeqGuard_.reset();crossRadioSeqGuard_.reset();sessionStartSeenPrimary_=false;sessionStartSeenBackup_=false;lastNrfRxValid_=false;lastE22RxValid_=false;qWrite_=qRead_=qCount_=0;memset(queue_,0,sizeof(queue_));txSequence_=0;lastNrfHeartbeatTxMs_=0;lastE22HeartbeatTxMs_=0;lastE22HeartbeatAttemptMs_=0;
+ nrfReady_=false;e22Configured_=false;authenticated_=radioKey_get(key_);sessionStarted_=false;primarySeqGuard_.reset();backupSeqGuard_.reset();crossRadioSeqGuard_.reset();sessionStartSeenPrimary_=false;sessionStartSeenBackup_=false;lastNrfRxValid_=false;lastE22RxValid_=false;commandQueue_.clear();txSequence_=0;lastNrfHeartbeatTxMs_=0;lastE22HeartbeatTxMs_=0;lastE22HeartbeatAttemptMs_=0;
 #if BOAT_NRF_CE_PIN >= 0 && BOAT_NRF_CSN_PIN >= 0
  nrfReady_=nrf_.begin(false);
 #endif
@@ -67,7 +67,7 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
    primarySeqGuard_.reset();backupSeqGuard_.reset();crossRadioSeqGuard_.reset();
    sessionStartSeenPrimary_=false;sessionStartSeenBackup_=false;
    lastNrfRxValid_=false;lastE22RxValid_=false;
-   qRead_=qWrite_=qCount_=0;txSequence_=0;
+   commandQueue_.clear();txSequence_=0;
    if(!linkGuard.accept(f.sessionEpoch,0,true)) return;
    linkSessionSeen=true;lastRx=now;rxValid=true;
    sendSessionStart(LINK_NRF_PRIMARY,now);
@@ -111,14 +111,12 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  if(cmd.type!=CMD_MANUAL_MOTORS) sendCommandAck(link,cmd,RADIO_ACK_ACCEPTED,0,0,now);
 }
 bool BoatDualRadioPort::enqueue(const BoatCommand &cmd,ManagedLink link,bool duplicate) {
- if(qCount_>=4)return false;
- queue_[qWrite_]={cmd,link,duplicate,sessionEpoch_};
- qWrite_=(uint8_t)((qWrite_+1U)%4U);++qCount_;return true;
+ return commandQueue_.push(cmd,(uint8_t)link,duplicate,sessionEpoch_);
 }
 bool BoatDualRadioPort::takeCommand(BoatCommand &cmd,bool &duplicate,ManagedLink &link) {
- if(qCount_==0)return false;
- const QueuedCommand q=queue_[qRead_];qRead_=(uint8_t)((qRead_+1U)%4U);--qCount_;
- cmd=q.cmd;duplicate=q.duplicate;link=q.link;return true;
+ uint8_t linkId=0,epoch=0;
+ if(!commandQueue_.pop(cmd,duplicate,linkId,epoch))return false;
+ link=(ManagedLink)linkId;return true;
 }
 void BoatDualRadioPort::markActionExecuted(uint8_t sender,uint8_t epoch,uint16_t commandId) {
  dedupe_.markExecuted(sender,epoch,commandId);
