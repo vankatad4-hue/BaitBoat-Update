@@ -14,7 +14,7 @@ Boat-side controller for the Flytec V080 retrofit. The remote-controller firmwar
 ## Current status
 This is a documented starter scaffold, not operational boat firmware. It contains no motor, solenoid, nRF24L01+ primary radio, LoRa backup radio, GNSS, compass, sonar, or autopilot drivers. It must not be connected to powered actuators or used to operate the boat.
 
-R2 architecture: nRF24L01+ PA/LNA primary. Backup remote uses E22 UART LoRa; boat can use the Heltec Wireless Tracker candidate's integrated SX1262 if exact SKU/band is confirmed. Raw SX1262/E22 interoperability needs matching PHY settings and testing. The remote protocol/link-manager scaffold is not yet a hardware transport; boat receive/authentication/action-cache integration remains incomplete. See `docs/BOAT_LORA_HARDWARE_DECISION_R2.md`, `docs/BOAT_RADIO_PIN_ASSIGNMENTS_R1.md`, `docs/BOAT_ELECTRICAL_SCHEMATIC_DESIGN_R1.md`, and `../../Remote/docs/DUAL_RADIO_PROTOCOL_FIRMWARE_SPEC_R2.md`.
+R3 hardware pairing: matching E22-900T22S UART modules at remote and boat; Heltec Tracker's onboard SX1262 is unused in the first prototype. Boat source includes nRF/E22 transport classes, authenticated command receive/queue scaffold, duplicate-action cache and local failsafe evaluator. Pin macros are unset, secure key provisioning is unavailable, and actuator integration/ACKs are incomplete. See `docs/BOAT_LORA_HARDWARE_DECISION_R2.md`, `docs/BOAT_RADIO_PIN_ASSIGNMENTS_R1.md`, `docs/BOAT_ELECTRICAL_SCHEMATIC_DESIGN_R1.md`, and `../../Remote/docs/DUAL_RADIO_PROTOCOL_FIRMWARE_SPEC_R2.md`.
 
 ## Latest release note — ver002
 
@@ -55,3 +55,11 @@ Selected matching nRF24L01+ PA/LNA radio modules for both boat and remote. This 
 
 ## LoRa pairing R3
 The initial test boat will carry the same E22-900T22S module as the remote. Boat UART pins are TBD after board pin audit. The integrated Tracker SX1262 remains available but not selected for this backup link. See `docs/BOAT_LORA_HARDWARE_DECISION_R3.md`.
+
+
+## Current dual-radio code
+- `nrf24_link.*`: fixed-payload 32-byte transport class, pin defaults disabled.
+- `e22_uart_link.*`: E22 config, transparent frame parser and duty limiter.
+- `boat_dual_radio_port.*`: dual link polling, frame validation, backup command policy and command queue; pin macros remain unset.
+- `radio_protocol.*` and `radio_command_codec.*`: CRC/HMAC frame validation and backup restrictions.
+- `boat_radio_safety.*`: dedup cache and failsafe decision helper only; not connected to motors/solenoids.
