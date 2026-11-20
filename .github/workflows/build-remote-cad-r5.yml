@@ -5,7 +5,7 @@ on:
     paths: ['Remote/New_Handheld_Remote/CAD/**','Remote/New_Handheld_Remote/MECHANICAL/**']
   workflow_dispatch:
 concurrency:
-  group: flytec-cad-\${{ github.ref }}
+  group: flytec-branch-${{ github.ref }}
   cancel-in-progress: true
 permissions:
   contents: write
