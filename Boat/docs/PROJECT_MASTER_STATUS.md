@@ -122,3 +122,8 @@ Current package markers: Remote ver023 / Boat ver014. Boat ver014 ZIP checksum a
 - Boat receive/queue/ACK integration is not covered by current portable tests; the sketch remains a non-operational placeholder with no command executor, telemetry, failsafe execution or actuator outputs.
 - Build manifest/dependency lock, exact controller SKU/pins, target compile and RF/hardware validation remain blockers.
 - Source audit report: `docs/SOURCE_CONSISTENCY_AUDIT_R1.md`; changelog VER022.
+
+
+## Shared project compile-preparation update — 2026-11-20
+- Remote target compile run #11 progressed to C++ compilation but failed on Remote UI/map sources. Remote fixes are committed and awaiting retry; this does not change Boat's status.
+- Boat firmware remains uncompiled, unintegrated and non-operational; no actuator output, telemetry publisher, executor, or failsafe execution. Continue to keep power loads disconnected.
