@@ -43,8 +43,6 @@ Flytec_Boat_verXXX.zip and Flytec_Remote_verXXX.zip. Never overwrite prior relea
 - Remote/New_Handheld_Remote/PCB/REMOTE_POWER_AND_CONTROL_BLOCK_DIAGRAM_R1.md
 - Remote/New_Handheld_Remote/PCB/REMOTE_PERIPHERAL_INTERFACE_PINOUT_DRAFT_R1.md
 - Remote/New_Handheld_Remote/PCB/WAVESHARE_GPIO_RESOURCE_AUDIT_R1.md
-- Remote/New_Handheld_Remote/PCB/POWER_SHEET_CAPTURE_SPEC_R4.md
-- Remote/New_Handheld_Remote/PCB/REMOTE_POWER_BOM_CANDIDATES_R4.md
 - Remote/New_Handheld_Remote/PCB/TPS63070_PIN_NET_MAP_R3.md
 - Remote/New_Handheld_Remote/PCB/TPS63070_COMPONENT_CALCULATIONS_REVIEW_R2.md
 - Remote/New_Handheld_Remote/PCB/TPS61023_COMPONENT_CALCULATIONS_R1.md (fallback study)
