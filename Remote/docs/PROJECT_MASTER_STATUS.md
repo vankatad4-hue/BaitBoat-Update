@@ -1,6 +1,6 @@
-# Flytec V080 Retrofit — Master Status R4
+# Flytec V080 Retrofit — Master Status R5
 
-Updated: 2026-11-20. This is a development branch, not a tested release.
+Updated: 2026-11-20. Development branch; no firmware compile, hardware test, ERC/DRC, or operational release has been validated.
 
 ## Selected architecture
 - Retain Flytec V080 hull, main switch, battery indicator, two 550 brushed motors.
@@ -65,6 +65,16 @@ Boat:
 - Boat test build: `Boat/docs/BOAT_HARDWARE_TEST_BUILD_R2.md`.
 - Boat electrical capture: `Boat/docs/BOAT_ELECTRICAL_SCHEMATIC_DESIGN_R2.md`; schematic sheets `BOAT_SCHEMATIC_CAPTURE_SHEETS_R2.md`.
 
+## Versioned ZIP status
+- Preserved baseline archives: Remote `Flytec_Remote_ver004.zip`, Boat `Flytec_Boat_ver004.zip`.
+- Next snapshot markers are Remote `005` and Boat `005`; the packaging workflow creates versioned ZIPs and SHA256 artifacts from the branch snapshot. These are pending successful workflow verification, not yet confirmed generated/downloadable archives.
+- Packaging policy: `docs/ZIP_RELEASE_POLICY_R1.md`.
+
+## Boat controller pin audit
+- New `Boat/docs/BOAT_CONTROLLER_PIN_AUDIT_R1.md` reserves onboard SX1262, GNSS, TFT, USB, power and boot/strap resources based on manufacturer documentation.
+- Exact Tracker revision is unknown. All boat nRF/E22 GPIOs remain unset; GPIO17/18 are only preliminary UART candidates and must be verified against the exact schematic.
+- Boat connector table R3 emphasizes safe reset states and remains TBD for MCU pins.
+
 ## Freeze/test blockers
 1. Exact Waveshare and Heltec board revisions/pin maps and connector continuity.
 2. E22/nRF physical modules, antennas and RF bench test.
@@ -77,10 +87,17 @@ Boat:
 9. Native KiCad/ERC/DRC and physical mechanical fit.
 
 ## Release status
-- Repository branch: `hardware-ready-dual-radio-r1`.
-- Release archives remain unchanged; no ver006 ZIPs created.
+- Repository branch: `hardware-ready-dual-radio-r1`; draft PR #1 remains open and unmerged.
+- ZIP snapshot ver005 is pending Actions workflow verification. Existing ver004 archives are preserved.
+- Release archives ver004 remain unchanged. ver005 is the next snapshot and not yet verified.
 - Do not operate boat or connect actuator power. Bench tests only.
 
 - Consolidated remote pin map and connector CSV R4 are the current versions; older R2 docs marked superseded. Consolidated remote power BOM/capture spec R6 are current; R5 docs marked superseded.
 
 - LoRa TX-slot scheduler updated: one E22 frame/endpoint/3s target; remote pending queue priority STOP>RETURN>manual, and heartbeat suppressed while a command is queued. This is provisional until actual airtime is measured.
+
+
+## Current sync notes
+- Root/Boat/Remote README files and docs/IMPORT_STATUS.md now reference the pin audit, ZIP version markers, and packaging policy.
+- Repository path discrepancy was corrected in docs/REPOSITORY_PATH_AUDIT_R1.md: the four radio bench sketches and two READMEs were present.
+- E22 register/profile decode is recorded in Remote/docs/E22_CONFIGURATION_DECODE_R1.md. The exact purchased module variant and actual register readback must still be confirmed.
