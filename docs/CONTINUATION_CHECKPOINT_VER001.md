@@ -109,3 +109,10 @@ When continuing in a new chat:
 - Updated root README, Remote/Boat master status, project progress review, ZIP status, import status, release policy, source READMEs and historical ver005 status files to point to this checkpoint and align current markers.
 - Consolidated changelog is VER021. Old VER020 was superseded.
 - Last observed branch HEAD: `c11f9048c1` (historical build status notes). Packaging run #888 pending; run #880 previously successful.
+
+
+## Compile-prep follow-up — Remote portable CI added
+- Added `.github/workflows/remote-host-tests.yml` and documented its scope in `Remote/tests/README_release_guard.md`.
+- Tests run under strict warnings: release guard, scanner syntax, payload codec, ACK tracker and telemetry freshness.
+- Workflow result not yet observed. These tests are host-level only; they do not build the full LVGL/ESP32 firmware.
+- Next: confirm CI result and fix; then build configuration/dependency pinning after exact hardware revisions are confirmed.
