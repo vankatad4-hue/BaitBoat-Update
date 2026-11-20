@@ -63,3 +63,5 @@ Physical board validation: not performed.
 - Target compile run #3 successfully installed the pinned toolchain/libraries and staged the sketch, but failed because LVGL requires an explicit `lv_conf.h`. Added a versioned LVGL 9.6.0 configuration file and copy step for the next target compile attempt.
 
 - Target compile attempt #4 now reached C++ preprocessing and identified the missing external dependency `RF24.h`; added pinned RF24 1.4.11 to the build workflow. This is a dependency-manifest discovery, not a display-adapter API error yet. Retry pending.
+
+- Added a null-display guard in the flush callback during source review; malformed callback inputs now only signal flush-ready when a valid display handle exists.
