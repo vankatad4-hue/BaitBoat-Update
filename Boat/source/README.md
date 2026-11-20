@@ -5,7 +5,7 @@ Updated 2026-11-20. The repository is canonical; this is not operational firmwar
 ## Release naming
 - ZIP: `Flytec_Boat_verXXX.zip`
 - Preserve all older releases.
-- Package version marker: `releases/VERSION` (currently `006`).
+- Package version marker: `releases/VERSION` (currently `009`).
 - Increment by one for every modification included in a distributed package; see root `docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Current controller and radios
@@ -28,6 +28,11 @@ Updated 2026-11-20. The repository is canonical; this is not operational firmwar
 - `hardware_test/E22_UART_Bench/E22_UART_Bench.ino`
 - Both disabled until exact pin assignments are set. Fixed diagnostic frames only; no actuators.
 - See `hardware_test/README.md`.
+
+## Portable payload encoder milestone (ver009)
+- Added encoder counterparts for the existing eight-byte HEARTBEAT, ACK and TELEMETRY payload contract.
+- Host round-trip/invalid-field tests cover status, battery/speed, GNSS coordinates, navigation, sonar summary, heartbeat and ACK. Run instructions: `tests/README.md`.
+- These utilities are not connected to the boat receive queue, telemetry sensor source, ACK dispatch, or command execution.
 
 ## Not implemented or validated
 - No main boat application invokes the radio port.
