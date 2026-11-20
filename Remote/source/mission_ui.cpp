@@ -3,7 +3,8 @@
 #include <Arduino.h>
 #include <stdio.h>
 #include <string.h>
-#include <Preferences.h>\n#include <SD.h>
+#include <Preferences.h>
+#include <SD.h>
 #include <math.h>
 #include <stddef.h>
 
@@ -93,4 +94,5 @@ void missionUI_open(lv_obj_t *main){returnScreen=main;loadPersisted();screen=lv_
  selectedLabel=label(screen,"SELECTED: NONE",12,343,770);lv_obj_t *save=button(screen,"SAVE FIX",10,366,130,42,green());lv_obj_add_event_cb(save,saveCurrent,LV_EVENT_CLICKED,nullptr);lv_obj_t *h=button(screen,"SET HOME",148,366,125,42,blue());lv_obj_add_event_cb(h,setHome,LV_EVENT_CLICKED,nullptr);lv_obj_t *c=button(screen,"CLEAR",281,366,100,42,red());lv_obj_add_event_cb(c,clearSlot,LV_EVENT_CLICKED,nullptr);lv_obj_t *b=button(screen,"BAIT",389,366,100,42,blue());lv_obj_add_event_cb(b,toggleBait,LV_EVENT_CLICKED,nullptr);lv_obj_t *k=button(screen,"HOOK",497,366,100,42,blue());lv_obj_add_event_cb(k,toggleHook,LV_EVENT_CLICKED,nullptr);lv_obj_t *start=button(screen,"START",605,366,90,42,red());lv_obj_add_event_cb(start,startMission,LV_EVENT_CLICKED,nullptr);lv_obj_t *bb=button(screen,"BACK",700,366,90,42,blue());lv_obj_add_event_cb(bb,back,LV_EVENT_CLICKED,nullptr);statusLabel=label(screen,"MISSION EXECUTION DISABLED",12,418,770);refresh();lv_screen_load(screen);refreshTimer=lv_timer_create(timerRefresh,250,nullptr);}
 void missionUI_initStorage(){if(!storageReady)loadPersisted();}
 bool missionUI_getWaypoint(uint8_t i,float *lat,float *lon,bool *bait,bool *hook){if(i>=SLOT_COUNT||!slots[i].valid)return false;if(lat)*lat=slots[i].lat;if(lon)*lon=slots[i].lon;if(bait)*bait=slots[i].baitMark;if(hook)*hook=slots[i].hookMark;return true;}
-bool missionUI_getHome(float *lat,float *lon){if(!homeValid)return false;if(lat)*lat=homeLat;if(lon)*lon=homeLon;return true;}\nint8_t missionUI_getSelectedIndex(){return (selectedSlot>=0&&selectedSlot<SLOT_COUNT&&slots[selectedSlot].valid)?(int8_t)selectedSlot:-1;}
+bool missionUI_getHome(float *lat,float *lon){if(!homeValid)return false;if(lat)*lat=homeLat;if(lon)*lon=homeLon;return true;}
+int8_t missionUI_getSelectedIndex(){return (selectedSlot>=0&&selectedSlot<SLOT_COUNT&&slots[selectedSlot].valid)?(int8_t)selectedSlot:-1;}
