@@ -29,3 +29,8 @@ Previous docs report historical ver005 artifact checks and ver024/ver014 snapsho
 
 ## Validation boundary
 No complete ESP32 target compile, LVGL Pro simulation, native KiCad ERC/DRC, hardware, RF, power/thermal, actuator or water validation is confirmed. No motor/solenoid operation.
+
+
+## Development compile-fix snapshot — 2026-11-20
+- Remote target compile run #11 failed at C++ compilation. Three source fixes were committed (LVGL event accessor, map route precise point type, Map Manager copyChunk declaration).
+- Rebuild pending. These are development commits; release markers remain Remote 028 / Boat 014. No release ZIP regenerated, and existing branch ZIPs remain unverified snapshots.
