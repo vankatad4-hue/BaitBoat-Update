@@ -325,7 +325,7 @@ static void createMapPanel()
     lv_label_set_text(lv_label_create(zoomOut),"-");lv_obj_center(lv_obj_get_child(zoomOut,0));lv_obj_add_event_cb(zoomOut,mapZoomOutEvent,LV_EVENT_CLICKED,nullptr);
     lv_obj_t *zoomIn=lv_button_create(mapPanel);styleTouchButton(zoomIn, lv_color_hex(0x174F92));lv_obj_set_size(zoomIn,42,32);lv_obj_set_pos(zoomIn,54,270);
     lv_label_set_text(lv_label_create(zoomIn),"+");lv_obj_center(lv_obj_get_child(zoomIn,0));lv_obj_add_event_cb(zoomIn,mapZoomInEvent,LV_EVENT_CLICKED,nullptr);
-    mapZoomLabel=createLabel(mapPanel,"Z15",104,278);gpsDetailsLabel=createLabel(mapPanel,"SAT: --  ACC: --m  КУРС: --",160,278);
+    mapZoomLabel=createLabel(mapPanel,"Z15",104,278);lv_obj_add_flag(mapZoomLabel,LV_OBJ_FLAG_CLICKABLE);lv_obj_add_event_cb(mapZoomLabel,[](lv_event_t*){mapRenderer_recenter();},LV_EVENT_CLICKED,nullptr);gpsDetailsLabel=createLabel(mapPanel,"SAT: --  ACC: --m  КУРС: --",160,278);
     lv_obj_add_flag(mapPanel,LV_OBJ_FLAG_CLICKABLE);lv_obj_add_event_cb(mapPanel,mapTouchEvent,LV_EVENT_CLICKED,nullptr);
 }
 
@@ -355,14 +355,15 @@ static void drawSonarPlot(uint16_t width, uint16_t height)
         lv_obj_delete(lv_obj_get_child(sonarPlot, 0));
     const int w=(int)width-1, h=(int)height-1;
     const lv_color_t grid=lv_color_hex(0x244258);
+    static lv_point_precise_t hp[5][2],vp[5][2];
     for(int i=0;i<=4;i++){
         int y=(h*i)/4, x=(w*i)/4;
-        lv_point_precise_t hp[2]={{0.0f,(float)y},{(float)w,(float)y}};
-        lv_point_precise_t vp[2]={{(float)x,0.0f},{(float)x,(float)h}};
-        sonarLine(sonarPlot,hp,2,grid,1);sonarLine(sonarPlot,vp,2,grid,1);
+        hp[i][0]={0.0f,(float)y};hp[i][1]={(float)w,(float)y};
+        vp[i][0]={(float)x,0.0f};vp[i][1]={(float)x,(float)h};
+        sonarLine(sonarPlot,hp[i],2,grid,1);sonarLine(sonarPlot,vp[i],2,grid,1);
     }
     // Illustrative arcs scaled to the current viewport; DEMO label remains visible.
-    lv_point_precise_t archA[7],archB[7],bottom[7];
+    static lv_point_precise_t archA[7],archB[7],bottom[7];
     const int ax[]={10,18,28,38,48,58,68}, ay[]={68,58,46,40,46,58,70};
     const int bx[]={50,58,66,74,82,90,96}, by[]={88,78,68,62,68,78,88};
     const int fx[]={2,18,34,50,66,82,98}, fy[]={96,94,97,93,96,94,97};

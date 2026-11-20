@@ -19,3 +19,6 @@ bool lakeStorage_setName(uint8_t lake,const char *name);
 
 // Pin recovery to the currently active pack before overwriting the inactive slot.
 bool lakeStorage_prepareMapStage();
+
+uint8_t lakeStorage_getZoom();
+bool lakeStorage_setZoom(uint8_t zoom);

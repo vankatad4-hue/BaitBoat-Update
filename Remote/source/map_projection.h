@@ -21,4 +21,5 @@ void mapProjection_toLatLon(const MapWorldPixel &pixel, uint8_t zoom, double &la
 // headingDeg is compass heading clockwise from true north; zero means north-up.
 MapWorldPixel mapProjection_screenOffsetToWorld(double screenX, double screenY, double headingDeg);
 
+bool mapProjection_pan(double &latitude,double &longitude,uint8_t zoom,double dx,double dy);
 #endif

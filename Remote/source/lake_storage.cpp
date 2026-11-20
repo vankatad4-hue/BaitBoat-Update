@@ -170,3 +170,29 @@ bool lakeStorage_prepareMapStage(){
     size_t n=out.write(bytes,2);out.flush();out.close();
     return n==2&&readSelection(bak.c_str(),check)&&check==activeSlot;
 }
+
+static bool readZoom(const String &path,uint8_t &zoom){
+ File f=SD.open(path.c_str(),FILE_READ);if(!f||f.size()!=2)return false;
+ int z=f.read(),v=f.read();f.close();if(z<5||z>19||v!=(z^0xff))return false;
+ zoom=(uint8_t)z;return true;
+}
+uint8_t lakeStorage_getZoom(){
+ uint8_t zoom=15;
+ if(lakeStorage_ready()&&!readZoom(lakeStorage_path("/zoom.bin"),zoom))readZoom(lakeStorage_path("/zoom.bak"),zoom);
+ return zoom;
+}
+bool lakeStorage_setZoom(uint8_t zoom){
+ if(!lakeStorage_ready()||zoom<5||zoom>19)return false;
+ String dst=lakeStorage_path("/zoom.bin"),bak=lakeStorage_path("/zoom.bak"),tmp=lakeStorage_path("/zoom.tmp");
+ if(SD.exists(tmp.c_str())&&!SD.remove(tmp.c_str()))return false;
+ File out=SD.open(tmp.c_str(),FILE_WRITE);if(!out)return false;
+ uint8_t data[2]={zoom,(uint8_t)(zoom^0xff)},check;size_t n=out.write(data,2);out.flush();out.close();
+ if(n!=2||!readZoom(tmp,check)||check!=zoom)return false;
+ if(SD.exists(dst.c_str())){
+  if(readZoom(dst,check)){
+   if(SD.exists(bak.c_str())&&!SD.remove(bak.c_str()))return false;
+   if(!SD.rename(dst.c_str(),bak.c_str()))return false;
+  }else if(!SD.remove(dst.c_str()))return false;
+ }
+ return SD.rename(tmp.c_str(),dst.c_str());
+}

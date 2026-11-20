@@ -7,6 +7,10 @@
 #include "joystick.h"
 #include "joystick_calibration_ui.h"
 #include "map_source.h"
+#include "boat_state.h"
+#include "boat_radio.h"
+#include "lake_storage.h"
+#include "radio_key_store.h"
 
 // Persistent remote preferences are stored in the ESP32 NVS partition.
 static Preferences settingsPrefs;
@@ -31,7 +35,7 @@ static bool wifiScanActive = false;
 static bool wifiConnectActive = false;
 // Sonar preference widgets; values are persisted locally until boat-side sync exists.
 static lv_obj_t *sonarRange = nullptr;
-static lv_obj_t *sonarУСИЛВАНЕ = nullptr;
+static lv_obj_t *sonarGain = nullptr;
 static lv_obj_t *sonarSensitivity = nullptr;
 static lv_obj_t *sonarNoise = nullptr;
 static lv_obj_t *sonarPingRate = nullptr;
@@ -130,7 +134,9 @@ static void keyboardEvent(lv_event_t *event)
 bool settingsUI_close()
 {
     if(!settingsScreen||lv_screen_active()!=settingsScreen)return false;
+    if(keyboard&&!lv_obj_has_flag(keyboard,LV_OBJ_FLAG_HIDDEN)){hideKeyboard();return true;}
     hideKeyboard();
+    stopWiFiUiTimers();
     if (returnToScreen != nullptr)
         lv_screen_load(returnToScreen);
     return true;
@@ -185,7 +191,7 @@ static void saveSonarPreferences()
     if (sonarRange == nullptr) return;
     settingsPrefs.begin("flytec", false);
     settingsPrefs.putUChar("snr_range", (uint8_t)lv_dropdown_get_selected(sonarRange));
-    settingsPrefs.putUChar("snr_gain", (uint8_t)lv_slider_get_value(sonarУСИЛВАНЕ));
+    settingsPrefs.putUChar("snr_gain", (uint8_t)lv_slider_get_value(sonarGain));
     settingsPrefs.putUChar("snr_sens", (uint8_t)lv_slider_get_value(sonarSensitivity));
     settingsPrefs.putUChar("snr_noise", (uint8_t)lv_dropdown_get_selected(sonarNoise));
     settingsPrefs.putUChar("snr_ping", (uint8_t)lv_dropdown_get_selected(sonarPingRate));
@@ -274,7 +280,7 @@ static void buildSonarSection(lv_obj_t *parent)
     makeLabel(parent, "ДЪЛБОЧИНА / ОБРАБОТКА", 12, 38);
     makeSonarDropdown(parent, "МАКСИМАЛНА ДЪЛБОЧИНА", 65,
         "Авто\n5 m\n10 m\n20 m\n30 m\n50 m\n100 m", range, &sonarRange);
-    makeSonarSlider(parent, "УСИЛВАНЕ", 112, 0, 100, gain, &sonarУСИЛВАНЕ);
+    makeSonarSlider(parent, "УСИЛВАНЕ", 112, 0, 100, gain, &sonarGain);
     makeSonarSlider(parent, "ЧУВСТВИТЕЛНОСТ ЗА РИБА", 153, 0, 100, sensitivity, &sonarSensitivity);
     makeSonarDropdown(parent, "ПОТИСКАНЕ НА ШУМА", 194,
         "Изкл.\nНиско\nСредно\nВисоко", noise, &sonarNoise);
@@ -446,12 +452,22 @@ static void buildDisplaySection(lv_obj_t *parent)
 }
 
 // Build a clear placeholder for categories whose hardware integration is not yet complete.
-static void buildInfoSection(lv_obj_t *parent, const char *heading, const char *description)
-{
-    makeLabel(parent, heading, 18, 12);
-    makeLabel(parent, description, 18, 65);
+static void buildDiagnosticsSection(lv_obj_t *parent){
+    makeLabel(parent,"СИСТЕМНА ДИАГНОСТИКА",18,12);
+    char text[180];
+    snprintf(text,sizeof(text),"RAM: %lu B | PSRAM: %lu B",(unsigned long)ESP.getFreeHeap(),(unsigned long)ESP.getFreePsram());
+    makeLabel(parent,text,18,55);
+    snprintf(text,sizeof(text),"SD: %s | ЕЗЕРО: %02u",lakeStorage_ready()?"ГОТОВА":"НЯМА",(unsigned)lakeStorage_active()+1);
+    makeLabel(parent,text,18,90);
+    snprintf(text,sizeof(text),"nRF: %s | LoRa: %s",boatRadio_primaryConnected()?"OK":"--",boatRadio_backupConnected()?"OK":"--");
+    makeLabel(parent,text,18,125);
+    uint8_t key[32]={};bool provisioned=radioKey_get(key);volatile uint8_t *wipe=key;for(size_t i=0;i<sizeof(key);++i)wipe[i]=0;
+    makeLabel(parent,provisioned?"КЛЮЧ: НАЛИЧЕН":"КЛЮЧ: НЕ Е ПРОВИЗИРАН — TX БЛОКИРАН",18,160);
+    snprintf(text,sizeof(text),"ACK: %u | STOP: %s",(unsigned)boatRadio_pendingCommandAcks(),boatState.emergencyStopConfirmed?(boatState.emergencyStop?"АКТИВЕН":"ОСВОБОДЕН"):"НЕПОТВЪРДЕН");
+    makeLabel(parent,text,18,195);
+    makeLabel(parent,"РАЗРАБОТКА VER029 / НЕ Е ОСВОБОДЕНА",18,230);
+    makeLabel(parent,"ДАННИ ПРИ ОТВАРЯНЕ НА ЕКРАНА",18,270);
 }
-
 
 // ------------------ CONTROLS SETTINGS ------------------
 static lv_obj_t *controlDeadZoneSlider = nullptr;
@@ -556,7 +572,7 @@ static void categoryEvent(lv_event_t *event)
     lv_obj_clean(settingsContent);
     ssidArea = nullptr;
     passwordArea = nullptr;
-    sonarRange = sonarУСИЛВАНЕ = sonarSensitivity = sonarNoise = nullptr;
+    sonarRange = sonarGain = sonarSensitivity = sonarNoise = nullptr;
     sonarPingRate = sonarScrollSpeed = sonarPalette = nullptr;
     sonarFishArches = sonarFishAlarm = sonarShallowAlarm = sonarDeepAlarm = nullptr;
     sonarShallowDepth = sonarDeepDepth = sonarStatus = nullptr;
@@ -596,7 +612,7 @@ static void categoryEvent(lv_event_t *event)
     else if (strcmp(category, "MAP") == 0)
         buildMapSection(settingsContent);
     else
-        buildInfoSection(settingsContent, "SYSTEM", "ВЕРСИЯ, СЪСТОЯНИЕ НА ПАМЕТТА И РЕСТАРТ ЩЕ СЕ ДОБАВЯТ СЛЕД ХАРДУЕРНА ПРОВЕРКА.");
+        buildDiagnosticsSection(settingsContent);
 }
 
 // Create a navigation button and associate its settings category.

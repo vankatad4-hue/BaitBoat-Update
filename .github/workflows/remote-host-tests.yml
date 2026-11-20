@@ -71,3 +71,8 @@ jobs:
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
             Remote/source/mission_protocol.cpp Remote/source/mission_lifecycle.cpp Remote/tests/mission_protocol_test.cpp -o /tmp/remote_mission_protocol
           /tmp/remote_mission_protocol
+      - name: Map projection and pan boundaries
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/lake_stubs -IRemote/source \
+            Remote/source/map_projection.cpp Remote/tests/map_projection_test.cpp -o /tmp/remote_map_projection
+          /tmp/remote_map_projection

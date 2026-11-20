@@ -15,4 +15,5 @@ uint8_t mapRenderer_getZoom();
 void mapRenderer_setStyle(OfflineMapStyle style);
 void mapRenderer_invalidateTiles();
 void mapRenderer_resetProfile();
+void mapRenderer_recenter();
 #endif

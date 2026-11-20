@@ -53,3 +53,12 @@ MapWorldPixel mapProjection_screenOffsetToWorld(double screenX, double screenY, 
     result.y = screenX * s + screenY * c;                               // Rotate vertical screen offset into map north/south pixels.
     return result;                                                      // Return rotated map-world offset.
 }
+
+bool mapProjection_pan(double &latitude,double &longitude,uint8_t zoom,double dx,double dy){
+ if(zoom>22||!isfinite(latitude)||!isfinite(longitude)||!isfinite(dx)||!isfinite(dy))return false;
+ MapWorldPixel p=mapProjection_toWorldPixel(latitude,longitude,zoom);
+ const double width=256.0*(1UL<<zoom);
+ p.x=fmod(p.x+dx,width);if(p.x<0)p.x+=width;
+ p.y=fmax(0.0,fmin(width,p.y+dy));
+ mapProjection_toLatLon(p,zoom,latitude,longitude);return true;
+}

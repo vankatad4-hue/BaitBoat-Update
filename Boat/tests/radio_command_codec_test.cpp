@@ -7,7 +7,8 @@ void radio_frameInit(RadioFrame &f, RadioMessageType type, uint8_t src, uint8_t 
 }
 bool radio_frameSeal(RadioFrame &, const uint8_t[32]) { return true; }
 bool radio_frameVerify(const RadioFrame &, const uint8_t[32]) { return true; }
-bool radio_tickFresh(uint16_t, uint16_t, uint16_t) { return true; }
+// Independent device clocks must never be compared for command freshness.
+bool radio_tickFresh(uint16_t, uint16_t, uint16_t) { return false; }
 
 int main() {
   uint8_t key[32]={}; RadioFrame f={}; BoatCommand out={};
@@ -15,6 +16,7 @@ int main() {
   c.type=CMD_MANUAL_MOTORS; c.mode=MODE_MANUAL; c.leftMotor=900; c.rightMotor=-900;
   assert(radio_encodeCommand(c,1,2,9,f,key));
   assert(radio_decodeCommand(f,1,2,200,2500,true,out,key));
+  assert(out.createdAtMs==200); // local receive time, not sender uptime
   assert(out.leftMotor==250 && out.rightMotor==-250); // backup throttle clamp
   assert(radio_decodeCommand(f,1,2,200,2500,false,out,key)); // primary unrestricted by backup clamp
 
