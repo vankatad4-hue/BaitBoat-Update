@@ -1,7 +1,7 @@
 # Versioned ZIP Packaging
 
 ## Current next package version
-- Remote: `Remote/releases/VERSION` → `017`
+- Remote: `Remote/releases/VERSION` → `018`
 - Boat: `Boat/releases/VERSION` → `006`
 - Existing ver004 archives are preserved; never overwrite them.
 
@@ -15,7 +15,7 @@
 7. On push events, the workflow commits generated ZIPs and SHA256 manifest into the branch's releases folders; on PR events it uploads artifacts without committing. Confirm workflow completion and checksum integrity before calling a ZIP verified. The ZIP is a deliverable snapshot, not a fabrication/operational approval.
 8. Keep older release archives unchanged and preserve their version history.
 
-## ver017 package scope\nR6.6 front-layout/OK crosswalk and scanner/CAD source corrections; source integration utilities remain unconnected.\n\n## ver016 package scope
+## ver018 package scope\nFront-layout preview, R6.6 button crosswalk, scanner input correction and updated validation/status notes.\n\n## ver017 package scope\nR6.6 front-layout/OK crosswalk and scanner/CAD source corrections; source integration utilities remain unconnected.\n\n## ver016 package scope
 Payload codec and command ACK tracker scaffolds, R6.5 archive/netlist review, and R6.3/R6.4 revision reconciliation.
 
 ## ver009 package scope
