@@ -70,3 +70,7 @@ Candidate band for backup safety/control: 869.4–869.65MHz, harmonized conditio
 ## Clock and session safety correction
 - Sender and receiver millis() clocks are independent. The 16-bit sender tick is not a cross-device freshness clock; do not compare it to receiver millis(). The current command decoder uses local receipt time and sequence checks instead. Receiver watchdogs measure time since locally received authenticated frames.
 - Session epoch is now inside the authenticated frame header. However, session negotiation/epoch reset and replay protection across remote/boat reboot are still not implemented; session epoch currently remains a placeholder constant in sender scaffolds. Do not treat replay protection as complete.
+
+
+## LoRa transmit-slot multiplexing
+- E22 limit is one frame per endpoint per3s (25ms estimated airtime,0.83% duty). Remote scheduler queues the latest backup command and suppresses its heartbeat until the command is transmitted; it never intentionally sends a heartbeat and control frame in the same slot. Boat sends backup heartbeat every3s. The duty limiter remains RAM-only and not field-ready.
