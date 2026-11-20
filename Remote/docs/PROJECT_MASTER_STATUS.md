@@ -58,7 +58,7 @@ Boat:
 - Native KiCad schematic, ERC/DRC, footprints, PCB layout and fabrication files **not created**.
 - Remote hardware test-build spec: `Remote/New_Handheld_Remote/PCB/REMOTE_HARDWARE_TEST_BUILD_R4.md`.
 - Remote schematic capture: `Remote/New_Handheld_Remote/PCB/SCHEMATIC_CAPTURE_SHEETS_R4.md`.
-- Remote power nets: `Remote/New_Handheld_Remote/PCB/POWER_SCHEMATIC_NET_DRAFT_R8.md`.
+- Remote power nets: `Remote/New_Handheld_Remote/PCB/POWER_SCHEMATIC_NET_DRAFT_R8.md`; capture spec `POWER_SHEET_CAPTURE_SPEC_R6.md`; BOM `REMOTE_POWER_BOM_CANDIDATES_R6.md`.
 - Boat test build: `Boat/docs/BOAT_HARDWARE_TEST_BUILD_R2.md`.
 - Boat electrical capture: `Boat/docs/BOAT_ELECTRICAL_SCHEMATIC_DESIGN_R2.md`.
 
@@ -77,3 +77,5 @@ Boat:
 - Repository branch: `hardware-ready-dual-radio-r1`.
 - Release archives remain unchanged; no ver006 ZIPs created.
 - Do not operate boat or connect actuator power. Bench tests only.
+
+- Consolidated remote pin map and connector CSV R4 are the current versions; older R2 docs marked superseded. Consolidated remote power BOM/capture spec R6 are current; R5 docs marked superseded.
