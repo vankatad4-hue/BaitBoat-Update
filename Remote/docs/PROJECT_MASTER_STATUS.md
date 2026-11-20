@@ -75,7 +75,7 @@ Boat:
 ## Versioned ZIP status
 - [Build and checksum status](../../docs/ZIP_BUILD_STATUS_R1.md)
 - Preserved baseline archives: Remote `Flytec_Remote_ver004.zip`, Boat `Flytec_Boat_ver004.zip`.
-- Current markers are Remote `024` and Boat `014`; ZIPs and SHA256 manifest are committed. Boat ver014 archive SHA-256 and structure independently verified; Remote ver024 binary remains unverified.
+- Current source markers are Remote `025` and Boat `014`. Last package snapshot is Remote ver024 / Boat ver014; Boat ver014 archive verified, Remote ver024 binary checksum remains unverified.
 - Packaging policy: `docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Boat controller pin audit
@@ -96,7 +96,7 @@ Boat:
 
 ## Release status
 - Repository branch: `hardware-ready-dual-radio-r1`; draft PR #1 remains open and unmerged.
-- Current package markers are Remote ver024 / Boat ver014. ZIP pair and manifest are committed. Boat ver014 archive independently verified. Remote ver024 binary remains unverified. Deterministic packaging is now in place. Existing ver004 archives are preserved.
+- Last package markers: Remote ver024 / Boat ver014. Source has since advanced to Remote ver025; no ver025 archive is confirmed. Boat ver014 archive independently verified. Remote ver024 binary remains unverified.
 - Do not operate boat or connect actuator power. Bench tests only.
 
 - Consolidated remote pin map and connector CSV R4 are the current versions; older R2 docs marked superseded. Consolidated remote power BOM/capture spec R6 are current; R5 docs marked superseded.
