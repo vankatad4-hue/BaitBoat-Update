@@ -7,7 +7,7 @@ PR workflow run #32 produced Remote/Boat ver005 archives and checksums. ZIP inte
 - Markers: Remote `023`, Boat `014`.
 - ZIPs: `Remote/releases/Flytec_Remote_ver023.zip`, `Boat/releases/Flytec_Boat_ver014.zip`.
 - Manifest: `releases/SHA256SUMS_ver023_014.txt`.
-- Boat ver014 SHA-256: `271e6e5f1f088f12d221acb3a2a9beed77b28485e8577c73caac145f22c61206` (matches manifest). Remote ver023 manifest SHA-256: `636a1801a4f7755d6754eebc899615964898e12c8a1aca90b2cb5f9044baa199`; binary unavailable for independent verification.
+- Boat ver014 SHA-256: `517fc1094b5d3a63c6bf94f75eaca20a5964846037c590f8ef03d4bf7dcde2c0` (matches manifest). Remote ver023 manifest SHA-256: `636a1801a4f7755d6754eebc899615964898e12c8a1aca90b2cb5f9044baa199`; binary unavailable for independent verification.
 
 ## Independent integrity review
 - Older Boat ver011–013 archives are historical snapshots; ver014 supersedes them.
