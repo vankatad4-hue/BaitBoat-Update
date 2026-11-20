@@ -21,7 +21,7 @@
 - ACCEPTED is queue acceptance only. There is no connected command executor, telemetry source, EXECUTED ACK, actuator output or navigation/failsafe application.
 
 ## Release/archive review
-- Current markers: Remote ver023 / Boat ver012. Boat ver012 ZIP checksum and structure independently verified; Remote ver023 binary remains unverified. Boat ver011 ZIP is independently verified; Remote ver023 ZIP binary remains unavailable for independent verification.
+- Current markers: Remote ver023 / Boat ver012. Boat ver012 ZIP checksum and structure independently verified; Remote ver023 binary remains unverified. Boat ver011 was previously verified; Boat ver012 supersedes it. Remote ver023 ZIP binary remains unavailable for independent verification.
 - Generated ZIPs and manifest are present for Remote ver023 / Boat ver012 snapshots. Boat ver012 archive is independently verified.
 - Boat ver011 archive was verified historically; it is superseded by Boat ver012. Remote ver023 ZIP binary was not retrievable and remains unverified.
 - Remote ver023 ZIP: present, but the binary could not be retrieved through the available file fetch path; checksum is manifest-only and not independently verified.
@@ -79,5 +79,6 @@
 ## Latest engineering findings
 - The Boat port previously declared but did not define pending-command lookup and ACK sender; these definitions are now implemented. The queue was extracted into a portable four-entry utility and the port delegates to it. This has not been compiled.
 - Cross-radio command sequence bypass was narrowed to exact pending/executed command IDs only; stale sequence/new ID is rejected.
-- Initial checksum review used an incomplete SHA-256 script; corrected implementation passed the standard `abc` test vector and confirmed ver012 ZIP checksum matches manifest.\n- Previous cross-radio logic let CONTROL/ACTION frames bypass the cross-radio sequence guard entirely. This was narrowed: sequence-rejected commands now pass only if exact command ID is pending or executed; stale sequence/new ID is discarded. This reduces replay risk but is not complete anti-replay protection.\n\n## Stop conditions
+- Initial checksum review used an incomplete SHA-256 script; corrected implementation passed the standard `abc` test vector and confirmed ver012 ZIP checksum matches manifest.
+- Previous cross-radio logic let CONTROL/ACTION frames bypass the cross-radio sequence guard entirely. This was narrowed: sequence-rejected commands now pass only if exact command ID is pending or executed; stale sequence/new ID is discarded. This reduces replay risk but is not complete anti-replay protection.\n\n## Stop conditions
 No propulsion, release, live battery charging in the proposed enclosure, or water operation until the exact hardware is identified, secure key/session is implemented, command executor/interlocks/failsafe are tested, electrical design is reviewed, and firmware/hardware test evidence is recorded.
