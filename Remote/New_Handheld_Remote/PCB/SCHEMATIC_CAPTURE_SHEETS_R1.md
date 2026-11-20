@@ -74,7 +74,7 @@ I2C nets from Waveshare PORT1: GPIO8=I2C_SDA; GPIO9=I2C_SCL. Shared with onboard
 ## Sheet 06 — Radio control expander (VALIDATION REQUIRED)
 - U_RADIO_IO MCP23017 @0x21; A0=VDD, A1/A2=GND; verify address strap combination against datasheet; I2C shared.
 - VDD=3V3, GND, 100nF local; RESET tied to shared reset net with 10k pull-up (or reset sequencing documented).
-- GPA0=RADIO_CE, GPA1=RADIO_CSN, GPA2=RADIO_IRQ_N, GPA3=RADIO_EN; remaining I/O spare. RADIO_EN drives TPS63070 EN with 100k pulldown; keep converter OFF during reset until controller initializes the expander.
+- GPA0=RADIO_CE, GPA1=RADIO_CSN, GPA2=RADIO_IRQ_N, GPA3=RADIO_EN; remaining I/O spare. Add CE hardware pulldown (100k to GND), CSN pull-up (10k to RADIO_3V3), and RADIO_EN drives TPS63070 EN with 100k pulldown. Pulls ensure safe idle even while expander pins are inputs. Keep converter OFF during reset until controller initializes the expander.
 - CE and CSN outputs; IRQ input. IRQ_N active low, pull-up only if required after module/bus check. Polling baseline; interrupt output optional but not currently routed to ESP GPIO.
 - **Not approved for final radio firmware yet:** I2C expander toggles may create millisecond latency. It may be sufficient for CE mode selection and CSN framing, but test register transaction timing, CE pulse widths, packet TX/RX, IRQ polling, retry/ACK behavior and 250kbps radio throughput. If tests fail, choose a verified spare MCU GPIO or alternate control strategy; do not assume GPIO35–37 are free.
 
