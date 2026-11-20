@@ -77,12 +77,23 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  if(!sessionStarted_ || f.sessionEpoch!=sessionEpoch_ || !linkGuard.accept(f.sessionEpoch,f.sequence,false)) return;
  lastRx=now;rxValid=true;
  const bool isCommand=(f.type==RADIO_MSG_CONTROL || f.type==RADIO_MSG_ACTION);
- if(!crossRadioSeqGuard_.accept(f.sessionEpoch,f.sequence,false) && !isCommand) return;
+ const bool crossSequenceAccepted=crossRadioSeqGuard_.accept(f.sessionEpoch,f.sequence,false);
+ if(!crossSequenceAccepted && !isCommand) return;
  if(f.type==RADIO_MSG_HEARTBEAT || f.type==RADIO_MSG_TELEMETRY || f.type==RADIO_MSG_ACK || f.type==RADIO_MSG_LINK_PROBE) return;
  BoatCommand cmd;
  if(!radio_decodeCommand(f,REMOTE_ID,BOAT_ID,now,2500,link==LINK_LORA_BACKUP,cmd,key_)) return;
  const uint16_t id=(uint16_t)cmd.commandId;
  if(id==0) return;
+ // A command frame rejected by the cross-radio sequence guard is accepted
+ // only as an exact command-ID duplicate. This prevents replaying an old
+ // sequence with a new command ID on the alternate radio.
+ if(!crossSequenceAccepted) {
+   if(dedupe_.hasExecuted(f.sourceId,f.sessionEpoch,id))
+     sendCommandAck(link,cmd,RADIO_ACK_DUPLICATE,0,0,now);
+   else if(commandPending(f.sessionEpoch,id) && cmd.type!=CMD_MANUAL_MOTORS)
+     sendCommandAck(link,cmd,RADIO_ACK_ACCEPTED,0,0,now);
+   return;
+ }
  if(dedupe_.hasExecuted(f.sourceId,f.sessionEpoch,id)) {
    sendCommandAck(link,cmd,RADIO_ACK_DUPLICATE,0,0,now);return;
  }
