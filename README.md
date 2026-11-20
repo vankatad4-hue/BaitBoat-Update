@@ -13,7 +13,7 @@
 - Remote/boat nRF and E22 transport scaffolds, SC16 bridge, CRC/HMAC protocol, command codec, dual-radio manager, heartbeat, dedupe and failsafe helpers exist.
 - Secure key provisioning returns false; no authenticated control, actuator execution or boat application.
 - Remote envelope300×210×70mm,carrier100×75mm proposed. Boat carrier77×79×14mm; MDD20A candidate does not fit that footprint.
-- Remote R5 CAD/print prototypes, physical button scan/debounce and release-confirmation guard are added; native host tests pass. Physical GPIO crosswalk, boat actuator execution/interlocks, full Arduino compile, native KiCad/ERC/DRC, fabrication PCB and hardware tests remain incomplete.
+- Remote R5 CAD/print prototypes, physical button scan/debounce and release-confirmation guard are added; R3 BOM and R5 pin/button allocation documented; native host tests pass. Physical GPIO crosswalk, boat actuator execution/interlocks, full Arduino compile, native KiCad/ERC/DRC, fabrication PCB and hardware tests remain incomplete.
 
 ## Main documents
 - [Master project status](Remote/docs/PROJECT_MASTER_STATUS.md)
