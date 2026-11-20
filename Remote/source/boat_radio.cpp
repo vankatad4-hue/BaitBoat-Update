@@ -61,7 +61,7 @@ static bool radioSendTransport(ManagedLink link,const BoatCommand &command) {
     if(link==LINK_LORA_BACKUP && g_loraConfigured) {
         const uint32_t now=millis();
         const uint8_t priority=(command.type==CMD_EMERGENCY_STOP)?3U:
-            ((command.type==CMD_SET_MODE && command.mode==BOAT_MODE_RETURN_HOME)?2U:
+            ((command.type==CMD_SET_MODE && command.mode==MODE_RETURN_HOME)?2U:
              (command.type==CMD_MANUAL_MOTORS?1U:0U));
         if(priority==0U)return false;
         if(g_backupTxSent && (uint32_t)(now-g_lastBackupTxMs)<3000U) {
