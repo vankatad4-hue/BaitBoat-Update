@@ -13,10 +13,10 @@ https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3
 
 ### A. External button I/O expander
 Candidate: MCP23017 (16 GPIO over I2C) or equivalent.
-- Connect all 16 front button positions as active-low inputs with pull-ups.
-- Button bank wiring as two keyed 8-position harnesses; use a ground return and avoid long unprotected parallel runs.
-- Use hardware/software debounce.
-- If OK and power are physical dedicated controls outside the 16-position bank, reserve extra expander GPIOs or use a dedicated MCU GPIO only after pin mapping.
+- Use a 4×4 button matrix to read the 16 front button positions with 8 expander pins; add one diode per button to prevent ghosting when simultaneous presses are possible.
+- Allocate remaining expander pins to the two joystick push-switches and safety/arm/status signals, with pull-ups and debounce.
+- Matrix row/column wiring uses two keyed harnesses and is documented in the final pinout.
+- The physical POWER key is separate and handled by the hardware power-latch circuit, with a logic sense input if required.
 - Release controls (bait/hook) must have independent inputs and guarded physical switches. Firmware must require explicit confirmation/arming, and a link-loss failsafe must never trigger release.
 
 ### B. Joystick analog acquisition
@@ -48,7 +48,7 @@ Reserve lines for:
 
 | Signal group | Signals | Proposed interface |
 |---|---|---|
-| Button matrix/inputs | 16 buttons + OK/joystick press + safety/arm | MCP23017 GPIO expander / spare GPIO |
+| Button matrix/inputs | 16-position 4×4 matrix (8 lines) + joystick switches + safety/arm | MCP23017 GPIO expander |
 | Joystick analog | L-X, L-Y, R-X, R-Y | ADS1015 4-channel ADC or exposed ADC pins |
 | Joystick switches | L-SW, R-SW | Expander inputs |
 | nRF radio | SCK, MOSI, MISO, CE, CSN, optional IRQ | SPI + GPIO |
