@@ -179,6 +179,14 @@ static void importStart(lv_event_t *event)
         lv_label_set_text(importLabel, "Coverage index could not be opened.");
         return;
     }
+    // Bound total index size before synchronous parsing, including blank lines.
+    if (indexFile.size() > (static_cast<uint32_t>(LIMIT) + 1U) * 48U)
+    {
+        indexFile.close();
+        abortImport();
+        lv_label_set_text(importLabel, "НЕВАЛИДЕН РАЗМЕР НА ИНДЕКСА");
+        return;
+    }
     char line[48];
     bool header = false, indexBad = false;
     importCount = 0;
@@ -244,7 +252,8 @@ static void importStart(lv_event_t *event)
     File manifestSizeFile = SD.open("/map-import/manifest.txt", FILE_READ);
     const uint32_t manifestBytes = manifestSizeFile ? manifestSizeFile.size() : 0;
     if (manifestSizeFile) manifestSizeFile.close();
-    if (!indexBytes || !manifestBytes)
+    if (!indexBytes || indexBytes > (static_cast<uint32_t>(LIMIT) + 1U) * 48U ||
+        !manifestBytes || manifestBytes >= MAP_MANIFEST_LIMIT)
     {
         heap_caps_free(importRows); importRows = nullptr; importCount = 0;
         lv_label_set_text(importLabel, "Could not determine staged pack sizes.");
