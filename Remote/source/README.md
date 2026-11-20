@@ -79,3 +79,11 @@ Authenticated receive frames are dispatched to strict payload decoders. Remote A
 - Selected waypoint can be tagged with planned BAIT / HOOK markers; they do not issue actuator commands.
 - START MISSION is explicitly blocked and displays why. No mission execution, persistent storage, geofence, authenticated boat command or release sequence is implemented.
 - Preview: `UI_PREVIEW_MISSION_VER025.svg`; updated main screen: `UI_PREVIEW_REMOTE_VER025.svg`. Target build and touch/hardware validation remain pending.
+
+
+## Remote ver026 — waypoint storage/map overlay
+- Mission plan waypoint/home coordinates and BAIT/HOOK marker flags are saved to ESP32 NVS Preferences with a version magic and CRC32 integrity check. Invalid/corrupt records are discarded; invalid coordinate entries are cleared.
+- Save current fix and set home reject missing/invalid or >2-second-old GNSS fixes.
+- Main map placeholder displays home and waypoint marker labels in a local relative view, with BAIT/HOOK suffixes. This is not a navigational map: no tiles, route, compass orientation or geospatial accuracy validation.
+- Mission start stays disabled. No boat mission execution or release commands.
+- Version source marker ver026; archive and checksum are not yet verified.
