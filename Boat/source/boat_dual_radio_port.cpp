@@ -1,6 +1,6 @@
 #include "boat_dual_radio_port.h"
 #include <string.h>
-#include <esp_system.h>
+
 
 static constexpr uint8_t REMOTE_ID=0x01,BOAT_ID=0x02;
 
@@ -14,7 +14,7 @@ BoatDualRadioPort::BoatDualRadioPort()
    qWrite_(0),qRead_(0),qCount_(0),lastNrfRxMs_(0),lastE22RxMs_(0),lastNrfHeartbeatTxMs_(0),
    lastE22HeartbeatTxMs_(0),lastE22HeartbeatAttemptMs_(0),txSequence_(0),authenticated_(false),
    sessionStarted_(false),lastNrfRxValid_(false),lastE22RxValid_(false) {
- if(sessionEpoch_==0)sessionEpoch_=1;
+
  memset(key_,0,sizeof(key_));memset(queue_,0,sizeof(queue_));
 }
 bool BoatDualRadioPort::begin() {
