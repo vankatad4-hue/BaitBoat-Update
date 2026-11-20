@@ -6,7 +6,7 @@
 #include "../../source/radio_protocol.cpp"
 #include "../../source/nrf24_link.cpp"
 
-NRF24Link nrf(6,15,&SPI,76); // CE=GPIO6, CSN=GPIO15; isolate RS485 and Sensor AD
+NRF24Link nrf(6,15,&SPI,76,12,13,11); // CE=GPIO6, CSN=GPIO15; isolate RS485 and Sensor AD
 uint16_t sequence=0;uint32_t lastTx=0;
 void setup(){
  Serial.begin(115200);
