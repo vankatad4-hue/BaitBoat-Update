@@ -11,10 +11,10 @@ Reviewed the current Remote and Boat source inventory, the radio/protocol and tr
 
 ## Findings
 
-### F-01 — No reproducible target build manifest (BLOCKER)
-There is no `platformio.ini`, Arduino CLI build configuration, dependency lockfile, or build script that pins the exact ESP32-S3 board/core, LVGL, Waveshare ESP panel library, RF24, and other dependencies. Remote display code explicitly rejects LVGL versions other than 9.6, but that requirement is not installed/pinned by project build metadata. Exact Waveshare/Heltec hardware revisions are also unresolved.
+### F-01 — Target build definition exists but is not yet validated (BLOCKER)
+A GitHub Actions Arduino CLI target compile workflow now installs candidate pinned versions and records tool/library inventory. It has reached C++ compilation, but the full target build has not passed. Candidate versions observed in run #11: ESP32 Arduino core 3.0.2, LVGL 9.6.0, ESP32_Display_Panel 1.0.0, ESP32_IO_Expander 1.0.1, esp-lib-utils 0.1.2, RF24 1.4.11. Exact Waveshare physical revision and Boat board revision/pins remain outstanding.
 
-**Action required:** create a reproducible build definition after confirming exact board revisions and the vendor library/API versions; do not guess hardware variants.
+**Action required:** fix compiler diagnostics, rerun, confirm successful compile/link and review warnings; then verify hardware APIs/behavior on the actual board.
 
 ### F-02 — Session-start handshake could strand after a lost first packet (FIXED IN SOURCE)
 Remote originally sent its session-start marker once at startup. If the marker or the Boat reply was lost, the peers could remain unpaired for the entire boot. Boat also ignored same-session marker duplicates after the first one, preventing it from retransmitting a lost reply.
@@ -36,10 +36,10 @@ Boat portable tests have a GitHub Actions workflow with strict warnings. Remote 
 
 **Action required:** observe CI outcome; correct any diagnostics; expand integration coverage.
 
-### F-06 — UI/library API compatibility and rendering remain unverified (HIGH)
-Remote display adapter targets LVGL 9.6.x APIs and Waveshare/Espressif board classes; there is no locked library set or compile job. Main, mission, settings, calibration, map-manager and renderer callbacks are source-present, but they have not been compiled against the exact libraries or rendered in LVGL Pro. Callback propagation, repeated screen lifecycle, resize behavior, Cyrillic fonts, memory use and touch-target dimensions remain verification items.
+### F-06 — Target compilation is incomplete and UI behavior remains unverified (HIGH)
+The target workflow has compiled into the project's source files and found API/type/source errors, which have been corrected in the latest commits; the next compile is pending. No successful full compile/link exists yet. Main, mission, settings, calibration, map-manager and renderer behavior still requires LVGL Pro inspection and physical display/touch testing, including callbacks, lifecycle, Cyrillic fonts, memory, touch targets and refresh.
 
-**Action required:** pin the library set and run compile + LVGL simulator/pro checks; retain a screen/callback test checklist.
+**Action required:** rerun target compile; then LVGL simulator and hardware checks.
 
 ### F-07 — Arduino sketch does not instantiate Boat application/radio port (BLOCKER FOR OPERATION)
 `Boat/source/firmware/Flytec_Boat.ino` is intentionally a safe placeholder. It does not call `BoatDualRadioPort`, consume the queue, apply policy, produce telemetry, execute commands or drive outputs. The source library files are not assembled into a target build by any checked-in build manifest.
@@ -77,7 +77,7 @@ Remote radio adapter includes compatibility hooks such as `boatRadio_setTranspor
 5. Inject a different authenticated epoch and stale sequence; verify expected session-reset/replay policy is explicit.
 6. Confirm no actuator path is connected and no command is executed during these tests.
 
-## Gate before target compilation
+## Gate before target compilation — historical checklist; now superseded by the target-compile follow-up below
 
 - [ ] Exact Remote display SKU/revision and board package confirmed.
 - [ ] Exact Boat ESP32-S3 board revision and pin/resource audit frozen.
