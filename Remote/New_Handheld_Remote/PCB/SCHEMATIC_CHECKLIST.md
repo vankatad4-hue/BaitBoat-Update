@@ -1,44 +1,38 @@
-# Schematic Development Checklist
+# Schematic Development Checklist R2
 
-Native KiCad capture pending; net-level drafts are not completed schematics.
+Native KiCad capture pending. Net assignments are drafts, not completed schematics.
 
 ## Sheet plan
 - [ ] 00_System_Block — pack, rails, controller, display, inputs, radio
 - [ ] 01_Battery_Input — pack/BMS, fuse, reverse protection, ADC/NTC, testpoints
-- [ ] 02_Controller_Power — Waveshare onboard CS8501 battery-to-5V boost; verify battery connector and load performance
+- [ ] 02_Controller_Power — onboard CS8501 battery-to-5V; verify connector/load performance
 - [ ] 03_Radio_3V3 — TPS63070 dedicated rail; verify pin map/capacitance/config
-- [ ] 04_Analog_Controls — ADS1115 joystick ADC and MCP23017 button expander
-- [ ] 05_Controller_Interface — Waveshare module interfaces/programming
-- [ ] 06_Display/Touch — board interface documentation
-- [ ] 07_Joysticks_Buttons — two joysticks, 16 buttons (ADC/expander hardware) 
-- [ ] 08_nRF24_Radio — SPI/control, power, RF keepout/antenna
-- [ ] 09_Connector_Pinouts — exact connectors and pin assignments
-- [ ] 10_Testpoints — pack, rails, ADC/NTC, debug
+- [ ] 04_Analog_Controls — ADS1115 joystick ADC
+- [ ] 05_I2C_Button_Expander — MCP23017 buttons @0x20
+- [ ] 06_I2C_Radio_Control — MCP23017 CE/CSN/IRQ candidate @0x21; validate timing
+- [ ] 07_Controller_Interface — Waveshare PORT1/shared buses
+- [ ] 08_Joysticks_Buttons — 2 joysticks, 16 buttons
+- [ ] 09_nRF24_Radio — shared SPI, controls, power, RF keepout
+- [ ] 10_Connector_Pinouts — parts/keying/pinout
+- [ ] 11_Testpoints — battery, rails, ADC/NTC, debug
 
-## Power documents
-- Controller power architecture: 5V_CONTROLLER_POWER_ARCHITECTURE_REVIEW_R1.md
-- External TPS61023 fallback: BOOST_CONVERTER_SELECTION_REVIEW_R3.md and TPS61023 calculation/pin map files
-- Radio rail: TPS63070 calculations R2; pin map R3
-- Battery protection: BATTERY_INPUT_PROTECTION_DESIGN_R4.md
-- Capture guide: POWER_SHEET_CAPTURE_SPEC_R4.md; REMOTE_POWER_AND_CONTROL_BLOCK_DIAGRAM_R1.md
-- BOM: REMOTE_POWER_BOM_CANDIDATES_R4.md
-- Net draft: POWER_SCHEMATIC_NET_DRAFT_R6.md; POWER_DISTRIBUTION_DESIGN_R4.md; REMOTE_PERIPHERAL_INTERFACE_PINOUT_DRAFT_R1.md; WAVESHARE_GPIO_RESOURCE_AUDIT_R1.md
+## Verified facts
+Waveshare ESP32-S3-Touch-LCD-4.3 Standard schematic PORT1 mapping reviewed. GPIO11/12/13 TF SPI; GPIO8/9 I2C; GPIO6 Sensor AD; GPIO15/16 RS485/CAN; GPIO19/20 USB/CAN mux; GPIO43/44 UART0. LCD/touch pins reserved. GPIO35–37 unused pending module memory-routing confirmation.
 
-## Baseline
-- Controller/display: Waveshare battery header fed from protected 1S pack; onboard CS8501 boost provides 5V. Test 450mA board load and transients. External boost is fallback only.
-- Radio: TPS63070, 1.5µH candidate, 470k/150k, cap bank, 100nF VAUX; EN reset-safe.
-- Protection: BMS, 4A fast fuse candidate, FDS6575 reverse P-MOS (Drain=input, Source=protected output), ADC, NTC. All need review/validation.
+## Proposed peripheral assignments
+See WAVESHARE_HEADER_MAPPING_AND_PIN_ASSIGNMENTS_R2.md. ADS1115 @0x48 axes; MCP23017 @0x20 buttons; MCP23017 @0x21 radio control candidate; shared SPI GPIO11/12/13; I2C GPIO8/9. Radio CE/CSN/IRQ via expander timing is not verified.
 
-## Verification
-- [ ] Confirm exact board revision and battery connector polarity/power path.
-- [ ] Validate onboard boost startup, 5V rail droop/ripple, load and thermal.
-- [ ] Verify converter symbols, footprints and pins.
-- [ ] Check feedback/enable/default states.
-- [ ] Effective capacitor bias and inductor current.
-- [ ] Final pack/BMS/fuse/MOSFET/wire/connector ratings.
-- [ ] Native KiCad capture and ERC.
-- [ ] Independent schematic review.
-- [ ] PCB layout, DFM, thermal/RF review.
-- [ ] Bench bring-up and logs.
+## Power baseline
+Protected 1S pack feeds Waveshare battery header; onboard CS8501 boosts to 5V. Test startup, load, ripple/droop and thermal; external boost fallback only. Radio TPS63070 rail remains dedicated. Protection candidates: BMS, 4A fast fuse, FDS6575 reverse P-MOS (Drain input, Source protected output), ADC, NTC; all require validation.
 
-Charging is excluded. No fabrication-ready schematic/PCB claimed.
+## Before PCB
+- [ ] Verify physical board revision/header orientation.
+- [ ] Verify GPIO35–37 memory usage.
+- [ ] I2C scan/pullups/capacitance/rise time.
+- [ ] Shared SPI test with radio + TF card, CS isolation and bus arbitration.
+- [ ] MCP radio control timing/throughput test; redesign if needed.
+- [ ] ADS1115 axis sampling/latency and analog filters.
+- [ ] Radio-rail transient and thermal test.
+- [ ] Battery-monitor circuit/assignment.
+- [ ] Connector and harness pin-1/keying finalized.
+- [ ] Native KiCad capture/ERC/footprint checks/independent review.
