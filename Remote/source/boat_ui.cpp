@@ -1,10 +1,12 @@
 
 #include "boat_ui.h"
+#include <Arduino.h>
 #include "boat_state.h"
 #include "joystick_calibration_ui.h"
 #include "settings_ui.h"
 #include "joystick.h"
 #include "boat_radio.h"
+#include "boat_commands.h"
 #include "boat_telemetry.h"
 #include "release_button_guard.h"
 #include "mission_ui.h"
@@ -505,7 +507,7 @@ static void createFooter()
     lv_label_set_long_mode(inputStatusLabel, LV_LABEL_LONG_DOT);
     safetyStatusLabel = createLabel(footerPanel, "STOP: UNKNOWN", 15, 34);
     lv_obj_set_width(safetyStatusLabel, 150);
-    lv_label_set_long_mode(safetyStatusLabel, LV_LABEL_LONG_WRAP);
+    lv_label_set_long_mode(safetyStatusLabel, LV_LABEL_LONG_DOT);
     // Create a button for joystick calibration.
 lv_obj_t *sticksButton = lv_button_create(footerPanel);
 
