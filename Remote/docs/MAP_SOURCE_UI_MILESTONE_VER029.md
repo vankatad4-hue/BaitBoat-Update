@@ -28,7 +28,7 @@ For a 1 km square centred near latitude 43° using zoom levels 14–17, the plan
 The GitHub files and commits were confirmed through repository actions. The test source is present, but the test suite could not be executed in the working environment because network access to raw GitHub was unavailable and the files were not present in the local runtime. Do not mark the tests as passing. Review tile calculations manually; run `python3 -m unittest discover -s Remote/tools/tests -v` once the repository is cloned locally.
 
 ## Next
-1. Add MBTiles subset export using the area planner, with mandatory provider attribution/licence fields.
-2. Validate output pack completeness and add coverage metadata the firmware can consume.
-3. Implement an offline-map area manager UI (area centre, 1 km default, zoom choices, estimated storage, copy/import status).
-4. Research and select an authorized Google Maps Platform API flow compatible with this ESP32-S3 renderer; only then implement online rendering.
+1. Validate MBTiles output completeness and make firmware reject incomplete packs (parse manifest status/coverage).
+2. Add the offline-map manager UI (area centre, 1 km default, zoom choices, storage estimate, SD import/download progress).
+3. Implement a licensed-source download/import flow; avoid public tile servers that prohibit bulk use.
+4. Implement Google Map Tiles API 2D online renderer after decoder, credentials, TLS, attribution and billing/quota controls are designed.
