@@ -22,6 +22,7 @@ public:
  void poll(uint32_t now);
  void copySensors(BoatHardwareSample &sample,uint32_t now)const;
  bool imuReady()const{return imuReady_;}
+ bool rawMotion(SensorVector &a,SensorVector &m,uint32_t now)const{if(!rawValid_||now-rawAt_>=300U)return false;a=rawAccel_;m=rawMag_;return true;}
 private:
  HardwareSerial &serial_;TwoWire &wire_;
  TrackerSensorConfig cfg_{};
@@ -30,6 +31,7 @@ private:
  double heading_=0;uint16_t voltage_=0;
  uint32_t headingAt_=0,voltageAt_=0,adcAt_=0,imuPollAt_=0;
  double adjust_[3]={1,1,1};
+ SensorVector rawAccel_{},rawMag_{};uint32_t rawAt_=0;bool rawValid_=false;
  bool writeReg(uint8_t address,uint8_t reg,uint8_t value);
  bool readRegs(uint8_t address,uint8_t reg,uint8_t *dst,uint8_t length);
  bool writeAdc(uint16_t value);

@@ -32,7 +32,7 @@ bool TrackerSensorPort::initializeImu(){
  delay(2);uint8_t asa[3];if(!readRegs(mag,0x10,asa,3))return false;
  for(unsigned i=0;i<3;++i){if(!asa[i]||asa[i]==255)return false;adjust_[i]=(asa[i]-128.0)/256.0+1.0;}
  if(!writeReg(mag,0x0a,0))return false;
- delay(2);return writeReg(mag,0x0a,0x16); // continuous 100 Hz, 16-bit
+ delay(2);return writeReg(mag,0x0a,0x12); // continuous 8 Hz, 16-bit; 20 ms polling avoids overrun
 }
 bool TrackerSensorPort::begin(const TrackerSensorConfig &cfg){
  if(configured_||!validPins(cfg))return false;
@@ -52,6 +52,7 @@ void TrackerSensorPort::pollImu(uint32_t now){
  if(!readRegs(0x0c,0x03,mag,7)||!readRegs(cfg_.imuAddress,0x3b,accel,6)||(mag[6]&8U)||(st&2U)){headingValid_=false;return;}
  SensorVector a={big(accel)/16384.0,big(accel+2)/16384.0,big(accel+4)/16384.0};
  SensorVector m={little(mag)*0.15*adjust_[0],little(mag+2)*0.15*adjust_[1],little(mag+4)*0.15*adjust_[2]};
+ rawAccel_=a;rawMag_=m;rawAt_=now;rawValid_=true;
  headingValid_=carrierHeading(a,m,cfg_.heading,heading_);
  if(headingValid_)headingAt_=now;
 }
