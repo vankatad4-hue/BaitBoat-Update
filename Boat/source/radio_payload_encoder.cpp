@@ -8,24 +8,7 @@ static void put32(uint8_t *p, int32_t v) {
     p[0]=(uint8_t)u; p[1]=(uint8_t)(u>>8); p[2]=(uint8_t)(u>>16); p[3]=(uint8_t)(u>>24);
 }
 
-bool radio_encodeHeartbeatPayload(uint8_t flags, uint8_t buildMajor, uint8_t out[8]) {
-    if(!out) return false;
-    clear8(out);
-    if((flags&0xF0U)!=0) return false;
-    out[0]=flags; out[1]=buildMajor; return true;
-}
-
-bool radio_encodeAckPayload(uint8_t result, uint8_t commandType, uint16_t commandId,
-                            uint8_t stopState, uint8_t interlockFlags, uint8_t out[8]) {
-    if(!out) return false;
-    clear8(out);
-    if(result>RADIO_ACK_INTERNAL_FAILURE || commandType<1 || commandType>10 || commandId==0 ||
-       stopState>2 || (interlockFlags&0xF0U)!=0) return false;
-    out[0]=0; out[1]=result; out[2]=commandType; put16(out+3,commandId);
-    out[5]=stopState; out[6]=interlockFlags; return true;
-}
-
-bool radio_encodeTelemetryPayload(const RadioDecodedPayload &in, uint8_t out[8]) {
+// Heartbeat and ACK payload encoders live in radio_payload_codec.cpp.\n\nbool radio_encodeTelemetryPayload(const RadioDecodedPayload &in, uint8_t out[8]) {
     if(!out) return false;
     clear8(out);
     switch(in.kind) {
