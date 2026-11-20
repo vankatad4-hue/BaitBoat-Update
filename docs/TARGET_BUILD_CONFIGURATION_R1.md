@@ -51,3 +51,9 @@ Boat controller remains a candidate Heltec Wireless Tracker ESP32-S3 with onboar
 - No target compile is claimed.
 - No hardware validation is claimed.
 - The board has not been purchased/identified by inspection.
+
+## Official documentation references
+- Waveshare board overview: https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3
+- Waveshare resources/examples: https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3/Resources-And-Documents
+- Waveshare usage guide: https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3/Instructions-For-Use
+- Waveshare FAQ: https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3/FAQ
