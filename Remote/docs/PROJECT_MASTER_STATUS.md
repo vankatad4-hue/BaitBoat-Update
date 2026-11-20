@@ -247,3 +247,10 @@ Boat:
 
 ## Remote ver027 update
 - Waypoint capacity increased to 16 (NVS) plus Home. SD/microSD card is designated for offline map packs. Existing map tile reader path documented; no renderer/map pack generator yet. Target compile, SD-card test and NVS test remain pending.
+
+
+## Remote ver027 waypoint capacity and SD map storage (2026-11-20)
+- Mission storage upgraded to 16 waypoint entries plus Home, persistent NVS, CRC, and legacy four-slot migration.
+- Mission UI uses 4×4 slot grid; map overlay can show all 16 in the local grid view.
+- Integrated microSD/TF is map-data storage. Existing SD map pack reader checks manifest and raw RGB565 tiles; full map renderer and pack creation tool remain pending.
+- Release notes and preview: `../releases/RELEASE_VER027.md`, `../source/UI_PREVIEW_MISSION_VER027.svg`. Current source marker 027. ZIP, checksum, compilation and hardware validation not done.
