@@ -330,6 +330,7 @@ static void scanWiFiEvent(lv_event_t *event)
         wifiScanTimer = lv_timer_create(wifiScanPoll, 250, nullptr);
         return;
     }
+    WiFi.scanDelete(); // Clear old scan results before starting a new asynchronous scan.
     WiFi.mode(WIFI_STA);
     const int result = WiFi.scanNetworks(true, true);
     if (result == WIFI_SCAN_FAILED)
