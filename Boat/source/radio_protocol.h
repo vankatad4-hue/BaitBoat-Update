@@ -38,7 +38,7 @@ struct RadioFrame {
     uint8_t destinationId;
     uint16_t sequence;
     uint16_t commandId;
-    uint16_t tick16;       // milliseconds modulo 65536; freshness uses wrap-safe delta
+    uint16_t tick16;       // sender-local millisecond tick; not compared across unsynchronized clocks
     uint8_t flags;
     uint8_t sessionEpoch;
     uint8_t payload[8];
