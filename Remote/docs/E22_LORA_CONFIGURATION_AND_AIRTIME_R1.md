@@ -26,8 +26,8 @@ Then read back with `C1 00 09` and compare registers. Exact command/reply and M0
 ## Air-time policy
 - Duty cycle: 1% on channel 18 (868.125MHz).
 - Maximum allowed TX airtime budget: 36 seconds per hour per transmitter, subject to national rules.
-- Initial conservative estimated airtime per 32-byte frame: 20ms until measured with actual configured module. At that estimate, one TX every 2s = 1% duty; each remote and boat transmitter must track separately.
-- Default LoRa traffic profile: safety commands/low-rate control/telemetry only; maximum 0.5Hz per endpoint while estimate remains 20ms. No continuous sonar, map or high-rate joystick stream. STOP/RETURN do not bypass duty-cycle budget.
+- Initial conservative estimated airtime per 32-byte frame: 25ms until measured with actual configured module. At that estimate, one TX every 3s = 0.83% duty; each remote and boat transmitter must track separately.
+- Default LoRa traffic profile: safety commands/low-rate control/telemetry only; maximum 0.33Hz per endpoint while estimate remains 25ms. No continuous sonar, map or high-rate joystick stream. STOP/RETURN do not bypass duty-cycle budget.
 - Measure module air-time/packet delay and use the measured worst-case duration plus margin. Persist duty-cycle accounting across reboot before outdoor operation; current prototype limiter is RAM-only and is not regulatory-ready.
 
 ## Electrical
@@ -35,3 +35,7 @@ Then read back with `C1 00 09` and compare registers. Exact command/reply and M0
 - UART is 3.3V logic.
 - UART bridge/direct UART: 9600 8N1.
 - AUX readiness used for nonblocking TX and configuration handover.
+
+
+## Datasheet basis
+The E22-900T22S manual gives the channel formula 850.125MHz + CH×1MHz, 900MHz channels 0–80, UART baud and air-rate settings, 32-byte subpacket option, and 10dBm power option. The initial channel18 setting is 868.125MHz; the 869.4–869.65MHz center cannot be reached using this module's 1MHz channel spacing.
