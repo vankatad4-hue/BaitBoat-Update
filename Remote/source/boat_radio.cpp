@@ -4,6 +4,7 @@
 #include "boat_telemetry.h"
 #include "boat_state.h"
 #include "radio_protocol.h"
+#include "mission_wire.h"
 #include "radio_command_codec.h"
 #include "radio_key_store.h"
 #include "sc16is750_bridge.h"
@@ -37,6 +38,10 @@ static bool g_backupTxSent=false,g_loraPending=false;
 static uint8_t g_loraPendingPriority=0;
 static RadioFrame g_loraPendingFrame;
 static uint8_t g_authKey[32];
+static MissionUpload g_missionUpload;
+static MissionPlan g_missionPlan{};
+static uint16_t g_missionId=0;
+static uint32_t g_missionStarted=0;
 static RadioSequenceGuard g_boatSequenceGuard; // global cross-radio replay/freshness guard
 static RadioSequenceGuard g_boatPrimarySequenceGuard;
 static RadioSequenceGuard g_boatBackupSequenceGuard;
@@ -108,6 +113,7 @@ static bool radioSendTransport(ManagedLink link,const BoatCommand &command) {
 }
 
 bool boatRadio_begin() {
+    g_missionUpload=MissionUpload{};g_missionPlan={};g_missionId=0;
     g_linkManager.begin(millis());
     g_loraConfigured=false;g_nrfReady=false;g_begun=false;
     memset(g_authKey,0,sizeof(g_authKey));
@@ -150,9 +156,46 @@ bool boatRadio_sendCommand(const BoatCommand &command) {
     return queued;
 }
 
+static bool missionPreparationSafe(){
+    return g_begun && g_nrfReady && g_sessionStartSeenPrimary &&
+           g_linkManager.active()==LINK_NRF_PRIMARY && g_linkManager.primaryHealthy(millis()) &&
+           boatState.radioConnected && boatState.mode==MODE_MANUAL &&
+           boatState.emergencyStop && boatState.emergencyStopConfirmed &&
+           !boatState.motorLeftActive && !boatState.motorRightActive &&
+           !boatState.failsafeActive && radioKey_get(g_authKey);
+}
+static bool sendMissionPreparation(const uint8_t payload[8]){
+    if(!g_nrfReady||!g_sessionStartSeenPrimary||!radioKey_get(g_authKey))return false;
+    RadioFrame frame;
+    const uint16_t id=(uint16_t)payload[1]|((uint16_t)payload[2]<<8);
+    radio_frameInit(frame,RADIO_MSG_MISSION_PREPARE,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,++g_txSequence,id,millis(),g_sessionEpoch);
+    memcpy(frame.payload,payload,8);
+    return radio_frameSeal(frame,g_authKey)&&g_nrf.sendFrame(frame);
+}
+bool boatRadio_prepareMission(MissionPlan plan){
+    if(!missionPreparationSafe())return false;
+    if(++g_missionId==0)++g_missionId;
+    plan.transaction=g_missionId;
+    const uint32_t now=millis();
+    if(!g_missionUpload.begin(plan,now,true))return false;
+    g_missionPlan=plan;g_missionStarted=now;return true;
+}
+MissionUploadState boatRadio_missionUploadState(){return g_missionUpload.state();}
+void boatRadio_cancelMissionPreparation(){
+    if(g_missionUpload.state()!=UPLOAD_ACTIVE&&g_missionUpload.state()!=UPLOAD_PREPARED)return;
+    uint8_t payload[8];
+    if(missionPlan_encode(g_missionPlan,MISSION_CANCEL,payload))sendMissionPreparation(payload);
+    g_missionUpload.fail(); // cancellation unconfirmed; receiver preparation expires independently
+}
 static bool dispatchValidatedPayload(ManagedLink link,const RadioFrame &frame,uint32_t now) {
     RadioDecodedPayload decoded{};
     switch(frame.type) {
+        case RADIO_MSG_MISSION_ACK:{
+            uint16_t id;MissionOpcode op;MissionReceive result;
+            if(link!=LINK_NRF_PRIMARY||!missionAck_decode(frame.payload,id,op,result)||id!=frame.commandId)return false;
+            g_missionUpload.acknowledge(id,op,result,now,true);
+            return true;
+        }
         case RADIO_MSG_HEARTBEAT:
             return radio_decodeHeartbeatPayload(frame.payload,decoded);
         case RADIO_MSG_ACK:
@@ -183,7 +226,7 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame) {
     const bool envelopeValid=radio_frameVerify(frame,g_authKey)&&frame.flags==0&&
         frame.sourceId==BOAT_DEVICE_ID&&frame.destinationId==REMOTE_DEVICE_ID&&
         (frame.type==RADIO_MSG_SESSION_START||frame.type==RADIO_MSG_HEARTBEAT||
-         frame.type==RADIO_MSG_TELEMETRY||frame.type==RADIO_MSG_ACK||frame.type==RADIO_MSG_LINK_PROBE)&&
+         frame.type==RADIO_MSG_TELEMETRY||frame.type==RADIO_MSG_ACK||frame.type==RADIO_MSG_LINK_PROBE||frame.type==RADIO_MSG_MISSION_ACK)&&
         sessionPayloadValid&&probePayloadValid;
     if(!envelopeValid){g_linkManager.reportFailure(link);return;}
     RadioSequenceGuard &linkGuard=(link==LINK_NRF_PRIMARY)?g_boatPrimarySequenceGuard:g_boatBackupSequenceGuard;
@@ -203,7 +246,7 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame) {
         g_ackTracker.reset(frame.sessionEpoch);telemetryInit();
         g_linkManager.reportValidRx(link,true,now);return;
     }
-    if(!g_boatSessionStarted||frame.sessionEpoch!=g_boatSessionEpoch||
+    if(!startSeen||!g_boatSessionStarted||frame.sessionEpoch!=g_boatSessionEpoch||
        !linkGuard.accept(frame.sessionEpoch,frame.sequence,false)){
         g_linkManager.reportFailure(link);return;
     }
@@ -260,6 +303,10 @@ void boatRadio_update() {
     }
     g_ackTracker.update(now);
     g_linkManager.tick(millis());
+    const bool safe=missionPreparationSafe();
+    if((g_missionUpload.state()==UPLOAD_ACTIVE||g_missionUpload.state()==UPLOAD_PREPARED)&&(!safe||now-g_missionStarted>=9000U))boatRadio_cancelMissionPreparation();
+    uint8_t missionPayload[8];
+    if(g_missionUpload.next(now,safe,missionPayload))sendMissionPreparation(missionPayload);
 }
 
 bool boatRadio_isConnected(){return g_linkManager.connected(millis());}
