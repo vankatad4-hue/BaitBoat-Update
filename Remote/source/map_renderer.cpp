@@ -74,3 +74,5 @@ void mapRenderer_zoomIn(){if(zoomLevel<MAX_ZOOM){zoomLevel++;for(auto&t:tiles)re
 void mapRenderer_zoomOut(){if(zoomLevel>MIN_ZOOM){zoomLevel--;for(auto&t:tiles)releaseTile(t);drawTiles();}}
 uint8_t mapRenderer_getZoom(){return zoomLevel;}
 void mapRenderer_setStyle(OfflineMapStyle style){if(style!=mapStyle){mapStyle=style;for(auto&t:tiles)releaseTile(t);drawTiles();}}
+
+void mapRenderer_invalidateTiles(){for(auto&t:tiles)releaseTile(t);drawTiles();}
