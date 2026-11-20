@@ -1,3 +1,5 @@
+# SUPERSEDED by REMOTE_HARDWARE_TEST_BUILD_R4.md
+
 # Remote Hardware Test Build R2
 
 R4 adds matched E22 backup modules, direct nRF pin proposals and radio bench drivers. This is a test-build spec, not fabrication release. This is a bench-testable architecture document, **not a fabrication release**.
