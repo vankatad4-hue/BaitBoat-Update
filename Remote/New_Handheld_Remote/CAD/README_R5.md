@@ -16,3 +16,5 @@ Button-cap STL exports are text-free; identify each cap by filename and the R5 b
 Latest R5 fit geometry: maximum shell width310.1mm, height209mm; overall depth69.5mm including raised release guards. CAD STL meshes were locally checked for watertightness. These are still fit prototypes.
 
 Automated GitHub export builds front/rear shells, the multi-cap plate and preview. Individual named release-cap STLs are included in the manual print package; the automated build intentionally avoids font/parser-dependent variants.
+
+Assembly preview now includes display-glass and joystick placeholders to visualize the assembled handheld; these are not printed shell components.
