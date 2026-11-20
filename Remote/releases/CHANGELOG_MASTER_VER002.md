@@ -1,5 +1,5 @@
 # Flytec Remote — Consolidated Version / Change History
-**Document revision:** VER002  
+**Document revision:** VER003  
 **Remote source/release version:** 028 (kept unchanged)  
 **Boat source/release version:** 014 (kept unchanged)  
 **Branch:** `hardware-ready-dual-radio-r1`  
@@ -157,3 +157,10 @@ This is the single consolidated visible change-history file for the Remote proje
 - ver029 area export/planning: `Remote/docs/OFFLINE_MAP_AREA_DOWNLOAD_SPEC_VER029.md`.
 - Google online design: `Remote/docs/GOOGLE_MAP_TILES_ONLINE_INTEGRATION_VER029.md`.
 - Offline map policy: `Remote/docs/ONLINE_OFFLINE_MAP_POLICY_VER029.md`.
+
+
+### ver029.2 — staged pack installation progress (development)
+- Added SD staged-pack import from `/map-import/` to active `/maps/` storage. Stage the contents of the exporter-created `maps/` directory (manifest, coverage index and style tile folders) beneath `/map-import/`.
+- Import accepts only complete packs with attribution/licence metadata and a coverage index. It copies tile files in 4KiB chunks, validates each tile's expected 131072-byte size, then copies the index and manifest last; the manifest is removed before installation begins so a partial replacement is not presented as valid.
+- Progress reports tile count and copied bytes; completion revalidates pack and refreshes map tile cache. Failed import leaves no active manifest and is fail-closed.
+- Firmware-side import has not been compiled or tested; staging/import is source-only.
