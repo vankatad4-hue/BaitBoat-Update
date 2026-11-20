@@ -109,17 +109,17 @@ static void stopWiFiUiTimers()
 }
 
 // Hide the virtual keyboard without deleting the entered text.
-// Alphabetic Bulgarian layout (not a claim of a particular BDS standard).
+// Phonetic QWERTY-style Bulgarian. Additional Cyrillic keys occupy row ends.
 static const char * const bgLower[]={
-    "а","б","в","г","д","е","ж","з","и","й","\n",
-    "к","л","м","н","о","п","р","с","т","у","\n",
-    "ф","х","ц","ч","ш","щ","ъ","ь","ю","я","\n",
+    "я","в","е","р","т","ъ","у","и","о","п","ш","щ","\n",
+    "а","с","д","ф","г","х","й","к","л","ч","\n",
+    "з","ь","ц","ж","б","н","м","ю","\n",
     LV_SYMBOL_BACKSPACE,LV_SYMBOL_LEFT," ",LV_SYMBOL_RIGHT,LV_SYMBOL_OK,""
 };
 static const char * const bgUpper[]={
-    "А","Б","В","Г","Д","Е","Ж","З","И","Й","\n",
-    "К","Л","М","Н","О","П","Р","С","Т","У","\n",
-    "Ф","Х","Ц","Ч","Ш","Щ","Ъ","Ь","Ю","Я","\n",
+    "Я","В","Е","Р","Т","Ъ","У","И","О","П","Ш","Щ","\n",
+    "А","С","Д","Ф","Г","Х","Й","К","Л","Ч","\n",
+    "З","Ь","Ц","Ж","Б","Н","М","Ю","\n",
     LV_SYMBOL_BACKSPACE,LV_SYMBOL_LEFT," ",LV_SYMBOL_RIGHT,LV_SYMBOL_OK,""
 };
 static lv_buttonmatrix_ctrl_t bgCtrl[35];
