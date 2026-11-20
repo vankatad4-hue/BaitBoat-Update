@@ -62,3 +62,7 @@ The pin functions on Waveshare documentation are confirmed, but physical PORT1 p
 
 ## Pin assignment correction
 GPIO6 is CE, GPIO15 is CSN; earlier R2 text suggesting GPIO6 CSN and expander CE is superseded. Both direct GPIO pins remain provisional until board revision/continuity is checked. RS485 must be disconnected/disabled and Sensor AD left unused.
+
+
+## E22 power source gate
+Use CS8501 5V rail for E22 VCC; 5V guarantees output power per module manual. UART/M0/M1/AUX remain 3.3V logic. Use 150mA peak reservation until measured at 10dBm. Bench the controller rail with display/backlight and nRF/LoRa burst simultaneously; add separate converter if needed.
