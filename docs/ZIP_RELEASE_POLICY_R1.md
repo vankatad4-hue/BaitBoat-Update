@@ -15,7 +15,13 @@
 7. On push events, the workflow commits generated ZIPs and SHA256 manifest into the branch's releases folders; on PR events it uploads artifacts without committing. Confirm workflow completion and checksum integrity before calling a ZIP verified. The ZIP is a deliverable snapshot, not a fabrication/operational approval.
 8. Keep older release archives unchanged and preserve their version history.
 
-## ver023 package scope\nRemote status synchronization for Boat's queue-level ACK/session scaffold; no remote firmware functional changes.\n\n## ver010 package scope\nBoat session epoch echo, per-link sequence guards, pending command deduplication and queue-level ACCEPTED/DUPLICATE/BUSY ACKs. No command executor or actuator integration.\n\n## ver022 package scope
+## ver023 package scope
+Remote status synchronization for Boat's queue-level ACK/session scaffold; no remote firmware functional changes.
+
+## ver010 package scope
+Boat session epoch echo, per-link sequence guards, pending command deduplication and queue-level ACCEPTED/DUPLICATE/BUSY ACKs. No command executor or actuator integration.
+
+## ver022 package scope
 Remote status synchronization only; no firmware or hardware readiness changes.
 
 ## ver009 package scope
