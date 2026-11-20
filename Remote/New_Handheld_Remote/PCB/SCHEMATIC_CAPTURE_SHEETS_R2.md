@@ -124,3 +124,11 @@ Grounded RF keepout around connector/feed. Do not run high-speed display/SD or s
 - E22 M1=1/M0=0 configuration; M1=M0=0 normal transparent mode; both high means sleep.
 - E22 channel 18 868.125MHz sits in 1% duty-cycle sub-band. The 869.4–869.65MHz 10% band is not reachable using the E22's 1MHz channel step. Strict 1% airtime limit is required.
 - Remote module supply BAT_PROT, not CS8501 5V branch, reduces load. Output power 10dBm initial; ERP/EIRP with actual antenna must still be verified.
+
+
+## R3 nRF direct GPIO wiring proposal
+- CE direct GPIO6 (Sensor AD terminal repurposed; no analog sensor connected).
+- CSN direct GPIO15 (RS485 TXD path; onboard transceiver disabled/isolated and bus not connected).
+- SPI GPIO11/12/13 shared with TF card.
+- IRQ_N to MCP23017 U_RADIO_IO GPA1 for polling/diagnostics; interrupt latency test required.
+- U_RADIO_IO GPA0 is spare, not used for CE. Direct CE/CSN avoids I2C-expander timing.
