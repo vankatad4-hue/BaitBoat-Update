@@ -42,3 +42,20 @@ Do not use the public OpenStreetMap tile server as a bulk download source. Use a
 - The area exporter writes `pack_complete=false` when planned tiles are missing; firmware refuses such a pack.
 - Firmware requires non-empty attribution, licence URL and zoom list, and displays attribution in the map viewport. Attribution overlay still requires target build/hardware validation.
 - Older packs without these fields are intentionally rejected until regenerated with the updated tool.
+
+
+## Desktop tool examples (offline-only)
+
+Create a 1 km area plan and storage estimate (does not fetch tiles):
+
+```sh
+python3 Remote/tools/map_area_planner.py --lat 43.0 --lon 25.0 --zooms 14,15,16,17 --source "Licensed MBTiles source" --attribution "Source attribution" --licence-url "https://example.org/licence" --output map-plan.json
+```
+
+Extract only the area from an existing licensed MBTiles archive:
+
+```sh
+python3 Remote/tools/mbtiles_area_export.py lake.mbtiles ./sd-map --style satellite --lat 43.0 --lon 25.0 --side-m 1000 --zooms 14,15,16,17 --provider "Source name" --attribution "Attribution text" --licence-url "https://example.org/licence"
+```
+
+The exporter needs Pillow. Inspect `./sd-map/maps/area_plan.json` and the manifest; do not copy an incomplete pack (missing tile count must be zero) to the remote. Confirm the source licence allows offline storage and use before running.
