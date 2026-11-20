@@ -1,4 +1,4 @@
-# Flytec V080 Boat Project — Master Status R3
+# Flytec V080 Boat Project — Master Status R4
 
 Updated 2026-11-20. Development only; not compiled, bench-validated, or operational.
 
@@ -107,3 +107,9 @@ Remote decodes authenticated telemetry/ACK and applies freshness/safety gates. B
 
 ## Package revision status
 Current package markers: Remote ver023 / Boat ver014. Boat ver014 ZIP checksum and structure independently verified; Remote ver023 binary remains unverified. Boat ver014 ZIP checksum and structure independently verified; Remote ver023 binary remains unverified. Deterministic packaging workflow is in place. Boat payload decoder/encoder are portable utilities. Session echo, queue-level ACK and duplicate handling are scaffolded, but no telemetry source, application command executor, EXECUTED ACK or actuator integration exists.
+
+
+## Continuation checkpoint synchronization — 2026-11-20
+- Canonical restart guide: `../../docs/CONTINUATION_CHECKPOINT_VER001.md`.
+- Remote UI changes and current integration boundaries are captured there. Boat remains scaffold-only: no command executor, actuator output, telemetry publisher, mission/autopilot, or failsafe execution.
+- Package marker Boat 014 is not evidence of an operational release; current branch archive is unverified. No target build/hardware validation.
