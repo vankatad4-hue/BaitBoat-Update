@@ -14,7 +14,7 @@ Check relevant repository files first; implement approved changes; update docume
 - Retain Flytec V080 hull, 12V 550 brushed motors, battery indicator and main switch; replace control electronics.
 - Boat controller: Heltec Wireless Tracker V1.2 (ESP32-S3 + UC6580 GNSS) candidate.
 - Remote: Waveshare ESP32-S3-Touch-LCD-4.3 Standard, 800×480, LVGL 9.6.0, Arduino IDE.
-- Radio: nRF24L01+ PA/LNA, initial 250kbps; 500m is a goal only.
+- Radio: dual link — primary nRF24L01+ PA/LNA 2.4GHz, backup LoRa EU868 (SX1262/E22 UART module candidate) on both remote and boat; 500m remains an unvalidated range goal.
 - Motor driver: Cytron MDD20A candidate, current validation required.
 - Sonar: CHIRP echogram/fish-arch module; selection/integration pending.
 
@@ -46,3 +46,8 @@ Flytec_Boat_verXXX.zip and Flytec_Remote_verXXX.zip. Never overwrite prior relea
 - Remote/New_Handheld_Remote/PCB/TPS63070_PIN_NET_MAP_R3.md
 - Remote/New_Handheld_Remote/PCB/TPS63070_COMPONENT_CALCULATIONS_REVIEW_R2.md
 - Remote/New_Handheld_Remote/PCB/TPS61023_COMPONENT_CALCULATIONS_R1.md (fallback study)
+
+## Dual-radio redundancy update (2026-11-20)
+- Remote RIGHT antenna: EU868 LoRa; LEFT antenna: nRF24 2.4GHz. ESP32 Wi-Fi/Bluetooth uses onboard antenna.
+- Boat requires matching LoRa radio/antenna. LoRa backup limited to safety/low-rate traffic, not sonar.
+- Failover protocol, power budget and EU/Bulgaria regulatory constraints are documented in `Remote/docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R1.md`.
