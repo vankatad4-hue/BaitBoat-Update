@@ -6,6 +6,7 @@
 #include "display_port.h"
 #include "joystick.h"
 #include "joystick_calibration_ui.h"
+#include "map_source.h"
 
 // Persistent remote preferences are stored in the ESP32 NVS partition.
 static Preferences settingsPrefs;
@@ -504,6 +505,30 @@ static void buildControlsSection(lv_obj_t *parent)
     makeButton(parent,"OPEN CALIBRATION",12,282,220,openCalibrationEvent);
 }
 
+// Map source preference selector. ONLINE is reserved until provider implementation.
+static lv_obj_t *mapSourceLabel = nullptr;
+static void mapSourceCycleEvent(lv_event_t *event)
+{
+    (void)event;
+    mapSource_nextMode();
+    if (mapSourceLabel) {
+        const char *mode = mapSource_modeLabel(mapSource_getMode());
+        lv_label_set_text(mapSourceLabel, mode);
+    }
+}
+static void buildMapSection(lv_obj_t *parent)
+{
+    makeLabel(parent, "MAP SOURCE", 18, 12);
+    makeLabel(parent, "Selected mode:", 18, 62);
+    mapSourceLabel = makeLabel(parent, mapSource_modeLabel(mapSource_getMode()), 250, 62);
+    makeButton(parent, "CYCLE AUTO / ONLINE / OFFLINE", 18, 105, 310, mapSourceCycleEvent);
+    makeLabel(parent, "AUTO uses online maps when available; otherwise SD maps.", 18, 165);
+    makeLabel(parent, "ONLINE is optional and currently unavailable.", 18, 198);
+    makeLabel(parent, "OFFLINE uses SD map packs only; it never requests internet.", 18, 231);
+    makeLabel(parent, "Wi-Fi connected does NOT confirm internet access.", 18, 275);
+    makeLabel(parent, "Google API key, billing and renderer are not configured.", 18, 310);
+}
+
 // Switch the right-hand settings panel when a category is selected.
 static void categoryEvent(lv_event_t *event)
 {
@@ -553,7 +578,7 @@ static void categoryEvent(lv_event_t *event)
     else if (strcmp(category, "SONAR") == 0)
         buildSonarSection(settingsContent);
     else if (strcmp(category, "MAP") == 0)
-        buildInfoSection(settingsContent, "MAP PREFERENCES", "Map style, zoom and boat-up settings will be connected to the offline map renderer.");
+        buildMapSection(settingsContent);
     else
         buildInfoSection(settingsContent, "SYSTEM", "Firmware version, storage status and restart controls will be added after hardware validation.");
 }
