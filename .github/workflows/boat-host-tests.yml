@@ -64,3 +64,8 @@ jobs:
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror \
             Boat/source/mission_protocol.cpp Boat/tests/mission_navigation_test.cpp -o /tmp/boat_mission_nav
           /tmp/boat_mission_nav
+      - name: Mission execution supervisor simulation
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror \
+            Boat/source/mission_protocol.cpp Boat/tests/mission_execution_test.cpp -o /tmp/boat_mission_execution
+          /tmp/boat_mission_execution
