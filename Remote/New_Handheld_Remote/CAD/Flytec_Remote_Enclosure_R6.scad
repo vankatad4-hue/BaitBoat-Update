@@ -1,5 +1,5 @@
 // Flytec V080 ergonomic remote R6 - parametric redesign
-// Confirmed front layout: TWO button banks, each 4 columns x 2 rows.
+// Updated front layout: TWO button banks, each 2 columns x 4 rows.
 // Styling based on repository CONCEPT/Flytec_Remote_Concept_Reference.jpg.
 // R6.1 prototype. Component dimensions/fit remain unverified; local mesh tests passed.
 // part="front" | "rear" | "buttons" | "assembly"
@@ -10,8 +10,8 @@ W=310; H=209; body_depth=66.5; front_th=3.5; wall=3.0;
 screen_w=108; screen_h=72; screen_y=7;
 stick_x=108; stick_y=66; stick_open=25;
 power_d=18; power_y=55; confirm_d=16; confirm_y=-62;
-button_d=14.2; pitch_x=19.5; pitch_y=21.0;
-bank_center_x=108; bank_center_y=-31;
+button_d=14.2; pitch_x=19.5; pitch_y=20.5;
+bank_center_x=106; bank_center_y=-10;
 antenna_d=8.6; antenna_x=112; antenna_y=82;
 usb_w=15.5; usb_h=8.5;
 screw_positions=[[-137,53],[137,53],[-137,-51],[137,-51],[-76,-91],[76,-91]];
@@ -30,13 +30,15 @@ module base_outline2d(){
 module outline2d(){scale([W/318,H/206]) offset(r=8) base_outline2d();}
 module body_solid(z){linear_extrude(height=z) outline2d();}
 module bank_centres(side){
-  // Four columns spread across each side wing, two rows.
-  for(col=[0:3],row=[0:1])
-    translate([side*(bank_center_x-29.25+col*pitch_x),
+  // Two columns across each side wing, four rows vertically.
+  for(col=[0:1],row=[0:3])
+    translate([side*(bank_center_x+(col-0.5)*pitch_x),
                bank_center_y-row*pitch_y,0]) children();
 }
 module release_centres(){
-  for(col=[0:3]) translate([bank_center_x-29.25+col*pitch_x,bank_center_y,0]) children();
+  // Four guarded bait/hook release buttons occupy the top 2x2 positions of the right bank.
+  for(col=[0:1],row=[0:1])
+    translate([bank_center_x+(col-0.5)*pitch_x,bank_center_y-row*pitch_y,0]) children();
 }
 module joystick_centres(){
   for(side=[-1,1]) translate([side*stick_x,stick_y,0]) children();
@@ -53,15 +55,16 @@ module front_panel(){
     // Screen opening. Check exact bezel/PCB aperture after purchasing display.
     translate([0,screen_y,-.1]) cube([screen_w,screen_h,front_th+.2],center=true);
     joystick_centres() translate([0,0,-.1]) cylinder(d=stick_open,h=front_th+.2);
-    // Left bank and right-bank utility row use ordinary switch apertures.
+    // Left bank: all 8 standard buttons. Right bank: lower 4 standard buttons.
     bank_centres(-1) translate([0,0,-.1]) cylinder(d=button_d,h=front_th+.2);
-    for(col=[0:3]) translate([bank_center_x-29.25+col*pitch_x,bank_center_y-pitch_y,-.1]) cylinder(d=button_d,h=front_th+.2);
-    // Right top row: wider clearance for the four guarded actuator keys.
+    for(col=[0:1],row=[2:3])
+      translate([bank_center_x+(col-0.5)*pitch_x,bank_center_y-row*pitch_y,-.1]) cylinder(d=button_d,h=front_th+.2);
+    // Right bank top 2x2: guarded bait/hook release buttons.
     release_centres() translate([0,0,-.1]) cylinder(d=18.0,h=front_th+.2);
     translate([0,confirm_y,-.1]) cylinder(d=confirm_d,h=front_th+.2);
     translate([0,power_y,-.1]) cylinder(d=power_d,h=front_th+.2);
-    // Lower-center USB-C opening.
-    translate([0,-86,front_th/2]) cube([usb_w,usb_h,front_th+1],center=true);
+    // USB-C opening is routed through the rear/bottom bridge, not the front panel.
+
     screw_holes();
   }
   // Raised safety collars around bait/hook buttons.
@@ -145,9 +148,9 @@ module internal_preview(){\n  color("#242a30") rear_shell();\n  translate([0,car
   translate([0,screen_y,body_depth+front_th+.1]) color("#0a1822") cube([screen_w-3,screen_h-3,1],center=true);
   joystick_centres() translate([0,0,body_depth+front_th+.1]) color("#303840") cylinder(d=21,h=9);
   bank_centres(-1) translate([0,0,body_depth+front_th+.1]) color("#c7c9cb") button_cap(false);
-  // Right-bank top row is four releases; bottom row are ordinary utility keys.
-  for(col=[0:3]) translate([antenna_x-29.25+col*pitch_x,bank_center_y,body_depth+front_th+.1]) color("#bd4c43") button_cap(true);
-  for(col=[0:3]) translate([antenna_x-29.25+col*pitch_x,bank_center_y-pitch_y,body_depth+front_th+.1]) color("#c7c9cb") button_cap(false);
+  // Right bank 2x2 guarded release keys on top, 2x2 utility keys below.
+  release_centres() translate([0,0,body_depth+front_th+.1]) color("#bd4c43") button_cap(true);
+  for(col=[0:1],row=[2:3]) translate([bank_center_x+(col-0.5)*pitch_x,bank_center_y-row*pitch_y,body_depth+front_th+.1]) color("#c7c9cb") button_cap(false);
   translate([0,power_y,body_depth+front_th+.1]) color("#4e92cc") cylinder(d=15,h=5);
   translate([0,confirm_y,body_depth+front_th+.1]) color("#d8dadd") button_cap(false);
 }
