@@ -1,0 +1,38 @@
+Connector,Pin,Net,Function,Notes
+J_CTRL_MOTOR,1,GND,Signal ground,Two grounds may be used
+J_CTRL_MOTOR,2,DIR1,Motor 1 direction,MCU GPIO TBD
+J_CTRL_MOTOR,3,PWM1,Motor 1 speed,MCU PWM TBD
+J_CTRL_MOTOR,4,DIR2,Motor 2 direction,MCU GPIO TBD
+J_CTRL_MOTOR,5,PWM2,Motor 2 speed,MCU PWM TBD
+J_CTRL_MOTOR,6,GND,Signal ground,Separate low-current return
+J_MOTOR_PWR,1,MOTOR_BUS_PLUS,Motor-driver supply,Main fuse / branch fuse
+J_MOTOR_PWR,2,MOTOR_BUS_MINUS,Motor return,High-current return
+J_M1,1,M1A,Left motor output,Driver terminal
+J_M1,2,M1B,Left motor output,Driver terminal
+J_M2,1,M2A,Right motor output,Driver terminal
+J_M2,2,M2B,Right motor output,Driver terminal
+J_BAIT,1,COIL_BAIT_PLUS,12V bait coil,Branch fused
+J_BAIT,2,COIL_BAIT_SW,Low-side MOSFET output,Solenoid driver
+J_HOOK,1,COIL_HOOK_PLUS,12V hook coil,Branch fused
+J_HOOK,2,COIL_HOOK_SW,Low-side MOSFET output,Solenoid driver
+J_NRF,1,GND,Radio ground
+J_NRF,2,3V3_RADIO,Radio supply,Local decoupling
+J_NRF,3,SPI_MOSI,Primary radio SPI
+J_NRF,4,SPI_SCK,Primary radio SPI
+J_NRF,5,SPI_MISO,Primary radio SPI
+J_NRF,6,NRF_CSN,Direct MCU GPIO,MCU pin TBD
+J_NRF,7,NRF_CE,Direct MCU GPIO,MCU pin TBD
+J_NRF,8,NRF_IRQ_N,Interrupt input,MCU pin TBD
+J_SENSORS,1,3V3_SENSORS,Sensor supply,Verify current
+J_SENSORS,2,GND,Sensor ground
+J_SENSORS,3,I2C_SDA,Heading sensor/aux I2C
+J_SENSORS,4,I2C_SCL,Heading sensor/aux I2C
+J_GNSS,1,GNSS_UART_RX,Controller receive,Tracker native GNSS UART pin TBD
+J_GNSS,2,GNSS_UART_TX,Controller transmit,Tracker native GNSS UART pin TBD
+J_GNSS,3,GNSS_POWER_EN,GNSS power control,Only if board's native pin mapping requires
+J_SONAR,1,SONAR_VCC,Sonar supply,Separate fuse/rail if required
+J_SONAR,2,GND,Sonar ground
+J_SONAR,3,SONAR_UART_RX,MCU receive,Module interface TBD
+J_SONAR,4,SONAR_UART_TX,MCU transmit,Module interface TBD
+J_SONAR,5,SONAR_TRIGGER,Trigger/status,Optional
+J_SONAR,6,SONAR_DATA,Digital data/status,Optional
