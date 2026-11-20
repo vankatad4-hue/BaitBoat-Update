@@ -35,8 +35,7 @@ void BoatDualRadioPort::update() {
 }
 void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  const uint32_t now=millis();
- if(!authenticated_ || !radio_frameVerify(f,key_) || f.sourceId!=REMOTE_ID || f.destinationId!=BOAT_ID ||
-    ) return;
+ if(!authenticated_ || !radio_frameVerify(f,key_) || f.sourceId!=REMOTE_ID || f.destinationId!=BOAT_ID) return;
  if(!seqGuard_.accept(f.sessionEpoch,f.sequence)) return;
  if(link==LINK_NRF_PRIMARY)lastNrfRxMs_=now;else lastE22RxMs_=now;
  if(f.type==RADIO_MSG_HEARTBEAT || f.type==RADIO_MSG_TELEMETRY || f.type==RADIO_MSG_ACK || f.type==RADIO_MSG_LINK_PROBE)
