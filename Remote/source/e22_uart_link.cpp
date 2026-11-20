@@ -1,11 +1,9 @@
 #include "e22_uart_link.h"
 #include <string.h>
 
-static const uint8_t E22_CONFIG_DATA[9]={0x00,0x00,0x00,0x67,0xC3,0x12,0x00,0x00,0x00};
 static const uint8_t E22_WRITE_CMD[12]={0xC0,0x00,0x09,0x00,0x00,0x00,0x67,0xC3,0x12,0x00,0x00,0x00};
 static const uint8_t E22_WRITE_ACK[12]={0xC1,0x00,0x09,0x00,0x00,0x00,0x67,0xC3,0x12,0x00,0x00,0x00};
 static const uint8_t E22_READ_CMD[3]={0xC1,0x00,0x09};
-static const uint8_t E22_READ_ACK_PREFIX[3]={0xC1,0x00,0x09};
 
 E22UartLink::E22UartLink(Stream &uart,E22SetModeFn mode,E22AuxReadyFn aux,E22ResetFn reset,void *ctx)
  : uart_(uart),modeFn_(mode),auxFn_(aux),resetFn_(reset),context_(ctx),configured_(false),
@@ -27,7 +25,8 @@ void E22UartLink::recordAirtime(uint32_t now,uint32_t ms){
 }
 bool E22UartLink::configCommand(const uint8_t *cmd,size_t length,const uint8_t *expected,size_t expectedLen,uint32_t timeout){
     while(uart_.available()) uart_.read();
-    uart_.write(cmd,length); uart_.flush();
+    if(uart_.write(cmd,length)!=length) return false;
+    uart_.flush();
     uint8_t response[16]; size_t n=0; const uint32_t start=millis();
     while((uint32_t)(millis()-start)<timeout && n<expectedLen){
         while(uart_.available() && n<expectedLen) response[n++]=(uint8_t)uart_.read();
@@ -44,13 +43,13 @@ bool E22UartLink::configureEU868TestProfile(){
     modeFn_(false,true,context_); // M1=1, M0=0 configuration mode
     const uint32_t waitStart=millis();
     while(!auxFn_(context_) && (uint32_t)(millis()-waitStart)<500) delay(1);
-    if(!auxFn_(context_)) return false;
-    if(!configCommand(E22_WRITE_CMD,sizeof(E22_WRITE_CMD),E22_WRITE_ACK,sizeof(E22_WRITE_ACK),250)) return false;
-    if(!configCommand(E22_READ_CMD,sizeof(E22_READ_CMD),E22_WRITE_ACK,sizeof(E22_WRITE_ACK),250)) return false;
-    modeFn_(false,false,context_); // transparent normal mode
+    if(!auxFn_(context_)) { modeFn_(false,false,context_); return false; }
+    const bool writeOK=configCommand(E22_WRITE_CMD,sizeof(E22_WRITE_CMD),E22_WRITE_ACK,sizeof(E22_WRITE_ACK),250);
+    const bool readOK=writeOK && configCommand(E22_READ_CMD,sizeof(E22_READ_CMD),E22_WRITE_ACK,sizeof(E22_WRITE_ACK),250);
+    modeFn_(false,false,context_); // transparent normal mode even on failed config
     const uint32_t normalStart=millis();
     while(!auxFn_(context_) && (uint32_t)(millis()-normalStart)<500) delay(1);
-    configured_=auxFn_(context_);
+    configured_=writeOK && readOK && auxFn_(context_);
     auxReadyNow_=configured_;
     return configured_;
 }
