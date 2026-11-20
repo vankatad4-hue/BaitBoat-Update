@@ -1,65 +1,64 @@
-
 #include "boat_radio.h"
 
-// Current radio connection state.
-static bool radioConnected = false;
-
-// --------------------------------------------------
-// INITIALISE RADIO
-// --------------------------------------------------
+// Safe placeholder state. No hardware driver, packet decoder, authentication,
+// ACK processing, or failover supervisor is implemented in this scaffold.
+static BoatRadioLink activeLink = RADIO_LINK_NONE;
+static BoatRadioState linkState = RADIO_STATE_DISCONNECTED;
+static bool nrfConnected = false;
+static bool loraConnected = false;
 
 bool boatRadio_begin()
 {
-    // nRF24L01+ PA/LNA hardware initialisation will go here.
-    // Selected architecture: matching 2.4 GHz modules at remote and boat.
-    // Start range testing at 250 kbps; increase only after measured validation.
-    //
-    // We still need to confirm:
-    // - Exact nRF24L01+ PA/LNA board variant and RF front-end.
-    // - SPI pins.
-    // - NSS / CS pin.
-    // - BUSY pin.
-    // - RESET pin.
-    // - DIO1 interrupt pin.
-    //
-    // Do not report a connection until the boat responds.
-
-    radioConnected = false;
-
+    // TODO: initialise nRF24 primary transport.
+    // TODO: initialise EU868 LoRa UART backup transport.
+    // TODO: start non-blocking LinkManager and authenticated heartbeat.
+    // Keep both link flags false until valid boat-side response is decoded.
+    activeLink = RADIO_LINK_NONE;
+    linkState = RADIO_STATE_DISCONNECTED;
+    nrfConnected = false;
+    loraConnected = false;
     return false;
 }
-
-// --------------------------------------------------
-// TRANSMIT COMMAND
-// --------------------------------------------------
 
 bool boatRadio_sendCommand(const BoatCommand &command)
 {
-    // Radio packet encoding and transmission
-    // will be implemented after hardware selection.
-
+    // TODO: route through LinkManager:
+    // - primary nRF first;
+    // - backup LoRa only for policy-approved commands;
+    // - never resend a release action with a new command ID;
+    // - TX success is not delivery; wait for validated boat ACK/state.
     (void)command;
-
     return false;
 }
 
-// --------------------------------------------------
-// PROCESS RECEIVED DATA
-// --------------------------------------------------
-
 void boatRadio_update()
 {
-    // Receive packets from the boat.
-    // Validate packet integrity.
-    // Process acknowledgements.
-    // Update boat telemetry.
+    // TODO: poll both drivers; validate ID/sequence/CRC/authentication;
+    // update link metrics; expire stale packets; handle failover/failback.
+    // Must remain non-blocking and never wait for a radio ACK in the UI loop.
 }
-
-// --------------------------------------------------
-// CONNECTION STATUS
-// --------------------------------------------------
 
 bool boatRadio_isConnected()
 {
-    return radioConnected;
+    return nrfConnected || loraConnected;
+}
+
+BoatRadioLink boatRadio_getActiveLink()
+{
+    return activeLink;
+}
+
+BoatRadioState boatRadio_getState()
+{
+    return linkState;
+}
+
+bool boatRadio_primaryConnected()
+{
+    return nrfConnected;
+}
+
+bool boatRadio_backupConnected()
+{
+    return loraConnected;
 }
