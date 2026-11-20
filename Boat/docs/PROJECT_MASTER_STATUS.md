@@ -127,3 +127,7 @@ Current package markers: Remote ver023 / Boat ver014. Boat ver014 ZIP checksum a
 ## Shared project compile-preparation update — 2026-11-20
 - Remote target compile run #11 progressed to C++ compilation but failed on Remote UI/map sources. Remote fixes are committed and awaiting retry; this does not change Boat's status.
 - Boat firmware remains uncompiled, unintegrated and non-operational; no actuator output, telemetry publisher, executor, or failsafe execution. Continue to keep power loads disconnected.
+
+
+## Cross-project compile status note
+Remote Target Compile #14 failed on a Remote offline-map source declaration (`g_map_attribution`), corrected in commit `9aa20b0d987f94ea5b49e46509ae0ba10cc9d36b`. Compile #15 pending. This does not change Boat firmware status: Boat remains uncompiled and non-operational.
