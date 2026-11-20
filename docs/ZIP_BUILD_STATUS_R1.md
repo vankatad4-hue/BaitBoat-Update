@@ -31,3 +31,9 @@ No full ESP32 build, native schematic/ERC/DRC, PCB, RF/antenna, power/thermal or
 - Remote version marker is now ver025. Source includes mission/waypoint planning UI and SVG preview.
 - New release notes: `Remote/releases/RELEASE_VER025.md`.
 - The ver025 ZIP and checksum are not verified/available yet. Keep ver024 archive as the previous snapshot; do not claim a ver025 package is ready until it is rebuilt and verified.
+
+
+## Remote ver026 source milestone
+- Source marker advanced to ver026; release notes `Remote/releases/RELEASE_VER026.md`.
+- Adds NVS waypoint/home persistence and local relative map overlay.
+- ver026 archive and checksum are not verified; ver024 remains the last confirmed package snapshot (Remote ZIP itself still not independently verified).
