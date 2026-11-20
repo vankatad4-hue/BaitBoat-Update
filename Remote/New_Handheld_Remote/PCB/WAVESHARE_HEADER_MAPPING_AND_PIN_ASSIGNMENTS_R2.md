@@ -1,8 +1,10 @@
 # Waveshare ESP32-S3-Touch-LCD-4.3 Standard — Header Verification & Remote Pin Assignment R2
 
-**Status:** Manufacturer schematic/header mapping verified for documented board. Proposed assignments are schematic-stage, not hardware-tested. Confirm physical board revision before ordering.
+**Status correction:** GPIO peripheral-function mapping is verified from current official Waveshare documentation. The PORT1 40-pin number-to-GPIO crosswalk in this document is still PROVISIONAL and must be checked against the exact board revision/connector orientation or the physical board before any harness or PCB connection. The earlier claim that the entire connector pin-number mapping was fully verified was too strong. Custom assignments remain schematic-stage, not hardware-tested.
 
-## Verified PORT1 40-pin map
+## PORT1 40-pin crosswalk — PROVISIONAL (do not use for wiring until rechecked)
+
+The following pin-number table is retained as a working crosswalk only. The manufacturer schematic PDF and current online documentation show version/format discrepancies in the pin-mapping table. GPIO signal assignments below are supported by the current online documentation, but PORT1 pin numbers require exact revision confirmation.
 
 | Pin | Signal | Status/notes |
 |---:|---|---|
