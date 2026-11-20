@@ -15,7 +15,7 @@ The Boat and Remote project folders, source files, documentation, and preserved 
 - `Remote/releases/Flytec_Remote_ver004.zip` — archived remote release.
 - `docs/` — shared project documentation.
 
-- `Remote/releases/VERSION` and `Boat/releases/VERSION` are set to `005` for the next automated ZIP snapshots.
+- `Remote/releases/VERSION` and `Boat/releases/VERSION` are set to `006` for the next automated ZIP snapshots.
 - [ZIP packaging policy](ZIP_RELEASE_POLICY_R1.md) and `.github/workflows/package-flytec-zips.yml` define packaging and SHA256 artifacts.
 - The Heltec controller pin audit is pending physical revision identification; boat GPIOs remain unset.
 
