@@ -2,14 +2,14 @@
 // Updated front layout: TWO button banks, each 2 columns x 4 rows.
 // Styling based on repository CONCEPT/Flytec_Remote_Concept_Reference.jpg.
 // R6.1 prototype. Component dimensions/fit remain unverified; local mesh tests passed.
-// part="front" | "rear" | "buttons" | "assembly"
+// part="front" | "rear" | "buttons" | "assembly" | "internal
 part="assembly"; $fn=72;
 
 // Envelope starting target. Shell body depth excludes antenna stalks.
 W=310; H=209; body_depth=66.5; front_th=3.5; wall=3.0;
 screen_w=108; screen_h=72; screen_y=7;
 stick_x=108; stick_y=66; stick_open=25;
-power_d=18; power_y=55; confirm_d=16; confirm_y=-62;
+power_d=18; power_y=55; confirm_d=16; confirm_x=bank_center_x+pitch_x/2; confirm_y=bank_center_y-3*pitch_y;
 button_d=14.2; pitch_x=19.5; pitch_y=20.5;
 bank_center_x=106; bank_center_y=-10;
 antenna_d=8.6; antenna_x=112; antenna_y=82;
@@ -58,10 +58,10 @@ module front_panel(){
     // Left bank: all 8 standard buttons. Right bank: lower 4 standard buttons.
     bank_centres(-1) translate([0,0,-.1]) cylinder(d=button_d,h=front_th+.2);
     for(col=[0:1],row=[2:3])
-      translate([bank_center_x+(col-0.5)*pitch_x,bank_center_y-row*pitch_y,-.1]) cylinder(d=button_d,h=front_th+.2);
+      if(!(col==1 && row==3)) translate([bank_center_x+(col-0.5)*pitch_x,bank_center_y-row*pitch_y,-.1]) cylinder(d=button_d,h=front_th+.2);
     // Right bank top 2x2: guarded bait/hook release buttons.
     release_centres() translate([0,0,-.1]) cylinder(d=18.0,h=front_th+.2);
-    translate([0,confirm_y,-.1]) cylinder(d=confirm_d,h=front_th+.2);
+    translate([confirm_x,confirm_y,-.1]) cylinder(d=confirm_d,h=front_th+.2);
     translate([0,power_y,-.1]) cylinder(d=power_d,h=front_th+.2);
     // USB-C opening is routed through the rear/bottom bridge, not the front panel.
 
@@ -123,7 +123,10 @@ module rear_shell(){
   // Raised screen-support ledges at four corners of aperture.
   for(x=[-screen_w/2+7,screen_w/2-7],y=[screen_y-screen_h/2+6,screen_y+screen_h/2-6])
     translate([x,y,wall]) cube([8,8,4],center=true);
-  carrier_mounts();\n  battery_cradle();\n  grip_pads();\n  // Generic joystick mounting rings (dimension placeholder).
+  carrier_mounts();
+  battery_cradle();
+  grip_pads();
+  // Generic joystick mounting rings (dimension placeholder).
   joystick_centres() translate([0,0,wall]) difference(){
     cylinder(d=34,h=4);
     translate([0,0,-.1]) cylinder(d=26,h=4.2);
@@ -136,12 +139,21 @@ module button_cap(release=false){
   }
 }
 module button_set(){
-  // Separate print plate: 12 ordinary caps + 4 safety-release caps.
-  for(i=[0:11]) translate([(i%6)*19, floor(i/6)*20,0]) button_cap(false);
+  // 11 utility caps (8 left + 3 right), 4 release caps, 1 separate-input OK cap.
+  for(i=[0:10]) translate([(i%6)*19, floor(i/6)*20,0]) button_cap(false);
   for(i=[0:3]) translate([i*19,45,0]) button_cap(true);
-  translate([76,45,0]) button_cap(false); // separate OK/confirm key
+  translate([76,45,0]) button_cap(false); // OK/confirm cap; electrically on MCP23017 0x21 GPA4
 }
-module internal_preview(){\n  color("#242a30") rear_shell();\n  translate([0,carrier_y,wall+carrier_standoff_h+1]) color("#287b48") cube([carrier_w,carrier_h,1.6],center=true);\n  translate([0,screen_y,body_depth-25]) color("#235b9a") cube([screen_w+4,screen_h+4,2],center=true);\n  for(side=[-1,1],layer=[0:1]) translate([side*battery_grip_x,battery_y,wall+battery_saddle_z+layer*battery_depth_pitch]) rotate([90,0,0]) color("#d5a23c") cylinder(d=cell_d,h=cell_len,center=true);\n  joystick_centres() translate([0,stick_y-12,wall+14]) color("#3c6d85") cube([27,30,4],center=true);\n  translate([-90,antenna_y-6,wall+14]) color("#6d5a9d") cube([32,24,4],center=true);\n  translate([90,antenna_y-6,wall+14]) color("#6d5a9d") cube([32,24,4],center=true);\n}\nmodule assembly_preview(){
+module internal_preview(){
+  color("#242a30") rear_shell();
+  translate([0,carrier_y,wall+carrier_standoff_h+1]) color("#287b48") cube([carrier_w,carrier_h,1.6],center=true);
+  translate([0,screen_y,body_depth-25]) color("#235b9a") cube([screen_w+4,screen_h+4,2],center=true);
+  for(side=[-1,1],layer=[0:1]) translate([side*battery_grip_x,battery_y,wall+battery_saddle_z+layer*battery_depth_pitch]) rotate([90,0,0]) color("#d5a23c") cylinder(d=cell_d,h=cell_len,center=true);
+  joystick_centres() translate([0,stick_y-12,wall+14]) color("#3c6d85") cube([27,30,4],center=true);
+  translate([-90,antenna_y-6,wall+14]) color("#6d5a9d") cube([32,24,4],center=true);
+  translate([90,antenna_y-6,wall+14]) color("#6d5a9d") cube([32,24,4],center=true);
+}
+module assembly_preview(){
   color("#1d2329") rear_shell();
   translate([0,0,body_depth+.25]) color("#30363d") front_panel();
   // Glass and joystick placeholder discs for visual fit only.
@@ -150,11 +162,12 @@ module internal_preview(){\n  color("#242a30") rear_shell();\n  translate([0,car
   bank_centres(-1) translate([0,0,body_depth+front_th+.1]) color("#c7c9cb") button_cap(false);
   // Right bank 2x2 guarded release keys on top, 2x2 utility keys below.
   release_centres() translate([0,0,body_depth+front_th+.1]) color("#bd4c43") button_cap(true);
-  for(col=[0:1],row=[2:3]) translate([bank_center_x+(col-0.5)*pitch_x,bank_center_y-row*pitch_y,body_depth+front_th+.1]) color("#c7c9cb") button_cap(false);
+  for(col=[0:1],row=[2:3]) if(!(col==1 && row==3)) translate([bank_center_x+(col-0.5)*pitch_x,bank_center_y-row*pitch_y,body_depth+front_th+.1]) color("#c7c9cb") button_cap(false);
   translate([0,power_y,body_depth+front_th+.1]) color("#4e92cc") cylinder(d=15,h=5);
-  translate([0,confirm_y,body_depth+front_th+.1]) color("#d8dadd") button_cap(false);
+  translate([confirm_x,confirm_y,body_depth+front_th+.1]) color("#d8dadd") button_cap(false);
 }
 if(part=="front") front_panel();
 else if(part=="rear") rear_shell();
 else if(part=="buttons") button_set();
+else if(part=="internal") internal_preview();
 else assembly_preview();
