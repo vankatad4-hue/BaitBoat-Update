@@ -45,3 +45,12 @@ J_JOY_L/R: 1 3V3; 2 GND; 3 axis X; 4 axis Y; 5 NC.
 J_RADIO: 1 GND; 2 RADIO_3V3; 3 SPI_SCK; 4 SPI_MOSI; 5 SPI_MISO; 6 RADIO_CSN; 7 RADIO_CE; 8 RADIO_IRQ_N.
 J_NTC: 1 NTC_SENSE; 2 GND.
 J_WAVE_BAT: 1 BAT_PROT; 2 GND; connector orientation/polarity verified physically before connection.
+
+
+## LoRa backup-radio nets and connector draft (R1 addendum)
+- LORA_5V/GND power pair to module, local decoupling.
+- LORA_UART_TX = module TX to ESP UART RX; LORA_UART_RX = ESP UART TX to module RX (3.3V logic).
+- LORA_AUX to MCU input; LORA_M0 and LORA_M1 to MCU GPIO or fixed mode straps (defined, never floating).
+- LORA_RF_868: dedicated 50-ohm RF trace/coax from module RF connector to RIGHT antenna exit; matched 868MHz antenna.
+- Suggested keyed module connector pin list: 1=GND; 2=LORA_5V; 3=LORA_UART_TX; 4=LORA_UART_RX; 5=LORA_AUX; 6=LORA_M0; 7=LORA_M1; 8=RF/connector (RF should use dedicated coax/connector, not generic signal pin; final connector arrangement TBD).
+- UART GPIO selection, connector and module footprint remain provisional until pin map/datasheet review. LoRa UART is separate from nRF SPI bus.
