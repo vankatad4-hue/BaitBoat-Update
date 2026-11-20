@@ -14,7 +14,7 @@
 - Palm pads extend about 14.8 mm behind the shell datum; overall depth with front panel/release collar stack approximately 87 mm.
 - Screen opening: 108 × 72 mm (provisional).
 - Joystick aperture: 25 mm; ring OD 34 / ID 26 mm.
-- Button pitch: 19.5 mm horizontal / 21 mm vertical; release aperture 18 mm with 21 mm collars.
+- Button banks revised to **2 columns × 4 rows per side** (16 total); 19.5 mm column pitch and 20.5 mm row pitch. Four guarded release keys occupy the top 2×2 of the right bank; right-bank lower 4 keys are auxiliary. Release apertures 18 mm with 21 mm collars.
 - Carrier envelope 100 × 75 mm with 8 mm posts.
 - Battery envelope: 4 cells Ø18.6 × 65 mm, two in each grip, stacked through shell depth.
 
