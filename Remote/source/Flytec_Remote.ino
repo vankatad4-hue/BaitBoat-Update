@@ -9,6 +9,31 @@
 #include "boat_telemetry.h"
 #include "offline_map.h"
 #include "display_port.h"
+#include "physical_button_scanner.h"
+#include "release_button_guard.h"
+
+static bool uiReady = false;
+
+// Physical button events (0..7 left bank, 8..15 right bank).
+static void physicalButtonEvent(uint8_t id, bool pressed)
+{
+    if (!pressed) return;
+    switch (id) {
+        case 0: boatCommands_sendStop(); boatState.emergencyStop=true; boatState.emergencyStopConfirmed=false; releaseGuard_cancel(); break;
+        case 1: if (boatState.mode==MODE_MANUAL) boatCommands_setMode(MODE_AUTOPILOT); else if (boatState.mode==MODE_AUTOPILOT) boatCommands_setMode(MODE_MANUAL); break;
+        case 2: boatCommands_setMode(MODE_RETURN_HOME); break;
+        case 3: Serial.println("Waypoint save is not integrated yet."); break;
+        case 4: Serial.println("Waypoint selection is not integrated yet."); break;
+        case 5: if (uiReady) toggleMapPanel(); break;
+        case 6: if (uiReady) toggleSonarPanel(); break;
+        case 7: Serial.println("Settings are available through the touchscreen."); break;
+        case 12: Serial.println("Release status panel placeholder."); break;
+        case 13: Serial.println("Release-lock status placeholder."); break;
+        case 14: Serial.println("Map/sonar split placeholder."); break;
+        case 15: releaseGuard_cancel(); break;
+        default: break;
+    }
+}
 
 // --------------------------------------------------
 // EMERGENCY STOP HANDLER
@@ -18,6 +43,9 @@ static void emergencyStop()
 {
     // Send STOP. The boat must acknowledge it through valid telemetry.
     const bool sent = boatCommands_sendStop();
+    boatState.emergencyStop = true;
+    boatState.emergencyStopConfirmed = false;
+    releaseGuard_cancel();
     Serial.println(sent ? "STOP command sent." : "STOP command NOT transmitted.");
 }
 
@@ -69,11 +97,15 @@ void setup()
 
     // Connect the main-screen STOP button to the command handler.
     boatUI_setStopCallback(emergencyStop);
+    physicalButtons_setCallback(physicalButtonEvent);
+    const bool buttonsReady = physicalButtons_begin();
+    Serial.println(buttonsReady ? "PHYSICAL BUTTONS: initialized" : "PHYSICAL BUTTONS: unavailable");
 
     // LVGL objects may only be created after the display runtime is ready.
     if (displayReady)
     {
         createBoatScreen();
+        uiReady = true;
         Serial.println("DISPLAY: LVGL UI created.");
     }
     else
@@ -115,6 +147,9 @@ void loop()
         case RADIO_STATE_RECOVERY: boatState.radioLinkState = RADIO_UI_RECOVERY; break;
         default: boatState.radioLinkState = RADIO_UI_DISCONNECTED; break;
     }
+
+    // Poll physical controls with debounce; actuator release remains fail-closed.
+    physicalButtons_update(millis());
 
     // Read sticks and process control only when every safety gate passes.
     joystick_update();
