@@ -9,6 +9,7 @@
 #include "boat_radio.h"
 #include "boat_telemetry.h"
 #include "offline_map.h"\n#include "offline_map_coverage.h"
+#include "map_manager_ui.h"
 #include "display_port.h"
 #include "physical_button_scanner.h"
 #include "release_button_guard.h"
@@ -160,7 +161,7 @@ void loop()
     if (displayPort_isReady())
     {
         // Service LVGL from the display adapter.
-        displayPort_loop();
+        displayPort_loop();\n        mapManagerUI_tick();
 
         // Refresh GPS coordinates and status at a modest UI update rate.
         static uint32_t lastScreenUpdateMs = 0;
