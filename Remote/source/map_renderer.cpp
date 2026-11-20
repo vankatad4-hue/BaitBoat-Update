@@ -68,7 +68,8 @@ void mapRenderer_create(lv_obj_t *viewport){
  attributionLabel=lv_label_create(view);lv_obj_set_style_text_color(attributionLabel,lv_color_hex(0xFFFFFF),LV_PART_MAIN);lv_obj_set_style_bg_color(attributionLabel,lv_color_hex(0x101820),LV_PART_MAIN);lv_obj_set_style_bg_opa(attributionLabel,LV_OPA_80,LV_PART_MAIN);lv_obj_set_style_pad_all(attributionLabel,2,LV_PART_MAIN);lv_label_set_long_mode(attributionLabel,LV_LABEL_LONG_DOT);lv_obj_add_flag(attributionLabel,LV_OBJ_FLAG_HIDDEN);
 }
 void mapRenderer_update(bool gpsValid,float boatLat,float boatLon,float heading,bool homeValid,float homeLat,float homeLon,const MapRendererWaypoint *waypoints,uint8_t selectedIndex,bool returnHome){
- (void)heading;viewW=lv_obj_get_width(view);viewH=lv_obj_get_height(view);bool validCenter=gpsValid;if(validCenter){centerLat=boatLat;centerLon=boatLon;haveCenter=true;}else if(homeValid){centerLat=homeLat;centerLon=homeLon;haveCenter=true;}else{for(uint8_t i=0;i<16;i++)if(waypoints&&waypoints[i].valid){centerLat=waypoints[i].lat;centerLon=waypoints[i].lon;haveCenter=true;break;}}
+ (void)heading;if(offlineMap_hasMapData()&&mapStyle!=offlineMap_getStyle()){mapStyle=offlineMap_getStyle();for(auto&t:tiles)releaseTile(t);}
+ haveCenter=false;viewW=lv_obj_get_width(view);viewH=lv_obj_get_height(view);bool validCenter=gpsValid;if(validCenter){centerLat=boatLat;centerLon=boatLon;haveCenter=true;}else if(homeValid){centerLat=homeLat;centerLon=homeLon;haveCenter=true;}else{for(uint8_t i=0;i<16;i++)if(waypoints&&waypoints[i].valid){centerLat=waypoints[i].lat;centerLon=waypoints[i].lon;haveCenter=true;break;}}
  drawTiles();
  if(attributionLabel){
   char attribution[128]={0};
@@ -89,3 +90,5 @@ uint8_t mapRenderer_getZoom(){return zoomLevel;}
 void mapRenderer_setStyle(OfflineMapStyle style){if(style!=mapStyle){mapStyle=style;for(auto&t:tiles)releaseTile(t);drawTiles();}}
 
 void mapRenderer_invalidateTiles(){for(auto&t:tiles)releaseTile(t);drawTiles();}
+
+void mapRenderer_resetProfile(){haveCenter=false;for(auto&t:tiles){releaseTile(t);hideTile(t);}if(route)lv_obj_add_flag(route,LV_OBJ_FLAG_HIDDEN);if(home)lv_obj_add_flag(home,LV_OBJ_FLAG_HIDDEN);for(auto *w:wps)if(w)lv_obj_add_flag(w,LV_OBJ_FLAG_HIDDEN);}

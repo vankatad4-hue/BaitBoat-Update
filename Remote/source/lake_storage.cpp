@@ -101,3 +101,47 @@ bool lakeStorage_commitMap(const String &stagedRoot){
     if(SD.exists(dst.c_str())&&!SD.remove(dst.c_str()))return false;
     return SD.rename(tmp.c_str(),dst.c_str());
 }
+
+struct LakeNameRecord { char name[LAKE_NAME_BYTES]; uint32_t checksum; };
+static uint32_t nameChecksum(const char *data){
+    uint32_t h=2166136261UL;
+    for(size_t i=0;i<LAKE_NAME_BYTES;++i){h^=(uint8_t)data[i];h*=16777619UL;}
+    return h;
+}
+static bool readName(const String &path,LakeNameRecord &r){
+    File f=SD.open(path.c_str(),FILE_READ);
+    if(!f)return false;
+    bool ok=f.size()==sizeof(r)&&f.read(reinterpret_cast<uint8_t*>(&r),sizeof(r))==sizeof(r);
+    f.close();
+    return ok&&r.name[0]&&memchr(r.name,0,sizeof(r.name))&&r.checksum==nameChecksum(r.name);
+}
+bool lakeStorage_getName(uint8_t lake,char *name,size_t capacity){
+    if(!name||!capacity||lake>=LAKE_COUNT)return false;
+    snprintf(name,capacity,"Lake %02u",(unsigned)lake+1);
+    if(!lakeStorage_ready())return false;
+    LakeNameRecord r={};
+    if(readName(root(lake)+"/name.bin",r)||readName(root(lake)+"/name.bak",r)){
+        snprintf(name,capacity,"%s",r.name);return true;
+    }
+    return !SD.exists((root(lake)+"/name.bin").c_str())&&!SD.exists((root(lake)+"/name.bak").c_str());
+}
+bool lakeStorage_setName(uint8_t lake,const char *name){
+    if(!lakeStorage_ready()||lake>=LAKE_COUNT||!name)return false;
+    size_t n=strlen(name);if(!n||n>=LAKE_NAME_BYTES)return false;
+    bool nonSpace=false;
+    for(size_t i=0;i<n;++i){uint8_t c=(uint8_t)name[i];if(c<32||c==127)return false;if(c!=' ')nonSpace=true;}
+    if(!nonSpace)return false;
+    LakeNameRecord r={};memcpy(r.name,name,n);r.checksum=nameChecksum(r.name);
+    String base=root(lake),tmp=base+"/name.tmp",dst=base+"/name.bin",bak=base+"/name.bak";
+    if(SD.exists(tmp.c_str())&&!SD.remove(tmp.c_str()))return false;
+    File out=SD.open(tmp.c_str(),FILE_WRITE);if(!out)return false;
+    size_t bytes=out.write(reinterpret_cast<const uint8_t*>(&r),sizeof(r));out.flush();out.close();
+    LakeNameRecord check={};if(bytes!=sizeof(r)||!readName(tmp,check)||strcmp(check.name,name)!=0)return false;
+    if(SD.exists(dst.c_str())){
+        if(readName(dst,check)){
+            if(SD.exists(bak.c_str())&&!SD.remove(bak.c_str()))return false;
+            if(!SD.rename(dst.c_str(),bak.c_str()))return false;
+        }else if(!SD.remove(dst.c_str()))return false;
+    }
+    return SD.rename(tmp.c_str(),dst.c_str());
+}

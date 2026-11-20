@@ -4,6 +4,8 @@
 #include "boat_state.h"
 #include "joystick_calibration_ui.h"
 #include "settings_ui.h"
+#include "lake_ui.h"
+#include "lake_storage.h"
 #include "joystick.h"
 #include "boat_radio.h"
 #include "boat_commands.h"
@@ -297,10 +299,15 @@ static void mapSourceCycleEvent(lv_event_t *event)
     updateBoatScreen(boatState);
 }
 static void mapManagerOpenEvent(lv_event_t *event){if(lv_event_get_code(event)!=LV_EVENT_CLICKED)return;const bool gpsFresh=boatState.gpsValid&&(uint32_t)(millis()-boatState.gpsLastUpdateMs)<=2000U;mapManagerActive=true;lv_obj_add_flag(headerPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(contentPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(footerPanel,LV_OBJ_FLAG_HIDDEN);mapManagerUI_open(mainScreen,boatState.latitude,boatState.longitude,gpsFresh,[]{mapManagerActive=false;lv_obj_remove_flag(headerPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_remove_flag(contentPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_remove_flag(footerPanel,LV_OBJ_FLAG_HIDDEN);updateBoatScreen(boatState);});}
+void boatUI_refreshLakeLabel();
 static void createMapPanel()
 {
     mapPanel=createPanel(contentPanel,5,5,385,315);
-    mapTitle=createLabel(mapPanel,"КАРТА",10,8);
+    lv_obj_t *lakeButton=lv_button_create(mapPanel);styleTouchButton(lakeButton,lv_color_hex(0x174F92));
+    lv_obj_set_size(lakeButton,163,28);lv_obj_set_pos(lakeButton,8,4);
+    mapTitle=lv_label_create(lakeButton);lv_obj_set_width(mapTitle,153);lv_label_set_long_mode(mapTitle,LV_LABEL_LONG_DOT);lv_obj_center(mapTitle);
+    lv_obj_add_event_cb(lakeButton,[](lv_event_t *){lakeUI_open(mainScreen);},LV_EVENT_CLICKED,nullptr);
+    boatUI_refreshLakeLabel();
     lv_obj_t *sourceButton=lv_button_create(mapPanel);styleTouchButton(sourceButton, lv_color_hex(0x174F92));
     lv_obj_set_size(sourceButton,86,28);lv_obj_set_pos(sourceButton,285,4);
     mapSourceLabel=lv_label_create(sourceButton);lv_label_set_text(mapSourceLabel,mapSource_modeLabel(mapSource_getMode()));lv_obj_center(mapSourceLabel);
@@ -723,6 +730,7 @@ void updateBoatScreen(const BoatState &state)
     }
 
     missionUI_initStorage();
+    
     // Map Manager copies into the active SD folder; pause hidden-map reads during import.
     if (!mapManagerActive) updateMapMissionMarkers(state);
 
@@ -815,3 +823,5 @@ void boatUI_setStopCallback(StopCallback callback)
     // Store the safety callback.
     stopCallback = callback;
 }
+
+void boatUI_refreshLakeLabel(){if(mapTitle){char name[LAKE_NAME_BYTES],caption[64];lakeStorage_getName(lakeStorage_active(),name,sizeof(name));snprintf(caption,sizeof(caption),"%02u %s",(unsigned)lakeStorage_active()+1,name);lv_label_set_text(mapTitle,caption);}}

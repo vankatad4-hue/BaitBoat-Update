@@ -12,3 +12,7 @@ String lakeStorage_mapRoot();
 String lakeStorage_mapStage();
 bool lakeStorage_commitMap(const String &stagedRoot);
 bool lakeStorage_makeDirectories(const char *path);
+
+constexpr size_t LAKE_NAME_BYTES=48;
+bool lakeStorage_getName(uint8_t lake,char *name,size_t capacity);
+bool lakeStorage_setName(uint8_t lake,const char *name);
