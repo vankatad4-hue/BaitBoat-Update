@@ -50,3 +50,11 @@ Reviewed baseline: `Flytec_Remote_LVGL_9_6_0_Sonar_Settings_Update.zip` from the
 ## Safety note
 
 This remains a development baseline and must not be used to operate the boat. Keep motors and solenoids disconnected during display/UI bring-up. Test STOP, radio loss and failsafe behaviour on a bench with current-limited supplies and no propulsion load before any water test.
+
+
+## 2026-11-20 — target compile preparation
+
+- Target board confirmed: Waveshare ESP32-S3-Touch-LCD-4.3 Standard SKU 25948. Variants 4.3B/BOX excluded.
+- Source-level LVGL 9.6 adapter audit recorded in `LVGL_9_6_DISPLAY_ADAPTER_AUDIT_R1.md`; exact library API signatures remain pending target compile.
+- Added target Arduino CLI workflow and candidate dependency pins. The first run is still in progress; no compile success is claimed.
+- Remote host CI was inspected: first run failed at release-guard unit test because its fixture did not populate the new fail-closed state fields (`emergencyStopConfirmed` and `actuatorSafetyReady`). The test fixture was corrected to initialise the safety state explicitly. The next CI run is pending.
