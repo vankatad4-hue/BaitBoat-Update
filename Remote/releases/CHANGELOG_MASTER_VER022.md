@@ -57,3 +57,5 @@
 - Target compile attempt #4 exposed missing RF24 Arduino library (`RF24.h`). Pinned RF24 1.4.11 in the target workflow. Retry pending.
 
 - Source hardening: flush callback now guards a null LVGL display handle before signaling flush completion.
+
+- LVGL 9.6 target compiler findings fixed: echogram line points use `lv_point_precise_t`; live joystick/safety footer label pointers are declared. Full compile retry pending.
