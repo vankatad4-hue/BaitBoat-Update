@@ -10,7 +10,7 @@ static constexpr uint8_t TILE_SLOTS=9;
 static constexpr uint8_t MIN_ZOOM=5,MAX_ZOOM=19;
 struct TileSlot { int32_t x,y; uint8_t z; OfflineMapStyle style; uint16_t *pixels; lv_image_dsc_t dsc; lv_obj_t *image; bool valid; };
 static TileSlot tiles[TILE_SLOTS]={};
-static lv_obj_t *view=nullptr,*boat=nullptr,*home=nullptr,*wps[16]={},*route=nullptr,*zoomText=nullptr;
+static lv_obj_t *view=nullptr,*boat=nullptr,*home=nullptr,*wps[16]={},*route=nullptr,*zoomText=nullptr,*attributionLabel=nullptr;
 static lv_point_t routePoints[2];
 static uint8_t zoomLevel=15; static OfflineMapStyle mapStyle=OFFLINE_MAP_STREET;
 static double centerLat=0,centerLon=0; static bool haveCenter=false;
@@ -52,10 +52,17 @@ void mapRenderer_create(lv_obj_t *viewport){
  boat=lv_label_create(view);lv_label_set_text(boat,"▲");lv_obj_set_style_text_color(boat,lv_color_hex(0x00D5FF),LV_PART_MAIN);lv_obj_set_style_text_font(boat,LV_FONT_DEFAULT,LV_PART_MAIN);lv_obj_add_flag(boat,LV_OBJ_FLAG_HIDDEN);
  home=lv_label_create(view);lv_label_set_text(home,"H");lv_obj_set_style_text_color(home,lv_color_hex(0xFFD740),LV_PART_MAIN);lv_obj_set_style_bg_color(home,lv_color_hex(0x162A38),LV_PART_MAIN);lv_obj_set_style_bg_opa(home,LV_OPA_COVER,LV_PART_MAIN);lv_obj_add_flag(home,LV_OBJ_FLAG_HIDDEN);
  for(uint8_t i=0;i<16;i++){wps[i]=lv_label_create(view);lv_label_set_text(wps[i],"WP");lv_obj_set_style_text_color(wps[i],lv_color_hex(0x7CFC00),LV_PART_MAIN);lv_obj_set_style_bg_color(wps[i],lv_color_hex(0x162A38),LV_PART_MAIN);lv_obj_set_style_bg_opa(wps[i],LV_OPA_COVER,LV_PART_MAIN);lv_obj_set_style_pad_all(wps[i],2,LV_PART_MAIN);lv_obj_add_flag(wps[i],LV_OBJ_FLAG_HIDDEN);}
+ attributionLabel=lv_label_create(view);lv_obj_set_style_text_color(attributionLabel,lv_color_hex(0xFFFFFF),LV_PART_MAIN);lv_obj_set_style_bg_color(attributionLabel,lv_color_hex(0x101820),LV_PART_MAIN);lv_obj_set_style_bg_opa(attributionLabel,LV_OPA_80,LV_PART_MAIN);lv_obj_set_style_pad_all(attributionLabel,2,LV_PART_MAIN);lv_label_set_long_mode(attributionLabel,LV_LABEL_LONG_DOT);lv_obj_add_flag(attributionLabel,LV_OBJ_FLAG_HIDDEN);
 }
 void mapRenderer_update(bool gpsValid,float boatLat,float boatLon,float heading,bool homeValid,float homeLat,float homeLon,const MapRendererWaypoint *waypoints,uint8_t selectedIndex,bool returnHome){
  (void)heading;viewW=lv_obj_get_width(view);viewH=lv_obj_get_height(view);bool validCenter=gpsValid;if(validCenter){centerLat=boatLat;centerLon=boatLon;haveCenter=true;}else if(homeValid){centerLat=homeLat;centerLon=homeLon;haveCenter=true;}else{for(uint8_t i=0;i<16;i++)if(waypoints&&waypoints[i].valid){centerLat=waypoints[i].lat;centerLon=waypoints[i].lon;haveCenter=true;break;}}
  drawTiles();
+ if(attributionLabel){
+  char attribution[128]={0};
+  if(offlineMap_getAttribution(attribution,sizeof(attribution))){
+   lv_label_set_text(attributionLabel,attribution);lv_obj_set_size(attributionLabel,viewW,20);lv_obj_set_pos(attributionLabel,0,viewH-20);lv_obj_remove_flag(attributionLabel,LV_OBJ_FLAG_HIDDEN);
+  }else lv_obj_add_flag(attributionLabel,LV_OBJ_FLAG_HIDDEN);
+ }
  if(gpsValid){int x,y;if(projectPoint(boatLat,boatLon,x,y)){lv_obj_set_pos(boat,x-10,y-12);lv_obj_remove_flag(boat,LV_OBJ_FLAG_HIDDEN);}else lv_obj_add_flag(boat,LV_OBJ_FLAG_HIDDEN);}else lv_obj_add_flag(boat,LV_OBJ_FLAG_HIDDEN);
  if(homeValid){int x,y;if(projectPoint(homeLat,homeLon,x,y)){lv_obj_set_pos(home,x-6,y-8);lv_obj_remove_flag(home,LV_OBJ_FLAG_HIDDEN);}else lv_obj_add_flag(home,LV_OBJ_FLAG_HIDDEN);}else lv_obj_add_flag(home,LV_OBJ_FLAG_HIDDEN);
  for(uint8_t i=0;i<16;i++){if(waypoints&&waypoints[i].valid){char text[12];snprintf(text,sizeof(text),"W%02u%s%s",i+1,waypoints[i].bait?"B":"",waypoints[i].hook?"H":"");lv_label_set_text(wps[i],text);int x,y;if(projectPoint(waypoints[i].lat,waypoints[i].lon,x,y)){lv_obj_set_pos(wps[i],x-8,y-8);lv_obj_remove_flag(wps[i],LV_OBJ_FLAG_HIDDEN);}else lv_obj_add_flag(wps[i],LV_OBJ_FLAG_HIDDEN);}else lv_obj_add_flag(wps[i],LV_OBJ_FLAG_HIDDEN);}
