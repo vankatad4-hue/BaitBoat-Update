@@ -1,23 +1,42 @@
-# Boat Firmware
+# Boat Hardware and Firmware
 
-Boat-side firmware, configuration, hardware documentation and release archives.
+## Baseline
+- Retain Flytec V080 hull, two 550 brushed motors, main switch and battery indicator.
+- Reported3S4P pack/20A BMS; confirm.
+- Controller candidate Heltec Wireless Tracker ESP32-S3+UC6580 GNSS; exact revision/pin map TBD.
+- Primary nRF24L01+ PA/LNA 2.4GHz.
+- Backup matching E22-900T22S UART LoRa module; integrated SX1262 unused in first test.
+- Bait FW0630 009 and hook FW0630 001 nominal12V coils.
 
-- Source: `source/`
-- Hardware and project documentation: `docs/`
-- Versioned releases: `releases/`
+## Power
+- Pack→BMS→main fuse→retained switch→BUS_3S.
+- Controller/E225V electronics buck candidate≥2A peak.
+- nRF3.3V rail measured/selected.
+- Solenoid rail direct pack only if coil tolerance confirmed; otherwise regulated12V buck-boost.
+- Motor-driver current/fuse/cable/BMS coordination pending.
 
-The repository is the canonical source of truth. Check it before editing and update relevant docs alongside firmware changes. Do not overwrite existing release archives.
+## Fit
+- Control carrier77×79×14mm measured preliminary.
+- Cytron MDD20A candidate88.9×78.74mm; does not fit carrier footprint. Separate placement or compartment redesign required.
+- Lid clearance~30mm; full CAD fit not done.
 
-## Radio architecture
-- Primary: nRF24L01+ PA/LNA, 2.4GHz responsive control/telemetry.
-- Backup: matching LoRa UART module (SX1262/E22 family candidate), EU868, with its own 50Ω antenna.
-- Boat requires both radios for the dual-link remote system. LoRa carries safety/low-rate packets only; no sonar stream.
-- Boat must independently enforce loss-of-link failsafe; return-home only if navigation and system health are valid, otherwise stop/hold safely.
-- See `../Remote/docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R1.md` for shared link protocol and regulatory design gates.
+## Firmware
+Boat source includes nRF/E22 transport classes, authenticated receive/queue scaffold, duplicate-action cache and failsafe helper. GPIO macros unset, secure key provisioning returns false, no main boat application, no motor/solenoid/autopilot integration or ACK. Not operational.
 
+## Hardware docs
+- [Boat test build R2](docs/BOAT_HARDWARE_TEST_BUILD_R2.md)
+- [Boat electrical capture R2](docs/BOAT_ELECTRICAL_SCHEMATIC_DESIGN_R2.md)
+- [Boat block/power diagrams](docs/BOAT_BLOCK_AND_POWER_SCHEMATICS_R1.md)
+- [Boat radio pin map R2](docs/BOAT_RADIO_PIN_ASSIGNMENTS_R2.md)
+- [Boat electrical connector CSV R2](docs/BOAT_HARDWARE_PIN_CONNECTIONS_R2.csv)
+- [Boat E22 connector CSV R1](docs/BOAT_E22_UART_PIN_CONNECTIONS_R1.csv)
+- [Motor-driver fit review](docs/BOAT_MOTOR_DRIVER_FIT_REVIEW_R1.md)
+- [Boat BOM candidates](docs/BOAT_BOM_CANDIDATES_R1.md)
 
-## Hardware-ready development branch R4
-- Backup radio: matching E22-900T22S UART modules on remote and boat; Tracker integrated SX1262 unused for first prototype.
-- Boat electrical interface specs and logical pin tables are in `docs/BOAT_ELECTRICAL_SCHEMATIC_DESIGN_R2.md`, `docs/BOAT_HARDWARE_PIN_CONNECTIONS_R1.csv`, `docs/BOAT_E22_UART_PIN_CONNECTIONS_R1.csv`, `docs/BOAT_RADIO_PIN_ASSIGNMENTS_R1.md`.
-- Candidate MDD20A module is larger than 77×79mm carrier footprint; placement/compartment must be revised or driver moved outside. See fit review.
-- Firmware source has dual radio transport/command validation/dedupe/failsafe scaffold, but pins unset, key provisioning false, and actuators are not integrated.
+## Test sketches
+- [Boat nRF bench](hardware_test/nRF24_Bench/nRF24_Bench.ino)
+- [Boat E22 UART bench](hardware_test/E22_UART_Bench/E22_UART_Bench.ino)
+- [Test instructions](hardware_test/README.md)
+
+## Status
+Native KiCad/ERC/DRC, exact board pin audit, converter/driver selection, current measurements, RF/antenna tests, secure key/session, failsafe and actuator integration remain open. Bench only.
