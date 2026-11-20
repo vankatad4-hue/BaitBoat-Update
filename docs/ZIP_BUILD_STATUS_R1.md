@@ -9,8 +9,8 @@ PR workflow run #32 produced Remote/Boat ver005 archives and checksums. ZIP inte
 - ZIPs: `Remote/releases/Flytec_Remote_ver023.zip`, `Boat/releases/Flytec_Boat_ver010.zip`.
 - Manifest: `releases/SHA256SUMS_ver023_010.txt`.
 - Current manifest values:
-  - Boat: `72ca36432b3af2576e0126c719a0889b415479527080ff601f20d993a24fdf3b`
-  - Remote: `271176975922d13fc05b923af31a719378ed0501e8e19037221967ef400a6596`
+  - Boat: `f38955e0d7e5f8d681cdcfe08aa2bcaaae2b0a5a5d1a1d7a38910edefdf401d6`
+  - Remote: `87d6141e8a9442ef1ae9ecbe1870cdaf42eba069573bc8bc75ca441d1c979516`
 - The generated ZIPs and manifest are present in the branch. This session has not extracted the binary ZIPs or independently verified the hashes against downloaded bytes. Treat these as development snapshots, not integrity-verified releases.
 
 ## Package scope
