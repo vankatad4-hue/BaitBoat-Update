@@ -26,7 +26,7 @@ static lv_timer_t *wifiConnectTimer = nullptr;
 static uint32_t wifiConnectStartedAt = 0;
 static lv_obj_t *mapSourceLabel = nullptr;
 static lv_obj_t *mapWiFiLabel = nullptr;
-static lv_timer_t *mapStatusTimer = nullptr;
+static lv_timer_t *mapStatusTimer = nullptr;\nstatic bool wifiScanActive = false;\nstatic bool wifiConnectActive = false;
 // Sonar preference widgets; values are persisted locally until boat-side sync exists.
 static lv_obj_t *sonarRange = nullptr;
 static lv_obj_t *sonarУСИЛВАНЕ = nullptr;
