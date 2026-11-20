@@ -134,7 +134,9 @@ static bool releaseRequestAllowed()
 
 bool boatCommands_releaseBait()
 {
-    // Create a bait-release command.
+    // Combined hopper release is intentionally disabled in this revision.
+    return false;
+    // Create a bait-release command;
     BoatCommand command = {};
 
     command.type = CMD_BAIT_RELEASE;
@@ -150,7 +152,9 @@ bool boatCommands_releaseBait()
 
 bool boatCommands_releaseHook()
 {
-    // Create a hook-release command.
+    // Combined hook release is intentionally disabled in this revision.
+    return false;
+    // Create a hook-release command;
     BoatCommand command = {};
 
     command.type = CMD_HOOK_RELEASE;
