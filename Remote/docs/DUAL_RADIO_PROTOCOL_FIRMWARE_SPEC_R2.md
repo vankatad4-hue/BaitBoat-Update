@@ -1,3 +1,5 @@
+**SUPERSEDED:** Current radio pairing, timing and implementation status are in `DUAL_RADIO_PROTOCOL_FIRMWARE_SPEC_R3.md`. R2's raw Tracker SX1262 pairing assumptions and status descriptions are historical.
+
 # Dual-radio protocol and implementation specification R2
 
 ## System radio pairing
