@@ -26,7 +26,7 @@
 | GT911 touchscreen | Board configured (typically 0x5D or 0x14) | Existing board; do not conflict |
 | CH422G | Board-specific | Existing board GPIO expander |
 | PCF85063 RTC | 0x51 | Existing board |
-| MCP23017 U_BUTTONS | 0x20 | 16 physical keys |
+| MCP23017 U_BUTTONS | 0x20 | 15 scanned physical keys (L1–L8, R1–R7; GPB7 spare) |
 | MCP23017 U_RADIO_IO | 0x21 | nRF IRQ, SC16 IRQ, radio enable, OK |
 | SC16IS750 U_UART | 0x48 | E22 UART bridge |
 | ADS1115 U_AXIS | 0x4A | Four joystick axes, ADDR tied SDA |
@@ -38,8 +38,9 @@ Addresses are planned, not proven. Perform an I2C scan on the exact Waveshare bo
 
 U_BUTTONS MCP23017 @0x20:
 - GPA0–GPA7 → left-bank L1–L8, active-low to GND, pullups enabled.
-- GPB0–GPB7 → right-bank R1–R8, active-low to GND, pullups enabled.
-- Physical arrangement: two columns × four rows per bank. The bottom-right right-bank position is OK/confirm, not a normal MCP0x20 button.
+- GPB0–GPB6 → right-bank R1–R7, active-low to GND, pullups enabled.
+- GPB7 reserved/spare; pull-up enabled. OK is the right-bank bottom-right key, separately scanned on U_RADIO_IO GPA4.
+- Physical arrangement: two columns × four rows per bank. The right-bank bottom-right position is OK/confirm, not an R8 input. The bottom-right right-bank position is OK/confirm, not a normal MCP0x20 button.
 - Debounce target 25 ms.
 - Button mapping from R5 CSV: L1 STOP; L2 Manual/Autopilot; L3 Return Home; L4 save waypoint; L5 waypoint selection; L6 map full-screen; L7 sonar full-screen; L8 settings. Right R1–R4 guarded independent releases; R5–R7 are UI/status/cancel functions; the physical OK key is separately wired to U_RADIO_IO GPA4
 - The OK button is physically separate and not part of the 16-key bank.
@@ -49,7 +50,7 @@ U_RADIO_IO MCP23017 @0x21:
 - GPA1 nRF IRQ_N input.
 - GPA2 SC16 IRQ_N input.
 - GPA3 RADIO_EN output (candidate, reset-safe low).
-- GPA4 separate OK/confirm input, active-low.
+- GPA4 physical OK/confirm key in the right-bank bottom-right position, active-low.
 - GPA5–GPA7 and GPB0–GPB7 spare.
 
 Release safety: separate bait-left, bait-right, hook-left, hook-right only. Require hold→release→separate OK confirmation within guard window; authenticated primary link and valid boat interlock telemetry. No release on LoRa backup. Current firmware safety readiness remains false.
@@ -126,3 +127,7 @@ Initial configuration candidate: channel18/868.125MHz, 62.5kbps air rate, 32-byt
 
 ## R6.6 physical input crosswalk update
 The approved front arrangement is 2×4 keys on each side. The 16 physical positions are 8 left-bank keys + 7 right-bank scanned keys + OK at right-bank bottom-right. Thus MCP23017 0x20 uses 15 keys (GPB7 spare) and MCP23017 0x21 GPA4 scans OK independently. The scanner source was updated to poll only 15 IDs plus the dedicated OK input. CAD STL/preview exports must be regenerated from the corrected source.
+
+
+## R6.6 physical crosswalk
+There are 16 physical key positions: 8 left-bank keys + 7 right-bank scanner keys + OK. U_BUTTONS 0x20 scans 15 inputs; GPB7 is spare. U_RADIO_IO 0x21 GPA4 scans OK. The front layout is 2 columns × 4 rows per bank, one Power key above the display, no duplicate bottom Power.
