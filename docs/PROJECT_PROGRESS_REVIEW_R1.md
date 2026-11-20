@@ -23,7 +23,7 @@
 ## Release/archive review
 - Current markers: Remote ver023 / Boat ver010.
 - Generated ZIPs and manifest are present in the development branch.
-- Boat ver010 ZIP: binary fetched, ZIP central directory and local headers parsed; 70 entries, no nested ZIP, key encoder/test/session files present; SHA-256 independently matched the manifest.
+- Boat ver010 ZIP: binary fetched; 70 entries and key encoder/test/session files were confirmed. Latest SHA-256 does NOT match the committed manifest, so integrity is pending rebuild. Remote ZIP binary was not retrievable and remains unverified.
 - Remote ver023 ZIP: present, but the binary could not be retrieved through the available file fetch path; checksum is manifest-only and not independently verified.
 - Archives are source snapshots, not fabrication or operational approvals.
 
