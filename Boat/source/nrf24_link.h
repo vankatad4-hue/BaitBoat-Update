@@ -24,8 +24,8 @@ private:
     uint8_t channel_;
     bool ready_,txPending_,lastTxSuccess_;
     uint32_t txCount_,rxCount_,txFailCount_;
-    RadioFrame rxFrame_;
-    bool rxAvailable_;
+    RadioFrame rxQueue_[4];
+    uint8_t rxHead_,rxTail_,rxQueueCount_;
     const uint8_t *txAddress_;
     const uint8_t *rxAddress_;
 };
