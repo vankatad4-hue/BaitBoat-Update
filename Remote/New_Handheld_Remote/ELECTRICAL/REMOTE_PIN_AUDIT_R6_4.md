@@ -56,3 +56,6 @@ The remote must retain USB firmware flashing and diagnostic capability; design t
 ## Conclusion
 
 The Waveshare board is usable as the touchscreen/UI computer, but the pin audit confirms that it is **not a freely assignable ESP32-S3 carrier**. The project should not freeze the radio wiring yet. A pin-safe daughterboard/interface plan is required and must preserve USB debug, touch/I2C, and display operation.
+
+
+> **Archive reconciliation correction (2026-11-20):** Treat this audit as a fresh warning list, not as a replacement pin plan. Established R5 plan reuses GPIO11/12/13 for shared TF/nRF SPI, GPIO6 as direct nRF CE and GPIO15 as CSN only with onboard Sensor AD and RS485 paths isolated, and uses the SC16IS750 bridge for E22 UART. Exact PORT1 crosswalk remains provisional. Refer to ARCHIVE_RECONCILIATION_AND_NEXT_GATE_R6_4.md.
