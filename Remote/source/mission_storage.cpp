@@ -32,7 +32,7 @@ bool missionStorage_write(const StoredMission &record){
  return SD.rename(tmp.c_str(),dst.c_str());
 }
 bool missionStorage_read(StoredMission &record){
- if(!sdMissionAvailable())return false;
+ if(!lakeStorage_ready())return false;
  return missionStorage_readRecord(lakeStorage_path("/waypoints.bin").c_str(),record)||
         missionStorage_readRecord(lakeStorage_path("/waypoints.bak").c_str(),record);
 }
