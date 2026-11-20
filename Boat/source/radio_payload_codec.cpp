@@ -68,3 +68,15 @@ bool radio_decodeTelemetryPayload(const uint8_t p[8], RadioDecodedPayload &out) 
     default: resetOut(out); return false;
     }
 }
+
+static void clearPayload(uint8_t out[8]){for(uint8_t i=0;i<8;i++)out[i]=0;}
+static void writeU16LE(uint8_t*p,uint16_t v){p[0]=(uint8_t)v;p[1]=(uint8_t)(v>>8);}
+static void writeI32LE(uint8_t*p,int32_t v){uint32_t u;memcpy(&u,&v,sizeof(u));p[0]=(uint8_t)u;p[1]=(uint8_t)(u>>8);p[2]=(uint8_t)(u>>16);p[3]=(uint8_t)(u>>24);}
+bool radio_encodeHeartbeatPayload(uint8_t flags,uint8_t build,uint8_t out[8]){clearPayload(out);if((flags&0xF0U)!=0)return false;out[0]=flags;out[1]=build;return true;}
+bool radio_encodeAckPayload(uint8_t result,uint8_t type,uint16_t id,uint8_t stop,uint8_t interlocks,uint8_t out[8]){clearPayload(out);if(result>RADIO_ACK_INTERNAL_FAILURE||type<1||type>10||id==0||stop>2||(interlocks&0xF0U)!=0)return false;out[0]=0;out[1]=result;out[2]=type;writeU16LE(out+3,id);out[5]=stop;out[6]=interlocks;return true;}
+bool radio_encodeTelemetryStatusPayload(uint8_t mode,uint8_t stop,uint8_t safety,uint8_t percent,uint8_t fix,uint8_t sats,uint8_t out[8]){clearPayload(out);if(mode>4||stop>2||(safety&0x80U)!=0||(percent>100&&percent!=255))return false;out[0]=1;out[1]=mode;out[2]=stop;out[3]=safety;out[4]=percent;out[5]=fix;out[6]=sats;return true;}
+bool radio_encodeBatterySpeedPayload(uint16_t mv,uint16_t speed,uint8_t out[8]){clearPayload(out);if(speed!=0xFFFFU&&speed>10000U)return false;out[0]=2;writeU16LE(out+1,mv);writeU16LE(out+3,speed);return true;}
+bool radio_encodeLatitudePayload(uint8_t sample,int32_t lat,uint16_t accuracy,uint8_t out[8]){clearPayload(out);if(lat < -900000000L||lat>900000000L)return false;out[0]=3;out[1]=sample;writeI32LE(out+2,lat);writeU16LE(out+6,accuracy);return true;}
+bool radio_encodeLongitudePayload(uint8_t sample,int32_t lon,uint8_t out[8]){clearPayload(out);if(lon < -1800000000L||lon>1800000000L)return false;out[0]=4;out[1]=sample;writeI32LE(out+2,lon);return true;}
+bool radio_encodeNavigationPayload(uint16_t heading,uint16_t speed,uint8_t status,uint8_t waypoint,uint8_t sample,uint8_t out[8]){clearPayload(out);if((heading!=0xFFFFU&&heading>35999U)||(speed!=0xFFFFU&&speed>10000U)||status>5)return false;out[0]=5;writeU16LE(out+1,heading);writeU16LE(out+3,speed);out[5]=status;out[6]=waypoint;out[7]=sample;return true;}
+bool radio_encodeSonarSummaryPayload(uint16_t depth,uint16_t range,uint8_t health,uint8_t alarms,uint8_t sample,uint8_t out[8]){clearPayload(out);if(health>3||(alarms&0xF0U)!=0)return false;out[0]=6;writeU16LE(out+1,depth);writeU16LE(out+3,range);out[5]=health;out[6]=alarms;out[7]=sample;return true;}
