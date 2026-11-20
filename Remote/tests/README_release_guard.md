@@ -6,7 +6,7 @@ Run: `g++ -std=c++17 -Wall -Wextra -Werror -IRemote/tests/stubs -IRemote/source 
 Run from the repository root: `g++ -std=c++11 -Wall -Wextra -Werror -IRemote/source Remote/source/radio_payload_codec.cpp Remote/tests/radio_payload_codec_test.cpp -o payload_codec_test && ./payload_codec_test`. Portable, no Arduino dependencies.
 
 ## ACK tracker tests
-Run: `g++ -std=c++11 -Wall -Wextra -Werror -IRemote/source Remote/source/radio_payload_codec.cpp Remote/source/radio_ack_tracker.cpp Remote/tests/radio_ack_tracker_test.cpp -o ack_tracker_test && ./ack_tracker_test`. Covers session/type matching, primary-only restrictions, ACCEPTED→EXECUTED, rejection, timeout and millis rollover. Tracker is not wired into live radio.
+Run: `g++ -std=c++11 -Wall -Wextra -Werror -IRemote/source Remote/source/radio_payload_codec.cpp Remote/source/radio_ack_tracker.cpp Remote/tests/radio_ack_tracker_test.cpp -o ack_tracker_test && ./ack_tracker_test`. Covers session/type matching, primary-only restrictions, ACCEPTED→EXECUTED, rejection, timeout and millis rollover. Tracker is wired into the Remote send/receive path; Boat-side ACK generation and UI display remain pending.
 
 
 ## Telemetry freshness tests
