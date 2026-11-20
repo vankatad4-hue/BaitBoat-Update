@@ -32,7 +32,7 @@
 | J_I2C | 4P | 3V3/GND/SDA/SCL, board-side access TBD |
 | Testpoints | battery/rails/bus/analog | Access for bring-up |
 
-Controller/display 5V boost is on the Waveshare board (CS8501); external TPS61023 is fallback only. Onboard board load spec 5V/450mA and battery boost/charge current documentation must be bench-confirmed for this use.
+Controller/display 5V is from Waveshare CS8501. E22 uses a dedicated external TPS61023 1S→5V branch; converter outputs are separate and never paralleled. Onboard board load spec 5V/450mA and battery boost/charge current documentation must be bench-confirmed for this use.
 
 
 ## LoRa backup radio addendum (R1)
@@ -45,7 +45,7 @@ Controller/display 5V boost is on the Waveshare board (CS8501); external TPS6102
 | Boat U_LORA | Matching module on boat | Required for redundant link; remote-only installation is not functional redundancy |
 | Boat ANT_LORA | 868MHz 50Ω antenna | Install separated from nRF antenna, motor wiring and metal obstructions |
 
-Supply from CS8501 5V rail is provisional. Simultaneous-load test first; separate boost if needed, never parallel converters.
+E22 5V supply is a dedicated TPS61023 branch from BAT_PROT. CS8501 output is not shared with E22.
 
 
 ## E22 power correction R4
