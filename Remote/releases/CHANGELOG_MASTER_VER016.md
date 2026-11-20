@@ -1,5 +1,5 @@
 # Flytec Remote — Consolidated Version / Change History
-**Document revision:** VER015  
+**Document revision:** VER016  
 **Remote source/release version:** 028 (kept unchanged)  
 **Boat source/release version:** 014 (kept unchanged)  
 **Branch:** `hardware-ready-dual-radio-r1`  
