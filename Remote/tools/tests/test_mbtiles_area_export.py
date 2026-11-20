@@ -2,7 +2,7 @@ import unittest
 import sys, sqlite3, tempfile, csv
 from pathlib import Path
 from io import BytesIO
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[18]))
 from mbtiles_area_export import mbtiles_tms_to_xyz_y, rgb565_le, export_area
 from map_area_planner import build_plan
 from PIL import Image
