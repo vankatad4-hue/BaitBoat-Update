@@ -29,6 +29,7 @@ static uint16_t g_txSequence=0;
 static uint32_t g_lastPrimaryHeartbeat=0;
 static uint32_t g_lastBackupTxMs=0;
 static bool g_backupTxSent=false,g_loraPending=false;
+static uint8_t g_loraPendingPriority=0;
 static RadioFrame g_loraPendingFrame;
 static uint8_t g_authKey[32];
 static RadioSequenceGuard g_boatSequenceGuard;
@@ -59,9 +60,17 @@ static bool radioSendTransport(ManagedLink link,const BoatCommand &command) {
     if(link==LINK_NRF_PRIMARY && g_nrfReady) return g_nrf.sendFrame(frame);
     if(link==LINK_LORA_BACKUP && g_loraConfigured) {
         const uint32_t now=millis();
-        if(g_backupTxSent && (uint32_t)(now-g_lastBackupTxMs)<3000U) {g_loraPendingFrame=frame;g_loraPending=true;return true;}
+        const uint8_t priority=(command.type==CMD_EMERGENCY_STOP)?3U:
+            ((command.type==CMD_SET_MODE && command.mode==BOAT_MODE_RETURN_HOME)?2U:
+             (command.type==CMD_MANUAL_MOTORS?1U:0U));
+        if(priority==0U)return false;
+        if(g_backupTxSent && (uint32_t)(now-g_lastBackupTxMs)<3000U) {
+            if(!g_loraPending || priority>=g_loraPendingPriority){g_loraPendingFrame=frame;g_loraPending=true;g_loraPendingPriority=priority;}
+            return true;
+        }
         if(g_lora.sendFrame(frame,now)){g_lastBackupTxMs=now;g_backupTxSent=true;return true;}
-        g_loraPendingFrame=frame;g_loraPending=true;return true;
+        if(!g_loraPending || priority>=g_loraPendingPriority){g_loraPendingFrame=frame;g_loraPending=true;g_loraPendingPriority=priority;}
+        return true;
     }
     return false;
 }
@@ -71,7 +80,7 @@ bool boatRadio_begin() {
     g_loraConfigured=false;g_nrfReady=false;g_begun=false;
     memset(g_authKey,0,sizeof(g_authKey));
     g_sessionEpoch=(uint8_t)esp_random(); if(g_sessionEpoch==0)g_sessionEpoch=1;
-    g_txSequence=0;g_lastPrimaryHeartbeat=0;g_lastBackupTxMs=0;g_backupTxSent=false;g_loraPending=false;g_boatSequenceGuard.reset();
+    g_txSequence=0;g_lastPrimaryHeartbeat=0;g_lastBackupTxMs=0;g_backupTxSent=false;g_loraPending=false;g_loraPendingPriority=0;g_boatSequenceGuard.reset();
 
     // Display/SD setup initializes shared SPI/I2C. nRF CE/CSN pins are provisional.
     g_nrfReady=g_nrf.begin(true);
@@ -120,7 +129,7 @@ void boatRadio_update() {
             hb.payload[0]=1;hb.payload[1]=g_loraConfigured?1:0;radio_frameSeal(hb,g_authKey);g_nrf.sendFrame(hb);
         }
         if(g_loraConfigured && g_loraPending && (!g_backupTxSent || (uint32_t)(now-g_lastBackupTxMs)>=3000U)) {
-            if(g_lora.sendFrame(g_loraPendingFrame,now)){g_lastBackupTxMs=now;g_backupTxSent=true;g_loraPending=false;}
+            if(g_lora.sendFrame(g_loraPendingFrame,now)){g_lastBackupTxMs=now;g_backupTxSent=true;g_loraPending=false;g_loraPendingPriority=0;}
         }
         if(g_loraConfigured && !g_loraPending && (!g_backupTxSent || (uint32_t)(now-g_lastBackupTxMs)>=3000U)) {
             RadioFrame hb;radio_frameInit(hb,RADIO_MSG_HEARTBEAT,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,++g_txSequence,0,now,g_sessionEpoch);
