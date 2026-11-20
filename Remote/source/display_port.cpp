@@ -25,6 +25,12 @@ using namespace esp_panel::board;                 // Expose the supported Board 
 static Board *g_board = nullptr;                  // Own the Waveshare board object for the life of the app.
 static LCD *g_lcd = nullptr;                      // Board-provided ST7262 RGB LCD driver.
 static Touch *g_touch = nullptr;                  // Board-provided GT911 touch driver.
+// Generated resource is staged by target CI. Montserrat retains LVGL icon glyphs.
+#if __has_include("flytec_bg_14.generated.h")
+#include "flytec_bg_14.generated.h"
+LV_FONT_DECLARE(flytec_bg_14);
+static lv_font_t flytecUiFont;
+#endif
 static lv_display_t *g_display = nullptr;         // LVGL 9 display instance.
 static lv_indev_t *g_touch_input = nullptr;       // LVGL 9 pointer input device.
 static void *g_draw_buffer = nullptr;             // Partial rendering buffer allocated in PSRAM.
@@ -209,6 +215,14 @@ bool displayPort_begin()
         return false;                              // Leave the screen disabled.
     }
 
+#if defined(FLYTEC_BG_FONT_GENERATED)
+    flytecUiFont = flytec_bg_14;
+    flytecUiFont.fallback = &lv_font_montserrat_14;
+    lv_display_set_theme(g_display, lv_theme_default_init(g_display,
+        lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_CYAN), true, &flytecUiFont));
+#else
+    Serial.println("DISPLAY: Bulgarian font missing; generate the UI font before release.");
+#endif
     lv_display_set_color_format(g_display, LV_COLOR_FORMAT_RGB565); // Match the panel's 16-bit RGB pixel format.
     lv_display_set_flush_cb(g_display, displayPort_flush); // Register the LVGL 9 panel flush callback.
     lv_display_set_buffers(                        // Register the partial draw buffer with LVGL.

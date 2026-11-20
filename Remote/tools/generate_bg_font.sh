@@ -13,5 +13,6 @@ npx --yes --package=lv_font_conv@1.5.3 lv_font_conv \
   --output "$out/flytec_bg_14.c"
 test -s "$out/flytec_bg_14.c"
 grep -Eq 'lv_font_t[[:space:]]+flytec_bg_14' "$out/flytec_bg_14.c"
+printf '#pragma once\n#define FLYTEC_BG_FONT_GENERATED 1\n' > "$out/flytec_bg_14.generated.h"
 cp "$license" "$out/FONT_LICENSE.txt"
-(cd "$out" && sha256sum flytec_bg_14.c FONT_LICENSE.txt > SHA256SUMS.txt)
+(cd "$out" && sha256sum flytec_bg_14.c flytec_bg_14.generated.h FONT_LICENSE.txt > SHA256SUMS.txt)

@@ -19,6 +19,8 @@ static lv_obj_t *returnToScreen = nullptr;
 static lv_obj_t *ssidArea = nullptr;
 static lv_obj_t *passwordArea = nullptr;
 static lv_obj_t *keyboard = nullptr;
+static lv_obj_t *keyboardLanguage = nullptr;
+static uint8_t keyboardLayout = 0;
 static lv_obj_t *wifiStatus = nullptr;
 static lv_obj_t *scanResults = nullptr;
 static lv_obj_t *brightnessSwitch = nullptr;
@@ -107,10 +109,34 @@ static void stopWiFiUiTimers()
 }
 
 // Hide the virtual keyboard without deleting the entered text.
+// Alphabetic Bulgarian layout (not a claim of a particular BDS standard).
+static const char * const bgLower[]={
+    "а","б","в","г","д","е","ж","з","и","й","\n",
+    "к","л","м","н","о","п","р","с","т","у","\n",
+    "ф","х","ц","ч","ш","щ","ъ","ь","ю","я","\n",
+    LV_SYMBOL_BACKSPACE,LV_SYMBOL_LEFT," ",LV_SYMBOL_RIGHT,LV_SYMBOL_OK,""
+};
+static const char * const bgUpper[]={
+    "А","Б","В","Г","Д","Е","Ж","З","И","Й","\n",
+    "К","Л","М","Н","О","П","Р","С","Т","У","\n",
+    "Ф","Х","Ц","Ч","Ш","Щ","Ъ","Ь","Ю","Я","\n",
+    LV_SYMBOL_BACKSPACE,LV_SYMBOL_LEFT," ",LV_SYMBOL_RIGHT,LV_SYMBOL_OK,""
+};
+static lv_buttonmatrix_ctrl_t bgCtrl[35];
+static void keyboardLanguageEvent(lv_event_t *event){
+    if(lv_event_get_code(event)!=LV_EVENT_CLICKED||!keyboard)return;
+    keyboardLayout=(keyboardLayout+1U)%3U;
+    lv_keyboard_set_mode(keyboard, keyboardLayout==0?LV_KEYBOARD_MODE_TEXT_LOWER:
+                                    keyboardLayout==1?LV_KEYBOARD_MODE_USER_1:LV_KEYBOARD_MODE_USER_2);
+    lv_label_set_text(lv_obj_get_child(keyboardLanguage,0),keyboardLayout==0?"EN / БГ":keyboardLayout==1?"БГ / БГ↑":"БГ↑ / EN");
+}
 static void hideKeyboard()
 {
-    if (keyboard != nullptr)
+    if (keyboard != nullptr) {
+        lv_keyboard_set_textarea(keyboard,nullptr);
         lv_obj_add_flag(keyboard, LV_OBJ_FLAG_HIDDEN);
+    }
+    if(keyboardLanguage)lv_obj_add_flag(keyboardLanguage,LV_OBJ_FLAG_HIDDEN);
 }
 
 // Show the LVGL virtual keyboard for the focused Wi-Fi text field.
@@ -120,6 +146,8 @@ static void textAreaFocusEvent(lv_event_t *event)
         return;
     lv_keyboard_set_textarea(keyboard, lv_event_get_target_obj(event));
     lv_obj_remove_flag(keyboard, LV_OBJ_FLAG_HIDDEN);
+    if(keyboardLanguage){lv_obj_remove_flag(keyboardLanguage,LV_OBJ_FLAG_HIDDEN);lv_obj_move_foreground(keyboardLanguage);}
+
 }
 
 // Hide the keyboard when its built-in Ready key is pressed.
@@ -423,7 +451,13 @@ static void buildWiFiSection(lv_obj_t *parent)
         keyboard = lv_keyboard_create(settingsScreen);
         lv_obj_set_size(keyboard, 800, 205);
         lv_obj_align(keyboard, LV_ALIGN_BOTTOM_MID, 0, 0);
+        for(auto &ctrl:bgCtrl)ctrl=1;
+        bgCtrl[32]=6;
+        lv_keyboard_set_map(keyboard,LV_KEYBOARD_MODE_USER_1,bgLower,bgCtrl);
+        lv_keyboard_set_map(keyboard,LV_KEYBOARD_MODE_USER_2,bgUpper,bgCtrl);
         lv_keyboard_set_mode(keyboard, LV_KEYBOARD_MODE_TEXT_LOWER);
+        keyboardLanguage=makeButton(settingsScreen,"EN / БГ",660,230,130,keyboardLanguageEvent);
+        lv_obj_add_flag(keyboardLanguage,LV_OBJ_FLAG_HIDDEN);
         lv_obj_add_event_cb(keyboard, keyboardEvent, LV_EVENT_READY, nullptr);
         lv_obj_add_event_cb(keyboard, keyboardEvent, LV_EVENT_CANCEL, nullptr);
     }
