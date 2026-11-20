@@ -283,3 +283,11 @@ This release adds documentation only. Radio and joystick inputs remain non-opera
 - Added detailed schematic sheet spec, pin connections CSV, test build and BOM R2. Native KiCad capture/ERC/PCB still not completed.
 - Revised remote envelope target 300×210×70mm; physical fit check is required.
 - LoRa airtime/profile and Bulgarian/EU legality must be checked; initial backup command cadence is capped at 1Hz in software policy.
+
+
+## R3 LoRa hardware transport scaffold
+- `sc16is750_bridge.*`: I2C UART bridge at 0x48, 9600 8N1 using 1.8432MHz crystal; GPIO mode/reset/AUX interface.
+- `e22_uart_link.*`: E22 config/readback, fixed 32-byte frame parser, CRC check and RAM-only 1% airtime limiter (20ms conservative per frame).
+- `boat_radio.cpp` configures the remote LoRa module on boot and processes authenticated inbound link frames. It refuses TX and never establishes a link until secure key provisioning is supplied.
+- Backup control rate is now 0.5Hz to fit the initial 20ms airtime estimate on the 1% channel. This estimate must be measured and limiter persisted before field use.
+- nRF24 primary hardware transport still not implemented.
