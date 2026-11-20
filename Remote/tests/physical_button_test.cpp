@@ -20,4 +20,9 @@ int main(){
  released=-1;Wire.b=254;sample(4000);Wire.b=252;sample(4100);Wire.b=255;sample(5500);Wire.c=239;sample(5600);Wire.c=255;sample(6500);assert(released==-1);
  Wire.a=254;sample(7000);assert(stops==1);Wire.a=255;sample(7100);
  Wire.fault=true;sample(8000);assert(stops==2);Wire.a=247;Wire.fault=false;sample(8100);assert(actions==0);Wire.a=255;sample(8200);Wire.a=247;sample(8300);assert(actions==1);
+ // Held button and OK at restart must not produce actions until neutral.
+ Wire.a=254;Wire.c=239;assert(physicalButtons_begin());assert(stops==3);
+ sample(9000);Wire.a=255;sample(9100);assert(uiOk==1);
+ Wire.c=255;sample(9200);assert(uiOk==1);
+ Wire.a=247;sample(9300);assert(actions==2);
 }
