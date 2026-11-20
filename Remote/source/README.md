@@ -4,7 +4,7 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 
 ## Versioning
 - ZIP: `Flytec_Remote_verXXX.zip`.
-- Preserve older archives; the packaged baseline is ver028. Current development source is ver029.13; do not update `releases/VERSION` or create a release ZIP until packaging and verification are complete.
+- Preserve older archives; the packaged baseline is ver028. Current development source is unreleased ver029.13; package marker remains ver028. do not update `releases/VERSION` or create a release ZIP until packaging and verification are complete.
 - Increment for every package change and follow `../../docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Controller/display baseline
@@ -133,3 +133,6 @@ The legacy packaging workflow previously regenerated the unchanged ver028/ver014
 UI follow-up: sonar plot scales and redraws on split/fullscreen; remaining sonar option labels translated; waypoint distance math has floating-point clamping. Compile/test still pending.
 
 Source cleanup: literal escaped line breaks removed from boat UI; waypoint calculation clamp added. Compilation remains pending.
+
+## Continuation checkpoint
+Read `../../docs/CONTINUATION_CHECKPOINT_VER001.md` for the complete current status and restart plan. Consolidated changelog is `../releases/CHANGELOG_MASTER_VER021.md`. Existing branch archives are unverified snapshots; latest workflow #880 succeeded, but no target build/LVGL Pro/hardware test is validated.
