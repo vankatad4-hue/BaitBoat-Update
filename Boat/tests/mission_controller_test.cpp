@@ -1,0 +1,31 @@
+#include "../source/mission_controller.h"
+#include <cassert>
+#include <iostream>
+int main(){
+ MissionPlan p={1,0,0,1,300,0,1000,0,0};
+ ExecInputs in={{0,0,1,90,true,true,true,true},true,true,true,true,true,true};
+ BoatMissionController c;MissionControlFeedback ack{};uint8_t bytes[8];MissionControlRequest req{MCTRL_START,1,1},decoded{};
+ assert(missionControlEncode(req,bytes)&&missionControlDecode(bytes,decoded)&&decoded.request==1);
+ bytes[7]=1;assert(!missionControlDecode(bytes,decoded));
+ assert(!c.stage(p,0,true,false));assert(c.stage(p,0,true,true));
+ assert(c.request(req,in,1,true,true,true,ack)&&ack.result==MC_REJECTED);
+ in.stopActive=false;req.request=2;
+ assert(!c.request(req,in,2,false,true,true,ack));
+ assert(c.request(req,in,2,true,false,true,ack)&&ack.result==MC_REJECTED);
+ req.request=3;assert(c.request(req,in,3,true,true,true,ack)&&ack.result==MC_ACCEPTED);
+ assert(c.request(req,in,4,true,true,true,ack)&&ack.result==MC_ACCEPTED);
+ assert(c.tick(in,5,true,true).intent==INTENT_NAV_TARGET);
+ req={MCTRL_TEMP_OVERRIDE,1,4};assert(c.request(req,in,6,true,true,false,ack)&&ack.phase==MC_OVERRIDE_NEUTRAL);
+ assert(c.tick(in,7,true,false).intent==INTENT_STOP&&!c.temporaryOverrideConfirmed());
+ c.tick(in,8,true,true);assert(c.temporaryOverrideConfirmed());
+ req={MCTRL_RESUME,1,5};assert(c.request(req,in,9,true,true,true,ack)&&ack.phase==MC_OUTBOUND);
+ assert(c.tick(in,10,true,true).intent==INTENT_NAV_TARGET);
+ req={MCTRL_SWITCH_MANUAL,1,6};assert(c.request(req,in,11,true,true,true,ack)&&ack.phase==MC_MANUAL_REQUESTED);
+ assert(c.tick(in,12,true,true).intent==INTENT_STOP);
+ assert(missionFeedbackEncode(ack,bytes));MissionControlFeedback read{};assert(missionFeedbackDecode(bytes,read)&&read.request==6);
+ bytes[7]=1;assert(!missionFeedbackDecode(bytes,read));
+ c.resetSession();in.stopActive=true;assert(c.stage(p,0,true,true));in.stopActive=false;
+ req={MCTRL_START,1,1};assert(c.request(req,in,10000,true,true,true,ack)&&ack.result==MC_REJECTED);
+ c.tick(in,10001,true,true);assert(c.status().phase==MC_ABORTED);
+ std::cout<<"Mission command and override supervisor simulation passed\n";
+}

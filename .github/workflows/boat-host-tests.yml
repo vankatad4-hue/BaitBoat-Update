@@ -80,3 +80,8 @@ jobs:
           cmp Remote/source/radio_session_platform.h Boat/source/radio_session_platform.h
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/radio_handshake_test.cpp -lcrypto -o /tmp/boat_handshake
           /tmp/boat_handshake
+      - name: Mission execution commands and neutral override simulation
+        run: |
+          cmp Remote/source/mission_control_wire.h Boat/source/mission_control_wire.h
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/source/mission_protocol.cpp Boat/tests/mission_controller_test.cpp -o /tmp/boat_mission_controller
+          /tmp/boat_mission_controller
