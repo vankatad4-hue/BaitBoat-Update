@@ -66,6 +66,7 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
    sessionEpoch_=f.sessionEpoch;sessionStarted_=true;
    primarySeqGuard_.reset();backupSeqGuard_.reset();crossRadioSeqGuard_.reset();
    sessionStartSeenPrimary_=false;sessionStartSeenBackup_=false;
+   lastNrfRxValid_=false;lastE22RxValid_=false;
    qRead_=qWrite_=qCount_=0;txSequence_=0;
    if(!linkGuard.accept(f.sessionEpoch,0,true)) return;
    linkSessionSeen=true;lastRx=now;rxValid=true;
