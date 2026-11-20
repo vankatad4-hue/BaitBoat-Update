@@ -37,7 +37,10 @@ static bool g_backupTxSent=false,g_loraPending=false;
 static uint8_t g_loraPendingPriority=0;
 static RadioFrame g_loraPendingFrame;
 static uint8_t g_authKey[32];
-static RadioSequenceGuard g_boatSequenceGuard;
+static RadioSequenceGuard g_boatSequenceGuard; // global cross-radio replay/freshness guard
+static RadioSequenceGuard g_boatPrimarySequenceGuard;
+static RadioSequenceGuard g_boatBackupSequenceGuard;
+static bool g_sessionStartSeenPrimary=false,g_sessionStartSeenBackup=false;
 static bool g_boatSessionStarted=false;
 static uint8_t g_boatSessionEpoch=0;
 
@@ -94,7 +97,7 @@ bool boatRadio_begin() {
     g_loraConfigured=false;g_nrfReady=false;g_begun=false;
     memset(g_authKey,0,sizeof(g_authKey));
     g_sessionEpoch=(uint8_t)esp_random(); if(g_sessionEpoch==0)g_sessionEpoch=1;
-    g_txSequence=0;g_lastPrimaryHeartbeat=0;g_lastBackupTxMs=0;g_lastBackupTxAttemptMs=0;g_backupTxSent=false;g_loraPending=false;g_loraPendingPriority=0;g_boatSequenceGuard.reset();g_boatSessionStarted=false;g_boatSessionEpoch=0;g_ackTracker.reset(0);telemetryInit();
+    g_txSequence=0;g_lastPrimaryHeartbeat=0;g_lastBackupTxMs=0;g_lastBackupTxAttemptMs=0;g_backupTxSent=false;g_loraPending=false;g_loraPendingPriority=0;g_boatSequenceGuard.reset();g_boatPrimarySequenceGuard.reset();g_boatBackupSequenceGuard.reset();g_boatSessionStarted=false;g_boatSessionEpoch=0;g_sessionStartSeenPrimary=false;g_sessionStartSeenBackup=false;g_ackTracker.reset(0);telemetryInit();
 
     // Display/SD setup initializes shared SPI/I2C. nRF CE/CSN pins are provisional.
     g_nrfReady=g_nrf.begin(true);
@@ -159,16 +162,31 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame) {
          frame.type==RADIO_MSG_TELEMETRY||frame.type==RADIO_MSG_ACK||frame.type==RADIO_MSG_LINK_PROBE)&&
         (frame.type!=RADIO_MSG_SESSION_START||(frame.sequence==0&&frame.payload[0]==frame.sessionEpoch&&frame.sessionEpoch==g_sessionEpoch));
     if(!envelopeValid){g_linkManager.reportFailure(link);return;}
+    RadioSequenceGuard &linkGuard=(link==LINK_NRF_PRIMARY)?g_boatPrimarySequenceGuard:g_boatBackupSequenceGuard;
+    bool &startSeen=(link==LINK_NRF_PRIMARY)?g_sessionStartSeenPrimary:g_sessionStartSeenBackup;
     if(frame.type==RADIO_MSG_SESSION_START) {
-        // Repeated authenticated SESSION_START on the second transport is a duplicate;
-        // do not reset sequence/telemetry/ACK state again.
-        if(g_boatSessionStarted&&frame.sessionEpoch==g_boatSessionEpoch){g_linkManager.reportValidRx(link,true,now);return;}
-        if(!g_boatSequenceGuard.accept(frame.sessionEpoch,frame.sequence,true)){g_linkManager.reportFailure(link);return;}
-        g_boatSessionStarted=true;g_boatSessionEpoch=frame.sessionEpoch;g_ackTracker.reset(frame.sessionEpoch);telemetryInit();
+        if(g_boatSessionStarted&&frame.sessionEpoch==g_boatSessionEpoch) {
+            // Same-link replay is not allowed to reset sequence state. A first
+            // session marker on the second radio seeds only that link's guard.
+            if(!startSeen){linkGuard.accept(frame.sessionEpoch,frame.sequence,true);startSeen=true;}
+            g_linkManager.reportValidRx(link,true,now);return;
+        }
+        g_boatSequenceGuard.reset();g_boatPrimarySequenceGuard.reset();g_boatBackupSequenceGuard.reset();
+        g_sessionStartSeenPrimary=false;g_sessionStartSeenBackup=false;
+        if(!g_boatSequenceGuard.accept(frame.sessionEpoch,frame.sequence,true)||
+           !linkGuard.accept(frame.sessionEpoch,frame.sequence,true)){g_linkManager.reportFailure(link);return;}
+        g_boatSessionStarted=true;g_boatSessionEpoch=frame.sessionEpoch;startSeen=true;
+        g_ackTracker.reset(frame.sessionEpoch);telemetryInit();
         g_linkManager.reportValidRx(link,true,now);return;
     }
-    if(!g_boatSessionStarted||frame.sessionEpoch!=g_boatSessionEpoch||!g_boatSequenceGuard.accept(frame.sessionEpoch,frame.sequence,false)){
+    if(!g_boatSessionStarted||frame.sessionEpoch!=g_boatSessionEpoch||
+       !linkGuard.accept(frame.sessionEpoch,frame.sequence,false)){
         g_linkManager.reportFailure(link);return;
+    }
+    // Cross-radio duplicate/stale frames are authenticated but must not refresh
+    // application telemetry or ACK state a second time.
+    if(!g_boatSequenceGuard.accept(frame.sessionEpoch,frame.sequence,false)){
+        g_linkManager.reportValidRx(link,true,now);return;
     }
     if(!dispatchValidatedPayload(link,frame,now)){g_linkManager.reportFailure(link);return;}
     g_linkManager.reportValidRx(link,true,now);
