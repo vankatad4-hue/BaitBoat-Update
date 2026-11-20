@@ -36,7 +36,7 @@ bool radio_decodeCommand(const RadioFrame &f, uint8_t expectedSrc, uint8_t expec
     if (f.type != RADIO_MSG_CONTROL && f.type != RADIO_MSG_ACTION) return false;
     if (f.payload[7] != 0 || f.payload[6] > 1) return false;
     const uint8_t rawType=f.payload[0];
-    if (rawType < CMD_EMERGENCY_STOP || rawType > CMD_HOOK_RELEASE) return false;
+    if (rawType < CMD_EMERGENCY_STOP || rawType > CMD_RELEASE_HOOK_RIGHT) return false;
     out = {};
     out.sequence=f.sequence;
     out.commandId=f.commandId;
@@ -49,10 +49,11 @@ bool radio_decodeCommand(const RadioFrame &f, uint8_t expectedSrc, uint8_t expec
     out.leftMotor=clampMotor(out.leftMotor); out.rightMotor=clampMotor(out.rightMotor);
     if (out.mode != MODE_MANUAL && out.mode != MODE_AUTOPILOT && out.mode != MODE_RETURN_HOME)
         return false;
-    if (out.activate && out.type != CMD_BAIT_RELEASE && out.type != CMD_HOOK_RELEASE)
-        return false;
-    if ((out.type == CMD_BAIT_RELEASE || out.type == CMD_HOOK_RELEASE) && !out.activate)
-        return false;
+    const bool releaseCommand = (out.type == CMD_BAIT_RELEASE || out.type == CMD_HOOK_RELEASE ||
+        out.type == CMD_RELEASE_HOPPER_LEFT || out.type == CMD_RELEASE_HOPPER_RIGHT ||
+        out.type == CMD_RELEASE_HOOK_LEFT || out.type == CMD_RELEASE_HOOK_RIGHT);
+    if (out.activate && !releaseCommand) return false;
+    if (releaseCommand && !out.activate) return false;
     if (backup && !backupAllowed(out)) return false;
     if (backup && out.type == CMD_MANUAL_MOTORS) {
         constexpr int16_t MAX_BACKUP=250;
