@@ -14,7 +14,7 @@ static constexpr uint8_t REG_IOCONTROL=0x0E;
 static constexpr uint8_t LSR_DATA_READY=0x01;
 
 SC16IS750Bridge::SC16IS750Bridge(TwoWire &wire,uint8_t address)
-    : wire_(wire),address_(address),peekByte_(-1),ready_(false) {}
+    : wire_(wire),address_(address),peekByte_(-1),rxLevelCache_(0),ready_(false) {}
 
 bool SC16IS750Bridge::writeReg(uint8_t reg,uint8_t value) {
     wire_.beginTransmission(address_);
@@ -80,23 +80,27 @@ bool SC16IS750Bridge::e22AuxReady() {
 int SC16IS750Bridge::available() {
     if(!ready_) return 0;
     uint8_t level=0;
-    if(!readReg(REG_RXLVL,level)) return 0;
+    if(!readReg(REG_RXLVL,level)) return (peekByte_>=0 ? 1:0);
+    rxLevelCache_=level;
     return level + (peekByte_>=0 ? 1:0);
 }
 int SC16IS750Bridge::peek() {
     if(peekByte_>=0) return peekByte_;
-    uint8_t level=0;
-    if(!readReg(REG_RXLVL,level) || level==0) return -1;
+    if(rxLevelCache_==0){uint8_t level=0;if(!readReg(REG_RXLVL,level))return -1;rxLevelCache_=level;}
+    if(rxLevelCache_==0) return -1;
     uint8_t b=0;
     if(readFifo(&b,1)!=1) return -1;
+    --rxLevelCache_;
     peekByte_=b;
     return peekByte_;
 }
 int SC16IS750Bridge::read() {
     if(peekByte_>=0) { int v=peekByte_; peekByte_=-1; return v; }
-    uint8_t level=0,b=0;
-    if(!readReg(REG_RXLVL,level) || level==0) return -1;
+    if(rxLevelCache_==0){uint8_t level=0;if(!readReg(REG_RXLVL,level))return -1;rxLevelCache_=level;}
+    if(rxLevelCache_==0) return -1;
+    uint8_t b=0;
     if(readFifo(&b,1)!=1) return -1;
+    --rxLevelCache_;
     return b;
 }
 size_t SC16IS750Bridge::readFifo(uint8_t *data,size_t length) {
