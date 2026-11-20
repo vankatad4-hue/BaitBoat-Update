@@ -9,9 +9,9 @@ static const uint8_t E22_READ_ACK_PREFIX[3]={0xC1,0x00,0x09};
 
 E22UartLink::E22UartLink(Stream &uart,E22SetModeFn mode,E22AuxReadyFn aux,E22ResetFn reset,void *ctx)
  : uart_(uart),modeFn_(mode),auxFn_(aux),resetFn_(reset),context_(ctx),configured_(false),
-   auxReadyNow_(false),txPending_(false),txStartedMs_(0),rxIndex_(0),frameAvailable_(false),
+   auxReadyNow_(false),txPending_(false),txStartedMs_(0),rxIndex_(0),rxHead_(0),rxTail_(0),rxCount_(0),
    txCount_(0),rxCount_(0),rejectedDutyCount_(0) {
-    memset(rxBuffer_,0,sizeof(rxBuffer_)); memset(&readyFrame_,0,sizeof(readyFrame_)); clearBuckets();
+    memset(rxBuffer_,0,sizeof(rxBuffer_)); memset(rxQueue_,0,sizeof(rxQueue_)); clearBuckets();
 }
 void E22UartLink::clearBuckets(){for(auto &b:buckets_){b.minuteStamp=0;b.airtimeMs=0;b.valid=false;}}
 uint32_t E22UartLink::usedAirtimeMs(uint32_t now){
@@ -67,7 +67,7 @@ void E22UartLink::parserByte(uint8_t v){
         RadioFrame f; memcpy(&f,rxBuffer_,sizeof(f)); rxIndex_=0;
         if(f.magic[0]==RADIO_FRAME_MAGIC0 && f.magic[1]==RADIO_FRAME_MAGIC1 &&
            radio_crc16((const uint8_t*)&f,offsetof(RadioFrame,crc16))==f.crc16){
-            readyFrame_=f;frameAvailable_=true;++rxCount_;
+            if(rxCount_<4){rxQueue_[rxTail_]=f;rxTail_=(uint8_t)((rxTail_+1U)%4U);++rxCount_;++rxCount_;}
         }
     }
 }
@@ -84,6 +84,6 @@ bool E22UartLink::sendFrame(const RadioFrame &frame,uint32_t now){
 }
 bool E22UartLink::receiveFrame(RadioFrame &frame){
     update();
-    if(!frameAvailable_) return false;
-    frame=readyFrame_;frameAvailable_=false;return true;
+    if(rxCount_==0) return false;
+    frame=rxQueue_[rxHead_];rxHead_=(uint8_t)((rxHead_+1U)%4U);--rxCount_;return true;
 }
