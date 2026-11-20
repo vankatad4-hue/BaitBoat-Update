@@ -506,7 +506,7 @@ static void buildControlsSection(lv_obj_t *parent)
 }
 
 // Map source preference selector. ONLINE is reserved until provider implementation.
-static lv_obj_t *mapSourceLabel = nullptr;
+static lv_obj_t *mapSourceLabel = nullptr;\nstatic lv_obj_t *mapWiFiLabel = nullptr;\nstatic lv_timer_t *mapStatusTimer = nullptr;\nstatic void refreshMapConnectivityStatus(lv_timer_t *timer)\n{\n    (void)timer;\n    if (mapWiFiLabel) lv_label_set_text(mapWiFiLabel, WiFi.status() == WL_CONNECTED ? "Wi-Fi: CONNECTED | Internet: UNKNOWN" : "Wi-Fi: DISCONNECTED | Internet: UNKNOWN");\n}
 static void mapSourceCycleEvent(lv_event_t *event)
 {
     (void)event;
@@ -520,7 +520,7 @@ static void buildMapSection(lv_obj_t *parent)
 {
     makeLabel(parent, "MAP SOURCE", 18, 12);
     makeLabel(parent, "Selected mode:", 18, 62);
-    mapSourceLabel = makeLabel(parent, mapSource_modeLabel(mapSource_getMode()), 250, 62);
+    mapSourceLabel = makeLabel(parent, mapSource_modeLabel(mapSource_getMode()), 250, 62);\n    mapWiFiLabel = makeLabel(parent, "Wi-Fi: checking... | Internet: UNKNOWN", 18, 350);\n    refreshMapConnectivityStatus(nullptr);\n    if (mapStatusTimer) lv_timer_del(mapStatusTimer);\n    mapStatusTimer = lv_timer_create(refreshMapConnectivityStatus, 2000, nullptr);
     makeButton(parent, "CYCLE AUTO / ONLINE / OFFLINE", 18, 105, 310, mapSourceCycleEvent);
     makeLabel(parent, "AUTO uses online maps when available; otherwise SD maps.", 18, 165);
     makeLabel(parent, "ONLINE is optional and currently unavailable.", 18, 198);
