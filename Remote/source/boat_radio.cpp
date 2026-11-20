@@ -219,7 +219,7 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame) {
 void boatRadio_update() {
     if(!g_begun) return;
     const uint32_t now=millis();
-    if(radioKey_get(g_authKey) && g_begun && g_boatSessionStarted) {
+    if(radioKey_get(g_authKey) && g_begun) {
         if(g_nrfReady && !g_sessionStartSeenPrimary &&
            (uint32_t)(now-g_lastSessionStartPrimaryMs)>=SESSION_START_PRIMARY_RETRY_MS) {
             if(sendSessionStartMarker(LINK_NRF_PRIMARY,now)) g_lastSessionStartPrimaryMs=now;
