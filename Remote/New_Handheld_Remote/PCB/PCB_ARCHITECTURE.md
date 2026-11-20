@@ -1,28 +1,31 @@
-# Modular PCB Architecture — Preliminary
+# Modular PCB Architecture — Preliminary R2
 
-Design intent: modular, serviceable boards with keyed connectors where useful. This document is not a finished schematic or PCB.
+**Status:** Architecture document; native schematic, ERC, PCB, BOM and validation pending.
 
-## Modules
-1. Main/display controller interface for Waveshare ESP32-S3-Touch-LCD-4.3 Standard.
-2. Power board: protected battery input, fuse/reverse-polarity, regulated rails. Charging circuitry is out of current scope.
-3. Input boards: joystick ADC and button scanning.
-4. Radio: nRF24L01+ PA/LNA with dedicated TPS63070 3.3 V buck-boost rail, SPI and control.
-5. ESP32 RF: onboard antenna on Waveshare board; no external antenna path.
-6. Display and connector interface: exact revision/pinout to be verified.
-7. Optional accessories: camera/light/vibration only if boat hardware supports them.
+## Blocks
+1. Waveshare ESP32-S3-Touch-LCD-4.3 Standard controller/display module.
+2. Pack protection: BMS-protected 1S4P input, fuse candidate, reverse-protection MOSFET, voltage/NTC sense.
+3. Controller/display power: use the Waveshare board's onboard CS8501 single-cell battery boost via its battery connector; external TPS61023 is fallback only after tests. Do not parallel boost outputs.
+4. Radio power: TPS63070 buck-boost, dedicated RADIO_3V3 rail for nRF PA/LNA.
+5. Analog input: ADS1115 I2C ADC for four joystick axes.
+6. Buttons: MCP23017 I2C 16-bit GPIO expander for 16 contacts.
+7. nRF24 radio: SPI and control pins; share SPI with TF card only with arbitration and radio priority.
+8. Connector harnesses: battery, radio, joysticks, buttons, I2C and testpoints.
 
-## Power-flow baseline
-Protected 1S4P pack → fused/protected BAT_PROT:
-- TPS61088 boost candidate → 5 V display/controller rail.
-- TPS63070 buck-boost → 3.3 V radio rail.
+## Power
+Protected pack→BAT_PROT. BAT_PROT supplies Waveshare battery header and TPS63070. Radio rail calculated 3.3067V nominal from 470k/150k divider; 1.5µH candidate and capacitor bank. Effective capacitance/current/thermal tests pending.
+Controller/display is powered by board's onboard battery boost; manufacturer's board load figure 5V/450mA. Validate low battery, backlight, Wi-Fi and radio TX; external boost fallback only if necessary.
 
-TPS63070 calculation baseline: R1=470 kΩ, R2=150 kΩ (3.307 V calculated), 1.5 µH inductor candidate, TI reference input/output capacitors (76 µF nominal output bank), VAUX 100 nF. Detailed component review is in PCB calculation document.
+## Interface candidates
+- I2C: GPIO8 SDA/GPIO9 SCL (existing board bus); ADS1115 address 0x48, MCP23017 address 0x20.
+- Joysticks: 4 single-ended axis signals; ADS1115 scan.
+- Buttons: 16 active-low inputs to MCP23017; 8 per bank.
+- Battery ADC: GPIO6/Sensor AD candidate with 220k/68k divider and 100nF.
+- nRF SPI: GPIO11/12/13 shared TF card bus; candidate CSN GPIO15, CE GPIO43; verify mux/exposure; IRQ polling.
+- All candidate GPIO assignments require schematic/PORT1 and physical board verification.
 
-## Signals
-Main MCU/display ↔ joystick/buttons; MCU ↔ nRF SPI/CE/CSN/IRQ; MCU ↔ battery sensing, enable and optional power-good. Power board connects display/controller and radio rails.
-
-## RF and thermal
-nRF24 and ESP32 Wi-Fi/Bluetooth share 2.4 GHz band; coexistence must be tested. Keep converter SW loops away from antenna feeds. Maintain continuous ground reference and RF keepouts; do not split ground plane under RF.
+## RF and layout
+Keep switching loops away from RF module/antenna, short SPI, keyed connectors, adequate power/ground, testpoints. Shared 2.4GHz ESP32 Wi-Fi/Bluetooth and nRF24 link must be tested for coexistence.
 
 ## Outstanding
-Native schematics, verified pin numbers/footprints, connector pinouts, PCB layout, BOM, assembly drawings, ERC and bench tests are not completed.
+Native KiCad capture and ERC; exact symbols/footprints/pins/connectors; protection part selection; GPIO verification; PCB placement/routing/DFM; test/bench bring-up.
