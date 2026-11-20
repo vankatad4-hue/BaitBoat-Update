@@ -171,3 +171,8 @@ Boat:
 - Recent preliminary matrix/ADS1015/alternate GPIO documents are explicitly marked superseded by this reconciliation.
 - New records: Remote archive reconciliation and next gate Remote/New_Handheld_Remote/ELECTRICAL/ARCHIVE_RECONCILIATION_AND_NEXT_GATE_R6_4.md; consolidated schematic netlist review draft REMOTE_SCHEMATIC_NETLIST_R6_4.md.
 - Next engineering gate: reconcile connector pinout/netlist and power draft, then native schematic capture and ERC. No compiled or bench-tested hardware status changes.
+
+
+## Remote firmware integration review
+- `REMOTE_FIRMWARE_INTEGRATION_REVIEW_R1.md` identifies source integration gaps.
+- `REMOTE_TELEMETRY_COMMAND_CONTRACT_R1.md` proposes telemetry and command ACK payloads; not implemented.
