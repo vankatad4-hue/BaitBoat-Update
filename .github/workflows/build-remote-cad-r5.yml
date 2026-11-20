@@ -51,5 +51,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: Flytec_Remote_CAD_R5_R6_1_Print_Files
-          path: Remote_CAD_R5_R6_Print_Package.zip
+          path: Remote_CAD_R5_R6_1_Print_Package.zip
           retention-days: 90
