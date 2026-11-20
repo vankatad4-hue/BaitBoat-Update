@@ -71,3 +71,13 @@ Physical board validation: not performed.
 - The first full target compile reached `boat_ui.cpp` and exposed an LVGL 9.6 API change: `lv_line_set_points()` expects `lv_point_precise_t`, not `lv_point_t`. The DEMO echogram line-point arrays and helper signature were converted to precise-point coordinates.
 - The same compile identified two missing global footer-label declarations (`inputStatusLabel`, `safetyStatusLabel`) even though the labels were created and refreshed in the UI code. Their declarations have been added.
 - These source fixes are committed; compile retry pending. This is evidence from the target compiler, not yet a successful full build.
+
+
+## Target compiler attempt #11 update
+
+Run #11 installed the candidate dependencies and reached the C++ compiler, but the full target build failed. Diagnostics also found source outside the display adapter:
+- joystick calibration used `lv_event_get_target()` where LVGL 9.6 returns `void*`; changed to `lv_event_get_target_obj()`.
+- map renderer route point storage changed from `lv_point_t` to `lv_point_precise_t`.
+- Map Manager `copyChunk()` was inadvertently commented out due to a literal escaped newline after its preceding comment; the source was corrected to use a real newline.
+
+These corrections are committed; rebuild pending. Installed versions observed in the log match the candidate versions listed above, but successful compatibility/link validation remains outstanding.
