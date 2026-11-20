@@ -113,3 +113,5 @@ Authenticated receive frames are dispatched to strict payload decoders. Remote A
 - This is a source/UI scaffold only. Offline area download, licensed map-pack coverage metadata, Wi-Fi internet detection and authorized online-provider integration remain next tasks.
 - New files: `map_source.h/.cpp`. Include them in the Arduino sketch build by virtue of their folder placement; confirm Arduino IDE compiles all translation units.
 - No full firmware compile or display hardware test has been performed for this change.
+
+- `tools/mbtiles_area_export.py`: crops an MBTiles archive to the planned square/zoom tile set and writes RGB565 files plus source-attribution manifest and completeness report. This is offline conversion, not network downloading; it requires Pillow and a licensed source archive.
