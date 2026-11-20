@@ -127,3 +127,7 @@ jobs:
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/carrier_output_plan_test.cpp -o /tmp/boat_carrier_output
           /tmp/boat_carrier_output
+      - name: Carrier wired protocol and independent safety supervisor
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/carrier_link_test.cpp -o /tmp/carrier_link_test
+          /tmp/carrier_link_test
