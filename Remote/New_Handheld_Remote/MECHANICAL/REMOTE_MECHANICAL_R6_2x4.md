@@ -3,8 +3,8 @@
 ## Locked user-facing layout
 - **Two button banks, each 2 columns × 4 rows** (8 per side, 16 total).
 - Left bank: navigation/menu/utility functions.
-- Right bank: upper 2×2 guarded bait/hook release keys; lower 2×2 auxiliary keys.
-- Two joysticks, central 4.3-inch touchscreen, dedicated Power and OK/Confirm buttons.
+- Right bank: upper 2×2 guarded bait/hook release keys; lower three auxiliary keys and bottom-right OK/Confirm key.
+- Two joysticks, central 4.3-inch touchscreen; **no separate Power button**. OK/Confirm is integrated into the bottom-right position of the right 2×4 bank.
 - Two antenna exits, rear grip concept, USB-C service/charge opening on lower bridge.
 
 ## CAD source
