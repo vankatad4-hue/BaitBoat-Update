@@ -119,3 +119,7 @@ jobs:
           cp Boat/tests/application_stubs/boat_dual_radio_port.h /tmp/boat_app_test/
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I/tmp/boat_app_test -IBoat/source -IBoat/tests/stubs /tmp/boat_app_test/boat_application_port.cpp Boat/tests/boat_application_integration_test.cpp -o /tmp/boat_application
           /tmp/boat_application
+      - name: Tracker GNSS and calibrated sensor math
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/tracker_sensors_test.cpp -o /tmp/boat_tracker_sensors
+          /tmp/boat_tracker_sensors
