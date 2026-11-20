@@ -97,7 +97,7 @@ bool mapCoverage_begin(const char *root)
         if (xValue >= nTiles || yValue >= nTiles ||
             (rowCount && ((int)zValue < previousZ ||
              ((int)zValue == previousZ && (xValue < previousX ||
-              (xValue == previousX && yValue <= previousY)))))
+              (xValue == previousX && yValue <= previousY))))))
         {
             f.close(); heap_caps_free(rows); rows = nullptr; rowCount = 0; return false;
         }
