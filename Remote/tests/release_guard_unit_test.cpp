@@ -2,7 +2,8 @@
 #include "release_button_guard.h"
 #include "boat_state.h"
 
-BoatState boatState{};
+// boatState is defined by boat_state.cpp, compiled with the same full struct
+// definition as release_button_guard.cpp. Avoid a reduced-layout test stub.
 static int sent = -1;
 
 bool boatCommands_releaseHopperLeft() { sent = 0; return true; }
@@ -12,7 +13,6 @@ bool boatCommands_releaseHookRight() { sent = 3; return true; }
 
 static void ready()
 {
-    boatState = {};
     boatState.radioConnected = true;
     boatState.radioActiveLink = RADIO_UI_NRF_PRIMARY;
     boatState.emergencyStopConfirmed = true;
@@ -22,6 +22,7 @@ static void ready()
 
 int main()
 {
+    initialiseBoatState();
     ready();
     releaseGuard_beginKey(RELEASE_HOPPER_LEFT, 100);
     releaseGuard_endKey(900);
@@ -39,6 +40,7 @@ int main()
     releaseGuard_tick(9200);
     assert(sent == -1);
 
+    initialiseBoatState();
     ready();
     releaseGuard_beginKey(RELEASE_HOOK_RIGHT, 10000);
     releaseGuard_endKey(11200);
@@ -47,6 +49,7 @@ int main()
     releaseGuard_endConfirm(12200);
     assert(sent == -1);
 
+    initialiseBoatState();
     ready();
     releaseGuard_beginKey(RELEASE_HOPPER_LEFT, 13000);
     releaseGuard_endKey(14200);
