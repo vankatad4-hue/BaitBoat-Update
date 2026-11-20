@@ -1,0 +1,19 @@
+# Versioned ZIP Packaging
+
+## Current next package version
+- Remote: `Remote/releases/VERSION` → `005`
+- Boat: `Boat/releases/VERSION` → `005`
+- Existing ver004 archives are preserved; never overwrite them.
+
+## Rules
+1. Any project deliverable update that changes the Remote or Boat package increments that package's 3-digit VERSION file by exactly +1.
+2. Keep Remote and Boat version numbers independent, but bump both when shared changes affect both packages.
+3. Repository source is canonical. The ZIP is a snapshot of the complete corresponding folder, excluding prior ZIPs in `releases/`.
+4. Archive names: `Flytec_Remote_verXXX.zip` and `Flytec_Boat_verXXX.zip`.
+5. Each archive contains its top-level `Remote/` or `Boat/` directory and all source/docs/assets/test files; release ZIPs are excluded from the archive to avoid nesting.
+6. Packaging is automated by `.github/workflows/package-flytec-zips.yml`. On changes to the project folders on the development branch it creates GitHub Actions artifacts, plus SHA256 checksums. Artifact retention is 90 days.
+7. Confirm workflow completion and artifact integrity before calling the ZIP a verified release. The workflow artifact is a deliverable snapshot, not a fabrication/operational approval.
+8. Keep older release archives unchanged and preserve their version history.
+
+## ver005 package scope
+Snapshot of the current dual-radio development branch, including hardware capture docs, source scaffolding, bench tests, safety limitations, and the controller pin audit. It is explicitly bench/development only.
