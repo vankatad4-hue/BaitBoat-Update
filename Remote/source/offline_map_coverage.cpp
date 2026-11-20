@@ -53,14 +53,14 @@ bool mapCoverage_begin()
     uint32_t previousX = 0, previousY = 0;
     while (f.available())
     {
-        const size_t n = f.readBytesUntil('\n', line, sizeof(line) - 1);
+        size_t n = f.readBytesUntil('\n', line, sizeof(line) - 1);
         line[n] = '\0';
         if (n == sizeof(line) - 1 && f.available())
         {
             f.close(); rowCount = 0; heap_caps_free(rows); rows = nullptr;
             return false; // Reject a line too long for the parser rather than accepting a truncated record.
         }
-        if (n && line[n - 1] == '\r') line[--const_cast<size_t&>(n)] = '\0';
+        if (n && line[n - 1] == '\r') line[--n] = '\0';
         if (!n) continue;
         if (!header)
         {
@@ -171,8 +171,7 @@ void mapCoverage_checkSquare(double lat, double lon, uint16_t sideM, const uint8
         if (y0 > y1) { const int t = y0; y0 = y1; y1 = t; }
         y0 = (y0 < 0) ? 0 : y0;
         y1 = (y1 >= n) ? n - 1 : y1;
-        const int64_t rawXSpan = (int64_t)x1 - x0 + 1;
-        const uint32_t xSpan = rawXSpan <= 0 ? 0U : (rawXSpan >= n ? (uint32_t)n : (uint32_t)rawXSpan);
+        const uint32_t xSpan = (east - west >= 360.0) ? (uint32_t)n : (uint32_t)((x1 - x0 + n) % n + 1);
         const uint32_t ySpan = y1 >= y0 ? (uint32_t)(y1 - y0 + 1) : 0U;
         const uint64_t levelCount = (uint64_t)xSpan * ySpan;
         if (levelCount > CHECK_TILE_BUDGET - processed)
@@ -183,7 +182,7 @@ void mapCoverage_checkSquare(double lat, double lon, uint16_t sideM, const uint8
         }
         for (uint32_t dx = 0; dx < xSpan; ++dx)
         {
-            const uint32_t wx = (uint32_t)(((int64_t)x0 + dx % (uint32_t)n + n) % n);
+            const uint32_t wx = (uint32_t)(((int64_t)x0 + dx + n) % n);
             for (uint32_t y = (uint32_t)y0; y <= (uint32_t)y1; ++y)
             {
                 ++processed; ++needed;
