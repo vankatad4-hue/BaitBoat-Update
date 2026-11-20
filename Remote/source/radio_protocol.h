@@ -18,7 +18,9 @@ enum RadioMessageType : uint8_t {
     RADIO_MSG_ACTION = 4,
     RADIO_MSG_ACK = 5,
     RADIO_MSG_LINK_PROBE = 6,
-    RADIO_MSG_SESSION_START = 7
+    RADIO_MSG_SESSION_START = 7,
+    RADIO_MSG_MISSION_PREPARE = 8,
+    RADIO_MSG_MISSION_ACK = 9
 };
 
 enum RadioAction : uint8_t {
