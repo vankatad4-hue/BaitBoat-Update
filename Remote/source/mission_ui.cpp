@@ -37,7 +37,7 @@ static bool persist() {
 static void loadPersisted() {
  if(storageAttempted)return;storageAttempted=true;
  storageReady=missionPrefs.begin("baitmission",false);
- if(!storageReady){setStatus("NVS OPEN FAILED - RAM ONLY");return false;}
+ if(!storageReady){setStatus("NVS OPEN FAILED - RAM ONLY");return;}
  StoredMission s={};
  if(missionPrefs.getBytesLength("mission")!=sizeof(s)||missionPrefs.getBytes("mission",&s,sizeof(s))!=sizeof(s)||s.magic!=STORE_MAGIC||s.crc!=crc32(reinterpret_cast<const uint8_t*>(&s),offsetof(StoredMission,crc))){
   memset(slots,0,sizeof(slots));homeValid=false;selectedSlot=-1;setStatus("NVS EMPTY/INVALID - NEW PLAN");return;
