@@ -6,7 +6,7 @@
 
 class NRF24Link {
 public:
-    NRF24Link(int cePin,int csnPin,SPIClass *spiBus,uint8_t channel=76);
+    NRF24Link(int cePin,int csnPin,SPIClass *spiBus,uint8_t channel=76,int sck=-1,int miso=-1,int mosi=-1);
     bool begin(bool remoteRole);
     void update();
     bool sendFrame(const RadioFrame &frame);
@@ -22,6 +22,7 @@ private:
     SPIClass *spiBus_;
     int cePin_,csnPin_;
     uint8_t channel_;
+    int spiSck_,spiMiso_,spiMosi_;
     bool ready_,txPending_,lastTxSuccess_;
     uint32_t txCount_,rxCount_,txFailCount_;
     RadioFrame rxQueue_[4];
