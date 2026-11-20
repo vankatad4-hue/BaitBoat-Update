@@ -21,14 +21,14 @@ For a 1 km square centred near latitude 43° using zoom levels 14–17, the plan
 - Actual map-data download.
 - Provider catalogue/licence validation.
 - Area selection GUI, storage preview in the remote UI, progress/pause/resume.
-- Verified coverage index and pack completeness enforcement.
+- Tile coverage index and exact per-tile coverage validation.
 - Compile against Waveshare board libraries; physical display/SD test.
 
 ## Verification
 The GitHub files and commits were confirmed through repository actions. The test source is present, but the test suite could not be executed in the working environment because network access to raw GitHub was unavailable and the files were not present in the local runtime. Do not mark the tests as passing. Review tile calculations manually; run `python3 -m unittest discover -s Remote/tools/tests -v` once the repository is cloned locally.
 
 ## Next
-1. Validate MBTiles output completeness and make firmware reject incomplete packs (parse manifest status/coverage).
+1. Add a per-tile coverage index and report actual covered zoom/tile bounds, beyond the pack-complete flag.
 2. Add the offline-map manager UI (area centre, 1 km default, zoom choices, storage estimate, SD import/download progress).
 3. Implement a licensed-source download/import flow; avoid public tile servers that prohibit bulk use.
 4. Implement Google Map Tiles API 2D online renderer after decoder, credentials, TLS, attribution and billing/quota controls are designed.
