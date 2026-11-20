@@ -30,6 +30,7 @@ jobs:
           xvfb-run -a openscad -o Remote_Assembly_Preview_R5.png --imgsize=1200,900 --viewall --autocenter -D 'part="assembly"' Flytec_Remote_Enclosure_R5.scad
           xvfb-run -a openscad -o Remote_Assembly_Preview_R6.png --imgsize=1200,900 --viewall --autocenter -D 'part="assembly"' Flytec_Remote_Enclosure_R6.scad
           xvfb-run -a openscad -o Remote_Front_Layout_R6.png --imgsize=1400,900 --camera=0,0,0,0,0,0,450 --projection=o --viewall -D 'part="assembly"' Flytec_Remote_Enclosure_R6.scad
+          xvfb-run -a openscad -o Remote_Front_Layout_R6.png --imgsize=1400,900 --camera=0,0,0,0,0,0,450 --projection=o --viewall -D 'part="assembly"' Flytec_Remote_Enclosure_R6.scad
           cd ../../..
           zip -r -9 Remote_CAD_R5_R6_Print_Package.zip Remote/New_Handheld_Remote/CAD Remote/New_Handheld_Remote/MECHANICAL/REMOTE_MECHANICAL_R5.md Remote/New_Handheld_Remote/MECHANICAL/PHYSICAL_BUTTON_MAP_R5.md Remote/New_Handheld_Remote/MECHANICAL/REMOTE_CONCEPT_R6.md Remote/New_Handheld_Remote/MECHANICAL/REMOTE_BUTTON_MAP_R6.md
           sha256sum Remote_CAD_R5_R6_Print_Package.zip > Remote_CAD_R5_R6_SHA256.txt
