@@ -26,7 +26,7 @@ static lv_timer_t *wifiConnectTimer = nullptr;
 static uint32_t wifiConnectStartedAt = 0;
 // Sonar preference widgets; values are persisted locally until boat-side sync exists.
 static lv_obj_t *sonarRange = nullptr;
-static lv_obj_t *sonarGain = nullptr;
+static lv_obj_t *sonarУСИЛВАНЕ = nullptr;
 static lv_obj_t *sonarSensitivity = nullptr;
 static lv_obj_t *sonarNoise = nullptr;
 static lv_obj_t *sonarPingRate = nullptr;
@@ -178,7 +178,7 @@ static void saveSonarPreferences()
     if (sonarRange == nullptr) return;
     settingsPrefs.begin("flytec", false);
     settingsPrefs.putUChar("snr_range", (uint8_t)lv_dropdown_get_selected(sonarRange));
-    settingsPrefs.putUChar("snr_gain", (uint8_t)lv_slider_get_value(sonarGain));
+    settingsPrefs.putUChar("snr_gain", (uint8_t)lv_slider_get_value(sonarУСИЛВАНЕ));
     settingsPrefs.putUChar("snr_sens", (uint8_t)lv_slider_get_value(sonarSensitivity));
     settingsPrefs.putUChar("snr_noise", (uint8_t)lv_dropdown_get_selected(sonarNoise));
     settingsPrefs.putUChar("snr_ping", (uint8_t)lv_dropdown_get_selected(sonarPingRate));
@@ -266,17 +266,17 @@ static void buildSonarSection(lv_obj_t *parent)
     makeLabel(parent, "НАСТРОЙКИ НА СОНАРА", 12, 8);
     makeLabel(parent, "ДЪЛБОЧИНА / ОБРАБОТКА", 12, 38);
     makeSonarDropdown(parent, "МАКСИМАЛНА ДЪЛБОЧИНА", 65,
-        "Auto\n5 m\n10 m\n20 m\n30 m\n50 m\n100 m", range, &sonarRange);
-    makeSonarSlider(parent, "Gain", 112, 0, 100, gain, &sonarGain);
+        "Авто\n5 m\n10 m\n20 m\n30 m\n50 m\n100 m", range, &sonarRange);
+    makeSonarSlider(parent, "УСИЛВАНЕ", 112, 0, 100, gain, &sonarУСИЛВАНЕ);
     makeSonarSlider(parent, "ЧУВСТВИТЕЛНОСТ ЗА РИБА", 153, 0, 100, sensitivity, &sonarSensitivity);
     makeSonarDropdown(parent, "ПОТИСКАНЕ НА ШУМА", 194,
-        "Off\nLow\nMedium\nHigh", noise, &sonarNoise);
+        "Изкл.\nНиско\nСредно\nВисоко", noise, &sonarNoise);
     makeSonarDropdown(parent, "ЧЕСТОТА НА ИЗПРАЩАНЕ", 235,
-        "Low\nNormal\nHigh\nAuto", ping, &sonarPingRate);
+        "Ниско\nНормално\nВисоко\nАвто", ping, &sonarPingRate);
     makeSonarDropdown(parent, "СКОРОСТ НА ЕХОГРАМАТА", 276,
-        "Slow\nNormal\nFast", scroll, &sonarScrollSpeed);
+        "Бавно\nНормално\nБързо", scroll, &sonarScrollSpeed);
     makeSonarDropdown(parent, "ЦВЕТОВА ПАЛИТРА", 317,
-        "Classic\nHigh contrast\nGrayscale\nNight", palette, &sonarPalette);
+        "Класическа\nВисок контраст\nСива\nНощ", palette, &sonarPalette);
 
     makeLabel(parent, "ИЗОБРАЖЕНИЕ / АЛАРМИ", 12, 365);
     makeSonarSwitch(parent, "ПОКАЗВАЙ РИБНИ ДЪГИ / СИМВОЛИ", 397, arches, &sonarFishArches);
@@ -486,7 +486,7 @@ static void controlDeadZoneEvent(lv_event_t *event)
     (void)event;
     const int value=lv_slider_get_value(controlDeadZoneSlider);
     joystick_setDeadZone(value);
-    char label[64]; snprintf(label,sizeof(label),"МЪРТВА ЗОНА: %d ADC counts",value);
+    char label[64]; snprintf(label,sizeof(label),"МЪРТВА ЗОНА: %d ADC единици",value);
     lv_label_set_text(controlDeadZoneLabel,label);
 }
 static void openCalibrationEvent(lv_event_t *event)
@@ -509,7 +509,7 @@ static void buildControlsSection(lv_obj_t *parent)
     lv_slider_set_range(controlDeadZoneSlider,10,120);
     lv_slider_set_value(controlDeadZoneSlider,snap.calibration.deadZone,LV_ANIM_OFF);
     lv_obj_add_event_cb(controlDeadZoneSlider,controlDeadZoneEvent,LV_EVENT_RELEASED,nullptr);
-    char label[64];snprintf(label,sizeof(label),"МЪРТВА ЗОНА: %d ADC counts",snap.calibration.deadZone);
+    char label[64];snprintf(label,sizeof(label),"МЪРТВА ЗОНА: %d ADC единици",snap.calibration.deadZone);
     controlDeadZoneLabel=makeLabel(parent,label,12,194);
     makeLabel(parent,"КАЛИБРИРАНЕТО ИЗИСКВА ПОТВЪРДЕН STOP. МОТОРИТЕ СА БЛОКИРАНИ.",12,240);
     makeButton(parent,"ОТВОРИ КАЛИБРИРАНЕ",12,282,220,openCalibrationEvent);
@@ -550,7 +550,7 @@ static void categoryEvent(lv_event_t *event)
     lv_obj_clean(settingsContent);
     ssidArea = nullptr;
     passwordArea = nullptr;
-    sonarRange = sonarGain = sonarSensitivity = sonarNoise = nullptr;
+    sonarRange = sonarУСИЛВАНЕ = sonarSensitivity = sonarNoise = nullptr;
     sonarPingRate = sonarScrollSpeed = sonarPalette = nullptr;
     sonarFishArches = sonarFishAlarm = sonarShallowAlarm = sonarDeepAlarm = nullptr;
     sonarShallowDepth = sonarDeepDepth = sonarStatus = nullptr;
@@ -578,7 +578,7 @@ static void categoryEvent(lv_event_t *event)
         else lv_obj_clear_state(themeSwitch, LV_STATE_CHECKED);
         char timeoutText[96];
         snprintf(timeoutText, sizeof(timeoutText),
-                 "ИЗКЛЮЧВАНЕ СЛЕД: %u min (preference saved; automatic dimming not active)",
+                 "ИЗКЛЮЧВАНЕ СЛЕД: %u min (настройката е запазена; затъмняването не е активно)",
                  static_cast<unsigned>(screenTimeoutMinutes));
         lv_label_set_text(timeoutLabel, timeoutText);
         displayPort_setBacklight(backlightOn);
