@@ -9,8 +9,8 @@ nRF24,Module,GND,GND,Carrier J_NRF pin1
 nRF24,Module,MOSI,SPI_MOSI,Carrier J_NRF pin3
 nRF24,Module,SCK,SPI_SCK,Carrier J_NRF pin4
 nRF24,Module,MISO,SPI_MISO,Carrier J_NRF pin5
-nRF24,Module,CSN,NRF_CSN,GPIO6 candidate,Direct GPIO; sensor AD repurposed
-nRF24,Module,CE,NRF_CE,MCP23017 0x21 GPA0,Test timing
+nRF24,Module,CE,NRF_CE,GPIO6 Sensor AD repurposed,Direct GPIO; no sensor connected
+nRF24,Module,CSN,NRF_CSN,GPIO15 RS485 TX repurposed,Direct GPIO; RS485 bus disconnected and transceiver inactive
 nRF24,Module,IRQ_N,NRF_IRQ_N,MCP23017 0x21 GPA1,Active low
 LoRa,E22,VCC,LORA_VCC,BAT_PROT,2.7-5.5V; lower output-power config at 1S voltage
 LoRa,E22,GND,GND
@@ -36,7 +36,7 @@ ADC monitor,ADS1115 0x4B,AIN2,RADIO_SENSE,Optional 100k/100k
 ADC monitor,ADS1115 0x4B,ADDR,Address strap,SCL,7bit 0x4B
 Buttons,MCP23017 0x20,GPA0-7,BTN_L0-7,Left 2x4 bank,Normally-open to GND
 Buttons,MCP23017 0x20,GPB0-7,BTN_R0-7,Right 2x4 bank,Normally-open to GND
-Radio GPIO,MCP23017 0x21,GPA0,NRF_CE,CE control,Timing gate
+Radio GPIO,MCP23017 0x21,GPA0,SPARE,Reserved
 Radio GPIO,MCP23017 0x21,GPA1,NRF_IRQ_N,IRQ input
 Radio GPIO,MCP23017 0x21,GPA2,BRIDGE_IRQ,Bridge interrupt
 Radio GPIO,MCP23017 0x21,GPA3,RADIO_EN,Enable gate candidate
