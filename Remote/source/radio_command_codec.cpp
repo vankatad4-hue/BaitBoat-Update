@@ -52,9 +52,10 @@ bool radio_decodeCommand(const RadioFrame &f, uint8_t expectedSrc, uint8_t expec
     out.leftMotor=clampMotor(out.leftMotor); out.rightMotor=clampMotor(out.rightMotor);
     if (out.mode != MODE_MANUAL && out.mode != MODE_AUTOPILOT && out.mode != MODE_RETURN_HOME)
         return false;
-    const bool releaseCommand = (out.type == CMD_BAIT_RELEASE || out.type == CMD_HOOK_RELEASE ||
-        out.type == CMD_RELEASE_HOPPER_LEFT || out.type == CMD_RELEASE_HOPPER_RIGHT ||
+    const bool releaseCommand = (out.type == CMD_RELEASE_HOPPER_LEFT || out.type == CMD_RELEASE_HOPPER_RIGHT ||
         out.type == CMD_RELEASE_HOOK_LEFT || out.type == CMD_RELEASE_HOOK_RIGHT);
+    // Legacy combined-release IDs are rejected to prevent unintended two-channel actuation.
+    if (out.type == CMD_BAIT_RELEASE || out.type == CMD_HOOK_RELEASE) return false;
     if (out.activate && !releaseCommand) return false;
     if (releaseCommand && !out.activate) return false;
     if (backup && !backupAllowed(out)) return false;
