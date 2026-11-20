@@ -281,3 +281,10 @@ Boat:
 - Added Map Manager overlay for current GPS centre, coordinate nudges, fixed 1km square, zooms 14–19, estimate and selected-area coverage check.
 - Coverage progress bar is a verification percentage only; pack install/download progress is not yet implemented.
 - No compile/hardware validation. Remote version marker remains 028.
+
+
+## Offline-map coverage and staged import update — 2026-11-20
+- Exporter now creates sorted coverage index with present/missing tile rows. Firmware coverage index is loaded in PSRAM (6000-row limit), sorted keys checked, binary-search lookups used by tile renderer.
+- Map Manager UI: GPS centre, manual coordinate nudges, 1km square, zoom 14–19, storage estimate, pack/index status and area coverage bar.
+- Staged import from SD `/map-import/` into `/maps/` is implemented in source using 4KiB chunk copies, per-tile size validation and manifest-last install; status shows tile/byte progress and renderer cache is invalidated after validation.
+- Tests added for coverage-index export, not executed. Firmware compile and hardware tests pending. Remote version remains 028; ver029 development not packaged.
