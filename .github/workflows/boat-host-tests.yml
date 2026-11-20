@@ -47,6 +47,12 @@ jobs:
             Boat/source/radio_command_codec.cpp Boat/tests/radio_sequence_guard_test.cpp \
             -o /tmp/boat_sequence_test
           /tmp/boat_sequence_test
+      - name: Fail-closed command policy
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I Boat/tests/stubs \\
+            Boat/source/boat_command_policy.cpp Boat/tests/boat_command_policy_test.cpp \\
+            -o /tmp/boat_policy_test
+          /tmp/boat_policy_test
       - name: Command queue
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I Boat/tests/stubs \
