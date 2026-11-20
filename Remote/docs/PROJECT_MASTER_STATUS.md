@@ -290,7 +290,7 @@ Boat:
 - Tests added for coverage-index export, not executed. Firmware compile and hardware tests pending. Remote version remains 028; ver029 development not packaged.
 
 
-- Consolidated Remote history is maintained at `Remote/releases/CHANGELOG_MASTER_VER013.md` (history document revision VER008; source marker still ver028).
+- Consolidated Remote history is maintained at `Remote/releases/CHANGELOG_MASTER_VER014.md` (history document revision VER008; source marker still ver028).
 
 - ver029.3 robustness follow-up: coverage index uses PSRAM/binary search, import validates tile byte lengths/count and cache refresh. Added map-tools test workflow; CI result not confirmed.
 
@@ -351,3 +351,11 @@ Boat:
 - Safety gating, raw/min/centre/max/normalized telemetry, endpoint capture, dead-zone slider and neutral-before-exit behavior retained.
 - Source: `Remote/source/joystick_calibration_ui.cpp`; commit `59e0f81fb5676500`.
 - Not compiled or simulator tested; text-fit and Cyrillic font support pending LVGL Pro validation.
+
+
+## Settings UI theme pass — 2026-11-20
+- Settings navigation and header updated to shared dark marine palette, rounded blue-outline buttons, and outlined nav/content panels.
+- Main settings headings and category names localized to Bulgarian; internal category IDs unchanged.
+- Existing Wi-Fi, display, controls, sonar, map source selector and system navigation preserved.
+- Source: `Remote/source/settings_ui.cpp`; commit `9f5afc60294790c2`.
+- Remaining category-body labels are still mixed English/Bulgarian and require a separate localization review. Not compiled or LVGL Pro-tested.
