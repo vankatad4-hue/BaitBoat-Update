@@ -4,7 +4,7 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 
 ## Versioning
 - ZIP: `Flytec_Remote_verXXX.zip`.
-- Preserve older archives; current marker `releases/VERSION` is `023`.
+- Preserve older archives; current marker `releases/VERSION` is `026`.
 - Increment for every package change and follow `../../docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Controller/display baseline
@@ -78,7 +78,7 @@ Authenticated receive frames are dispatched to strict payload decoders. Remote A
 - A HOME coordinate can be set from the current fresh GNSS fix. Both actions reject invalid or >2-second-old fixes.
 - Selected waypoint can be tagged with planned BAIT / HOOK markers; they do not issue actuator commands.
 - START MISSION is explicitly blocked and displays why. No mission execution, persistent storage, geofence, authenticated boat command or release sequence is implemented.
-- Preview: `UI_PREVIEW_MISSION_VER025.svg`; updated main screen: `UI_PREVIEW_REMOTE_VER025.svg`. Target build and touch/hardware validation remain pending.
+- Preview: `UI_PREVIEW_MISSION_VER026.svg`; updated main screen: `UI_PREVIEW_REMOTE_VER026.svg`. Target build and touch/hardware validation remain pending.
 
 
 ## Remote ver026 — waypoint storage/map overlay
