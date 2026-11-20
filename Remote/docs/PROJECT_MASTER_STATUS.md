@@ -157,3 +157,9 @@ Boat:
 - Added internal layout and battery cradle CAD modes; workflow exports internal/top previews and cradle STL.
 - Local mesh tests: front panel and rear shell watertight, each one component; button plate watertight with 17 components; cradle feature mesh watertight with two components. CAD generation only, no hardware fit validation.
 - Overall shell depth including grip pads and front/collar stack approximately 87mm, revised from the prior ~70mm estimate.
+
+
+## Remote fit coupons R6.1 (2026-11-20)
+- Added small printable tolerance coupons before a full remote enclosure print: button apertures 13.8–15.0mm, joystick apertures 24.5–26.0mm, USB slot matrix 15.0–16.0×8.0–9.0mm, screw holes 2.8–3.4mm, and release guard apertures 17.6/18.0mm with 21mm collars.
+- OpenSCAD coupon source and guide committed. Locally generated STL coupon meshes checked watertight. Labels are test aids; no physical fit has yet been measured because target components are not purchased/available.
+- GitHub CAD workflow now includes export commands for the four coupon STL files.
