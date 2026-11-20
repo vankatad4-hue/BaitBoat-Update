@@ -43,7 +43,25 @@ module screen_mock(){
  translate([0,screen_y-29,71.9]) color("#f2f5f7") cube([screen_w-10,10,0.4],center=true);
 }
 module joystick(){cylinder(d=31,h=2.4);translate([0,0,2.4]) sphere(d=19);translate([0,0,8]) cylinder(d=10,h=11);translate([0,0,18]) sphere(d=19);}
-module assembly(){
+
+// Approximate interior layout visualization (component envelope placeholders).
+module block(x,y,w,h,z=4,t=5,col="#91b7a5"){
+ translate([x,y,z]) color(col) cube([w,h,t],center=true);
+}
+module internal_layout(){
+ // Touch controller PCB behind display, approximate board envelope
+ block(0,screen_y,108,72,6,3,"#78b89a");
+ // Joystick module envelopes
+ block(-108,66,36,36,6,6,"#b7c2d0"); block(108,66,36,36,6,6,"#b7c2d0");
+ // Primary nRF PA/LNA and backup E22 radio near antenna exits
+ block(-123,25,42,26,6,6,"#7c9bd0"); block(126,23,48,30,6,6,"#7c9bd0");
+ // Lower pack and power zone
+ block(0,-61,84,36,6,8,"#a5aab0");
+ block(-65,-74,30,20,6,5,"#e0b477"); // charge/protection placeholder
+ block(71,-71,38,24,6,5,"#e0b477"); // DC/DC placeholder
+ block(0,-32,44,18,6,5,"#e0b477"); // distribution
+}
+\nmodule assembly(){
  color("#27323c") rear();translate([0,0,66.75]) color("#303942") front();
  screen_mock();
  for(side=[-1,1]) translate([side*stick_x,stick_y,70.35]) color("#171d23") joystick();
@@ -53,4 +71,4 @@ module assembly(){
  ok_position() translate([0,0,70.35]) color("#c6cbd0") cap(false);
  translate([0,power_y,70.35]) color("#d34a48") cap(false);
 }
-if(part=="front") front(); else if(part=="rear") rear(); else if(part=="assembly") assembly(); else if(part=="buttons") assembly();
+if(part=="front") front(); else if(part=="rear") rear(); else if(part=="assembly") assembly(); else if(part=="buttons") assembly(); else if(part=="internal") internal_layout();
