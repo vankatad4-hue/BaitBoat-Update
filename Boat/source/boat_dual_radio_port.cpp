@@ -1,5 +1,6 @@
 #include "boat_dual_radio_port.h"
 #include <string.h>
+#include <esp_system.h>
 
 static constexpr uint8_t REMOTE_ID=0x01,BOAT_ID=0x02;
 static constexpr uint8_t BOAT_SESSION_EPOCH=1;
@@ -11,7 +12,8 @@ BoatDualRadioPort::BoatDualRadioPort()
       [](void*){return BOAT_E22_AUX_PIN>=0 && digitalRead(BOAT_E22_AUX_PIN)==HIGH;},
       [](bool released,void*){if(BOAT_E22_RESET_PIN>=0)digitalWrite(BOAT_E22_RESET_PIN,released?HIGH:LOW);},nullptr),
    nrfReady_(false),e22Configured_(false),qWrite_(0),qRead_(0),qCount_(0),
-   lastNrfRxMs_(0),lastE22RxMs_(0),authenticated_(false) {
+   lastNrfRxMs_(0),lastE22RxMs_(0),authenticated_(false),sessionEpoch_((uint8_t)esp_random()) {
+ if(sessionEpoch_==0)sessionEpoch_=1;
  memset(key_,0,sizeof(key_));memset(queue_,0,sizeof(queue_));
 }
 bool BoatDualRadioPort::begin() {
@@ -36,7 +38,12 @@ void BoatDualRadioPort::update() {
 void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  const uint32_t now=millis();
  if(!authenticated_ || !radio_frameVerify(f,key_) || f.sourceId!=REMOTE_ID || f.destinationId!=BOAT_ID) return;
- if(!seqGuard_.accept(f.sessionEpoch,f.sequence)) return;
+ if(f.type==RADIO_MSG_SESSION_START) {
+   if(!seqGuard_.accept(f.sessionEpoch,f.sequence,true)) return;
+   if(link==LINK_NRF_PRIMARY)lastNrfRxMs_=now;else lastE22RxMs_=now;
+   return;
+ }
+ if(!seqGuard_.accept(f.sessionEpoch,f.sequence,false)) return;
  if(link==LINK_NRF_PRIMARY)lastNrfRxMs_=now;else lastE22RxMs_=now;
  if(f.type==RADIO_MSG_HEARTBEAT || f.type==RADIO_MSG_TELEMETRY || f.type==RADIO_MSG_ACK || f.type==RADIO_MSG_LINK_PROBE)
      return;
@@ -66,7 +73,7 @@ bool BoatDualRadioPort::sendFrame(ManagedLink link,const RadioFrame &f) {
 }
 bool BoatDualRadioPort::sendHeartbeat(ManagedLink link,uint16_t seq,uint32_t now) {
  if(!authenticated_)return false;
- RadioFrame f;radio_frameInit(f,RADIO_MSG_HEARTBEAT,BOAT_ID,REMOTE_ID,seq,0,now,BOAT_SESSION_EPOCH);
+ RadioFrame f;radio_frameInit(f,RADIO_MSG_HEARTBEAT,BOAT_ID,REMOTE_ID,seq,0,now,sessionEpoch_);
  f.payload[0]=nrfReady_?1:0;f.payload[1]=e22Configured_?1:0;
  f.payload[2]=0;f.payload[3]=0; // boat state fields to be assigned by application
  if(!radio_frameSeal(f,key_))return false;
@@ -77,4 +84,12 @@ bool BoatDualRadioPort::backupFresh(uint32_t now)const{return e22Configured_ && 
 BoatFailsafeDecision BoatDualRadioPort::evaluateFailsafe(uint32_t now,bool mission,bool gnss,bool heading,bool battery,bool geofence)const {
  BoatLinkSafetyInputs in={primaryFresh(now),backupFresh(now),mission,gnss,heading,battery,geofence};
  return boatEvaluateLinkFailsafe(in);
+}
+
+bool BoatDualRadioPort::sendSessionStart(ManagedLink link,uint32_t now) {
+ if(!authenticated_)return false;
+ RadioFrame f;radio_frameInit(f,RADIO_MSG_SESSION_START,BOAT_ID,REMOTE_ID,0,0,now,sessionEpoch_);
+ f.payload[0]=sessionEpoch_;
+ if(!radio_frameSeal(f,key_))return false;
+ return sendFrame(link,f);
 }
