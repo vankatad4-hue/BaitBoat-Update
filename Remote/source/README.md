@@ -44,7 +44,7 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 
 ## Safety / limitations
 - Key storage returns false by default; authenticated communication/control is disabled.
-- Session/replay protection, application ACK, state synchronization and boat-side command execution are incomplete.
+- Remote session/replay protection, ACK lifecycle tracking and telemetry dispatch are implemented in the current scaffold; UI ACK display, boat-side state synchronization, command execution and ACK/telemetry generation remain incomplete.
 - No joystick ADC input, boat-side actuator execution, waypoint/mission save/select, autopilot, return-home execution, sonar hardware integration or live telemetry is operational. Release GPIO scanning is coded but not physically verified; safety readiness remains false by default.
 - Remote STOP is not an independently validated safety system.
 - Do not connect actuator power or operate the boat.
@@ -55,3 +55,7 @@ Read `../docs/PROJECT_MASTER_STATUS.md` for the full project state, requirements
 ## Joystick subsystem update
 
 `joystick_adc.cpp` reads four ADS1115 inputs (provisional 0x4A/AIN0–AIN3). The main sketch uses this reader; failed reads suppress stick output. Calibration and control preferences are stored in ESP32 NVS and only a fully validated endpoint capture sets the calibration-valid flag. Controls Settings exposes layout, override, dead-zone and calibration entry. See `../docs/JOYSTICK_ADC_INTEGRATION_R1.md`.
+
+
+## Remote radio receive integration R2
+Authenticated receive frames are dispatched to strict payload decoders. Remote ACK lifecycle records are correlated and exposed to the UI API; telemetry is applied with local group freshness and primary-link safety provenance. Boat-side generation/execution is still missing, and the complete firmware has not been compiled. See `../docs/REMOTE_FIRMWARE_INTEGRATION_REVIEW_R2.md`.
