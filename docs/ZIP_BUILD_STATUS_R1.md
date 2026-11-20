@@ -1,43 +1,31 @@
-# ZIP Build Status — 2026-11-20
+# ZIP Build / Integrity Status — 2026-11-20 checkpoint
 
-## Historical ver005 artifacts — verified
-PR workflow run #32 produced Remote/Boat ver005 archives and checksums. ZIP integrity and SHA-256 were previously verified. Older archives are preserved.
+## Current package markers (not operational release approvals)
+- Remote: `Remote/releases/VERSION` = **028**
+- Boat: `Boat/releases/VERSION` = **014**
+- Latest source UI work is unreleased ver029 development. Do not change markers for routine documentation synchronization.
 
-## Last tracked package snapshot — Remote ver024 / Boat ver014
-- Archive markers: Remote `024`, Boat `014` (source now Remote `025`).
-- ZIPs: `Remote/releases/Flytec_Remote_ver024.zip`, `Boat/releases/Flytec_Boat_ver014.zip`.
-- Manifest: `releases/SHA256SUMS_ver024_014.txt`.
-- Boat ver014 SHA-256: `5988d3ac4d90ad00ff1967d5958c1b73b4e95482d26dc9d740e7e39a7aeb964b` (matches manifest). Remote ver024 manifest SHA-256: `34307b961a7e966dccea172a2b48d7a957436aef856d1b76f2bfa72d635e4efa`; binary unavailable for independent verification.
+## Archive integrity caution
+The previous GitHub Actions workflow repeatedly regenerated archives under unchanged version names on development pushes. Consequently, branch ZIPs named ver028/ver014 must be treated as **unverified snapshots**, not immutable verified releases. Their original historical integrity cannot be inferred from the current filenames or manifests.
 
-## Independent integrity review
-- Older Boat ver011–013 archives are historical snapshots; ver014 supersedes them.
-- Remote ver024: archive and manifest are present, but the ZIP binary could not be retrieved through the connector. Its checksum is not independently verified.
-- Deterministic package workflow was updated and a local command smoke-test passed. GitHub workflow logs are not accessible in this session; archive/manifest outputs are present.
+## Workflow safeguard
+- Workflow: `.github/workflows/package-flytec-zips.yml`
+- Development pushes build ZIP/checksum artifacts and upload them (90-day retention).
+- Versioned archive copies are committed only when a push changes Remote/Boat VERSION marker(s).
+- Latest observed run at checkpoint: **#880 success**, head `9f7b0344`. The guard was exercised with no version-marker change and the preservation step was skipped.
+- Run: https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/44748284171
 
-## Package scope
-Remote ver024 adds touchscreen mode request buttons, joystick diagnostics and safety/ACK feedback UI.
-Boat ver014 adds the portable fail-closed command policy and policy tests. Archive integrity independently verified. No Boat application/executor or telemetry source.
+## How to issue a new snapshot/release safely
+1. Inspect changes and tests; select which project folder(s) belong in package.
+2. Increment the relevant VERSION marker by exactly one (Remote 029 and/or Boat 015, if the contents are being released).
+3. Push the marker bump; wait for the package workflow.
+4. Inspect run logs/artifacts; verify ZIP integrity (`unzip -t`), file list, no nested archives, and SHA-256 against manifest.
+5. Download the produced artifact and independently compare its checksum. Confirm archive content matches commit/marker.
+6. Update this status file and relevant BUILD_STATUS / changelog with run URL, commit, exact hash and test evidence.
+7. Never claim compiled firmware, hardware-ready or operational based only on ZIP packaging.
+
+## Older recorded evidence
+Previous docs report historical ver005 artifact checks and ver024/ver014 snapshots; however, those records predate the workflow archive overwrite issue and are not a substitute for verifying the currently present branch binaries. Preserve historical notes, but rely on a fresh clean package for current release evidence.
 
 ## Validation boundary
-No full ESP32 build, native schematic/ERC/DRC, PCB, RF/antenna, power/thermal or hardware validation. Do not operate motors or solenoids.
-
-
-## Remote ver024 UI/input update
-- Remote version marker advanced to ver024 for touchscreen mode requests, live joystick status, compact safety/ACK footer, and stale/unknown battery display.
-- ZIP/checksum generation is handled by the repository workflow; output and checksum still require workflow verification. No firmware compile or hardware test.
-
-
-## Remote ver025 mission UI change
-- Remote version marker is now ver025. Source includes mission/waypoint planning UI and SVG preview.
-- New release notes: `Remote/releases/RELEASE_VER025.md`.
-- The ver025 ZIP and checksum are not verified/available yet. Keep ver024 archive as the previous snapshot; do not claim a ver025 package is ready until it is rebuilt and verified.
-
-
-## Remote ver027 source milestone
-- Source marker advanced to ver026; release notes `Remote/releases/RELEASE_VER026.md`.
-- Adds NVS waypoint/home persistence and local relative map overlay.
-- ver026 archive and checksum are not verified; ver024 remains the last tracked package snapshot (Remote ZIP itself still not independently verified).
-
-
-## Remote ver027 update
-- Waypoint capacity increased to 16 (NVS) plus Home. SD/microSD card is designated for offline map packs. Existing map tile reader path documented; no renderer/map pack generator yet. Target compile, SD-card test and NVS test remain pending.
+No complete ESP32 target compile, LVGL Pro simulation, native KiCad ERC/DRC, hardware, RF, power/thermal, actuator or water validation is confirmed. No motor/solenoid operation.
