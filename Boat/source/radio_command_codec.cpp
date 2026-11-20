@@ -1,0 +1,78 @@
+#include "radio_command_codec.h"
+
+static int16_t clampMotor(int16_t v) {
+    if (v > 1000) return 1000;
+    if (v < -1000) return -1000;
+    return v;
+}
+static bool backupAllowed(const BoatCommand &cmd) {
+    if (cmd.type == CMD_EMERGENCY_STOP) return true;
+    if (cmd.type == CMD_SET_MODE && cmd.mode == MODE_RETURN_HOME) return true;
+    if (cmd.type == CMD_MANUAL_MOTORS) return true;
+    return false;
+}
+
+bool radio_encodeCommand(const BoatCommand &cmd, uint8_t src, uint8_t dst,
+                        uint8_t epoch, RadioFrame &f, const uint8_t key[32]) {
+    const RadioMessageType type = (cmd.type == CMD_MANUAL_MOTORS) ? RADIO_MSG_CONTROL : RADIO_MSG_ACTION;
+    radio_frameInit(f, type, src, dst, (uint16_t)cmd.sequence, (uint16_t)cmd.commandId,
+                    cmd.createdAtMs, epoch);
+    f.payload[0] = (uint8_t)cmd.type;
+    f.payload[1] = (uint8_t)cmd.mode;
+    const int16_t left=clampMotor(cmd.leftMotor), right=clampMotor(cmd.rightMotor);
+    f.payload[2]=(uint8_t)(left & 0xFF); f.payload[3]=(uint8_t)((uint16_t)left >> 8);
+    f.payload[4]=(uint8_t)(right & 0xFF); f.payload[5]=(uint8_t)((uint16_t)right >> 8);
+    f.payload[6]=cmd.activate ? 1 : 0;
+    f.payload[7]=0;
+    return radio_frameSeal(f,key);
+}
+
+bool radio_decodeCommand(const RadioFrame &f, uint8_t expectedSrc, uint8_t expectedDst,
+                        uint32_t nowMs, uint16_t maxAgeMs, bool backup,
+                        BoatCommand &out, const uint8_t key[32]) {
+    if (!radio_frameVerify(f,key)) return false;
+    if (f.sourceId != expectedSrc || f.destinationId != expectedDst) return false;
+    if (!radio_tickFresh(f.tick16,(uint16_t)nowMs,maxAgeMs)) return false;
+    if (f.type != RADIO_MSG_CONTROL && f.type != RADIO_MSG_ACTION) return false;
+    if (f.payload[7] != 0 || f.payload[6] > 1) return false;
+    const uint8_t rawType=f.payload[0];
+    if (rawType < CMD_EMERGENCY_STOP || rawType > CMD_HOOK_RELEASE) return false;
+    out = {};
+    out.sequence=f.sequence;
+    out.commandId=f.commandId;
+    out.createdAtMs=nowMs;
+    out.type=(BoatCommandType)rawType;
+    out.mode=(BoatMode)f.payload[1];
+    out.leftMotor=(int16_t)((uint16_t)f.payload[2] | ((uint16_t)f.payload[3]<<8));
+    out.rightMotor=(int16_t)((uint16_t)f.payload[4] | ((uint16_t)f.payload[5]<<8));
+    out.activate=f.payload[6]!=0;
+    out.leftMotor=clampMotor(out.leftMotor); out.rightMotor=clampMotor(out.rightMotor);
+    if (out.mode != MODE_MANUAL && out.mode != MODE_AUTOPILOT && out.mode != MODE_RETURN_HOME)
+        return false;
+    if (out.activate && out.type != CMD_BAIT_RELEASE && out.type != CMD_HOOK_RELEASE)
+        return false;
+    if ((out.type == CMD_BAIT_RELEASE || out.type == CMD_HOOK_RELEASE) && !out.activate)
+        return false;
+    if (backup && !backupAllowed(out)) return false;
+    if (backup && out.type == CMD_MANUAL_MOTORS) {
+        constexpr int16_t MAX_BACKUP=250;
+        if (out.leftMotor > MAX_BACKUP) out.leftMotor=MAX_BACKUP;
+        if (out.leftMotor < -MAX_BACKUP) out.leftMotor=-MAX_BACKUP;
+        if (out.rightMotor > MAX_BACKUP) out.rightMotor=MAX_BACKUP;
+        if (out.rightMotor < -MAX_BACKUP) out.rightMotor=-MAX_BACKUP;
+    }
+    return true;
+}
+
+bool RadioSequenceGuard::accept(uint8_t epoch, uint16_t sequence) {
+    if (!initialized_) { initialized_=true; epoch_=epoch; lastSequence_=sequence; return true; }
+    if (epoch != epoch_) {
+        // A new epoch is accepted only after an explicit session-sync layer.
+        // This low-level guard deliberately rejects implicit epoch changes.
+        return false;
+    }
+    const uint16_t delta=(uint16_t)(sequence-lastSequence_);
+    if (delta==0 || delta>=0x8000) return false; // duplicate, backwards or stale
+    lastSequence_=sequence;
+    return true;
+}
