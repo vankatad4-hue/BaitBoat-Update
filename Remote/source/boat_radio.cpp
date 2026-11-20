@@ -78,7 +78,8 @@ static bool radioSendTransport(ManagedLink link,const BoatCommand &command) {
         }
         if(g_lora.sendFrame(frame,now)){g_lastBackupTxMs=now;g_backupTxSent=true;return true;}
         g_loraPendingFrame=frame;g_loraPending=true;g_loraPendingPriority=priority;return true;
-    }    return false;
+    }
+    return false;
 }
 
 bool boatRadio_begin() {
@@ -104,7 +105,7 @@ bool boatRadio_begin() {
     if(g_begun && radioKey_get(g_authKey)) {
         RadioFrame start; radio_frameInit(start,RADIO_MSG_SESSION_START,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,0,0,millis(),g_sessionEpoch);
         start.payload[0]=g_sessionEpoch;
-        if(radio_frameSeal(start,g_authKey)) { if(g_nrfReady)g_nrf.sendFrame(start); if(g_loraConfigured)g_lora.sendFrame(start,millis()); }
+        if(radio_frameSeal(start,g_authKey)) { if(g_nrfReady)g_nrf.sendFrame(start); if(g_loraConfigured && g_lora.sendFrame(start,millis())){g_lastBackupTxMs=millis();g_backupTxSent=true;} }
     }
     return g_begun; // configured hardware, not a connected/authenticated boat link
 }
