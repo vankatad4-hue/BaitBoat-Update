@@ -221,7 +221,7 @@ Boat:
 
 
 ## Package status reconciliation
-- Remote version marker is now ver024; the ver024 package ZIP and checksum are expected from packaging workflow and require independent verification. Boat package remains ver014.
+- Historical ver024 snapshot: its package ZIP/checksum status was recorded at that point. Current remote source marker is ver027; the new archive/checksum is pending.
 
 
 ## Remote mission UI milestone — ver025 (2026-11-20)
@@ -242,7 +242,7 @@ Boat:
 - Mission start remains blocked. No boat mission execution, geofence/route validation, release command or authenticated operational path.
 - Source version marker Remote ver027. ZIP/checksum and target build/hardware test are pending.
 
-- Hardware verification checklist: `Remote/docs/MISSION_NVS_TEST_PLAN_VER026.md` (not yet run).
+- Hardware verification checklist: `Remote/docs/MISSION_NVS_TEST_PLAN_VER027.md` (not yet run).
 
 
 ## Remote ver027 update
