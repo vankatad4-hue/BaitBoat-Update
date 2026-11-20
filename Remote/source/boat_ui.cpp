@@ -492,6 +492,8 @@ static void createFooter()
 
     // Show live input validity and calibration status, not a generic reminder.
     inputStatusLabel = createLabel(footerPanel, "STICKS: NOT CALIBRATED", 15, 8);
+    lv_obj_set_width(inputStatusLabel, 155);
+    lv_label_set_long_mode(inputStatusLabel, LV_LABEL_LONG_DOT);
     safetyStatusLabel = createLabel(footerPanel, "STOP: UNKNOWN", 15, 34);
     lv_obj_set_width(safetyStatusLabel, 150);
     lv_label_set_long_mode(safetyStatusLabel, LV_LABEL_LONG_DOT);
