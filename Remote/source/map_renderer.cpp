@@ -23,8 +23,8 @@ static TileSlot *allocateTile(int32_t x,int32_t y,uint8_t z){
  TileSlot *t=findTile(x,y,z);if(t)return t;
  for(auto &candidate:tiles)if(!candidate.valid){t=&candidate;break;}
  if(!t)t=&tiles[0];releaseTile(*t);
- uint16_t *buf=offlineMap_readTile(mapStyle,z,(uint32_t)x,(uint32_t)y);if(!buf)return nullptr;
- t->pixels=buf;t->x=x;t->y=y;t->z=z;t->style=mapStyle;t->valid=true;
+ uint16_t *buf=offlineMap_readTile(mapStyle,z,(uint32_t)x,(uint32_t)y);
+ t->pixels=buf;t->x=x;t->y=y;t->z=z;t->style=mapStyle;t->valid=true;if(!buf){lv_obj_add_flag(t->image,LV_OBJ_FLAG_HIDDEN);return t;}
  memset(&t->dsc,0,sizeof(t->dsc));t->dsc.header.cf=LV_COLOR_FORMAT_RGB565;t->dsc.header.w=OFFLINE_MAP_TILE_SIZE;t->dsc.header.h=OFFLINE_MAP_TILE_SIZE;t->dsc.data_size=OFFLINE_MAP_TILE_BYTES;t->dsc.data=(const uint8_t*)buf;
  lv_image_set_src(t->image,&t->dsc);lv_obj_remove_flag(t->image,LV_OBJ_FLAG_HIDDEN);return t;
 }
@@ -36,9 +36,9 @@ static void drawTiles(){
  for(auto&t:tiles)hideTile(t);
  uint8_t slot=0;const int32_t n=(1L<<zoomLevel);
  for(int dy=0;dy<3;dy++)for(int dx=0;dx<3;dx++){
-  int32_t tx=firstX+dx,ty=firstY+dy;if(ty<0||ty>=n)continue;tx=(tx%n+n)%n;
-  TileSlot*t=allocateTile(tx,ty,zoomLevel);if(!t)continue;
-  lv_obj_set_pos(t->image,(int)round(tx*256.0-left),(int)round(ty*256.0-top));lv_obj_remove_flag(t->image,LV_OBJ_FLAG_HIDDEN);slot++;
+  int32_t displayX=firstX+dx,ty=firstY+dy;if(ty<0||ty>=n)continue;int32_t tileX=(displayX%n+n)%n;
+  TileSlot*t=allocateTile(tileX,ty,zoomLevel);if(!t||!t->pixels)continue;
+  lv_obj_set_pos(t->image,(int)round(displayX*256.0-left),(int)round(ty*256.0-top));lv_obj_remove_flag(t->image,LV_OBJ_FLAG_HIDDEN);slot++;
  }
  (void)slot;
 }
