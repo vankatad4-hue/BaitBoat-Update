@@ -28,11 +28,19 @@ jobs:
             "EBYTE_E22-900T22S-V2_Manual.pdf"
             "Waveshare_ESP32-S3-Touch-LCD-4.3B_Schematic_REFERENCE.pdf"
             "Cytron_MDD20A_Datasheet.pdf"
+            "Nordic_nRF24L01P_Datasheet.pdf"
+            "NXP_SC16IS750_Datasheet.pdf"
+            "Bosch_BMP280_Datasheet.pdf"
+            "Diodes_DMTH3002LK3_Datasheet.pdf"
           )
           declare -a urls=(
             "https://www.cdebyte.com/pdf-down.aspx?id=4217"
             "https://files.waveshare.com/wiki/ESP32-S3-Touch-LCD-4.3B/ESP32-S3-Touch-LCD-4.3B-Sch.pdf"
             "https://download.kamami.pl/p587223-MDD20A%20Datasheet.pdf"
+            "https://infocenter.nordicsemi.com/pdf/nRF24L01P_PS_v1.0.pdf"
+            "https://www.nxp.com/docs/en/data-sheet/SC16IS750.pdf"
+            "https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp280-ds001.pdf"
+            "https://www.diodes.com/assets/Datasheets/DMTH3002LK3.pdf"
           )
           for i in "${!names[@]}"; do
             name="${names[$i]}"
