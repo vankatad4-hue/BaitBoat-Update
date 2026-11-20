@@ -42,3 +42,7 @@ J_WAVE_BAT: 1 BAT_PROT; 2 GND; PH2.0 mating polarity must be physically checked.
 - At the module, candidate 100µF bulk + 10µF + 100nF bypass; validate capacitor type/ESR, surge, transient and layout.
 - Module TX current estimate ~110mA. Do not assume board CS8501 can handle display/backlight + nRF + LoRa simultaneously. If fails, separate boost design from BAT_PROT is required; do not parallel boost outputs.
 - LoRa's RF power must be configured to applicable EU/Bulgaria band limit including antenna gain and cable loss; airtime/duty-cycle constraints are release blockers.
+
+
+## E22 supply correction R4
+The E22-900T22S-V2 accepts 2.7–5.5V, but the datasheet says ≥5V guarantees output power. For the prototype, feed E22 VCC from the Waveshare CS8501 5V rail, not BAT_PROT or RADIO_3V3. Keep UART/M0/M1/AUX logic at 3.3V. E22 is configured to 10dBm; peak current budget must still allow the module's worst-case TX demand (use 150mA until exact 10dBm current is measured). Test CS8501 with display/backlight + E22 TX. If 5V droops/overheats, add a separate BAT_PROT→5V buck/boost branch; never parallel converter outputs.
