@@ -3,6 +3,10 @@
 #include "boat_state.h"
 #include "joystick_calibration_ui.h"
 #include "settings_ui.h"
+#include "joystick.h"
+#include "boat_radio.h"
+#include "boat_telemetry.h"
+#include "release_button_guard.h"
 // --------------------------------------------------
 // SCREEN DIMENSIONS
 // --------------------------------------------------
@@ -458,13 +462,9 @@ static void createFooter()
         nullptr
     );
 
-    // Add a reminder of the joystick controls.
-    createLabel(
-        footerPanel,
-        "JOYSTICK CONTROL ACTIVE",
-        15,
-        23
-    );
+    // Show live input validity and calibration status, not a generic reminder.
+    inputStatusLabel = createLabel(footerPanel, "STICKS: NOT CALIBRATED", 15, 8);
+    safetyStatusLabel = createLabel(footerPanel, "SAFETY: STOP LATCHED | ACK: 0", 15, 34);
     // Create a button for joystick calibration.
 lv_obj_t *sticksButton = lv_button_create(footerPanel);
 
@@ -700,15 +700,12 @@ void updateBoatScreen(const BoatState &state)
     }
     lv_label_set_text(connectionLabel, radioText);
 
-    // Display battery percentage.
+    // Do not present a fabricated battery percentage before fresh telemetry.
     char batteryText[32];
-
-    snprintf(
-        batteryText,
-        sizeof(batteryText),
-        "BATTERY: %.0f%%",
-        state.batteryPercent
-    );
+    if (telemetry.batteryPercentValid && (uint32_t)(millis()-telemetry.batteryPercentReceivedAtMs) <= 1500U)
+        snprintf(batteryText, sizeof(batteryText), "BATTERY: %d%%", telemetry.batteryPercent);
+    else
+        snprintf(batteryText, sizeof(batteryText), "BATTERY: --");
 
     lv_label_set_text(
         batteryLabel,
@@ -739,6 +736,19 @@ void updateBoatScreen(const BoatState &state)
             );
             break;
     }
+
+    // Refresh the live input and safety status footer.
+    const JoystickSnapshot input = joystick_getSnapshot();
+    char inputText[112];
+    if (!input.readingsValid) snprintf(inputText,sizeof(inputText),"STICKS: ADC ERROR / NO DATA");
+    else if (!input.calibrationValid) snprintf(inputText,sizeof(inputText),"STICKS: CALIBRATION REQUIRED  RAW %d/%d %d/%d",input.raw.leftX,input.raw.leftY,input.raw.rightX,input.raw.rightY);
+    else snprintf(inputText,sizeof(inputText),"STICKS L %d,%d  R %d,%d  %s",input.values.leftX,input.values.leftY,input.values.rightX,input.values.rightY,input.neutral?"NEUTRAL":"ACTIVE");
+    if (inputStatusLabel) lv_label_set_text(inputStatusLabel,inputText);
+    char safetyText[128];
+    const char *stopText = state.emergencyStop ? (state.emergencyStopConfirmed ? "STOP CONFIRMED" : "STOP LATCHED / UNCONFIRMED") : (state.emergencyStopConfirmed ? "STOP RELEASED" : "STOP STATE UNKNOWN");
+    const char *healthText = state.failsafeActive ? "FAILSAFE" : (state.lowBattery ? "LOW BATTERY" : (state.actuatorSafetyReady ? "INTERLOCKS OK" : "INTERLOCKS NOT READY"));
+    snprintf(safetyText,sizeof(safetyText),"SAFETY: %s | %s | ACK PENDING:%u",stopText,healthText,(unsigned)boatRadio_pendingCommandAcks());
+    if (safetyStatusLabel) lv_label_set_text(safetyStatusLabel,safetyText);
 
     // Change STOP button text when emergency stop is active.
     if (state.emergencyStop)
