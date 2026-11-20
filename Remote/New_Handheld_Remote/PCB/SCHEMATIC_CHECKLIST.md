@@ -17,15 +17,15 @@ Native KiCad capture pending; component/net drafts are not completed schematics.
 ## Power documents
 - TPS61023: TPS61023_COMPONENT_CALCULATIONS_R1.md; TPS61023_PIN_NET_MAP_R1.md
 - TPS63070: TPS63070_COMPONENT_CALCULATIONS_REVIEW_R2.md; TPS63070_PIN_NET_MAP_R2.md
-- Protection: BATTERY_INPUT_PROTECTION_DESIGN_R3.md
-- Capture guide: POWER_SHEET_CAPTURE_SPEC_R1.md
-- Candidate BOM: REMOTE_POWER_BOM_CANDIDATES_R1.md
-- Net draft: POWER_SCHEMATIC_NET_DRAFT_R4.md; POWER_DISTRIBUTION_DESIGN_R3.md; TPS63070_PIN_NET_MAP_R3.md
+- Protection: BATTERY_INPUT_PROTECTION_DESIGN_R4.md
+- Capture guide: POWER_SHEET_CAPTURE_SPEC_R2.md
+- Candidate BOM: REMOTE_POWER_BOM_CANDIDATES_R2.md
+- Net draft: POWER_SCHEMATIC_NET_DRAFT_R5.md; POWER_DISTRIBUTION_DESIGN_R3.md; TPS63070_PIN_NET_MAP_R3.md
 
 ## Current baseline
 - 5V boost TPS61023DRLR: 1µH, 10µF input, 2×22µF output, 732k/100k FB; 450mA continuous plan/1A transient target. Thermal and capacitor-bias checks pending.
 - Radio TPS63070: 1.5µH candidate, 470k/150k feedback, cap bank, 100nF VAUX.
-- Pack: 1S4P; BMS; 4A fast-acting fuse candidate; FDS6575 reverse P-MOS candidate; ADC/NTC; all protection coordination pending.
+- Pack: 1S4P; BMS; 4A fast-acting fuse candidate; FDS6575 reverse P-MOS (Drain input, Source output) candidate; ADC/NTC; all protection coordination pending.
 
 ## Validation
 - [ ] Datasheet symbol/footprint/pin numbers.
