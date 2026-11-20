@@ -69,3 +69,7 @@ jobs:
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror \
             Boat/source/mission_protocol.cpp Boat/tests/mission_execution_test.cpp -o /tmp/boat_mission_execution
           /tmp/boat_mission_execution
+      - name: Session V2 HMAC and replay bounds
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/radio_session_v2_test.cpp -lcrypto -o /tmp/boat_session_v2
+          /tmp/boat_session_v2
