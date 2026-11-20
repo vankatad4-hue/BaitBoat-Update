@@ -52,7 +52,7 @@ The display and E22 module dimensions are from manufacturer documentation; other
 - Decide the rail architecture from the 1S4P pack: boost/regulation, display-board input, RF supply filtering, and current capacity must be calculated before choosing converter footprints.
 - The charge/protection block shown is not a finished charger or BMS design; the exact pack configuration and protection/charging solution remain open.
 
-## Electrical/mechanical checks before final CAD
+## Final fit-check list
 1. Obtain exact dimensions, connector locations, and mounting patterns for the display board, joysticks, nRF PA/LNA, E22, USB-C/charger, converter, and battery pack.
 2. Check both radio antennas' physical clearance and RF isolation. A single dual-band antenna is not assumed.
 3. Confirm battery-cell configuration, pack protection, charging current/temperature sensing, and safe enclosure ventilation/thermal limits.
