@@ -88,9 +88,11 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  // only as an exact command-ID duplicate. This prevents replaying an old
  // sequence with a new command ID on the alternate radio.
  if(!crossSequenceAccepted) {
-   if(dedupe_.hasExecuted(f.sourceId,f.sessionEpoch,id))
+   const BoatCrossRadioCommandDecision decision=boatClassifyCrossRadioCommand(
+       false,dedupe_.hasExecuted(f.sourceId,f.sessionEpoch,id),commandPending(f.sessionEpoch,id));
+   if(decision==BOAT_CROSSRADIO_DUPLICATE_EXECUTED)
      sendCommandAck(link,cmd,RADIO_ACK_DUPLICATE,0,0,now);
-   else if(commandPending(f.sessionEpoch,id) && cmd.type!=CMD_MANUAL_MOTORS)
+   else if(decision==BOAT_CROSSRADIO_DUPLICATE_PENDING && cmd.type!=CMD_MANUAL_MOTORS)
      sendCommandAck(link,cmd,RADIO_ACK_ACCEPTED,0,0,now);
    return;
  }
