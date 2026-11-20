@@ -26,15 +26,11 @@ static void physicalButtonEvent(uint8_t id, bool pressed)
         case 0: boatCommands_sendStop(); boatState.emergencyStop=true; boatState.emergencyStopConfirmed=false; releaseGuard_cancel(); break;
         case 1: if (boatState.mode==MODE_MANUAL) boatCommands_setMode(MODE_AUTOPILOT); else if (boatState.mode==MODE_AUTOPILOT) boatCommands_setMode(MODE_MANUAL); break;
         case 2: boatCommands_setMode(MODE_RETURN_HOME); break;
-        case 3: Serial.println("Waypoint save is not integrated yet."); break;
-        case 4: Serial.println("Waypoint selection is not integrated yet."); break;
-        case 5: if (uiReady) toggleMapPanel(); break;
-        case 6: if (uiReady) toggleSonarPanel(); break;
-        case 7: Serial.println("Settings are available through the touchscreen."); break;
-        case 12: Serial.println("Release status panel placeholder."); break;
-        case 13: Serial.println("Release-lock status placeholder."); break;
-        case 14: Serial.println("Back/cancel placeholder."); releaseGuard_cancel(); break;
-        case 15: /* physical OK key is scanned separately on MCP23017 0x21 GPA4 */ break;
+        case 3: case 4: case 5: case 6: case 7:
+        case 12: case 13: case 14: case 15:
+            if(id==14)releaseGuard_cancel();
+            if(uiReady)boatUI_physicalAction(id);
+            break;
         default: break;
     }
 }

@@ -6,4 +6,5 @@
 // Open the remote settings screen and remember the screen to return to.
 void settingsUI_open(lv_obj_t *returnScreen);
 
+bool settingsUI_close();
 #endif

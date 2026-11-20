@@ -9,6 +9,7 @@ static uint16_t stable=0xFFFF, candidate=0xFFFF;
 static uint32_t debounceAt[16]={};
 static bool confirmStable=true, confirmCandidate=true, ready=false;
 static uint32_t confirmAt=0;
+static bool inputFault=false,releaseBlocked=false,okOwned=false;
 static bool wr(uint8_t a,uint8_t r,uint8_t v){Wire.beginTransmission(a);Wire.write(r);Wire.write(v);return Wire.endTransmission()==0;}
 static bool rd(uint8_t a,uint8_t r,uint8_t &v){Wire.beginTransmission(a);Wire.write(r);if(Wire.endTransmission(false)!=0)return false;if(Wire.requestFrom((int)a,1)!=1)return false;v=(uint8_t)Wire.read();return true;}
 void physicalButtons_setCallback(PhysicalButtonCallback f){cb=f;}
@@ -22,20 +23,40 @@ bool physicalButtons_begin(){
 }
 void physicalButtons_update(uint32_t now){
  if(!ready)return;
- uint8_t a=0,b=0,c=0;if(!rd(BTN_EXP,GPIOA,a)||!rd(BTN_EXP,GPIOB,b)||!rd(RADIO_IO,GPIOA,c)){releaseGuard_cancel();return;}
+ uint8_t a=0,b=0,c=0;
+ if(!rd(BTN_EXP,GPIOA,a)||!rd(BTN_EXP,GPIOB,b)||!rd(RADIO_IO,GPIOA,c)){
+  releaseGuard_cancel();releaseBlocked=true;okOwned=true;
+  if(!inputFault&&cb)cb(0,true);
+  inputFault=true;return;
+ }
  uint16_t raw=((uint16_t)a|((uint16_t)(b&0x7FU)<<8)|0x8000U);
+ bool rk=(c&(1U<<OK_BIT))!=0;
+ if(inputFault){
+  if(raw!=0xFFFF||!rk)return;
+  stable=candidate=raw;confirmStable=confirmCandidate=true;inputFault=false;releaseBlocked=false;okOwned=false;return;
+ }
+ uint16_t releases=(uint16_t)((~raw)&0x0F00U);
+ if((releases&&(releases&(releases-1)))||!(raw&1U)||(releases&&!rk)){
+  releaseGuard_cancel();releaseBlocked=true;okOwned=true;
+ }
  for(uint8_t i=0;i<15;i++){
   bool rp=(raw&(1U<<i))==0,sp=(stable&(1U<<i))==0,cp=(candidate&(1U<<i))==0;
   if(rp!=cp){if(rp)candidate&=(uint16_t)~(1U<<i);else candidate|=(uint16_t)(1U<<i);debounceAt[i]=now;}
   else if(rp!=sp&&(uint32_t)(now-debounceAt[i])>=DEBOUNCE_MS){
    if(rp)stable&=(uint16_t)~(1U<<i);else stable|=(uint16_t)(1U<<i);
-   if(i>=8&&i<=11){ReleaseChannel q=(ReleaseChannel)(i-8);if(rp)releaseGuard_beginKey(q,now);else releaseGuard_endKey(now);}
-   else if(cb)cb(i,rp);
+   if(i>=8&&i<=11){
+    ReleaseChannel q=(ReleaseChannel)(i-8);
+    if(!releaseBlocked){if(rp)releaseGuard_beginKey(q,now);else if(releaseGuard_pendingChannel()==q)releaseGuard_endKey(now);}
+   }else if(cb&&((raw&1U)||i==0)){if(rp&&i!=0)releaseGuard_cancel();cb(i,rp);}
   }
  }
- bool rk=(c&(1U<<OK_BIT))!=0;
  if(rk!=confirmCandidate){confirmCandidate=rk;confirmAt=now;}
- else if(rk!=confirmStable&&(uint32_t)(now-confirmAt)>=DEBOUNCE_MS){confirmStable=rk;if(!rk)releaseGuard_beginConfirm(now);else releaseGuard_endConfirm(now);}
+ else if(rk!=confirmStable&&(uint32_t)(now-confirmAt)>=DEBOUNCE_MS){
+  confirmStable=rk;
+  if(!rk){okOwned=releaseBlocked||releaseGuard_state()!=RELEASE_GUARD_IDLE;if(okOwned&&!releaseBlocked)releaseGuard_beginConfirm(now);}
+  else {if(okOwned)releaseGuard_endConfirm(now);else if(!releaseBlocked&&cb){cb(15,true);cb(15,false);}okOwned=false;}
+ }
  releaseGuard_tick(now);
+ if(!releases&&rk&&(stable&0x0F00U)==0x0F00U&&confirmStable&&(raw&1U))releaseBlocked=false;
 }
 uint16_t physicalButtons_state(){return stable;}

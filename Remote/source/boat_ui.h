@@ -20,4 +20,5 @@ void toggleSonarPanel();
 typedef void (*StopCallback)();
 void boatUI_setStopCallback(StopCallback callback);
 
+void boatUI_physicalAction(uint8_t id);
 #endif

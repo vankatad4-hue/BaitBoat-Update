@@ -824,6 +824,7 @@ void joystickCalibrationUI_open(lv_obj_t *returnScreen)
 
 void joystickCalibrationUI_close()
 {
+    if(!calScreen||lv_screen_active()!=calScreen)return;
     // Require all four axes to be neutral before leaving.
     if (!joystick_calibrationExit())
     {
@@ -844,6 +845,8 @@ void joystickCalibrationUI_close()
         lv_screen_load(homeScreen);
     }
 
-    // Clear the screen reference.
-    calScreen = nullptr;
+    // Retire screen and timer together, after LVGL has switched to parent.
+    lv_obj_t *old=calScreen;calScreen=nullptr;lv_obj_delete_async(old);
 }
+
+bool joystickCalibrationUI_isOpen(){return calScreen&&lv_screen_active()==calScreen;}

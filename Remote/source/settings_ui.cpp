@@ -127,13 +127,15 @@ static void keyboardEvent(lv_event_t *event)
 }
 
 // Return to the previous operating screen.
-static void backEvent(lv_event_t *event)
+bool settingsUI_close()
 {
-    (void)event;
+    if(!settingsScreen||lv_screen_active()!=settingsScreen)return false;
     hideKeyboard();
     if (returnToScreen != nullptr)
         lv_screen_load(returnToScreen);
+    return true;
 }
+static void backEvent(lv_event_t *event){(void)event;settingsUI_close();}
 
 // Save non-secret display preferences in NVS.
 static void saveDisplayPreferences()

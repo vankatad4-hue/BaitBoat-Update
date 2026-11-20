@@ -825,3 +825,59 @@ void boatUI_setStopCallback(StopCallback callback)
 }
 
 void boatUI_refreshLakeLabel(){if(mapTitle){char name[LAKE_NAME_BYTES],caption[64];lakeStorage_getName(lakeStorage_active(),name,sizeof(name));snprintf(caption,sizeof(caption),"%02u %s",(unsigned)lakeStorage_active()+1,name);lv_label_set_text(mapTitle,caption);}}
+
+static lv_obj_t *releaseStatusScreen=nullptr;
+static lv_obj_t *releaseStatusText=nullptr;
+static lv_timer_t *releaseStatusTimer=nullptr;
+static void updateReleaseStatus(lv_timer_t *){
+ if(!releaseStatusText)return;
+ char s[300];snprintf(s,sizeof(s),"STOP: %s\nРАДИО: %s\nБЛОКИРОВКА: %s\nПОТВЪРЖДЕНИЕ: %u",
+ boatState.emergencyStopConfirmed?(boatState.emergencyStop?"АКТИВЕН":"ОСВОБОДЕН"):"НЕПОТВЪРДЕН",
+ boatState.radioConnected?"СВЪРЗАНО":"НЯМА",
+ boatState.actuatorSafetyReady?"ГОТОВО":"БЛОКИРАНО",(unsigned)releaseGuard_state());
+ lv_label_set_text(releaseStatusText,s);
+}
+static bool closeReleaseStatus(){
+ if(!releaseStatusScreen||lv_screen_active()!=releaseStatusScreen)return false;
+ if(releaseStatusTimer){lv_timer_delete(releaseStatusTimer);releaseStatusTimer=nullptr;}
+ lv_obj_t *old=releaseStatusScreen;releaseStatusScreen=nullptr;releaseStatusText=nullptr;
+ lv_screen_load(mainScreen);lv_obj_delete_async(old);return true;
+}
+static void openReleaseStatus(){
+ if(releaseStatusScreen)return;
+ releaseStatusScreen=lv_obj_create(nullptr);
+ lv_obj_set_style_bg_color(releaseStatusScreen,lv_color_hex(0x081522),LV_PART_MAIN);
+ lv_obj_set_style_text_color(releaseStatusScreen,lv_color_hex(0xFFFFFF),LV_PART_MAIN);
+ createLabel(releaseStatusScreen,"СЪСТОЯНИЕ НА ЗАХРАНКА И КУКИ",16,18);
+ releaseStatusText=createLabel(releaseStatusScreen,"",16,75);
+ lv_obj_t *b=lv_button_create(releaseStatusScreen);lv_obj_set_pos(b,610,415);lv_obj_set_size(b,170,46);
+ lv_label_set_text(lv_label_create(b),"НАЗАД");lv_obj_center(lv_obj_get_child(b,0));
+ lv_obj_add_event_cb(b,[](lv_event_t*){closeReleaseStatus();},LV_EVENT_CLICKED,nullptr);
+ updateReleaseStatus(nullptr);releaseStatusTimer=lv_timer_create(updateReleaseStatus,250,nullptr);
+ lv_screen_load(releaseStatusScreen);
+}
+void boatUI_physicalAction(uint8_t id){
+ if(!mainScreen)return;
+ if(id==14){
+  releaseGuard_cancel();
+  if(closeReleaseStatus()||lakeUI_close()||missionUI_close()||settingsUI_close())return;
+  if(joystickCalibrationUI_isOpen()){joystickCalibrationUI_close();return;}
+  if(mapManagerActive){mapManagerUI_close();return;}
+  if(mapExpanded)toggleMapPanel();else if(sonarExpanded)toggleSonarPanel();
+  return;
+ }
+ if(id==15){if(missionUI_isOpen())missionUI_close();return;}
+ if(missionUI_isOpen()){
+  if(id==3)missionUI_saveCurrent();else if(id==4)missionUI_selectNext();return;
+ }
+ if(lv_screen_active()!=mainScreen||mapManagerActive)return;
+ switch(id){
+  case 3:missionUI_open(mainScreen);missionUI_saveCurrent();break;
+  case 4:missionUI_open(mainScreen);missionUI_selectNext();break;
+  case 5:if(sonarExpanded)toggleSonarPanel();toggleMapPanel();break;
+  case 6:if(mapExpanded)toggleMapPanel();toggleSonarPanel();break;
+  case 7:settingsUI_open(mainScreen);break;
+  case 12:case 13:openReleaseStatus();break;
+  default:break;
+ }
+}

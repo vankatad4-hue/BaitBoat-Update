@@ -46,9 +46,11 @@ static void saveName(lv_event_t *){
 }
 static void showKeyboard(lv_event_t *){lv_keyboard_set_textarea(keyboard,field);lv_obj_remove_flag(keyboard,LV_OBJ_FLAG_HIDDEN);lv_obj_move_foreground(keyboard);}
 static void hideKeyboard(lv_event_t *){lv_obj_add_flag(keyboard,LV_OBJ_FLAG_HIDDEN);}
-static void closePage(lv_event_t *){
-    lv_obj_t *old=page;page=nullptr;boatUI_refreshLakeLabel();lv_screen_load(parentScreen);lv_obj_delete_async(old);
+bool lakeUI_close(){if(!page||lv_screen_active()!=page)return false;
+    if(keyboard&&!lv_obj_has_flag(keyboard,LV_OBJ_FLAG_HIDDEN)){lv_obj_add_flag(keyboard,LV_OBJ_FLAG_HIDDEN);return true;}
+    lv_obj_t *old=page;page=nullptr;boatUI_refreshLakeLabel();lv_screen_load(parentScreen);lv_obj_delete_async(old);return true;
 }
+static void closePage(lv_event_t *){lakeUI_close();}
 void lakeUI_open(lv_obj_t *parent){
     if(page)return;
     parentScreen=parent;selected=lakeStorage_active();
