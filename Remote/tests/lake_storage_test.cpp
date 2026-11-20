@@ -17,6 +17,14 @@ int main(){
     boatState.radioConnected=false;assert(!lakeStorage_select(1));safe();
     boatState.failsafeActive=true;assert(!lakeStorage_select(1));safe();
     SD.failRenameFrom="/active_lake.tmp";assert(!lakeStorage_select(1));assert(lakeStorage_begin(true));assert(lakeStorage_active()==0);SD.failRenameFrom.clear();
+    // Interrupted first install must preserve implicit slot zero across reboot.
+    assert(lakeStorage_prepareMapStage());
+    SD.shortWrite=true;
+    assert(!lakeStorage_commitMap(lakeStorage_mapStage()));SD.shortWrite=false;
+    assert(lakeStorage_begin(true));assert(lakeStorage_mapRoot()==lakeStorage_path("/maps"));
+    SD.failRenameFrom="/Lake_01/map_slot.tmp";
+    assert(!lakeStorage_commitMap(lakeStorage_mapStage()));SD.failRenameFrom.clear();
+    assert(lakeStorage_begin(true));assert(lakeStorage_mapRoot()==lakeStorage_path("/maps"));
     for(uint8_t i=0;i<8;i++){
         assert(lakeStorage_select(i));
         char name[48];snprintf(name,sizeof(name),"Test lake %u",(unsigned)i);
