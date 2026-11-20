@@ -24,9 +24,6 @@ jobs:
           openscad -o Front_Panel_R5.stl -D 'part="front"' Flytec_Remote_Enclosure_R5.scad
           openscad -o Rear_Shell_R5.stl -D 'part="rear"' Flytec_Remote_Enclosure_R5.scad
           openscad -o Button_Set_R5.stl Printable_Button_Set_R5.scad
-          for key in HOPPER_L HOPPER_R HOOK_L HOOK_R OK; do
-            openscad -o \${key}_Cap_R5.stl -D "which=\\"\${key}\\"" Flytec_Remote_Button_Caps_R5.scad
-          done
           xvfb-run -a openscad -o Remote_Assembly_Preview_R5.png --imgsize=1200,900 --viewall --autocenter -D 'part="assembly"' Flytec_Remote_Enclosure_R5.scad
           cd ../../..
           zip -r -9 Remote_CAD_R5_Print_Package.zip Remote/New_Handheld_Remote/CAD Remote/New_Handheld_Remote/MECHANICAL/REMOTE_MECHANICAL_R5.md Remote/New_Handheld_Remote/MECHANICAL/PHYSICAL_BUTTON_MAP_R5.md
