@@ -14,7 +14,7 @@ Check relevant repository files first; implement approved changes; update docume
 - Retain Flytec V080 hull, 12V 550 brushed motors, battery indicator and main switch; replace control electronics.
 - Boat controller: Heltec Wireless Tracker V1.2 (ESP32-S3 + UC6580 GNSS) candidate.
 - Remote: Waveshare ESP32-S3-Touch-LCD-4.3 Standard, 800×480, LVGL 9.6.0, Arduino IDE.
-- Radio: dual link — primary nRF24L01+ PA/LNA 2.4GHz, backup LoRa EU868 (SX1262/E22 UART module candidate) on both remote and boat; 500m remains an unvalidated range goal.
+- Radio: dual link — primary nRF24L01+ PA/LNA 2.4GHz; backup remote E22 UART LoRa, boat integrated Heltec Tracker SX1262 candidate; PHY interop and 500m range unvalidated.
 - Motor driver: Cytron MDD20A candidate, current validation required.
 - Sonar: CHIRP echogram/fish-arch module; selection/integration pending.
 
@@ -28,7 +28,7 @@ Flytec_Boat_verXXX.zip and Flytec_Remote_verXXX.zip. Never overwrite prior relea
 - Protected 1S4P Li-ion pack; charging is not a custom circuit in this phase.
 - **Controller/display 5V:** revised baseline uses Waveshare board's onboard CS8501 single-cell battery boost through PH2.0 battery input. Manufacturer describes single-cell-to-5V boost and lists board load 5V/450mA. Validate onboard converter current, transients and thermal. External TPS61023 is fallback only, not to be paralleled with onboard boost.
 - **nRF24 radio 3.3V:** TPS63070 buck-boost; 1.5µH candidate; 470k/150k feedback, nominal 3.3067V; effective capacitance and RF bursts need validation.
-- **LoRa backup:** candidate E22 UART module may need 5V for full power; provisional separate filtered branch from Waveshare 5V boost, with simultaneous-load test required. Separate boost if rail margin is insufficient; never parallel converter outputs.
+- **LoRa backup:** E22 module supply from protected 1S battery rail (2.7–5.5V range) with legal reduced power configuration; 5V needed for guaranteed maximum output. Local bulk decoupling and TX droop test.
 - Battery protection: BMS, 4A fast-acting fuse candidate, FDS6575 reverse P-MOS candidate (Drain pack-side, Source protected-output), ADC sense and NTC. Exact coordination and tests pending.
 - Previous 1.20A controller+nRF estimate was based on assumed loads/efficiency and did not include LoRa. Recalculate and measure total load with LoRa enabled before selecting converters, fuse and battery/BMS.
 - Native KiCad schematic, ERC, PCB, review and hardware bring-up are incomplete.
@@ -62,3 +62,6 @@ Flytec_Boat_verXXX.zip and Flytec_Remote_verXXX.zip. Never overwrite prior relea
 - Remote/New_Handheld_Remote/PCB/SCHEMATIC_CAPTURE_SHEETS_R1.md
 - Remote/New_Handheld_Remote/PCB/SCHEMATIC_NETLIST_BLOCKS_R1.md
 - Remote/New_Handheld_Remote/PCB/SCHEMATIC_CAPTURE_CHECKLIST_R1.md
+
+## Hardware/software work branch
+A dedicated implementation branch `hardware-ready-dual-radio-r1` contains R2 test-build electrical specs, pin connections, revised enclosure envelope, packet codec and dual-link supervisor scaffold. Boat uses the integrated SX1262 candidate rather than a duplicate LoRa module by default. Hardware remains non-fabrication-ready until GPIO crosswalk, KiCad/ERC/DRC, motor current, solenoid current and RF compliance/interoperability gates pass.
