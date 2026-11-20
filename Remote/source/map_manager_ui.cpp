@@ -245,7 +245,7 @@ static void importStart(lv_event_t *event)
             indexBad = true; break;
         }
         if (importCount && ((int)z < previousZ ||
-            ((int)z == previousZ && (x < previousX || (x == previousX && y <= previousY))))
+            ((int)z == previousZ && (x < previousX || (x == previousX && y <= previousY)))))
         {
             indexBad = true; break;
         }
