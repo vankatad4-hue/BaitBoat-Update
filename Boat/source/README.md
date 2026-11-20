@@ -71,3 +71,5 @@ The initial test boat will carry the same E22-900T22S module as the remote. Boat
 - `boat_radio_safety.*` provides deduplication and failsafe decision helpers; no motor/solenoid outputs are controlled.
 - E22 direct UART and nRF CE/CSN pin defaults are disabled (-1) pending exact Tracker board pin map. No key is provisioned; firmware fails closed.
 - Bench sketches test radio bytes only, not actuators.
+
+- Boat heartbeat schedule: primary100ms, backup3s; backup slot retries are throttled250ms. Remote backup command queue prioritizes STOP over RETURN over manual. No boat application ACK is implemented.
