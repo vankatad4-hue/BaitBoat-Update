@@ -3,9 +3,12 @@
 #include <Arduino.h>
 #include <stdio.h>
 #include <string.h>
+#include <Preferences.h>
+#include <math.h>
+#include <stddef.h>
 
 // This UI deliberately does not send mission or release commands.
-// Local waypoint storage is volatile until persistent storage and boat-side
+// Local waypoint storage is persistent in NVS; boat-side
 // mission validation/execution are implemented.
 static constexpr uint8_t SLOT_COUNT = 4;
 struct WaypointSlot { bool valid; float lat, lon; bool baitMark, hookMark; };
@@ -85,7 +88,7 @@ static void refresh()
     if(currentFixIsFresh()) snprintf(buf,sizeof(buf),"CURRENT FIX: %.6f, %.6f  |  age %lu ms",boatState.latitude,boatState.longitude,(unsigned long)(millis()-boatState.gpsLastUpdateMs));
     else snprintf(buf,sizeof(buf),"CURRENT FIX: INVALID / STALE — SAVE DISABLED");
     lv_label_set_text(gpsLabel,buf);
-    if(homeValid) snprintf(buf,sizeof(buf),"HOME (RAM): %.6f, %.6f",homeLat,homeLon);
+    if(homeValid) snprintf(buf,sizeof(buf),"HOME (NVS): %.6f, %.6f",homeLat,homeLon);
     else snprintf(buf,sizeof(buf),"HOME: NOT SET");
     lv_label_set_text(homeLabel,buf);
     for(uint8_t i=0;i<SLOT_COUNT;i++){
@@ -114,7 +117,7 @@ static void saveCurrent(lv_event_t *e)
     if(slot<0){for(int i=0;i<SLOT_COUNT;i++)if(!slots[i].valid){slot=i;break;}}
     if(slot<0){setStatus("ALL FOUR SLOTS FULL — SELECT AND CLEAR ONE");return;}
     slots[slot]={true,boatState.latitude,boatState.longitude,false,false};
-    selectedSlot=slot;refresh();setStatus("WAYPOINT SAVED IN RAM — LOST ON POWER OFF");
+    selectedSlot=slot;refresh();setStatus("WAYPOINT SAVED — LOST ON POWER OFF");
 }
 static void setHome(lv_event_t *e)
 {
