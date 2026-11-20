@@ -1,0 +1,51 @@
+name: Remote portable host tests
+
+on:
+  push:
+    branches:
+      - hardware-ready-dual-radio-r1
+    paths:
+      - 'Remote/source/**'
+      - 'Remote/tests/**'
+      - '.github/workflows/remote-host-tests.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'Remote/source/**'
+      - 'Remote/tests/**'
+      - '.github/workflows/remote-host-tests.yml'
+
+jobs:
+  host-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compiler
+        run: g++ --version
+      - name: Release guard and scanner syntax
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/stubs -IRemote/source \
+            Remote/source/release_button_guard.cpp Remote/tests/release_guard_unit_test.cpp \
+            -o /tmp/remote_release_guard
+          /tmp/remote_release_guard
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/stubs -IRemote/source \
+            -fsyntax-only Remote/source/physical_button_scanner.cpp Remote/source/release_button_guard.cpp
+      - name: Payload codec
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
+            Remote/source/radio_payload_codec.cpp Remote/tests/radio_payload_codec_test.cpp \
+            -o /tmp/remote_payload_codec
+          /tmp/remote_payload_codec
+      - name: ACK tracker
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
+            Remote/source/radio_payload_codec.cpp Remote/source/radio_ack_tracker.cpp \
+            Remote/tests/radio_ack_tracker_test.cpp -o /tmp/remote_ack_tracker
+          /tmp/remote_ack_tracker
+      - name: Telemetry freshness
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/stubs -IRemote/source \
+            Remote/source/boat_telemetry.cpp Remote/source/radio_payload_codec.cpp \
+            Remote/tests/boat_telemetry_test.cpp -o /tmp/remote_telemetry
+          /tmp/remote_telemetry
