@@ -29,6 +29,11 @@ bool BoatDualRadioPort::missionOverrideOutput(int16_t &left,int16_t &right)const
  ExecInputs in{};const uint32_t now=millis();const bool ready=missionInputs(in,now);
  return stickLease_.output(controller_.status().transaction,now,ready&&controller_.temporaryOverrideConfirmed()&&in.primaryFresh&&!in.stopActive&&in.releaseIdle&&in.releaseInterlocks,left,right);
 }
+bool BoatDualRadioPort::missionReleaseComplete(uint16_t transaction,uint16_t token,bool success){
+ ExecInputs in{};const bool ready=missionInputs(in,millis());
+ const bool safe=ready&&in.primaryFresh&&!in.stopActive&&in.releaseInterlocks&&in.releaseIdle&&in.stationary;
+ return controller_.releaseComplete(transaction,token,success&&safe,safe);
+}
 bool BoatDualRadioPort::sendMissionFeedback(const MissionControlFeedback &status,uint32_t now){
  if(!sessionReady()||!nrfReady_)return false;
  RadioFrame f;radio_frameInit(f,RADIO_MSG_MISSION_FEEDBACK,BOAT_ID,REMOTE_ID,++txSequence_,status.transaction,now,sessionEpoch_);
@@ -118,6 +123,7 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
    ExecInputs in{};const bool ready=missionInputs(in,now);
    MissionControlFeedback ack{};
    if(controller_.request(request,in,now,true,ready,stickLease_.neutral(request.transaction,now),ack)){
+     if(ack.result==MC_ACCEPTED)commandQueue_.clear();
      if(ack.result==MC_ACCEPTED&&request.op!=MCTRL_START&&request.op!=MCTRL_RESUME)missionIntent_={INTENT_STOP,-1,0};
      if(ack.result==MC_ACCEPTED&&(request.op==MCTRL_TEMP_OVERRIDE||request.op==MCTRL_CANCEL||request.op==MCTRL_SWITCH_MANUAL))stickLease_.reset();
      sendMissionFeedback(ack,now);
@@ -132,7 +138,7 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
    lastRx=lastSessionRx_=now;rxValid=true;
    const bool stopped=missionGate_&&missionGate_();
    MissionReceive result=mission_.ingest(f.payload,now,true,stopped);
-   if(result==MISSION_PREPARED){MissionPlan plan{};if(!mission_.getPrepared(plan,now)||!controller_.stage(plan,now,true,stopped)){mission_.reset();result=MISSION_REJECTED;}else stickLease_.reset();}
+   if(result==MISSION_PREPARED){MissionPlan plan{};if(!mission_.getPrepared(plan,now)||!controller_.stage(plan,now,true,stopped)){mission_.reset();result=MISSION_REJECTED;}else {stickLease_.reset();commandQueue_.clear();}}
    if(result==MISSION_CANCELLED)abortMission();
    RadioFrame ack;radio_frameInit(ack,RADIO_MSG_MISSION_ACK,BOAT_ID,REMOTE_ID,++txSequence_,id,now,sessionEpoch_);
    if(missionAck_encode(id,op,result,ack.payload)&&radio_frameSeal(ack,key_))sendFrame(link,ack);
@@ -159,7 +165,7 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
    return;
  }
  const auto phase=controller_.status().phase;
- if(phase>=MC_OUTBOUND&&phase<=MC_RETURNING){if(cmd.type!=CMD_MANUAL_MOTORS)sendCommandAck(link,cmd,RADIO_ACK_REJECTED_SAFETY,2,0,now);return;}
+ if(phase>=MC_PREPARED&&phase<=MC_RETURNING&&!(phase==MC_PREPARED&&cmd.type==CMD_CLEAR_STOP)){if(cmd.type!=CMD_MANUAL_MOTORS)sendCommandAck(link,cmd,RADIO_ACK_REJECTED_SAFETY,2,0,now);return;}
  if(dedupe_.hasExecuted(f.sourceId,f.sessionEpoch,id)) {
    sendCommandAck(link,cmd,RADIO_ACK_DUPLICATE,0,0,now);return;
  }

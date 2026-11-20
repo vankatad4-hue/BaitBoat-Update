@@ -806,7 +806,7 @@ void joystick_update()
         if(snapshot.neutral)manualModeRequested=false;
         return;
     }
-    if(!temporary&&boatRadio_missionLocked()){manualArmed=false;return;}
+    if(!temporary&&!boatRadio_manualModeConfirmed()){manualArmed=false;return;}
     if(temporary){
         manualArmed=false;
         if(!snapshot.neutral)overrideMoved=true;

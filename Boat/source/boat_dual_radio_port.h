@@ -55,6 +55,7 @@ public:
     void setMissionInputs(bool (*input)(ExecInputs &)){missionInput_=input;controller_.emergencyAbort();stickLease_.reset();}
     ExecOutput missionIntent()const{return missionIntent_;}
     bool missionOverrideOutput(int16_t &left,int16_t &right)const;
+    bool missionReleaseComplete(uint16_t transaction,uint16_t token,bool success);
     void update();
     bool takeCommand(BoatCommand &cmd,bool &duplicateAction,ManagedLink &receivedOn);
     void markActionExecuted(uint8_t sender,uint8_t epoch,uint16_t commandId);

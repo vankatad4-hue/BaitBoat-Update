@@ -129,6 +129,7 @@ void loop()
 
     // Apply the latest telemetry; GPS fixes automatically expire after 2 seconds.
     telemetryApplyToBoatState(boatState,millis());
+    if(boatRadio_stopConfirmationPending()){boatState.emergencyStop=true;boatState.emergencyStopConfirmed=false;boatState.actuatorSafetyReady=false;}
 
     // Publish radio supervisor status to the UI.
     boatState.radioConnected = boatRadio_isConnected();

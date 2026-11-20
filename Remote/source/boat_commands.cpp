@@ -110,7 +110,7 @@ bool boatCommands_setMode(BoatMode mode)
 bool boatCommands_setManualMotors(int16_t left, int16_t right)
 {
     // Defense in depth: reject movement requests outside confirmed manual operation.
-    if(boatRadio_missionLocked() || boatState.mode!=MODE_MANUAL || !boatState.radioConnected ||
+    if(!boatRadio_manualModeConfirmed() || boatState.mode!=MODE_MANUAL || !boatState.radioConnected ||
        !boatState.emergencyStopConfirmed || boatState.emergencyStop ||
        boatState.failsafeActive || !boatState.actuatorSafetyReady)return false;
 
@@ -137,7 +137,7 @@ bool boatCommands_setManualMotors(int16_t left, int16_t right)
 // confirms STOP released and the boat-side actuator interlocks are healthy.
 static bool releaseRequestAllowed()
 {
-    return !boatRadio_missionLocked() && boatState.mode == MODE_MANUAL && !boatState.failsafeActive &&
+    return boatRadio_manualModeConfirmed() && boatState.mode == MODE_MANUAL && !boatState.failsafeActive &&
            boatState.radioConnected &&
            boatState.radioActiveLink == RADIO_UI_NRF_PRIMARY &&
            boatState.emergencyStopConfirmed && !boatState.emergencyStop &&

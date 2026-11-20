@@ -47,12 +47,15 @@ static uint32_t g_lastSessionRx=0,g_lastHandshakeTx=0;
 static MissionUpload g_missionUpload;
 static MissionControlClient g_missionControl;
 static uint32_t g_lastStickTx=0;
+static bool g_manualConfirmRequired=true,g_stopMustConfirm=true;
+static uint32_t g_manualTransitionAt=0;
 static MissionPlan g_missionPlan{};
 static uint16_t g_missionId=0;
 static uint32_t g_missionStarted=0;
 static RadioSessionCounter g_boatSequenceGuard,g_boatPrimarySequenceGuard,g_boatBackupSequenceGuard;
 static void resetSession(uint32_t now){
     g_session.reset();radioSession_wipe(g_authKey,32);
+    g_manualConfirmRequired=true;g_stopMustConfirm=true;g_manualTransitionAt=now;
     g_txSequence=0;g_stopPending=false;g_missionId=0;g_missionUpload.fail();g_missionControl.reset();g_lastStickTx=now-50U;
     g_boatSequenceGuard.resetAfterHandshake();g_boatPrimarySequenceGuard.resetAfterHandshake();g_boatBackupSequenceGuard.resetAfterHandshake();
     g_ackTracker.reset(0);telemetryInit();
@@ -132,9 +135,11 @@ bool boatRadio_begin() {
 }
 
 bool boatRadio_sendCommand(const BoatCommand &command) {
-    if(command.type==CMD_EMERGENCY_STOP)g_missionControl.reset();
+    if(command.type==CMD_EMERGENCY_STOP){g_missionControl.reset();g_stopMustConfirm=true;g_manualConfirmRequired=true;g_manualTransitionAt=millis();}
     if(command.type==CMD_EMERGENCY_STOP && (g_missionUpload.state()==UPLOAD_ACTIVE||g_missionUpload.state()==UPLOAD_PREPARED))g_missionUpload.fail();
     if(!g_begun) return false;
+    if(command.type==CMD_MANUAL_MOTORS&&!boatRadio_manualModeConfirmed())return false;
+    if(command.type!=CMD_EMERGENCY_STOP&&g_stopMustConfirm)return false;
     const uint32_t now=millis();
     bool queued=false;
     if(command.type==CMD_EMERGENCY_STOP&&sessionReady()){
@@ -185,14 +190,18 @@ bool boatRadio_missionControlPending(){return g_missionControl.pending();}
 bool boatRadio_missionControlUnknown(){return g_missionControl.unknown();}
 MissionControlResult boatRadio_missionControlResult(){return g_missionControl.result();}
 bool boatRadio_missionLocked(){return g_missionUpload.state()==UPLOAD_ACTIVE||g_missionUpload.state()==UPLOAD_PREPARED||g_missionControl.locked();}
+bool boatRadio_stopConfirmationPending(){return g_stopMustConfirm;}
+bool boatRadio_manualModeConfirmed(){return !g_manualConfirmRequired&&!g_stopMustConfirm&&!boatRadio_missionLocked()&&telemetry.statusValid&&telemetry.statusPrimary&&millis()-telemetry.statusReceivedAtMs<1000U&&telemetry.reportedMode==MODE_MANUAL;}
 bool boatRadio_missionControl(MissionControlOp op){
  if(!missionPrimaryReady()||!g_missionControl.transaction())return false;
  if(op!=MCTRL_CANCEL){
-  if(!boatRadio_missionFeedbackFresh()||!boatState.emergencyStopConfirmed||boatState.emergencyStop||boatState.failsafeActive||!boatState.actuatorSafetyReady)return false;
+  if(g_stopMustConfirm||!boatRadio_missionFeedbackFresh()||!boatState.emergencyStopConfirmed||boatState.emergencyStop||boatState.failsafeActive||!boatState.actuatorSafetyReady)return false;
   if(op==MCTRL_START||op==MCTRL_RESUME){const auto j=joystick_getSnapshot();if(!j.readingsValid||!j.calibrationValid||j.calibrationMode||!j.neutral)return false;}
   if(op==MCTRL_START&&g_missionControl.phase()!=MC_PREPARED)return false;
  }
- return g_missionControl.request(op,millis());
+ const bool queued=g_missionControl.request(op,millis());
+ if(queued){g_manualConfirmRequired=true;g_manualTransitionAt=millis();}
+ return queued;
 }
 bool boatRadio_sendMissionSticks(int16_t left,int16_t right,bool neutral){
  if(!boatRadio_missionFeedbackFresh()||!g_missionControl.transaction())return false;
@@ -200,7 +209,7 @@ bool boatRadio_sendMissionSticks(int16_t left,int16_t right,bool neutral){
  if(phase!=MC_PREPARED&&phase!=MC_PAUSED&&phase!=MC_OVERRIDE_NEUTRAL&&phase!=MC_OVERRIDE_ACTIVE)return false;
  // Before confirmed override, send neutral evidence only; never movement.
  if(phase!=MC_OVERRIDE_ACTIVE){left=right=0;}
- else if(boatState.emergencyStop||!boatState.emergencyStopConfirmed||boatState.failsafeActive||!boatState.actuatorSafetyReady)return false;
+ else if(g_stopMustConfirm||boatState.emergencyStop||!boatState.emergencyStopConfirmed||boatState.failsafeActive||!boatState.actuatorSafetyReady)return false;
  const uint32_t now=millis();if(now-g_lastStickTx<50U)return true;
  MissionStickInput input={g_missionControl.transaction(),left,right,neutral};
  RadioFrame frame;radio_frameInit(frame,RADIO_MSG_MISSION_STICKS,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,++g_txSequence,input.transaction,now,g_sessionEpoch);
@@ -220,7 +229,12 @@ static bool dispatchValidatedPayload(ManagedLink link,const RadioFrame &frame,ui
         case RADIO_MSG_MISSION_FEEDBACK:{
             MissionControlFeedback feedback{};
             if(link!=LINK_NRF_PRIMARY||!missionFeedbackDecode(frame.payload,feedback)||feedback.transaction!=frame.commandId)return false;
-            return g_missionControl.observe(feedback,now,true);
+            const auto old=g_missionControl.phase();
+            if(!g_missionControl.observe(feedback,now,true))return false;
+            if(old!=feedback.phase&&(feedback.phase==MC_MANUAL_REQUESTED||feedback.phase==MC_COMPLETE||feedback.phase==MC_ABORTED||feedback.phase==MC_IDLE)){
+                g_manualConfirmRequired=true;g_manualTransitionAt=now;
+            }
+            return true;
         }
         case RADIO_MSG_MISSION_ACK:{
             uint16_t id;MissionOpcode op;MissionReceive result;
@@ -238,7 +252,12 @@ static bool dispatchValidatedPayload(ManagedLink link,const RadioFrame &frame,ui
             return true;
         case RADIO_MSG_TELEMETRY:
             if(!radio_decodeTelemetryPayload(frame.payload,decoded)) return false;
-            return telemetryApplyRadioPayload(decoded,link==LINK_NRF_PRIMARY,now);
+            if(!telemetryApplyRadioPayload(decoded,link==LINK_NRF_PRIMARY,now))return false;
+            if(link==LINK_NRF_PRIMARY&&decoded.kind==RADIO_PAYLOAD_STATUS){
+                if(decoded.stopState==1)g_stopMustConfirm=false;
+                if(!g_stopMustConfirm&&!boatRadio_missionLocked()&&decoded.boatMode==MODE_MANUAL&&!(decoded.safetyFlags&6U)&&((int32_t)(now-g_manualTransitionAt)>0))g_manualConfirmRequired=false;
+            }
+            return true;
         case RADIO_MSG_LINK_PROBE:
             return true;
         default:
