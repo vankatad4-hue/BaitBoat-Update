@@ -1,0 +1,28 @@
+Module,Signal,Candidate pin or connector,Status,Constraint
+Tracker,GNSS UART2 RX,GPIO33,UNVERIFIED_V1_2,Check exact schematic and direction
+Tracker,GNSS UART2 TX,GPIO34,UNVERIFIED_V1_2,Receive-only diagnostic no configuration commands
+Tracker,GNSS/TFT power,GPIO3,UNVERIFIED_V1_2,V1.1 active high only; verify V1.2
+Tracker,GNSS reset/PPS,GPIO35/36,RESERVED,Do not drive until confirmed
+Tracker,nRF SPI SCK/MOSI/MISO,GPIO9/10/11,CONDITIONAL_SHARED_BUS,Reserve SX1262 CS8 high and validate MISO tri-state
+Tracker,nRF CE/CSN,GPIO4/5,CANDIDATE_ONLY,Check conflicts and safe reset pulls
+Tracker,I2C SDA/SCL,GPIO6/7,CANDIDATE_ONLY,3.3V bus addresses 0x68 or 0x69 and 0x0C and 0x48
+Tracker,E22 TX/RX,GPIO17/18,CANDIDATE_CONFLICT,GPIO18 LED connection must be resolved
+Tracker,E22 M0/M1,GPIO15/16,CANDIDATE_CONFLICT,32k crystal function must be resolved
+Tracker,E22 AUX,GPIO37,CANDIDATE_CONFLICT,Check ADC/power control assignment
+Tracker,E22 reset,External reset access,UNASSIGNED,Optional in driver; safe startup checks required
+Tracker,UART0 console,GPIO43/44,RESERVED,Debug console
+Tracker,USB,GPIO19/20,RESERVED,Do not repurpose
+Tracker,Native TFT and SX1262 control,GPIO8/12/13/14/21/38-42,RESERVED,Do not operate native radio
+Tracker,Flash/straps/onboard battery,GPIO0/1/2/26/45/46/47/48,RESERVED,No 3S bus to Tracker battery input
+Carrier,Companion I2C SDA/SCL,RP2040 GP0/GP1,PROPOSAL_NOT_FROZEN,Shared 3.3V SDA/SCL; new protocol required
+Carrier,Motor L PWM/DIR,GP2/GP4,PROPOSAL_NOT_FROZEN,20 kHz candidate; safe low PWM
+Carrier,Motor R PWM/DIR,GP3/GP5,PROPOSAL_NOT_FROZEN,20 kHz candidate; safe low PWM
+Carrier,Solenoid LH/RH/LHook/RHook,GP6/GP7/GP8/GP9,PROPOSAL_NOT_FROZEN,One-hot hardware interlock and drivers
+Carrier,External watchdog WDI,GP10,PROPOSAL_NOT_FROZEN,Only fresh validated requested-output cycle
+Carrier,Actuator arm request,GP11,PROPOSAL_NOT_FROZEN,Hardware latch defaults disarmed; no automatic fault rearm
+Carrier,Physical STOP feedback,GP12,PROPOSAL_NOT_FROZEN,Direct electrical STOP independently cuts power
+Carrier,Watchdog/gate fault feedback,GP13,PROPOSAL_NOT_FROZEN,Read actual independently latched signal
+Carrier,Motor L/R activity feedback,GP14/GP15,PROPOSAL_NOT_FROZEN,Actual current/rotation sensing not command echo
+Carrier,Release idle feedback,GP16,PROPOSAL_NOT_FROZEN,Measured current/driver state for all 4 channels
+Carrier,Current/thermal interlock,GP17,PROPOSAL_NOT_FROZEN,Independent cutoff and feedback
+Carrier,4x solenoid current/idle diagnostics,GP18-GP21,PROPOSAL_NOT_FROZEN,Individual isolated/conditioned feedback
