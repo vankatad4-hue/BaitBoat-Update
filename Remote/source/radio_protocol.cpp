@@ -23,7 +23,7 @@ static bool hmacTag(const uint8_t key[32], const uint8_t *data, size_t length, u
 }
 
 void radio_frameInit(RadioFrame &f, RadioMessageType type, uint8_t src, uint8_t dst,
-                     uint16_t seq, uint16_t cmdId, uint32_t nowMs) {
+                     uint16_t seq, uint16_t cmdId, uint32_t nowMs, uint8_t sessionEpoch) {
     memset(&f, 0, sizeof(f));
     f.magic[0] = RADIO_FRAME_MAGIC0;
     f.magic[1] = RADIO_FRAME_MAGIC1;
@@ -34,6 +34,7 @@ void radio_frameInit(RadioFrame &f, RadioMessageType type, uint8_t src, uint8_t 
     f.sequence = seq;
     f.commandId = cmdId;
     f.tick16 = (uint16_t)nowMs;
+    f.sessionEpoch = sessionEpoch;
 }
 
 bool radio_frameSeal(RadioFrame &f, const uint8_t key[32]) {
@@ -44,7 +45,7 @@ bool radio_frameSeal(RadioFrame &f, const uint8_t key[32]) {
 
 bool radio_frameVerify(const RadioFrame &f, const uint8_t key[32]) {
     if (f.magic[0] != RADIO_FRAME_MAGIC0 || f.magic[1] != RADIO_FRAME_MAGIC1 ||
-        f.version != RADIO_PROTOCOL_VERSION || f.reserved != 0) return false;
+        f.version != RADIO_PROTOCOL_VERSION) return false;
     if (radio_crc16((const uint8_t*)&f, offsetof(RadioFrame, crc16)) != f.crc16) return false;
     uint8_t expected[8];
     if (!hmacTag(key, (const uint8_t*)&f, offsetof(RadioFrame, authTag), expected)) return false;
