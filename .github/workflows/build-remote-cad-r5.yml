@@ -39,6 +39,8 @@ jobs:
           git add Remote/New_Handheld_Remote/CAD/*.stl Remote/New_Handheld_Remote/CAD/*.png Remote_CAD_R5_Print_Package.zip Remote_CAD_R5_SHA256.txt
           if ! git diff --cached --quiet; then
             git commit -m 'Generate Flytec Remote CAD R5 print files'
+            git fetch origin hardware-ready-dual-radio-r1
+            git rebase origin/hardware-ready-dual-radio-r1
             git push
           fi
       - uses: actions/upload-artifact@v4
