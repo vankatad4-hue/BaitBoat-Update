@@ -21,7 +21,7 @@
 - ACCEPTED is queue acceptance only. There is no connected command executor, telemetry source, EXECUTED ACK, actuator output or navigation/failsafe application.
 
 ## Release/archive review
-- Last packaged snapshot: Remote ver024 / Boat ver014. Current source is Remote ver026. Boat ver014 ZIP checksum and structure independently verified; Remote ver024 binary remains unverified. Older Boat archives ver011–013 are superseded.
+- Last packaged snapshot: Remote ver024 / Boat ver014. Current source is Remote ver027. Boat ver014 ZIP checksum and structure independently verified; Remote ver024 binary remains unverified. Older Boat archives ver011–013 are superseded.
 - Generated ZIPs and manifest are present for Remote ver024 / Boat ver014 snapshots. Boat ver014 archive is independently verified.
 - Remote ver024 ZIP binary was not retrievable and remains unverified.
 - Remote ver024 ZIP: present, but the binary could not be retrieved through the available file fetch path; checksum is manifest-only and not independently verified.
@@ -102,10 +102,14 @@ No propulsion, release, live battery charging in the proposed enclosure, or wate
 - Build and hardware tests pending; ZIP/package output has not been independently verified.
 
 
-## Remote ver026 — persistent waypoints and map markers
+## Remote ver027 — persistent waypoints and map markers
 - Waypoint/home/BAIT-HOOK plan flags stored in NVS Preferences with CRC32 integrity and coordinate validation.
 - Relative waypoint/home markers added to the main map placeholder; only nearby markers within ±150m are shown and GPS invalid hides them.
 - This is a relative visualization, not a true map or safe navigation display. Mission execution is disabled.
 - Remote source marker ver026; package rebuild/checksum and firmware compile/hardware validation not yet verified.
 
 - Hardware verification checklist: `Remote/docs/MISSION_NVS_TEST_PLAN_VER026.md` (not yet run).
+
+
+## Remote ver027 update
+- Waypoint capacity increased to 16 (NVS) plus Home. SD/microSD card is designated for offline map packs. Existing map tile reader path documented; no renderer/map pack generator yet. Target compile, SD-card test and NVS test remain pending.
