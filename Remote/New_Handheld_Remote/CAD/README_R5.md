@@ -10,3 +10,5 @@ R5 CAD sources were synchronized to the generated print geometry; the build work
 Generated CAD assets increment the Remote package version automatically when changed.
 
 Cap-label source fixed for OpenSCAD parser compatibility; rerun exports for this updated source.
+
+Button-cap STL exports are text-free; identify each cap by filename and the R5 button map, avoiding OpenSCAD font-version dependencies.
