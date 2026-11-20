@@ -41,10 +41,10 @@ static lv_obj_t *sonarDeepDepth = nullptr;
 static lv_obj_t *sonarStatus = nullptr;
 static uint16_t screenTimeoutMinutes = 5;
 
-static const lv_color_t BG = lv_color_hex(0x101820);
-static const lv_color_t PANEL = lv_color_hex(0x1C2935);
+static const lv_color_t BG = lv_color_hex(0x081522);
+static const lv_color_t PANEL = lv_color_hex(0x10243A);
 static const lv_color_t TEXT = lv_color_hex(0xFFFFFF);
-static const lv_color_t ACCENT = lv_color_hex(0x168AAD);
+static const lv_color_t ACCENT = lv_color_hex(0x174F92);
 
 // Create a consistently styled settings label.
 static lv_obj_t *makeLabel(lv_obj_t *parent, const char *value, int x, int y)
@@ -64,6 +64,10 @@ static lv_obj_t *makeButton(lv_obj_t *parent, const char *value, int x, int y,
     lv_obj_set_size(button, width, 42);
     lv_obj_set_pos(button, x, y);
     lv_obj_set_style_bg_color(button, ACCENT, LV_PART_MAIN);
+    lv_obj_set_style_radius(button, 8, LV_PART_MAIN);
+    lv_obj_set_style_border_width(button, 1, LV_PART_MAIN);
+    lv_obj_set_style_border_color(button, lv_color_hex(0x347FC0), LV_PART_MAIN);
+    lv_obj_set_style_text_color(button, TEXT, LV_PART_MAIN);
     lv_obj_t *label = lv_label_create(button);
     lv_label_set_text(label, value);
     lv_obj_center(label);
@@ -618,30 +622,37 @@ void settingsUI_open(lv_obj_t *returnScreen)
     lv_obj_set_size(header, 800, 55);
     lv_obj_set_style_bg_color(header, PANEL, LV_PART_MAIN);
     lv_obj_set_style_pad_all(header, 0, LV_PART_MAIN);
-    makeLabel(header, "REMOTE SETTINGS", 18, 17);
-    makeButton(header, "BACK", 690, 7, 95, backEvent);
+    lv_obj_set_style_border_width(header, 0, LV_PART_MAIN);
+    makeLabel(header, "НАСТРОЙКИ НА ДИСТАНЦИОННОТО", 18, 17);
+    makeButton(header, "НАЗАД", 690, 7, 95, backEvent);
 
     lv_obj_t *nav = lv_obj_create(settingsScreen);
     lv_obj_set_pos(nav, 8, 65);
     lv_obj_set_size(nav, 170, 405);
     lv_obj_set_style_bg_color(nav, PANEL, LV_PART_MAIN);
     lv_obj_set_style_pad_all(nav, 8, LV_PART_MAIN);
+    lv_obj_set_style_radius(nav, 8, LV_PART_MAIN);
+    lv_obj_set_style_border_width(nav, 1, LV_PART_MAIN);
+    lv_obj_set_style_border_color(nav, lv_color_hex(0x2366A4), LV_PART_MAIN);
 
     settingsContent = lv_obj_create(settingsScreen);
     lv_obj_set_pos(settingsContent, 188, 65);
     lv_obj_set_size(settingsContent, 604, 405);
     lv_obj_set_style_bg_color(settingsContent, PANEL, LV_PART_MAIN);
     lv_obj_set_style_pad_all(settingsContent, 8, LV_PART_MAIN);
+    lv_obj_set_style_radius(settingsContent, 8, LV_PART_MAIN);
+    lv_obj_set_style_border_width(settingsContent, 1, LV_PART_MAIN);
+    lv_obj_set_style_border_color(settingsContent, lv_color_hex(0x2366A4), LV_PART_MAIN);
     lv_obj_add_flag(settingsContent, LV_OBJ_FLAG_SCROLLABLE);
 
     // This first settings release opens the Wi-Fi category by default.
-    makeLabel(nav, "CATEGORIES", 8, 8);
+    makeLabel(nav, "РАЗДЕЛИ", 8, 8);
     makeCategoryButton(nav, "WI-FI", "WIFI", 48);
-    makeCategoryButton(nav, "DISPLAY", "DISPLAY", 98);
-    makeCategoryButton(nav, "CONTROLS", "CONTROLS", 148);
-    makeCategoryButton(nav, "SONAR", "SONAR", 198);
-    makeCategoryButton(nav, "MAP", "MAP", 248);
-    makeCategoryButton(nav, "SYSTEM", "SYSTEM", 298);
+    makeCategoryButton(nav, "ДИСПЛЕЙ", "DISPLAY", 98);
+    makeCategoryButton(nav, "УПРАВЛЕНИЕ", "CONTROLS", 148);
+    makeCategoryButton(nav, "СОНАР", "SONAR", 198);
+    makeCategoryButton(nav, "КАРТА", "MAP", 248);
+    makeCategoryButton(nav, "СИСТЕМА", "SYSTEM", 298);
 
     settingsPrefs.begin("flytec", true);
     const bool backlightOn = settingsPrefs.getBool("backlight", true);
