@@ -1,4 +1,7 @@
 import unittest
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from map_area_planner import square_bounds, tiles_for_bounds, build_plan
 
 class AreaPlannerTests(unittest.TestCase):
