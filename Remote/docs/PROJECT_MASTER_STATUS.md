@@ -75,7 +75,7 @@ Boat:
 ## Versioned ZIP status
 - [Build and checksum status](../../docs/ZIP_BUILD_STATUS_R1.md)
 - Preserved baseline archives: Remote `Flytec_Remote_ver004.zip`, Boat `Flytec_Boat_ver004.zip`.
-- Next snapshot markers are Remote `018` and Boat `006`; the packaging workflow creates versioned ZIPs and SHA256 artifacts from the branch snapshot. These are pending successful workflow verification, not yet confirmed generated/downloadable archives.
+- Next snapshot markers are Remote `019` and Boat `006`; the packaging workflow creates versioned ZIPs and SHA256 artifacts from the branch snapshot. These are pending successful workflow verification, not yet confirmed generated/downloadable archives.
 - Packaging policy: `docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Boat controller pin audit
@@ -197,8 +197,17 @@ Boat:
 ## Firmware utility progress (2026-11-20)
 - Added portable strict payload decoder on Remote and Boat for heartbeat, ACK, telemetry status, battery/speed, coordinate, navigation and sonar-summary payloads.
 - Added Remote ACK lifecycle tracker with pending/accepted/executed/rejected/timeout states and backup-link restrictions.
-- Host tests pass locally for payload decoder and ACK tracker with GCC C++11, warnings-as-errors and address/undefined sanitizers. These utilities are not integrated into radio dispatch, UI or boat application. No full firmware build.
+- Host tests pass locally for payload decoder, ACK tracker, partial telemetry/freshness, release guard and scanner syntax. Remote receive dispatch, ACK tracking and telemetry state application are now wired. No full ESP32 firmware build; boat-side telemetry/ACK execution remains unimplemented.
 
 
 ## R6.6 preview asset
 - Added `CONCEPT/REMOTE_R6_6_FRONT_LAYOUT.svg`, a repository-saved vector preview of the updated two-column/four-row banks, one power key and right-bottom OK input. A PNG layout preview is also rendered locally.
+
+
+## Remote radio integration R2 (2026-11-20)
+- Authenticated receive dispatch validates frame/session/flags/reserved bytes; per-link plus cross-radio sequence guards reject stale/replay frames and avoid double-applying mirrored packets.
+- Remote ACK tracker is connected to non-manual command sends and inbound ACKs; exposes status for UI, not yet displayed.
+- Remote telemetry is applied per group with local freshness, GNSS sample pairing, primary provenance and release readiness gates.
+- Heartbeat payload fields and nonzero 16-bit action IDs corrected.
+- Boat-side telemetry/ACK emitter, command dedupe/executor and full safety lifecycle remain unimplemented. Session recovery after boat reset is fail-closed. Full firmware build and RF/hardware test pending.
+- New review: `REMOTE_FIRMWARE_INTEGRATION_REVIEW_R2.md`; contract R3.
