@@ -34,14 +34,15 @@ Motor running/stall currents, solenoid coil currents, battery/BMS limits, wiring
 Do not overwrite an existing release archive. Update the project documentation and version history when releasing changes.
 
 ## Remote power design progress (2026-11-20)
-- 1S4P protected Li-ion pack; charging schematic excluded from this phase.
-- TPS61088 5 V boost calculations R2 documented. 5 V / 1 A is a design target, not validated. Feedback, FSW, ILIM, inductor, capacitors and soft-start are preliminary; loop compensation remains open.
-- TPS63070 3.3 V radio rail calculations and pin map R2 reviewed against TI Rev. B datasheet. 1.5 µH inductor and TI capacitor baseline; verify effective capacitance and actual radio burst current.
-- Battery input protection architecture drafted: pack BMS, fuse candidate, reverse-polarity MOSFET, battery voltage sense and NTC. Parts not selected.
-- Current estimated worst-case rail budget ~2.6 A from 3.0 V pack at 5 V/1 A plus radio 3.3 V/300 mA; actual load/efficiency must be measured.
-- Native schematic, compensation verification, ERC, PCB, and bench bring-up remain incomplete.
+- Pack: protected 1S4P Li-ion; charging schematic excluded from this design phase.
+- Radio rail: TPS63070 3.3 V buck-boost component review R2 and pin map R2 completed against TI datasheet. 1.5 µH inductor and TI capacitor baseline are candidates; effective capacitance and actual radio burst current still need verification.
+- 5 V boost: TPS61088 calculations R2 exist, but a new selection review recommends evaluating TPS61023 instead. The current boost IC selection is **not frozen**. TPS61023 offers a simpler 5 V single-cell reference design and integrated compensation; expected rail requirement is 450 mA continuous with 1 A transient margin, pending load/thermal validation.
+- Battery protection architecture drafted: pack BMS, fuse candidate, reverse-polarity MOSFET, battery voltage sense and NTC. Parts not selected.
+- Estimated pack current at the conservative design point is about 2.6 A from a 3.0 V pack (5 V/1 A + radio 3.3 V/300 mA, with assumed converter efficiencies); actual load and efficiency must be measured.
+- Native schematic, final boost selection, compensation, ERC, PCB and bench bring-up remain incomplete.
 
 Documents:
+- `Remote/New_Handheld_Remote/PCB/BOOST_CONVERTER_SELECTION_REVIEW_R1.md`
 - `Remote/New_Handheld_Remote/PCB/TPS61088_COMPONENT_CALCULATIONS_R2.md`
 - `Remote/New_Handheld_Remote/PCB/TPS63070_COMPONENT_CALCULATIONS_REVIEW_R2.md`
 - `Remote/New_Handheld_Remote/PCB/BATTERY_INPUT_PROTECTION_DESIGN_R1.md`
