@@ -31,7 +31,7 @@ def export_area(mbtiles_path,output_dir,style,lat,lon,side_m,zooms,provider,attr
     wanted={(t["z"],t["x"],t["y"]) for t in plan["tiles"]}
     root=Path(output_dir); tile_root=root/"maps"/style; tile_root.mkdir(parents=True,exist_ok=True)
     db=sqlite3.connect(f"file:{Path(mbtiles_path).resolve()}?mode=ro",uri=True)
-    metadata=dict(db.execute("SELECT name,value FROM metadata")); exported=0;missing=[]
+    metadata=dict(db.execute("SELECT name,value FROM metadata")); exported=0;missing=[];index_rows=[]
     for z,x,y in sorted(wanted):
         tms_y=mbtiles_tms_to_xyz_y(y,z)
         row=db.execute("SELECT tile_data FROM tiles WHERE zoom_level=? AND tile_column=? AND tile_row=?",(z,x,tms_y)).fetchone()
@@ -41,16 +41,16 @@ def export_area(mbtiles_path,output_dir,style,lat,lon,side_m,zooms,provider,attr
         except Exception as exc:
             db.close();raise RuntimeError(f"Bad tile z={z} x={x} y={y}") from exc
         dest=tile_root/str(z)/str(x)/f"{y}.rgb565";dest.parent.mkdir(parents=True,exist_ok=True)
-        dest.write_bytes(rgb565_le(image));exported+=1
+        dest.write_bytes(rgb565_le(image));exported+=1;index_rows.append((z,x,y,1))
     db.close()
     plan.update(exported_tile_count=exported,missing_tile_count=len(missing),missing_tiles=missing,
                 pack_complete=(not missing),mbtiles_name=single_line(metadata.get("name",Path(mbtiles_path).name)),
                 mbtiles_bounds=single_line(metadata.get("bounds","unspecified")),style=style)
-    (root/"maps"/"area_plan.json").write_text(json.dumps(plan,indent=2)+"\n",encoding="utf-8")
+    (root/"maps"/"coverage_index.csv").write_text("z,x,y,present\\n"+"".join(f"{z},{x},{y},{p}\\n" for z,x,y,p in sorted(index_rows)),encoding="utf-8")\n    (root/"maps"/"area_plan.json").write_text(json.dumps(plan,indent=2)+"\n",encoding="utf-8")
     manifest=["FLYTEC_MAP1","format=raw-rgb565-le","tile_size=256","scheme=XYZ-WebMercator",
         f"style={style}",f"name={plan['mbtiles_name']}",f"bounds={plan['bounds_wgs84']}",
         f"zoom_levels={','.join(map(str,plan['zooms']))}",f"planned_tile_count={len(wanted)}",
-        f"exported_tile_count={exported}",f"missing_tile_count={len(missing)}",
+        f"exported_tile_count={exported}",f"missing_tile_count={len(missing)}", "coverage_index=coverage_index.csv",
         f"pack_complete={'true' if not missing else 'false'}",f"provider={single_line(provider)}",
         f"attribution={single_line(attribution)}",f"licence_url={single_line(licence_url)}"]
     (root/"maps"/"manifest.txt").write_text("\n".join(manifest)+"\n",encoding="utf-8")
