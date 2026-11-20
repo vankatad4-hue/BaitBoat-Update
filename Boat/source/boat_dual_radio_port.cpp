@@ -100,6 +100,8 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  if(!radio_decodeCommand(f,REMOTE_ID,BOAT_ID,now,2500,link==LINK_LORA_BACKUP,cmd,key_)) return;
  const uint16_t id=(uint16_t)cmd.commandId;
  if(id==0) return;
+ // An authenticated STOP invalidates any prepared plan before queue handling.
+ if(cmd.type==CMD_EMERGENCY_STOP)mission_.reset();
  // A command frame rejected by the cross-radio sequence guard is accepted
  // only as an exact command-ID duplicate. This prevents replaying an old
  // sequence with a new command ID on the alternate radio.
