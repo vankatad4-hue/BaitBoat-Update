@@ -88,7 +88,7 @@ Authenticated receive frames are dispatched to strict payload decoders. Remote A
 - Mission start stays disabled. No boat mission execution or release commands.
 - Version source marker ver026; archive and checksum are not yet verified.
 
-- Hardware verification checklist: `Remote/docs/MISSION_NVS_TEST_PLAN_VER026.md` (not yet run).
+- Hardware verification checklist: `Remote/docs/MISSION_NVS_TEST_PLAN_VER027.md` (not yet run).
 
 
 ## Remote ver027 — 16 waypoints + SD map storage
