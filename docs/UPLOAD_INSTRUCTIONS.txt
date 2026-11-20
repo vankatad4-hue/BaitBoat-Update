@@ -1,5 +1,13 @@
-Flytec V080 GitHub import bundle
+Flytec V080 repository instructions
 
-Copy the Boat/, Remote/, and releases/ directories into the root of the cloned BaitBoat-Update repository. Keep the existing README.md, LICENSE, docs/, and other files. Then commit and push.
-This bundle contains the exact extracted contents of Flytec_Boat_ver004.zip and Flytec_Remote_ver004.zip, plus the original archives in releases/.
-Do not overwrite existing paths without reviewing differences.
+The GitHub repository is canonical. The preserved ver004 archives are baseline snapshots, not current exports.
+
+- Current development branch: hardware-ready-dual-radio-r1
+- Remote package marker: Remote/releases/VERSION (005)
+- Boat package marker: Boat/releases/VERSION (005)
+- Packaging workflow: .github/workflows/package-flytec-zips.yml
+- Policy: docs/ZIP_RELEASE_POLICY_R1.md
+
+Do not manually overwrite versioned ZIP archives. When the workflow completes, download the two named GitHub Actions artifacts and verify the supplied SHA256 checksums. Keep older archives unchanged.
+
+When synchronizing locally, fetch/pull the latest branch before edits. The source folders are canonical. Inspect differences before copying across any folder or file.
