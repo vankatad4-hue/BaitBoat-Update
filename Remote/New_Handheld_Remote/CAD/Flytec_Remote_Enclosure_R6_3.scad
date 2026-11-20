@@ -51,8 +51,8 @@ module block(x,y,w,h,z=4,t=5,col="#91b7a5"){
 module internal_layout(){
  // Touch controller PCB behind display, approximate board envelope
  block(0,screen_y,106.1,67.8,6,3,"#78b89a");
- // Joystick module envelopes
- block(-108,66,36,36,6,6,"#b7c2d0"); block(108,66,36,36,6,6,"#b7c2d0");
+ // Joystick module envelopes: enlarged to 40x40 placeholder after KY-023 candidate review
+ block(-108,66,40,40,6,6,"#b7c2d0"); block(108,66,40,40,6,6,"#b7c2d0");
  // Primary nRF PA/LNA and backup E22 radio near antenna exits
  block(-123,25,42,26,6,6,"#7c9bd0"); block(126,23,26,16,6,6,"#7c9bd0");
  // Lower pack and power zone
