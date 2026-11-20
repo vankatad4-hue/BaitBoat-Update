@@ -145,3 +145,9 @@ Grounded RF keepout around connector/feed. Do not run high-speed display/SD or s
 - E22 VCC=CS8501 5V branch (LORA_5V), with local bulk/ceramic bypass. The datasheet states 5V is needed to guarantee output power; 3.3V is logic only for UART/M0/M1/AUX.
 - E22 UART TX/RX and mode/status GPIO remain 3.3V logic. Never feed 5V UART into ESP/SC16 pins.
 - Reserve 150mA TX peak for initial power budget; actual 10dBm draw to be measured.
+
+
+## E22 supply redesign R5
+- Controller/display remains on Waveshare onboard CS8501 5V output; reserve its specified board load (~450mA) without adding E22.
+- BAT_PROT→dedicated TPS61023 boost→LORA_5V→E22 VCC, converter sized with reference design for ≥150mA TX peak and margin. Local input/output capacitors; no parallel boost outputs.
+- E22 UART/M0/M1/AUX logic is 3.3V only. Verify module VCC and output power at 5V; use 10dBm initial setting.
