@@ -32,3 +32,11 @@ Each is exactly 256×256 little-endian RGB565 pixels (131072 bytes). Tile number
 - Google Maps may be displayed online through an authorized Maps Platform API, with required attribution and usage controls; Google tiles must not be persisted or downloaded for offline use.
 - SD offline map packs must come from sources licensed for offline storage and conversion. A 1 km × 1 km area-download manager is planned; tile coverage expands to XYZ tile boundaries at each selected zoom.
 - Online/offline auto fallback and map source controls are not implemented in this milestone. See `docs/ONLINE_OFFLINE_MAP_POLICY_VER029.md` for requirements.
+
+
+## ver029 map-source and pack metadata update
+- Remote source has AUTO / ONLINE / OFFLINE selection persisted in NVS; online renderer is unavailable and falls back to SD/no-map state.
+- Offline packs are now rejected unless manifest has `pack_complete=true`, non-empty attribution, licence URL and zoom-level list.
+- Validated attribution is rendered as a small overlay in the offline viewport.
+- Desktop tools: `tools/map_area_planner.py` for square-area tile/storage plan; `tools/mbtiles_area_export.py` for MBTiles area subset; `tools/mbtiles_to_flytec.py` for full archive conversion. All require explicit offline rights and attribution; none downloads imagery.
+- Google online integration design is in `docs/GOOGLE_MAP_TILES_ONLINE_INTEGRATION_VER029.md`; no online requests or Google content storage are implemented.
