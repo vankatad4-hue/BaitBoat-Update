@@ -9,6 +9,21 @@ The selected Waveshare ESP32-S3-Touch-LCD-4.3 board dedicates many ESP32 GPIOs t
 Official pin mapping/reference:
 https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3
 
+## Verified board connections (Waveshare 4.3 touch model)
+
+The official documentation and schematic confirm the following:
+- GPIO8/9 are the shared I2C SDA/SCL bus and appear at the external I2C connector; touch uses the same bus.
+- GPIO4 is touch IRQ; avoid assigning it to an external device.
+- GPIO0/1/2/3/5/7/10/14/17/18/21/38/39/40/41/42/45/46/47/48 are used by RGB LCD interface. Treat them as unavailable.
+- GPIO11/12/13 are routed to TF-card SPI (MOSI/SCK/MISO); can potentially be repurposed only if TF storage is not used, with the SD-card circuit and CS behavior checked.
+- GPIO15/16 are shared with onboard RS485/CAN hardware; do not assume clean GPIO/UART without checking mux and board circuitry.
+- GPIO19/20 are USB data; reserve them.
+- GPIO43/44 connect to onboard USB-UART interface; do not assign a radio UART there without analyzing the CH343 connection and conflict when USB serial is used.
+- GPIO6 is the Sensor AD connector signal and is a candidate for one digital control line only after confirming its board circuitry.
+- GPIO8/9 I2C bus has onboard pull-ups and the CH422G expander; external expander/ADC are bus additions, not a new bus.
+
+Official board resource page and schematic: https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3/Resources-And-Documents
+
 ## Proposed architecture
 
 ### A. External button I/O expander
@@ -57,9 +72,13 @@ Reserve lines for:
 | Power control | POWER_KEY / ENABLE | Hardware power-latch circuit plus logic input |
 | Status | buzzer/LED or fault | GPIO / expander |
 
+## Pin assignment strategy — no frozen numbers yet
+
+The schematic audit shows that the previously suggested “free GPIO” assignment cannot be made casually: most pins are dedicated, and several apparently available pins are connected to onboard interface circuitry. Keep all external devices on I2C where possible; use a radio interface daughterboard or verified breakout pins for the SPI/UART signals. The final pin map must document each signal, connector pin, onboard loading, boot/strapping constraints, and whether it remains available during USB debugging.
+
 ## Addressing and shared bus
 
-- The board's I2C bus is GPIO8 SDA / GPIO9 SCL and is already used by touch and onboard I/O expansion.
+- The board's I2C bus is GPIO8 SDA / GPIO9 SCL, shared by touch, CH422G, and the external I2C connector.
 - Verify the exact I2C address of the touch controller and board I/O expander before adding peripherals. Check address conflicts, pull-up strength and bus capacitance.
 - ADS1015 and MCP23017 candidates have configurable addresses, but address straps must be defined in schematic.
 - No pinout is final until exact Waveshare board revision, schematic, connector-accessible GPIO list, and all onboard peripherals are reconciled.
