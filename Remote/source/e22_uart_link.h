@@ -35,7 +35,7 @@ private:
     uint8_t rxBuffer_[RADIO_FRAME_SIZE];
     uint8_t rxIndex_;
     RadioFrame rxQueue_[4];
-    uint8_t rxHead_,rxTail_,rxCount_;
+    uint8_t rxHead_,rxTail_,rxQueueCount_;
     struct AirtimeBucket { uint32_t minuteStamp; uint16_t airtimeMs; bool valid; };
     AirtimeBucket buckets_[60];
     uint32_t txCount_,rxCount_,rejectedDutyCount_;
