@@ -61,7 +61,8 @@ module internal_layout(){
  block(71,-71,38,24,6,5,"#e0b477"); // DC/DC placeholder
  block(0,-32,44,18,6,5,"#e0b477"); // distribution
 }
-\nmodule assembly(){
+
+module assembly(){
  color("#27323c") rear();translate([0,0,66.75]) color("#303942") front();
  screen_mock();
  for(side=[-1,1]) translate([side*stick_x,stick_y,70.35]) color("#171d23") joystick();
