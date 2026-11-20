@@ -18,29 +18,26 @@ static int viewW=0,viewH=0;
 static lv_color_t missingColor(){return lv_color_hex(0x263746);}
 static void hideTile(TileSlot &t){if(t.image)lv_obj_add_flag(t.image,LV_OBJ_FLAG_HIDDEN);}
 static void releaseTile(TileSlot &t){if(t.image&&t.pixels)lv_image_set_src(t.image,nullptr);if(t.pixels)offlineMap_freeTile(t.pixels);t.pixels=nullptr;t.valid=false;}
-static TileSlot *findTile(int32_t x,int32_t y,uint8_t z){for(auto &t:tiles)if(t.valid&&t.x==x&&t.y==y&&t.z==z&&t.style==mapStyle)return &t;return nullptr;}
-static TileSlot *allocateTile(int32_t x,int32_t y,uint8_t z){
- TileSlot *t=findTile(x,y,z);if(t)return t;
- for(auto &candidate:tiles)if(!candidate.valid){t=&candidate;break;}
- if(!t)t=&tiles[0];releaseTile(*t);
- uint16_t *buf=offlineMap_readTile(mapStyle,z,(uint32_t)x,(uint32_t)y);
- t->pixels=buf;t->x=x;t->y=y;t->z=z;t->style=mapStyle;t->valid=true;if(!buf){lv_obj_add_flag(t->image,LV_OBJ_FLAG_HIDDEN);return t;}
- memset(&t->dsc,0,sizeof(t->dsc));t->dsc.header.cf=LV_COLOR_FORMAT_RGB565;t->dsc.header.w=OFFLINE_MAP_TILE_SIZE;t->dsc.header.h=OFFLINE_MAP_TILE_SIZE;t->dsc.data_size=OFFLINE_MAP_TILE_BYTES;t->dsc.data=(const uint8_t*)buf;
- lv_image_set_src(t->image,&t->dsc);lv_obj_remove_flag(t->image,LV_OBJ_FLAG_HIDDEN);return t;
+static void loadTileInto(TileSlot &t,int32_t x,int32_t y,uint8_t z){
+ if(t.valid&&t.x==x&&t.y==y&&t.z==z&&t.style==mapStyle)return;
+ releaseTile(t);t.x=x;t.y=y;t.z=z;t.style=mapStyle;t.valid=true;
+ uint16_t *buf=offlineMap_readTile(mapStyle,z,(uint32_t)x,(uint32_t)y);t.pixels=buf;
+ if(!buf){lv_obj_add_flag(t.image,LV_OBJ_FLAG_HIDDEN);return;}
+ memset(&t.dsc,0,sizeof(t.dsc));t.dsc.header.cf=LV_COLOR_FORMAT_RGB565;t.dsc.header.w=OFFLINE_MAP_TILE_SIZE;t.dsc.header.h=OFFLINE_MAP_TILE_SIZE;t.dsc.data_size=OFFLINE_MAP_TILE_BYTES;t.dsc.data=(const uint8_t*)buf;
+ lv_image_set_src(t.image,&t.dsc);lv_obj_remove_flag(t.image,LV_OBJ_FLAG_HIDDEN);
 }
 static void drawTiles(){
  if(!view||!haveCenter||!offlineMap_hasMapData()){for(auto&t:tiles)hideTile(t);return;}
  MapWorldPixel c=mapProjection_toWorldPixel(centerLat,centerLon,zoomLevel);
  double left=c.x-viewW/2.0,top=c.y-viewH/2.0;
  int32_t firstX=(int32_t)floor(left/256.0),firstY=(int32_t)floor(top/256.0);
- for(auto&t:tiles)hideTile(t);
- uint8_t slot=0;const int32_t n=(1L<<zoomLevel);
+ const int32_t n=(1L<<zoomLevel);
  for(int dy=0;dy<3;dy++)for(int dx=0;dx<3;dx++){
+  uint8_t idx=(uint8_t)(dy*3+dx);TileSlot &t=tiles[idx];hideTile(t);
   int32_t displayX=firstX+dx,ty=firstY+dy;if(ty<0||ty>=n)continue;int32_t tileX=(displayX%n+n)%n;
-  TileSlot*t=allocateTile(tileX,ty,zoomLevel);if(!t||!t->pixels)continue;
-  lv_obj_set_pos(t->image,(int)round(displayX*256.0-left),(int)round(ty*256.0-top));lv_obj_remove_flag(t->image,LV_OBJ_FLAG_HIDDEN);slot++;
+  loadTileInto(t,tileX,ty,zoomLevel);if(!t.pixels)continue;
+  lv_obj_set_pos(t.image,(int)round(displayX*256.0-left),(int)round(ty*256.0-top));lv_obj_remove_flag(t.image,LV_OBJ_FLAG_HIDDEN);
  }
- (void)slot;
 }
 static bool projectPoint(float lat,float lon,int &x,int &y){
  if(!haveCenter)return false;MapWorldPixel c=mapProjection_toWorldPixel(centerLat,centerLon,zoomLevel),p=mapProjection_toWorldPixel(lat,lon,zoomLevel);
