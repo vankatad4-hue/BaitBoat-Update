@@ -7,6 +7,7 @@
 #include "mission_wire.h"
 #include "radio_command_codec.h"
 #include "radio_key_store.h"
+#include "radio_session_platform.h"
 #include "sc16is750_bridge.h"
 #include "e22_uart_link.h"
 #include "nrf24_link.h"
@@ -34,36 +35,33 @@ static uint8_t g_sessionEpoch=1;
 static uint16_t g_txSequence=0;
 static uint32_t g_lastPrimaryHeartbeat=0;
 static uint32_t g_lastBackupTxMs=0,g_lastBackupTxAttemptMs=0;
-static bool g_backupTxSent=false,g_loraPending=false;
-static uint8_t g_loraPendingPriority=0;
-static RadioFrame g_loraPendingFrame;
-static uint8_t g_authKey[32];
+static bool g_backupTxSent=false,g_stopPending=false;
+static BoatCommand g_pendingStop{};
+static uint8_t g_authKey[32],g_rootKey[32];
+static bool g_rootReady=false;
+static SessionHandshake g_session;
+static uint32_t g_lastSessionRx=0,g_lastHandshakeTx=0;
 static MissionUpload g_missionUpload;
 static MissionPlan g_missionPlan{};
 static uint16_t g_missionId=0;
 static uint32_t g_missionStarted=0;
-static RadioSequenceGuard g_boatSequenceGuard; // global cross-radio replay/freshness guard
-static RadioSequenceGuard g_boatPrimarySequenceGuard;
-static RadioSequenceGuard g_boatBackupSequenceGuard;
-static bool g_sessionStartSeenPrimary=false,g_sessionStartSeenBackup=false;
-static bool g_boatSessionStarted=false;
-static uint8_t g_boatSessionEpoch=0;
-static uint32_t g_lastSessionStartPrimaryMs=0,g_lastSessionStartBackupMs=0;
-static constexpr uint32_t SESSION_START_PRIMARY_RETRY_MS=500;
-static constexpr uint32_t SESSION_START_BACKUP_RETRY_MS=3000;
-
-static bool sendSessionStartMarker(ManagedLink link,uint32_t now)
-{
-    if(!radioKey_get(g_authKey)) return false;
-    RadioFrame start;
-    radio_frameInit(start,RADIO_MSG_SESSION_START,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,0,0,now,g_sessionEpoch);
-    start.payload[0]=g_sessionEpoch;
-    if(!radio_frameSeal(start,g_authKey)) return false;
-    if(link==LINK_NRF_PRIMARY && g_nrfReady) return g_nrf.sendFrame(start);
-    if(link==LINK_LORA_BACKUP && g_loraConfigured) return g_lora.sendFrame(start,now);
-    return false;
+static RadioSessionCounter g_boatSequenceGuard,g_boatPrimarySequenceGuard,g_boatBackupSequenceGuard;
+static void resetSession(uint32_t now){
+    g_session.reset();radioSession_wipe(g_authKey,32);
+    g_txSequence=0;g_stopPending=false;g_missionId=0;g_missionUpload.fail();
+    g_boatSequenceGuard.resetAfterHandshake();g_boatPrimarySequenceGuard.resetAfterHandshake();g_boatBackupSequenceGuard.resetAfterHandshake();
+    g_ackTracker.reset(0);telemetryInit();
+    boatState.emergencyStop=true;boatState.emergencyStopConfirmed=false;boatState.actuatorSafetyReady=false;
+    g_linkManager.begin(now);g_linkManager.setTransportReady(LINK_NRF_PRIMARY,g_nrfReady);g_linkManager.setTransportReady(LINK_LORA_BACKUP,g_loraConfigured);
+    g_lastHandshakeTx=now-500U;
 }
-
+static bool sendHandshake(const SessionHandshakePacket &packet,uint32_t now){
+    if(!g_rootReady||!g_nrfReady)return false;
+    RadioFrame f;radio_frameInit(f,(RadioMessageType)packet.type,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,0,0,now,0);
+    memcpy(f.payload,packet.payload,8);
+    return radio_frameSeal(f,g_rootKey)&&g_nrf.sendFrame(f);
+}
+static bool sessionReady(){return g_session.established()&&g_txSequence<RadioSessionCounter::REKEY_AT-1;}
 static BoatRadioLink toPublicLink(ManagedLink link) {
     if(link==LINK_NRF_PRIMARY) return RADIO_LINK_NRF24_PRIMARY;
     if(link==LINK_LORA_BACKUP) return RADIO_LINK_LORA_BACKUP;
@@ -80,35 +78,24 @@ static BoatRadioState toPublicState(ManagedState state) {
     }
 }
 
-static bool radioSendTransport(ManagedLink link,const BoatCommand &command) {
-    if(!radioKey_get(g_authKey)) return false; // fail closed; no key means no command TX
-    BoatCommand wireCommand=command;
-    wireCommand.sequence=++g_txSequence;
+static bool radioSendTransport(ManagedLink link,const BoatCommand &command){
+    if(!sessionReady())return false;
+    const uint32_t now=millis();
+    if(link==LINK_LORA_BACKUP){
+        if(!g_loraConfigured)return false;
+        if(command.type!=CMD_EMERGENCY_STOP&&command.type!=CMD_MANUAL_MOTORS&&
+           !(command.type==CMD_SET_MODE&&command.mode==MODE_RETURN_HOME))return false;
+        if(g_backupTxSent&&now-g_lastBackupTxMs<3000U){
+            if(command.type==CMD_EMERGENCY_STOP){g_pendingStop=command;g_stopPending=true;return true;}
+            return false; // never queue obsolete movement
+        }
+    }else if(link!=LINK_NRF_PRIMARY||!g_nrfReady)return false;
+    BoatCommand wire=command;wire.sequence=++g_txSequence;wire.createdAtMs=now;
     RadioFrame frame;
-    if(!radio_encodeCommand(wireCommand,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,g_sessionEpoch,frame,g_authKey))
-        return false;
-    if(link==LINK_NRF_PRIMARY && g_nrfReady) return g_nrf.sendFrame(frame);
-    if(link==LINK_LORA_BACKUP && g_loraConfigured) {
-        const uint32_t now=millis();
-        const uint8_t priority=(command.type==CMD_EMERGENCY_STOP)?3U:
-            ((command.type==CMD_SET_MODE && command.mode==MODE_RETURN_HOME)?2U:
-             (command.type==CMD_MANUAL_MOTORS?1U:0U));
-        if(priority==0U)return false;
-        // Keep only the highest-priority pending backup action; latest manual
-        // control replaces older manual frames. STOP cannot be overwritten.
-        if(g_loraPending) {
-            if(priority>=g_loraPendingPriority){g_loraPendingFrame=frame;g_loraPendingPriority=priority;}
-            g_loraPending=true;
-            if(g_backupTxSent && (uint32_t)(now-g_lastBackupTxMs)<3000U) return true;
-            if(g_lora.sendFrame(g_loraPendingFrame,now)){g_lastBackupTxMs=now;g_backupTxSent=true;g_loraPending=false;g_loraPendingPriority=0;}
-            return true;
-        }
-        if(g_backupTxSent && (uint32_t)(now-g_lastBackupTxMs)<3000U) {
-            g_loraPendingFrame=frame;g_loraPending=true;g_loraPendingPriority=priority;return true;
-        }
-        if(g_lora.sendFrame(frame,now)){g_lastBackupTxMs=now;g_backupTxSent=true;return true;}
-        g_loraPendingFrame=frame;g_loraPending=true;g_loraPendingPriority=priority;return true;
-    }
+    if(!radio_encodeCommand(wire,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,g_sessionEpoch,frame,g_authKey))return false;
+    if(link==LINK_NRF_PRIMARY)return g_nrf.sendFrame(frame);
+    if(g_lora.sendFrame(frame,now)){g_lastBackupTxMs=now;g_backupTxSent=true;return true;}
+    if(command.type==CMD_EMERGENCY_STOP){g_pendingStop=command;g_stopPending=true;return true;}
     return false;
 }
 
@@ -116,9 +103,10 @@ bool boatRadio_begin() {
     g_missionUpload=MissionUpload{};g_missionPlan={};g_missionId=0;
     g_linkManager.begin(millis());
     g_loraConfigured=false;g_nrfReady=false;g_begun=false;
-    memset(g_authKey,0,sizeof(g_authKey));
-    g_sessionEpoch=(uint8_t)esp_random(); if(g_sessionEpoch==0)g_sessionEpoch=1;
-    g_txSequence=0;g_lastPrimaryHeartbeat=0;g_lastBackupTxMs=0;g_lastBackupTxAttemptMs=0;g_backupTxSent=false;g_loraPending=false;g_loraPendingPriority=0;g_boatSequenceGuard.reset();g_boatPrimarySequenceGuard.reset();g_boatBackupSequenceGuard.reset();g_boatSessionStarted=false;g_boatSessionEpoch=0;g_sessionStartSeenPrimary=false;g_sessionStartSeenBackup=false;g_ackTracker.reset(0);telemetryInit();
+    g_rootReady=radioKey_get(g_rootKey);
+    g_sessionEpoch=1; // key, not legacy epoch, binds the session
+    g_lastPrimaryHeartbeat=g_lastBackupTxMs=g_lastBackupTxAttemptMs=0;g_backupTxSent=false;
+    resetSession(millis());g_missionUpload=MissionUpload{};
 
     // Display/SD setup initializes shared SPI/I2C. nRF CE/CSN pins are provisional.
     g_nrfReady=g_nrf.begin(true);
@@ -132,14 +120,7 @@ bool boatRadio_begin() {
         g_linkManager.setTransportReady(LINK_LORA_BACKUP,false);
     }
     g_begun=g_nrfReady || g_loraConfigured;
-    // Authenticated boot/session marker; TX remains disabled until key is provisioned.
-    if(g_begun && radioKey_get(g_authKey)) {
-        const uint32_t startNow=millis();
-        if(g_nrfReady && sendSessionStartMarker(LINK_NRF_PRIMARY,startNow)) g_lastSessionStartPrimaryMs=startNow;
-        if(g_loraConfigured && sendSessionStartMarker(LINK_LORA_BACKUP,startNow)) {
-            g_lastSessionStartBackupMs=startNow;g_lastBackupTxMs=startNow;g_backupTxSent=true;
-        }
-    }
+    // No application TX until mutual nonce handshake completes.
     return g_begun; // configured hardware, not a connected/authenticated boat link
 }
 
@@ -147,7 +128,12 @@ bool boatRadio_sendCommand(const BoatCommand &command) {
     if(command.type==CMD_EMERGENCY_STOP && (g_missionUpload.state()==UPLOAD_ACTIVE||g_missionUpload.state()==UPLOAD_PREPARED))g_missionUpload.fail();
     if(!g_begun) return false;
     const uint32_t now=millis();
-    const bool queued=g_linkManager.send(command,radioSendTransport,now);
+    bool queued=false;
+    if(command.type==CMD_EMERGENCY_STOP&&sessionReady()){
+        const bool primary=radioSendTransport(LINK_NRF_PRIMARY,command);
+        const bool backup=radioSendTransport(LINK_LORA_BACKUP,command);
+        queued=primary||backup;
+    }else queued=g_linkManager.send(command,radioSendTransport,now);
     if(queued && command.type!=CMD_MANUAL_MOTORS) {
         const uint16_t id=(uint16_t)(command.commandId&0xFFFFU);
         const uint8_t mode=(uint8_t)command.mode;
@@ -158,15 +144,15 @@ bool boatRadio_sendCommand(const BoatCommand &command) {
 }
 
 static bool missionPreparationSafe(){
-    return g_begun && g_nrfReady && g_sessionStartSeenPrimary &&
+    return g_begun && g_nrfReady && g_session.established() &&
            g_linkManager.active()==LINK_NRF_PRIMARY && g_linkManager.primaryHealthy(millis()) &&
            boatState.radioConnected && boatState.mode==MODE_MANUAL &&
            boatState.emergencyStop && boatState.emergencyStopConfirmed &&
            !boatState.motorLeftActive && !boatState.motorRightActive &&
-           !boatState.failsafeActive && radioKey_get(g_authKey);
+           !boatState.failsafeActive && sessionReady();
 }
 static bool sendMissionPreparation(const uint8_t payload[8]){
-    if(!g_nrfReady||!g_sessionStartSeenPrimary||!radioKey_get(g_authKey))return false;
+    if(!g_nrfReady||!sessionReady())return false;
     RadioFrame frame;
     const uint16_t id=(uint16_t)payload[1]|((uint16_t)payload[2]<<8);
     radio_frameInit(frame,RADIO_MSG_MISSION_PREPARE,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,++g_txSequence,id,millis(),g_sessionEpoch);
@@ -218,78 +204,52 @@ static bool payloadBytesZero(const uint8_t *p,uint8_t start,uint8_t end) {
     for(uint8_t i=start;i<=end;i++)if(p[i]!=0)return false;
     return true;
 }
-static void validateInboundFrame(ManagedLink link,const RadioFrame &frame) {
+static void validateInboundFrame(ManagedLink link,const RadioFrame &frame){
     const uint32_t now=millis();
-    if(!radioKey_get(g_authKey)){g_linkManager.reportFailure(link);return;}
-    const bool sessionPayloadValid=frame.type!=RADIO_MSG_SESSION_START||
-        (frame.sequence==0&&frame.payload[0]==frame.sessionEpoch&&frame.sessionEpoch==g_sessionEpoch&&payloadBytesZero(frame.payload,1,7));
-    const bool probePayloadValid=frame.type!=RADIO_MSG_LINK_PROBE||payloadBytesZero(frame.payload,0,7);
-    const bool envelopeValid=radio_frameVerify(frame,g_authKey)&&frame.flags==0&&
-        frame.sourceId==BOAT_DEVICE_ID&&frame.destinationId==REMOTE_DEVICE_ID&&
-        (frame.type==RADIO_MSG_SESSION_START||frame.type==RADIO_MSG_HEARTBEAT||
-         frame.type==RADIO_MSG_TELEMETRY||frame.type==RADIO_MSG_ACK||frame.type==RADIO_MSG_LINK_PROBE||frame.type==RADIO_MSG_MISSION_ACK)&&
-        sessionPayloadValid&&probePayloadValid;
-    if(!envelopeValid){g_linkManager.reportFailure(link);return;}
-    RadioSequenceGuard &linkGuard=(link==LINK_NRF_PRIMARY)?g_boatPrimarySequenceGuard:g_boatBackupSequenceGuard;
-    bool &startSeen=(link==LINK_NRF_PRIMARY)?g_sessionStartSeenPrimary:g_sessionStartSeenBackup;
-    if(frame.type==RADIO_MSG_SESSION_START) {
-        if(g_boatSessionStarted&&frame.sessionEpoch==g_boatSessionEpoch) {
-            // Same-link replay is not allowed to reset sequence state. A first
-            // session marker on the second radio seeds only that link's guard.
-            if(!startSeen){linkGuard.accept(frame.sessionEpoch,frame.sequence,true);startSeen=true;}
-            g_linkManager.reportValidRx(link,true,now);return;
+    if(frame.flags||frame.sourceId!=BOAT_DEVICE_ID||frame.destinationId!=REMOTE_DEVICE_ID)return;
+    if(frame.type>=SESSION_HELLO&&frame.type<=SESSION_CONFIRM){
+        if(link!=LINK_NRF_PRIMARY||!g_rootReady||frame.sequence||frame.commandId||frame.sessionEpoch||!radio_frameVerify(frame,g_rootKey))return;
+        if(g_session.remoteReceive((SessionHandshakeMessage)frame.type,frame.payload,g_rootKey,radioPlatformHmac,now,true)&&g_session.established()){
+            g_session.frameKey(g_authKey);g_lastSessionRx=now;g_ackTracker.reset(g_sessionEpoch);
         }
-        g_boatSequenceGuard.reset();g_boatPrimarySequenceGuard.reset();g_boatBackupSequenceGuard.reset();
-        g_sessionStartSeenPrimary=false;g_sessionStartSeenBackup=false;
-        if(!g_boatSequenceGuard.accept(frame.sessionEpoch,frame.sequence,true)||
-           !linkGuard.accept(frame.sessionEpoch,frame.sequence,true)){g_linkManager.reportFailure(link);return;}
-        g_boatSessionStarted=true;g_boatSessionEpoch=frame.sessionEpoch;startSeen=true;
-        g_ackTracker.reset(frame.sessionEpoch);telemetryInit();
-        g_linkManager.reportValidRx(link,true,now);return;
+        return;
     }
-    if(!startSeen||!g_boatSessionStarted||frame.sessionEpoch!=g_boatSessionEpoch||
-       !linkGuard.accept(frame.sessionEpoch,frame.sequence,false)){
-        g_linkManager.reportFailure(link);return;
-    }
-    // Cross-radio duplicate/stale frames are authenticated but must not refresh
-    // application telemetry or ACK state a second time.
-    if(!g_boatSequenceGuard.accept(frame.sessionEpoch,frame.sequence,false)){
-        g_linkManager.reportValidRx(link,true,now);return;
-    }
-    if(!dispatchValidatedPayload(link,frame,now)){g_linkManager.reportFailure(link);return;}
-    g_linkManager.reportValidRx(link,true,now);
+    if(!g_session.established()||frame.sessionEpoch!=g_sessionEpoch||!radio_frameVerify(frame,g_authKey))return;
+    if(frame.type!=RADIO_MSG_HEARTBEAT&&frame.type!=RADIO_MSG_TELEMETRY&&frame.type!=RADIO_MSG_ACK&&frame.type!=RADIO_MSG_LINK_PROBE&&frame.type!=RADIO_MSG_MISSION_ACK)return;
+    if(frame.type==RADIO_MSG_LINK_PROBE&&!payloadBytesZero(frame.payload,0,7))return;
+    RadioSessionCounter &guard=link==LINK_NRF_PRIMARY?g_boatPrimarySequenceGuard:g_boatBackupSequenceGuard;
+    if(!guard.accept(frame.sequence))return;
+    const bool cross=g_boatSequenceGuard.accept(frame.sequence);
+    if(!cross&&frame.type!=RADIO_MSG_HEARTBEAT)return;
+    if(!dispatchValidatedPayload(link,frame,now))return;
+    g_lastSessionRx=now;g_linkManager.reportValidRx(link,true,now);
 }
 
 void boatRadio_update() {
     if(!g_begun) return;
     const uint32_t now=millis();
-    if(radioKey_get(g_authKey) && g_begun) {
-        if(g_nrfReady && !g_sessionStartSeenPrimary &&
-           (uint32_t)(now-g_lastSessionStartPrimaryMs)>=SESSION_START_PRIMARY_RETRY_MS) {
-            if(sendSessionStartMarker(LINK_NRF_PRIMARY,now)) g_lastSessionStartPrimaryMs=now;
-        }
-        if(g_loraConfigured && !g_sessionStartSeenBackup &&
-           (uint32_t)(now-g_lastSessionStartBackupMs)>=SESSION_START_BACKUP_RETRY_MS &&
-           (uint32_t)(now-g_lastBackupTxAttemptMs)>=250U) {
-            g_lastBackupTxAttemptMs=now;
-            if(sendSessionStartMarker(LINK_LORA_BACKUP,now)) {
-                g_lastSessionStartBackupMs=now;g_lastBackupTxMs=now;g_backupTxSent=true;
-            }
-        }
+    if(g_session.established()&&(!sessionReady()||now-g_lastSessionRx>=6500U))resetSession(now);
+    if(g_session.timeout(now))resetSession(now);
+    if(g_rootReady&&g_nrfReady&&!g_session.established()&&now-g_lastHandshakeTx>=500U){
+        g_lastHandshakeTx=now;g_session.startRemote(radioPlatformNonce(),now);
+        SessionHandshakePacket packet{};if(g_session.remotePacket(packet))sendHandshake(packet,now);
     }
-    if(radioKey_get(g_authKey)) {
-        if(g_nrfReady && (uint32_t)(now-g_lastPrimaryHeartbeat)>=100U) {
+    if(sessionReady()){
+        if(g_nrfReady&&now-g_lastPrimaryHeartbeat>=100U){
             g_lastPrimaryHeartbeat=now;RadioFrame hb;radio_frameInit(hb,RADIO_MSG_HEARTBEAT,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,++g_txSequence,0,now,g_sessionEpoch);
-            hb.payload[0]=(uint8_t)(1U|(g_nrfReady?2U:0U)|(g_loraConfigured?4U:0U)|(boatState.emergencyStopConfirmed&&boatState.emergencyStop?8U:0U));hb.payload[1]=1;radio_frameSeal(hb,g_authKey);g_nrf.sendFrame(hb);
-        }
-        if(g_loraConfigured && g_loraPending && (!g_backupTxSent || (uint32_t)(now-g_lastBackupTxMs)>=3000U) && (uint32_t)(now-g_lastBackupTxAttemptMs)>=250U) {
-            g_lastBackupTxAttemptMs=now;
-            if(g_lora.sendFrame(g_loraPendingFrame,now)){g_lastBackupTxMs=now;g_backupTxSent=true;g_loraPending=false;g_loraPendingPriority=0;}
-        }
-        if(g_loraConfigured && !g_loraPending && (!g_backupTxSent || (uint32_t)(now-g_lastBackupTxMs)>=3000U) && (uint32_t)(now-g_lastBackupTxAttemptMs)>=250U) {
-            g_lastBackupTxAttemptMs=now;RadioFrame hb;radio_frameInit(hb,RADIO_MSG_HEARTBEAT,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,++g_txSequence,0,now,g_sessionEpoch);
             hb.payload[0]=(uint8_t)(1U|(g_nrfReady?2U:0U)|(g_loraConfigured?4U:0U)|(boatState.emergencyStopConfirmed&&boatState.emergencyStop?8U:0U));hb.payload[1]=1;
-            if(radio_frameSeal(hb,g_authKey) && g_lora.sendFrame(hb,now)){g_lastBackupTxMs=now;g_backupTxSent=true;}
+            if(radio_frameSeal(hb,g_authKey))g_nrf.sendFrame(hb);
+        }
+        if(sessionReady()&&g_loraConfigured&&(!g_backupTxSent||now-g_lastBackupTxMs>=3000U)&&now-g_lastBackupTxAttemptMs>=250U){
+            g_lastBackupTxAttemptMs=now;
+            if(g_stopPending){
+                BoatCommand pending=g_pendingStop;g_stopPending=false;
+                radioSendTransport(LINK_LORA_BACKUP,pending);
+            }else{
+                RadioFrame hb;radio_frameInit(hb,RADIO_MSG_HEARTBEAT,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,++g_txSequence,0,now,g_sessionEpoch);
+                hb.payload[0]=(uint8_t)(1U|(g_nrfReady?2U:0U)|(g_loraConfigured?4U:0U)|(boatState.emergencyStopConfirmed&&boatState.emergencyStop?8U:0U));hb.payload[1]=1;
+                if(radio_frameSeal(hb,g_authKey)&&g_lora.sendFrame(hb,now)){g_lastBackupTxMs=now;g_backupTxSent=true;}
+            }
         }
     }
     if(g_nrfReady) {
@@ -310,7 +270,7 @@ void boatRadio_update() {
     if(g_missionUpload.next(now,safe,missionPayload))sendMissionPreparation(missionPayload);
 }
 
-bool boatRadio_isConnected(){return g_linkManager.connected(millis());}
+bool boatRadio_isConnected(){return g_session.established()&&g_linkManager.connected(millis());}
 BoatRadioLink boatRadio_getActiveLink(){return toPublicLink(g_linkManager.active());}
 BoatRadioState boatRadio_getState(){return toPublicState(g_linkManager.state());}
 bool boatRadio_primaryConnected(){return g_linkManager.primaryHealthy(millis());}
@@ -319,5 +279,5 @@ bool boatRadio_getCommandAck(uint16_t commandId,RadioCommandAckRecord &record){r
 uint8_t boatRadio_pendingCommandAcks(){return g_ackTracker.pendingCount();}
 void boatRadio_setTransport(RadioSendFn transport){(void)transport;} // fixed in this adapter
 void boatRadio_setReady(ManagedLink link,bool ready){g_linkManager.setTransportReady(link,ready);}
-void boatRadio_reportValidPacket(ManagedLink link,bool authenticated,uint32_t receivedAtMs){g_linkManager.reportValidRx(link,authenticated,receivedAtMs);}
+void boatRadio_reportValidPacket(ManagedLink link,bool authenticated,uint32_t receivedAtMs){(void)link;(void)authenticated;(void)receivedAtMs;} // only verified dispatch updates health
 void boatRadio_reportFailure(ManagedLink link){g_linkManager.reportFailure(link);}

@@ -10,6 +10,7 @@
 #include "radio_payload_encoder.h"
 #include "boat_command_queue.h"
 #include "mission_wire.h"
+#include "radio_session_platform.h"
 
 // All physical GPIO values must be audited/frozen for the exact Tracker SKU.
 // Default -1 macros intentionally keep radio hardware disabled.
@@ -50,7 +51,7 @@ public:
     void markActionExecuted(uint8_t sender,uint8_t epoch,uint16_t commandId);
     bool sendFrame(ManagedLink link,const RadioFrame &frame);
     bool sendHeartbeat(ManagedLink link,uint32_t nowMs);
-    bool sendSessionStart(ManagedLink link,uint32_t nowMs);
+    bool sessionEstablished() const { return sessionStarted_; }
     bool primaryReady() const { return nrfReady_; }
     bool backupReady() const { return e22Configured_; }
     bool primaryFresh(uint32_t now) const;
@@ -62,10 +63,11 @@ private:
     NRF24Link nrf_;
     E22UartLink e22_;
     bool nrfReady_,e22Configured_;
-    uint8_t key_[32];
+    uint8_t key_[32],rootKey_[32];
+    SessionHandshake handshake_;
+    uint32_t lastSessionRx_=0;
     uint8_t sessionEpoch_;
-    RadioSequenceGuard primarySeqGuard_,backupSeqGuard_,crossRadioSeqGuard_;
-    bool sessionStartSeenPrimary_,sessionStartSeenBackup_;
+    RadioSessionCounter primarySeqGuard_,backupSeqGuard_,crossRadioSeqGuard_;
     BoatCommandDeduplicator dedupe_;
     BoatCommandQueue commandQueue_;
     MissionAssembler mission_;
@@ -76,6 +78,8 @@ private:
     bool authenticated_;
     bool sessionStarted_;
     bool lastNrfRxValid_,lastE22RxValid_;
+    void resetSession();
+    bool sessionReady() const {return sessionStarted_&&txSequence_<RadioSessionCounter::REKEY_AT-1;}
     void receive(ManagedLink link,const RadioFrame &frame);
     bool enqueue(const BoatCommand &cmd,ManagedLink link,bool duplicate);
     bool commandPending(uint8_t epoch,uint16_t commandId) const;
