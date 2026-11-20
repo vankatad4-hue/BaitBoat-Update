@@ -27,3 +27,7 @@
 2. Pin board/core/library versions and add reproducible target build configuration.
 3. Add Remote CI for portable tests and Boat fake-radio integration tests for session retries/ACK/queue.
 4. Compile all source modules, fix diagnostics, then LVGL simulator and hardware bring-up gates.
+
+## Hardware selection confirmed
+- User confirmed Waveshare ESP32-S3-Touch-LCD-4.3 Standard, SKU 25948 for the Remote. 4.3B/BOX alternatives are excluded.
+- Selection is fixed; physical verification on receipt is pending. This does not change release markers.
