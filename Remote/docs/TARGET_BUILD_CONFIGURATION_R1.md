@@ -57,3 +57,8 @@ Board not purchased/available at the time of this checkpoint. Keep all boat actu
 4. TF mount, file read and SD activity during display refresh.
 5. UI loop responsiveness under Wi-Fi/SD activity.
 6. Refresh rate, tearing and partial-buffer stability.
+
+
+## Latest CI status
+- Target compile attempt #11 failed with three diagnostics documented in the LVGL adapter audit. Source fixes are now on branch head `7213f04e4d18f3bc4a546f4c4febfe0bbedffc59`.
+- Target compile workflow run #14 (ID 44776348680) is in progress; host tests run #14 on the same head passed. The candidate pins are installed and confirmed but compatibility remains unvalidated until target build success.
