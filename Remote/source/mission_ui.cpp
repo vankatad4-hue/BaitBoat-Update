@@ -90,6 +90,7 @@ static void refresh(){
   if(currentFixIsFresh()){
    const double rad=0.017453292519943295;double la1=boatState.latitude*rad,la2=slots[selectedSlot].lat*rad,dl=(slots[selectedSlot].lon-boatState.longitude)*rad;
    double dlat=la2-la1;double a=sin(dlat/2)*sin(dlat/2)+cos(la1)*cos(la2)*sin(dl/2)*sin(dl/2);
+   a=fmin(1.0,fmax(0.0,a));
    double dist=6371000.0*2.0*atan2(sqrt(a),sqrt(1.0-a));double y=sin(dl)*cos(la2),x=cos(la1)*sin(la2)-sin(la1)*cos(la2)*cos(dl);
    double brg=fmod(atan2(y,x)/rad+360.0,360.0);snprintf(b,sizeof(b),"ДИСТАНЦИЯ: %.0f m | ПОСОКА: %.0f° (GPS)",dist,brg);lv_label_set_text(targetMetricsLabel,b);
   }else lv_label_set_text(targetMetricsLabel,"ДИСТАНЦИЯ / ПОСОКА: НЯМА АКТУАЛЕН GPS");
