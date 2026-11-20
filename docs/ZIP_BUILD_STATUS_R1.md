@@ -34,3 +34,7 @@ No complete ESP32 target compile, LVGL Pro simulation, native KiCad ERC/DRC, har
 ## Development compile-fix snapshot — 2026-11-20
 - Remote target compile run #11 failed at C++ compilation. Three source fixes were committed (LVGL event accessor, map route precise point type, Map Manager copyChunk declaration).
 - Rebuild pending. These are development commits; release markers remain Remote 028 / Boat 014. No release ZIP regenerated, and existing branch ZIPs remain unverified snapshots.
+
+
+## Target Compile #14 / #15
+Compile #14 (`44776348680`) failed in C++ source compilation due to missing `g_map_attribution` declaration. Source correction commit `9aa20b0d987f94ea5b49e46509ae0ba10cc9d36b` adds a private 256-byte buffer. Target Compile #15 pending. ZIP/package workflow success must not be treated as firmware target compile success.
