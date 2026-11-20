@@ -18,7 +18,7 @@ The map loader is deliberately simple and deterministic in this stage. It expect
 /maps/satellite/<zoom>/<tile-x>/<tile-y>.rgb565
 ```
 
-`manifest.txt` must begin with the exact 11-byte signature `FLYTEC_MAP1`. Each tile is an uncompressed 256 × 256 RGB565 image, exactly 131,072 bytes, with no header. Tiles use the standard Web-Mercator XYZ coordinate scheme. Missing or malformed tiles are rejected; the renderer must show a neutral missing-tile background rather than inventing land or water.
+`manifest.txt` must begin with the exact 11-byte signature `FLYTEC_MAP1` and contain `pack_complete=true`, non-empty `attribution=`, `licence_url=`, and `zoom_levels=` fields. Firmware rejects incomplete or metadata-free packs. Each tile is an uncompressed 256 × 256 RGB565 image, exactly 131,072 bytes, with no header. Tiles use standard Web-Mercator XYZ. Missing or malformed tiles are rejected; the renderer shows a neutral missing-tile background rather than inventing land or water.
 
 `offline_map.cpp` can validate the map pack and load an individual tile into PSRAM. The caller owns each returned buffer and must call `offlineMap_freeTile()` after LVGL no longer references it. The map renderer, tile cache, geospatial placement/rotation, waypoint overlay and map-pack creation tool are not implemented yet.
 
@@ -35,3 +35,10 @@ The map panel reports GPS fix and SD/map-pack status separately. The visible gri
 5. Test missing, truncated and valid tile reads before enabling continuous map rendering.
 
 Do not use the public OpenStreetMap tile server as a bulk download source. Use a lawful offline data source and retain required attribution/licensing in the map pack.
+
+
+## ver029 offline pack validation
+- The full MBTiles converter requires explicit attribution and licence URL and writes `pack_complete=true`.
+- The area exporter writes `pack_complete=false` when planned tiles are missing; firmware refuses such a pack.
+- Firmware requires non-empty attribution, licence URL and zoom list, and displays attribution in the map viewport. Attribution overlay still requires target build/hardware validation.
+- Older packs without these fields are intentionally rejected until regenerated with the updated tool.
