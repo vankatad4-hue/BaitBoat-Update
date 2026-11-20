@@ -44,3 +44,7 @@ Keep the Waveshare board as the display/UI processor. Implement buttons and joys
 - [Wiring plan R6.4](REMOTE_WIRING_PLAN_R6_4.md)
 - [Component shortlist R6.4](COMPONENT_SELECTION_SHORTLIST_R6_4.md)
 - [Power architecture R6.3](REMOTE_POWER_ARCHITECTURE_PRELIM_R6_3.md)
+
+
+## Archive review correction
+The R5/Remote ver009 architecture is the current candidate baseline: discrete MCP23017 16-button bank, second MCP23017 for OK/radio I/O, ADS1115 pair, SC16IS750 E22 UART bridge, direct nRF CE/CSN candidates and shared TF SPI. The speculative matrix/ADS1015 pin plan from the recent conversation is superseded. Next gate is netlist/pin assignment reconciliation, then schematic capture.
