@@ -317,3 +317,11 @@ Boat:
 - This is preference/UI only: no internet probe, Google API request, session/key provisioning, JPEG decoder, or online tile render is implemented. Map display remains SD renderer.
 - Source file updated: `Remote/source/settings_ui.cpp`. Commit: `57ac81975845f8d958f49b09f86bcf51ee147613`.
 - Not compiled or hardware-tested.
+
+
+## Map settings connectivity display — 2026-11-20
+- MAP settings now displays live Wi-Fi association state, refreshing every 2 seconds via LVGL timer. Internet reachability is deliberately labelled UNKNOWN (not inferred from Wi-Fi association).
+- Timer is stopped and its label pointer cleared when navigating away from the category, preventing callbacks to a deleted LVGL object.
+- This is nonblocking status only; no DNS/HTTPS internet probe or provider integration exists.
+- Source: `Remote/source/settings_ui.cpp`; latest implementation commit `81fee88a162260c70fbff6c837e44822e10e071a`.
+- Not compiled/tested on target.
