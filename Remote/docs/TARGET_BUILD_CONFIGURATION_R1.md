@@ -66,3 +66,7 @@ Board not purchased/available at the time of this checkpoint. Keep all boat actu
 
 ## Target compile #14 error correction
 Compile #14 (`44776348680`) reached source compilation but failed because `Remote/source/offline_map.cpp` referenced undeclared `g_map_attribution`. Added `static char g_map_attribution[256] = {0};` at file scope (commit `9aa20b0d987f94ea5b49e46509ae0ba10cc9d36b`). Compile #15 is pending verification.
+
+
+## CI-verified compile update — 2026-11-20
+Remote target compile run #19 (ID 44781879101) passed at branch commit 3f189cb1ac65a764aec678893f1df857d113c815. Arduino ESP32 core 3.0.2, LVGL 9.6.0 and listed board libraries compiled/linked successfully with ESP32-S3 16MB/OPI PSRAM + huge_app. Sketch size 1,430,957 bytes (45%); globals 178,136 bytes (54%, 149,544 bytes remaining). No C++ errors/warnings reported. Firmware artifact was uploaded. Still unverified on physical board; no claims for LCD/touch/SD, radio, input, safety or operational functionality. Next development task is runtime lifecycle and offline-map validation audit.
