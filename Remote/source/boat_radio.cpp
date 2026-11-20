@@ -239,7 +239,7 @@ static bool dispatchValidatedPayload(ManagedLink link,const RadioFrame &frame,ui
         case RADIO_MSG_MISSION_ACK:{
             uint16_t id;MissionOpcode op;MissionReceive result;
             if(link!=LINK_NRF_PRIMARY||!missionAck_decode(frame.payload,id,op,result)||id!=frame.commandId)return false;
-            if(g_missionUpload.acknowledge(id,op,result,now,true)&&g_missionUpload.state()==UPLOAD_PREPARED){g_missionControl.bind(id);g_missionUpload.fail();}
+            if(g_missionUpload.acknowledge(id,op,result,now,true)&&g_missionUpload.state()==UPLOAD_PREPARED){g_missionControl.bind(id);g_missionUpload=MissionUpload{};}
             return true;
         }
         case RADIO_MSG_HEARTBEAT:

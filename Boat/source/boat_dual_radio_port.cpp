@@ -121,11 +121,11 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
    MissionControlRequest request{};if(!missionControlDecode(f.payload,request)||f.commandId!=request.transaction)return;
    lastRx=lastSessionRx_=now;rxValid=true;
    ExecInputs in{};const bool ready=missionInputs(in,now);
-   MissionControlFeedback ack{};
+   MissionControlFeedback ack{};const bool newRequest=request.request>controller_.lastRequestId();
    if(controller_.request(request,in,now,true,ready,stickLease_.neutral(request.transaction,now),ack)){
-     if(ack.result==MC_ACCEPTED)commandQueue_.clear();
-     if(ack.result==MC_ACCEPTED&&request.op!=MCTRL_START&&request.op!=MCTRL_RESUME)missionIntent_={INTENT_STOP,-1,0};
-     if(ack.result==MC_ACCEPTED&&(request.op==MCTRL_TEMP_OVERRIDE||request.op==MCTRL_CANCEL||request.op==MCTRL_SWITCH_MANUAL))stickLease_.reset();
+     if(newRequest&&ack.result==MC_ACCEPTED&&request.op==MCTRL_START)commandQueue_.clear();
+     if(newRequest&&ack.result==MC_ACCEPTED&&request.op!=MCTRL_START&&request.op!=MCTRL_RESUME)missionIntent_={INTENT_STOP,-1,0};
+     if(newRequest&&ack.result==MC_ACCEPTED&&(request.op==MCTRL_TEMP_OVERRIDE||request.op==MCTRL_CANCEL||request.op==MCTRL_SWITCH_MANUAL))stickLease_.reset();
      sendMissionFeedback(ack,now);
    }else sendMissionFeedback({request.transaction,MC_IDLE,(uint8_t)request.op,request.request,MC_REJECTED},now);
    return;

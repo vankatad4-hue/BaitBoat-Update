@@ -90,3 +90,7 @@ jobs:
           cmp Remote/source/mission_stick.h Boat/source/mission_stick.h
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/mission_stick_test.cpp -o /tmp/boat_mission_stick
           /tmp/boat_mission_stick
+      - name: Remote and Boat mission command integration simulation
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/source/mission_protocol.cpp Boat/tests/mission_transport_integration_test.cpp -o /tmp/boat_mission_integration
+          /tmp/boat_mission_integration

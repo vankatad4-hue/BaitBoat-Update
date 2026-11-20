@@ -27,5 +27,9 @@ int main(){
  c.resetSession();in.stopActive=true;assert(c.stage(p,0,true,true));in.stopActive=false;
  req={MCTRL_START,1,1};assert(c.request(req,in,10000,true,true,true,ack)&&ack.result==MC_REJECTED);
  c.tick(in,10001,true,true);assert(c.status().phase==MC_ABORTED);
+ c.resetSession();in.stopActive=true;assert(c.stage(p,0,true,true));in.stopActive=false;
+ req={MCTRL_START,1,1};assert(c.request(req,in,1,true,true,true,ack)&&ack.result==MC_ACCEPTED);
+ c.emergencyAbort();assert(c.request(req,in,2,true,true,true,ack)&&ack.result==MC_REJECTED&&ack.phase==MC_ABORTED);
+ assert(c.lastRequestId()==1&&c.tick(in,3,true,true).intent==INTENT_STOP);
  std::cout<<"Mission command and override supervisor simulation passed\n";
 }
