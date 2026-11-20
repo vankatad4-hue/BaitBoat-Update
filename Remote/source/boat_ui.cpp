@@ -11,7 +11,8 @@
 #include "release_button_guard.h"
 #include "mission_ui.h"
 #include "map_renderer.h"
-#include "map_source.h"\n#include "map_manager_ui.h"
+#include "map_source.h"
+#include "map_manager_ui.h"
 #include <math.h>
 // --------------------------------------------------
 // SCREEN DIMENSIONS
@@ -284,7 +285,8 @@ static void mapManagerOpenEvent(lv_event_t *event){if(lv_event_get_code(event)!=
     lv_obj_t *sourceButton=lv_button_create(mapPanel);
     lv_obj_set_size(sourceButton,86,28);lv_obj_set_pos(sourceButton,285,4);
     mapSourceLabel=lv_label_create(sourceButton);lv_label_set_text(mapSourceLabel,mapSource_modeLabel(mapSource_getMode()));lv_obj_center(mapSourceLabel);
-    lv_obj_add_event_cb(sourceButton,mapSourceCycleEvent,LV_EVENT_CLICKED,nullptr);\n    lv_obj_t *manager=lv_button_create(mapPanel);lv_obj_set_size(manager,92,28);lv_obj_set_pos(manager,180,4);lv_label_set_text(lv_label_create(manager),"MANAGER");lv_obj_center(lv_obj_get_child(manager,0));lv_obj_add_event_cb(manager,mapManagerOpenEvent,LV_EVENT_CLICKED,nullptr);
+    lv_obj_add_event_cb(sourceButton,mapSourceCycleEvent,LV_EVENT_CLICKED,nullptr);
+    lv_obj_t *manager=lv_button_create(mapPanel);lv_obj_set_size(manager,92,28);lv_obj_set_pos(manager,180,4);lv_label_set_text(lv_label_create(manager),"MANAGER");lv_obj_center(lv_obj_get_child(manager,0));lv_obj_add_event_cb(manager,mapManagerOpenEvent,LV_EVENT_CLICKED,nullptr);
     gpsCoordinatesLabel=createLabel(mapPanel,"LAT: --.------  LON: --.------",10,31);
     gpsMapStatusLabel=createLabel(mapPanel,"GPS: NO FIX | SD: CHECKING",10,53);
     lv_obj_set_width(gpsMapStatusLabel,365);lv_label_set_long_mode(gpsMapStatusLabel,LV_LABEL_LONG_DOT);
