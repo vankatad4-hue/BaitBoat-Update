@@ -79,18 +79,9 @@ static bool parseManifestValue(const char *manifest, const char *key, char *out,
     while (*line)
     {
         const char *end = strchr(line, '\n');
-        const size_t len = end ? (size_t)(end - line) : strlen(line);
-        if (len && line[len - 1] == '\r')
-        {
-            if (len > keyLen && memcmp(line, key, keyLen) == 0 && line[keyLen] == '=')
-            {
-                if (found || len - keyLen - 1 >= outSize) return false;
-                memcpy(out, line + keyLen + 1, len - keyLen - 1);
-                out[len - keyLen - 1] = '\0';
-                found = true;
-            }
-        }
-        else if (len > keyLen && memcmp(line, key, keyLen) == 0 && line[keyLen] == '=')
+        size_t len = end ? (size_t)(end - line) : strlen(line);
+        if (len && line[len - 1] == '\r') --len;
+        if (len > keyLen && memcmp(line, key, keyLen) == 0 && line[keyLen] == '=')
         {
             if (found || len - keyLen - 1 >= outSize) return false;
             memcpy(out, line + keyLen + 1, len - keyLen - 1);
@@ -215,7 +206,7 @@ static void importStart(lv_event_t *event)
 
     char value[128];
     unsigned long expected = 0;
-    if (!manifestHasLine(manifest, "pack_complete=true") ||
+    if (strncmp(manifest, "FLYTEC_MAP1", 11) != 0 || !manifestHasLine(manifest, "pack_complete=true") ||
         !parseManifestValue(manifest, "attribution", value, sizeof(value)) ||
         !parseManifestValue(manifest, "licence_url", value, sizeof(value)) ||
         !parseManifestValue(manifest, "zoom_levels", value, sizeof(value)) ||
@@ -338,4 +329,4 @@ static void back(lv_event_t*e){if(lv_event_get_code(e)==LV_EVENT_CLICKED&&!impor
 static void button(lv_obj_t*p,const char*t,int x,int y,int w,lv_event_cb_t cb,void*ud=nullptr){lv_obj_t*b=lv_button_create(p);lv_obj_set_size(b,w,38);lv_obj_set_pos(b,x,y);lv_obj_set_style_bg_color(b,lv_color_hex(0x174F92),LV_PART_MAIN);lv_obj_set_style_radius(b,8,LV_PART_MAIN);lv_obj_set_style_border_width(b,1,LV_PART_MAIN);lv_obj_set_style_border_color(b,lv_color_hex(0x347FC0),LV_PART_MAIN);lv_obj_set_style_text_color(b,lv_color_hex(0xFFFFFF),LV_PART_MAIN);lv_label_set_text(lv_label_create(b),t);lv_obj_center(lv_obj_get_child(b,0));lv_obj_add_event_cb(b,cb,LV_EVENT_CLICKED,ud);}
 void mapManagerUI_open(lv_obj_t*parent,float gpsLat,float gpsLon,bool gpsValid,MapManagerReturnCallback cb){onBack=cb;lat=gpsValid?gpsLat:43;lon=gpsValid?gpsLon:25;page=lv_obj_create(parent);lv_obj_set_size(page,790,440);lv_obj_center(page);lv_obj_set_style_bg_color(page,lv_color_hex(0x081522),LV_PART_MAIN);lv_obj_set_style_pad_all(page,10,LV_PART_MAIN);lv_obj_set_style_radius(page,10,LV_PART_MAIN);lv_obj_set_style_border_width(page,1,LV_PART_MAIN);lv_obj_set_style_border_color(page,lv_color_hex(0x2366A4),LV_PART_MAIN);label(page,"МЕНИДЖЪР НА ОФЛАЙН КАРТИ",8,4,400);centreLabel=label(page,"",8,38);label(page,"ПРОМЯНА НА ЦЕНТЪРА ±0.001° (~111 м)",8,70);button(page,"ШИР +",8,100,80,[](lv_event_t*){nLat(1);});button(page,"ШИР -",94,100,80,[](lv_event_t*){nLat(-1);});button(page,"ДЪЛ -",180,100,80,[](lv_event_t*){nLon(-1);});button(page,"ДЪЛ +",266,100,80,[](lv_event_t*){nLon(1);});button(page,"ТЕКУЩ GPS",354,100,130,[](lv_event_t*){if(boatState.gpsValid&&(uint32_t)(millis()-boatState.gpsLastUpdateMs)<=2000U){lat=boatState.latitude;lon=boatState.longitude;refresh();}else{lv_label_set_text(importLabel,"GPS FIX IS NOT FRESH; centre unchanged.");}});label(page,"МАЩАБ (избери)",8,151);for(int i=0;i<6;i++){lv_obj_t*b=lv_button_create(page);lv_obj_set_size(b,72,40);lv_obj_set_pos(b,8+i*80,176);lv_obj_set_style_bg_color(b,lv_color_hex(0x174F92),LV_PART_MAIN);lv_obj_set_style_radius(b,8,LV_PART_MAIN);lv_obj_set_style_border_width(b,1,LV_PART_MAIN);lv_obj_set_style_border_color(b,lv_color_hex(0x347FC0),LV_PART_MAIN);lv_obj_set_style_text_color(b,lv_color_hex(0xFFFFFF),LV_PART_MAIN);zoomLabels[i]=lv_label_create(b);lv_obj_center(zoomLabels[i]);lv_obj_add_event_cb(b,zoomToggle,LV_EVENT_CLICKED,(void*)(intptr_t)i);}estimateLabel=label(page,"ОЦЕНКА",8,230);packLabel=label(page,"СТАТУС НА ПАКЕТА",8,267);coverageLabel=label(page,"ПОКРИТИЕ",8,304);progress=lv_bar_create(page);lv_obj_set_size(progress,760,20);lv_obj_set_pos(progress,8,337);lv_bar_set_range(progress,0,100);importLabel=label(page,"ИМПОРТ: постави лицензиран пакет в /map-import/",8,361);importBtn=lv_button_create(page);lv_obj_set_size(importBtn,180,38);lv_obj_set_pos(importBtn,8,390);lv_label_set_text(lv_label_create(importBtn),"ИМПОРТ НА ПАКЕТ");lv_obj_center(lv_obj_get_child(importBtn,0));lv_obj_add_event_cb(importBtn,importStart,LV_EVENT_CLICKED,nullptr);button(page,"НАЗАД",665,390,100,back);refresh();}
 void mapManagerUI_tick(){static uint32_t lastTick=0;if(!importing||millis()-lastTick<25)return;lastTick=millis();char src[100],dst[100];if(importIndex<importCount){ImportRow r=importRows[importIndex];const char*style=importStyle?"satellite":"street";snprintf(src,sizeof(src),"/map-import/%s/%u/%lu/%lu.rgb565",style,r.z,(unsigned long)r.x,(unsigned long)r.y);snprintf(dst,sizeof(dst),"/maps/%s/%u/%lu/%lu.rgb565",style,r.z,(unsigned long)r.x,(unsigned long)r.y);if(!inFile){if(!copyStart(src,dst)){abortImport();lv_label_set_text(importLabel,"ГРЕШКА: липсва плочка или SD запис/отвор");return;}}int state=copyChunk();if(state<0){abortImport();lv_label_set_text(importLabel,"ГРЕШКА SD — активният пакет остава изключен");return;}if(state==1)importIndex++;}else{if(copyPhase<2){const char*srcPath=copyFiles[copyPhase];const char*dstPath=copyPhase==0?"/maps/coverage_index.csv":"/maps/manifest.txt";if(!inFile){if(!copyStart(srcPath,dstPath)){abortImport();lv_label_set_text(importLabel,"ГРЕШКА при копиране на индекс/manifest");return;}}int state=copyChunk();if(state<0){abortImport();lv_label_set_text(importLabel,"ГРЕШКА индекс/manifest — пакетът е изключен");return;}if(state==1)copyPhase++;}else{importing=false;boatState.offlineMapReady=offlineMap_begin(true);mapRenderer_invalidateTiles();if(importRows){heap_caps_free(importRows);importRows=null;}importCount=0;lv_label_set_text(importLabel,boatState.offlineMapReady?"ИМПОРТЪТ ЗАВЪРШИ — ПАКЕТЪТ Е ПРОВЕРЕН":"ИМПОРТЪТ ЗАВЪРШИ, НО ПРОВЕРКАТА НЕ УСПЯ");refresh();lv_bar_set_value(progress,100,LV_ANIM_OFF);return;}}
-char status[100];snprintf(status,sizeof(status),"ИМПОРТ %u/%u плочки | %lu/%lu байта",(unsigned)importIndex,(unsigned)importCount,(unsigned long)copied,(unsigned long)totalBytes);lv_label_set_text(importLabel,status);lv_bar_set_value(progress,totalBytes?copied*100/totalBytes:0,LV_ANIM_OFF);}
+char status[100];snprintf(status,sizeof(status),"ИМПОРТ %u/%u плочки | %lu/%lu байта",(unsigned)importIndex,(unsigned)importCount,(unsigned long)copied,(unsigned long)totalBytes);lv_label_set_text(importLabel,status);lv_bar_set_value(progress,totalBytes?(uint64_t)copied*100/totalBytes:0,LV_ANIM_OFF);}
