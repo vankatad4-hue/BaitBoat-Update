@@ -51,3 +51,7 @@ Selected matching nRF24L01+ PA/LNA radio modules for both boat and remote. This 
 - Power/radio/motor/solenoid electrical interfaces: `docs/BOAT_ELECTRICAL_SCHEMATIC_DESIGN_R1.md`.
 - Motor driver fit: MDD20A candidate is ~88.9×78.74mm, exceeding 77×79mm control-carrier footprint; review `docs/BOAT_MOTOR_DRIVER_FIT_REVIEW_R1.md`. Do not freeze boat layout until driver placement and current are validated.
 - Safety helper source: `source/boat_radio_safety.*` provides action-dedup cache and local failsafe decision API only; no actuator integration.
+
+
+## LoRa pairing R3
+The initial test boat will carry the same E22-900T22S module as the remote. Boat UART pins are TBD after board pin audit. The integrated Tracker SX1262 remains available but not selected for this backup link. See `docs/BOAT_LORA_HARDWARE_DECISION_R3.md`.
