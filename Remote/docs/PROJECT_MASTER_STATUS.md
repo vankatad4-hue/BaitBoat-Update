@@ -290,7 +290,7 @@ Boat:
 - Tests added for coverage-index export, not executed. Firmware compile and hardware tests pending. Remote version remains 028; ver029 development not packaged.
 
 
-- Consolidated Remote history is maintained at `Remote/releases/CHANGELOG_MASTER_VER008.md` (history document revision VER008; source marker still ver028).
+- Consolidated Remote history is maintained at `Remote/releases/CHANGELOG_MASTER_VER009.md` (history document revision VER008; source marker still ver028).
 
 - ver029.3 robustness follow-up: coverage index uses PSRAM/binary search, import validates tile byte lengths/count and cache refresh. Added map-tools test workflow; CI result not confirmed.
 
