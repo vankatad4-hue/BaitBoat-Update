@@ -31,10 +31,10 @@ Portable tests cover codecs, sequence guard, queue, dedupe/policy and ACK/payloa
 
 **Action required:** add fake transport tests around the dual-radio port and explicitly verify ACCEPTED, DUPLICATE, BUSY and future EXECUTED lifecycle.
 
-### F-05 — Host test automation is asymmetric (HIGH)
-Boat portable tests have a GitHub Actions workflow with strict warnings. Remote tests are documented but no equivalent host-test workflow is present. Remote release-guard, telemetry, ACK tracker and payload codec test commands are not automatically run by the repository workflow.
+### F-05 — Host test automation is asymmetric (HIGH — PARTIALLY FIXED)
+Boat portable tests have a GitHub Actions workflow with strict warnings. Remote tests previously lacked automation; a new `.github/workflows/remote-host-tests.yml` now compiles/runs release guard, scanner syntax, payload codec, ACK tracker and telemetry host tests. The first workflow result is pending.
 
-**Action required:** add Remote portable-test workflow and ensure both workflows execute on changes to their source/test paths.
+**Action required:** observe CI outcome; correct any diagnostics; expand integration coverage.
 
 ### F-06 — UI/library API compatibility and rendering remain unverified (HIGH)
 Remote display adapter targets LVGL 9.6.x APIs and Waveshare/Espressif board classes; there is no locked library set or compile job. Main, mission, settings, calibration, map-manager and renderer callbacks are source-present, but they have not been compiled against the exact libraries or rendered in LVGL Pro. Callback propagation, repeated screen lifecycle, resize behavior, Cyrillic fonts, memory use and touch-target dimensions remain verification items.
