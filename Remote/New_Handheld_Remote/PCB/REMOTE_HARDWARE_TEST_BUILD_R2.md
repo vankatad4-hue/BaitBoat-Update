@@ -50,3 +50,11 @@ The pin functions on Waveshare documentation are confirmed, but physical PORT1 p
 - 868.125MHz is within the 868.0–868.6MHz 1% duty sub-band. E22's 1MHz channel step cannot reach the 869.525MHz center of the 10% sub-band. Strict airtime control is required.
 - Driver estimate is 20ms/frame until measured. A 1% budget allows 36s/h; one 20ms TX per 2s is 1%. Remote and boat airtime are tracked independently. Default backup control ≤0.5Hz, no sonar. Actual airtime and duty counter persistence are mandatory before legal field operation.
 - Source integration now configures remote SC16IS750 and E22 at boot. It does **not** transmit because key provisioning is absent; nRF24 driver is not integrated.
+
+
+## nRF direct GPIO R3 test connection
+- CE=GPIO6 Sensor AD terminal, repurposed and no sensor attached.
+- CSN=GPIO15 RS485 TXD; isolate/disable the onboard RS485 driver and verify it cannot drive the external bus.
+- SPI GPIO11/12/13. TF card and nRF share SPI; test SD access arbitration.
+- IRQ_N to MCP23017 0x21 GPA1 (poll initially).
+- Source pin defaults are set to CE6/CSN15/channel76, but physical board revision/crosswalk and electrical isolation remain a hard wiring gate.
