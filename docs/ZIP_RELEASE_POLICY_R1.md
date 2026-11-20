@@ -12,7 +12,7 @@
 4. Archive names: `Flytec_Remote_verXXX.zip` and `Flytec_Boat_verXXX.zip`.
 5. Each archive contains its top-level `Remote/` or `Boat/` directory and all source/docs/assets/test files; release ZIPs are excluded from the archive to avoid nesting.
 6. Packaging is automated by `.github/workflows/package-flytec-zips.yml`. On changes to the project folders on the development branch it creates GitHub Actions artifacts, plus SHA256 checksums. Artifact retention is 90 days.
-7. Confirm workflow completion and artifact integrity before calling the ZIP a verified release. The workflow artifact is a deliverable snapshot, not a fabrication/operational approval.
+7. On push events, the workflow commits generated ZIPs and SHA256 manifest into the branch's releases folders; on PR events it uploads artifacts without committing. Confirm workflow completion and checksum integrity before calling a ZIP verified. The ZIP is a deliverable snapshot, not a fabrication/operational approval.
 8. Keep older release archives unchanged and preserve their version history.
 
 ## ver005 package scope
