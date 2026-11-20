@@ -51,7 +51,7 @@ static void emergencyStop()
 }
 
 // --------------------------------------------------
-// JOYSTICK HARDWARE READER PLACEHOLDER
+// JOYSTICK HARDWARE READER
 // --------------------------------------------------
 
 static bool readJoystickHardware(JoystickRaw &raw)
@@ -85,6 +85,10 @@ void setup()
     // Dual-radio supervisor is initialised. Hardware transports remain disabled
     // until pin/power design, drivers, and a provisioned authentication key exist.
     boatRadio_begin();
+
+    // Start ADS1115. If missing, the reader fails and joystick output remains inhibited.
+    const bool joystickAdcReady = joystickAdc_begin();
+    Serial.println(joystickAdcReady ? "JOYSTICK ADC: detected" : "JOYSTICK ADC: unavailable - output inhibited");
 
     // Initialise joystick processing once and register one reader.
     joystick_begin();
