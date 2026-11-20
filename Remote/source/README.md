@@ -78,4 +78,4 @@ Authenticated receive frames are dispatched to strict payload decoders. Remote A
 - A HOME coordinate can be set from the current fresh GNSS fix. Both actions reject invalid or >2-second-old fixes.
 - Selected waypoint can be tagged with planned BAIT / HOOK markers; they do not issue actuator commands.
 - START MISSION is explicitly blocked and displays why. No mission execution, persistent storage, geofence, authenticated boat command or release sequence is implemented.
-- Preview: `UI_PREVIEW_MISSION_VER025.svg`. Target build and touch/hardware validation remain pending.
+- Preview: `UI_PREVIEW_MISSION_VER025.svg`; updated main screen: `UI_PREVIEW_REMOTE_VER025.svg`. Target build and touch/hardware validation remain pending.
