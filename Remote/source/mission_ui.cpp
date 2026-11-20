@@ -13,6 +13,7 @@ static WaypointSlot slots[SLOT_COUNT] = {};
 static bool homeValid = false;
 static float homeLat = 0.0f, homeLon = 0.0f;
 static int selectedSlot = -1;
+static void setStatus(const char *s);
 static Preferences missionPrefs;
 static bool storageReady = false;
 static constexpr uint32_t STORE_MAGIC = 0x42544D50UL;
@@ -192,3 +193,12 @@ void missionUI_open(lv_obj_t *main)
     refresh();lv_screen_load(screen);
     refreshTimer=lv_timer_create(timerRefresh,250,nullptr);
 }
+
+// Read-only accessors for the main map overlay; no mission commands are emitted.
+void missionUI_initStorage(){ if(!storageReady) loadPersisted(); }
+bool missionUI_getWaypoint(uint8_t index,float *lat,float *lon,bool *bait,bool *hook){
+ if(index>=SLOT_COUNT||!slots[index].valid)return false;
+ if(lat)*lat=slots[index].lat;if(lon)*lon=slots[index].lon;
+ if(bait)*bait=slots[index].baitMark;if(hook)*hook=slots[index].hookMark;return true;
+}
+bool missionUI_getHome(float *lat,float *lon){if(!homeValid)return false;if(lat)*lat=homeLat;if(lon)*lon=homeLon;return true;}
