@@ -1,7 +1,7 @@
 // Flytec V080 ergonomic remote R6 - parametric redesign
 // Confirmed front layout: TWO button banks, each 4 columns x 2 rows.
 // Styling based on repository CONCEPT/Flytec_Remote_Concept_Reference.jpg.
-// mm. Prototype only; dimensions and hardware fit not validated.
+// R6.1 prototype. Component dimensions/fit remain unverified; local mesh tests passed.
 // part="front" | "rear" | "buttons" | "assembly"
 part="assembly"; $fn=72;
 
@@ -70,6 +70,35 @@ module front_panel(){
     translate([0,0,-.1]) cylinder(d=17.6,h=2.2);
   }
 }
+module grip_pads(){
+  for(side=[-1,1]) hull(){
+    translate([side*118,-47,-4.0]) scale([1.0,1.15,0.72]) sphere(d=28);
+    translate([side*121,-76,-4.0]) scale([1.0,1.15,0.72]) sphere(d=30);
+    translate([side*116,-93,-4.0]) scale([1.0,1.05,0.72]) sphere(d=24);
+  }
+}
+module battery_cradle(){
+  // Four 18650 envelopes: two in each grip, stacked in depth.
+  // Cells run along Y. Supports are placeholders; restraint and pack wiring are not designed.
+  for(side=[-1,1]){
+    translate([side*battery_grip_x,battery_y,wall+2]) cube([28,cell_len+10,3],center=true);
+    for(layer=[0:1],yoff=[-cell_len/2+8,cell_len/2-8])
+      difference(){
+        translate([side*battery_grip_x,battery_y+yoff,wall+battery_saddle_z+layer*battery_depth_pitch-4]) cube([28,12,12],center=true);
+        translate([side*battery_grip_x,battery_y+yoff,wall+battery_saddle_z+layer*battery_depth_pitch]) rotate([90,0,0]) cylinder(d=cell_d+1.0,h=14,center=true);
+      }
+    for(layer=[0:1],yoff=[-cell_len/2+8,cell_len/2-8],xoff=[-10,10])
+      translate([side*battery_grip_x+xoff,battery_y+yoff,wall+7+layer*battery_depth_pitch]) cube([5,5,14+layer*6],center=true);
+    for(xoff=[-14,14]) translate([side*battery_grip_x+xoff,battery_y,wall+7]) cube([3,cell_len+8,34],center=true);
+  }
+}
+module carrier_mounts(){
+  for(x=[-carrier_w/2+6,carrier_w/2-6],y=[carrier_y-carrier_h/2+6,carrier_y+carrier_h/2-6])
+    translate([x,y,wall]) difference(){
+      cylinder(d=10,h=carrier_standoff_h);
+      translate([0,0,-.1]) cylinder(d=3.0,h=carrier_standoff_h+.2);
+    }
+}
 module rear_shell(){
   difference(){
     body_solid(body_depth);
@@ -83,7 +112,7 @@ module rear_shell(){
     // ventilation slots in lower rear (avoid battery zone as layout changes)
     for(i=[-2:2]) translate([i*9,-78,body_depth-wall-.1]) cube([3,18,wall+.3],center=true);
   }
-  // Screw bosses and generic internal supports. Do not imply final board fit.
+  // Screw bosses and internal component supports (fit remains provisional).
   for(p=screw_positions) translate([p[0],p[1],wall]) difference(){
     cylinder(d=9.5,h=9);
     translate([0,0,-.1]) cylinder(d=2.8,h=9.2);
@@ -91,7 +120,7 @@ module rear_shell(){
   // Raised screen-support ledges at four corners of aperture.
   for(x=[-screen_w/2+7,screen_w/2-7],y=[screen_y-screen_h/2+6,screen_y+screen_h/2-6])
     translate([x,y,wall]) cube([8,8,4],center=true);
-  // Generic joystick mounting rings (dimension placeholder).
+  carrier_mounts();\n  battery_cradle();\n  grip_pads();\n  // Generic joystick mounting rings (dimension placeholder).
   joystick_centres() translate([0,0,wall]) difference(){
     cylinder(d=34,h=4);
     translate([0,0,-.1]) cylinder(d=26,h=4.2);
@@ -109,7 +138,7 @@ module button_set(){
   for(i=[0:3]) translate([i*19,45,0]) button_cap(true);
   translate([76,45,0]) button_cap(false); // separate OK/confirm key
 }
-module assembly_preview(){
+module internal_preview(){\n  color("#242a30") rear_shell();\n  translate([0,carrier_y,wall+carrier_standoff_h+1]) color("#287b48") cube([carrier_w,carrier_h,1.6],center=true);\n  translate([0,screen_y,body_depth-25]) color("#235b9a") cube([screen_w+4,screen_h+4,2],center=true);\n  for(side=[-1,1],layer=[0:1]) translate([side*battery_grip_x,battery_y,wall+battery_saddle_z+layer*battery_depth_pitch]) rotate([90,0,0]) color("#d5a23c") cylinder(d=cell_d,h=cell_len,center=true);\n  joystick_centres() translate([0,stick_y-12,wall+14]) color("#3c6d85") cube([27,30,4],center=true);\n  translate([-90,antenna_y-6,wall+14]) color("#6d5a9d") cube([32,24,4],center=true);\n  translate([90,antenna_y-6,wall+14]) color("#6d5a9d") cube([32,24,4],center=true);\n}\nmodule assembly_preview(){
   color("#1d2329") rear_shell();
   translate([0,0,body_depth+.25]) color("#30363d") front_panel();
   // Glass and joystick placeholder discs for visual fit only.
