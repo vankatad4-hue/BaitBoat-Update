@@ -1,5 +1,6 @@
 #include "boat_radio.h"
 #include "radio_protocol.h"
+#include "radio_command_codec.h"
 #include "radio_key_store.h"
 #include "sc16is750_bridge.h"
 #include "e22_uart_link.h"
@@ -8,6 +9,7 @@
 #include <Wire.h>
 #include <SPI.h>
 #include <esp_system.h>
+#include <string.h>
 
 static DualRadioManager g_linkManager;
 static SC16IS750Bridge g_uartBridge(Wire,0x48);
