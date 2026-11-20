@@ -9,4 +9,4 @@ SHA-256:
 
 This is a software/hardware-design development archive only. It is not compiled, ERC/DRC validated, or hardware-tested. No boat actuator operation is authorized.
 
-PR validation artifacts expire after 90 days. The branch-push workflow is configured to commit the versioned ZIP into `Remote/releases/`; repository archive commit status is pending confirmation.
+PR artifact is verified and downloaded. The archive has not yet been committed into the repository releases folder; ver006 is the next package snapshot. See `docs/ZIP_BUILD_STATUS_R1.md`.
