@@ -71,3 +71,7 @@ Do not connect motor/solenoid power or operate the boat.
 ## Shared payload decoder mirror (2026-11-20)
 - Added portable HEARTBEAT/ACK/TELEMETRY payload validator files mirrored with Remote source.
 - Decoder is currently unused by boat receive path; telemetry generation and application ACK remain unimplemented. No compile/hardware validation of endpoint firmware.
+
+
+## Remote integration state note (2026-11-20)
+Remote now decodes authenticated telemetry/ACK frames and applies freshness/safety gates. Boat firmware still does not emit these payloads or execute/ACK commands. Mirrored codec is currently a portable validator only on the boat side. Do not connect actuators.
