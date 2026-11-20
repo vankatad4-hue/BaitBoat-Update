@@ -25,12 +25,17 @@ static bool offlineMap_checkManifest()
     bool hasAttribution = false;
     bool hasLicence = false;
     bool hasZooms = false;
+    g_map_attribution[0] = '\0';
     char line[256] = {0};
     while (manifest.available()) {
         const size_t count = manifest.readBytesUntil('\n', line, sizeof(line) - 1);
         line[count] = '\0';
         if (strncmp(line, "pack_complete=true", 18) == 0) complete = true;
-        if (strncmp(line, "attribution=", 12) == 0 && line[12] != '\0') hasAttribution = true;
+        if (strncmp(line, "attribution=", 12) == 0 && line[12] != '\0') {
+            hasAttribution = true;
+            strncpy(g_map_attribution, line + 12, sizeof(g_map_attribution) - 1);
+            g_map_attribution[sizeof(g_map_attribution) - 1] = '\0';
+        }
         if (strncmp(line, "licence_url=", 12) == 0 && line[12] != '\0') hasLicence = true;
         if (strncmp(line, "zoom_levels=", 12) == 0 && line[12] != '\0') hasZooms = true;
     }
@@ -43,6 +48,7 @@ bool offlineMap_begin(bool sdCardReady)
 {
     g_sd_available = sdCardReady;                   // Remember the mount result from display_port.cpp.
     g_map_pack_available = false;                   // Clear any previous map-pack status.
+    g_map_attribution[0] = '\0';
 
     if (!g_sd_available)                            // No mounted card means no offline map data can be read.
     {
