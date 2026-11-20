@@ -35,3 +35,10 @@ J_JOY_L/R: 1 3V3; 2 GND; 3 X; 4 Y; 5 NC.
 J_RADIO: 1 GND; 2 RADIO_3V3; 3 SCK; 4 MOSI; 5 MISO; 6 CSN; 7 CE; 8 IRQ_N.
 J_NTC: 1 NTC_SENSE; 2 GND.
 J_WAVE_BAT: 1 BAT_PROT; 2 GND; PH2.0 mating polarity must be physically checked.
+
+
+## LoRa backup link power addition (R1)
+- LoRa candidate module is UART EBYTE E22-900T22S-V2 (SX1262 family), which may require a 5V supply for full configured output power. Add branch LORA_5V from the Waveshare board's 5V boost rail only after simultaneous-load test confirms margin.
+- At the module, candidate 100µF bulk + 10µF + 100nF bypass; validate capacitor type/ESR, surge, transient and layout.
+- Module TX current estimate ~110mA. Do not assume board CS8501 can handle display/backlight + nRF + LoRa simultaneously. If fails, separate boost design from BAT_PROT is required; do not parallel boost outputs.
+- LoRa's RF power must be configured to applicable EU/Bulgaria band limit including antenna gain and cable loss; airtime/duty-cycle constraints are release blockers.
