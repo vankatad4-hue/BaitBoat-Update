@@ -43,7 +43,7 @@ Updated 2026-11-20. The repository is canonical; this is not operational firmwar
 
 ## Not implemented or validated
 - No main boat application invokes the radio port.
-- No authenticated command execution, app ACK, telemetry integration, motor PWM/DIR, solenoid driver/interlock, GNSS/IMU driver, waypoint storage, autopilot, return-home/watchdog implementation.
+- Queue-level ACKs are scaffolded (ACCEPTED/DUPLICATE/BUSY); no EXECUTED ACK, command executor, telemetry source, motor PWM/DIR, solenoid driver/interlock, GNSS/IMU driver, waypoint storage, autopilot, return-home/watchdog implementation.
 - No source compile, hardware bring-up, RF/antenna range, ERC/DRC or water testing has been completed.
 
 ## Electrical/mechanical gates
