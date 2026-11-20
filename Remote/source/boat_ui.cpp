@@ -11,6 +11,7 @@
 #include "release_button_guard.h"
 #include "mission_ui.h"
 #include "map_renderer.h"
+#include "map_source.h"
 #include <math.h>
 // --------------------------------------------------
 // SCREEN DIMENSIONS
@@ -44,6 +45,7 @@ static lv_obj_t *gpsCoordinatesLabel; // Latest boat latitude and longitude.
 static lv_obj_t *gpsDetailsLabel;  // Satellite count, accuracy and heading.
 static lv_obj_t *mapViewport;
 static lv_obj_t *mapZoomLabel;
+static lv_obj_t *mapSourceLabel;
 static lv_obj_t *sonarTitle;       // Sonar panel title.
 
 static lv_obj_t *stopButton;       // Emergency stop button.
@@ -268,12 +270,24 @@ static void createHeader()
 
 static void mapZoomInEvent(lv_event_t *event){if(lv_event_get_code(event)==LV_EVENT_CLICKED){mapRenderer_zoomIn();if(mapZoomLabel){char z[8];snprintf(z,sizeof(z),"Z%u",(unsigned)mapRenderer_getZoom());lv_label_set_text(mapZoomLabel,z);}}}
 static void mapZoomOutEvent(lv_event_t *event){if(lv_event_get_code(event)==LV_EVENT_CLICKED){mapRenderer_zoomOut();if(mapZoomLabel){char z[8];snprintf(z,sizeof(z),"Z%u",(unsigned)mapRenderer_getZoom());lv_label_set_text(mapZoomLabel,z);}}}
+static void mapSourceCycleEvent(lv_event_t *event)
+{
+    if (lv_event_get_code(event) != LV_EVENT_CLICKED) return;
+    const MapSourceMode mode = mapSource_nextMode();
+    if (mapSourceLabel) lv_label_set_text(mapSourceLabel, mapSource_modeLabel(mode));
+    updateBoatScreen(boatState);
+}
 static void createMapPanel()
 {
     mapPanel=createPanel(contentPanel,5,5,385,345);
-    mapTitle=createLabel(mapPanel,"OFFLINE MAP",10,8);
+    mapTitle=createLabel(mapPanel,"MAP",10,8);
+    lv_obj_t *sourceButton=lv_button_create(mapPanel);
+    lv_obj_set_size(sourceButton,86,28);lv_obj_set_pos(sourceButton,285,4);
+    mapSourceLabel=lv_label_create(sourceButton);lv_label_set_text(mapSourceLabel,mapSource_modeLabel(mapSource_getMode()));lv_obj_center(mapSourceLabel);
+    lv_obj_add_event_cb(sourceButton,mapSourceCycleEvent,LV_EVENT_CLICKED,nullptr);
     gpsCoordinatesLabel=createLabel(mapPanel,"LAT: --.------  LON: --.------",10,31);
     gpsMapStatusLabel=createLabel(mapPanel,"GPS: NO FIX | SD: CHECKING",10,53);
+    lv_obj_set_width(gpsMapStatusLabel,365);lv_label_set_long_mode(gpsMapStatusLabel,LV_LABEL_LONG_DOT);
     mapViewport=lv_obj_create(mapPanel);
     lv_obj_set_pos(mapViewport,8,82);lv_obj_set_size(mapViewport,369,220);
     lv_obj_set_style_border_width(mapViewport,0,LV_PART_MAIN);lv_obj_set_style_pad_all(mapViewport,0,LV_PART_MAIN);
@@ -473,6 +487,8 @@ lv_obj_add_event_cb(
 
 void createBoatScreen()
 {
+    mapSource_begin();
+
     // Get the active LVGL screen.
     mainScreen = lv_screen_active();
 
@@ -642,8 +658,10 @@ void updateBoatScreen(const BoatState &state)
         lv_label_set_text(gpsCoordinatesLabel, coordinateText);
 
         char mapStatusText[96];
-        const char *mapStorageText = state.offlineMapReady ? "MAP: TILES READY" : (state.sdCardReady ? "MAP: NO TILES ON SD" : "MAP: SD NOT READY");
-        snprintf(mapStatusText, sizeof(mapStatusText), "GPS: FIX VALID  |  %s", mapStorageText);
+        const char *mapStorageText = state.offlineMapReady ? "SD MAP READY" : (state.sdCardReady ? "NO SD MAP" : "SD NOT READY");
+        const MapSourceMode sourceMode = mapSource_getMode();
+        const char *sourceText = (sourceMode == MAP_SOURCE_ONLINE && !mapSource_onlineAvailable()) ? "ONLINE UNAVAILABLE - SD FALLBACK" : (sourceMode == MAP_SOURCE_AUTO ? "AUTO / SD" : "OFFLINE / SD");
+        snprintf(mapStatusText, sizeof(mapStatusText), "GPS: FIX  |  %s  |  %s", mapStorageText, sourceText);
         lv_label_set_text(gpsMapStatusLabel, mapStatusText);
 
         char gpsDetailsText[80];
@@ -660,9 +678,11 @@ void updateBoatScreen(const BoatState &state)
     else
     {
         lv_label_set_text(gpsCoordinatesLabel, "LAT: --.------   LON: --.------");
-        const char *mapStorageText = state.offlineMapReady ? "MAP: TILES READY" : (state.sdCardReady ? "MAP: NO TILES ON SD" : "MAP: SD NOT READY");
-        char mapStatusText[96];
-        snprintf(mapStatusText, sizeof(mapStatusText), "GPS: NO FIX  |  %s", mapStorageText);
+        const char *mapStorageText = state.offlineMapReady ? "SD MAP READY" : (state.sdCardReady ? "NO SD MAP" : "SD NOT READY");
+        const MapSourceMode sourceMode = mapSource_getMode();
+        const char *sourceText = (sourceMode == MAP_SOURCE_ONLINE && !mapSource_onlineAvailable()) ? "ONLINE UNAVAILABLE - SD FALLBACK" : (sourceMode == MAP_SOURCE_AUTO ? "AUTO / SD" : "OFFLINE / SD");
+        char mapStatusText[120];
+        snprintf(mapStatusText, sizeof(mapStatusText), "GPS: NO FIX  |  %s  |  %s", mapStorageText, sourceText);
         lv_label_set_text(gpsMapStatusLabel, mapStatusText);
         lv_label_set_text(gpsDetailsLabel, "SAT: --   ACC: -- m   HDG: -- deg");
     }
