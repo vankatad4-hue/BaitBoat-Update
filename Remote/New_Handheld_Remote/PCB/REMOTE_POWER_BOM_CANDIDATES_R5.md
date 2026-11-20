@@ -46,3 +46,9 @@ Controller/display 5V boost is on the Waveshare board (CS8501); external TPS6102
 | Boat ANT_LORA | 868MHz 50Ω antenna | Install separated from nRF antenna, motor wiring and metal obstructions |
 
 Supply from CS8501 5V rail is provisional. Simultaneous-load test first; separate boost if needed, never parallel converters.
+
+
+## E22 power correction R4
+- U_E22 VCC: CS8501 5V rail (candidate branch; datasheet indicates ≥5V guarantees output power). UART and mode/status logic remain 3.3V. Reserve 150mA TX peak until actual 10dBm current measured.
+- C_E22: 100µF+10µF+100nF local candidates. Scope rail under simultaneous display/backlight+nRF+LoRa TX.
+- Separate 5V converter only if CS8501 margin fails; do not parallel boost outputs.
