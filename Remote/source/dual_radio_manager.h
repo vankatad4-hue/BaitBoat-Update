@@ -12,7 +12,6 @@ struct LinkHealth {
     uint8_t goodStreak;
     uint8_t failureStreak;
 };
-
 typedef bool (*RadioSendFn)(ManagedLink link, const BoatCommand &cmd);
 
 class DualRadioManager {
@@ -23,7 +22,7 @@ public:
     void reportFailure(ManagedLink link);
     void setTransportReady(ManagedLink link, bool ready);
     void tick(uint32_t now);
-    bool send(const BoatCommand &cmd, RadioSendFn sendFn);
+    bool send(const BoatCommand &cmd, RadioSendFn sendFn, uint32_t now);
     ManagedLink active() const { return active_; }
     ManagedState state() const { return state_; }
     bool primaryHealthy(uint32_t now) const;
@@ -34,9 +33,8 @@ private:
     ManagedLink active_;
     ManagedState state_;
     uint32_t recoveryStartMs_;
+    uint32_t lastBackupControlMs_;
     uint8_t recoveryStreak_;
-    uint16_t lastCmdId_;
-    bool haveCmdId_;
     static bool backupCommandAllowed(const BoatCommand &cmd);
     static void limitBackupMotorCommand(BoatCommand &cmd);
 };
