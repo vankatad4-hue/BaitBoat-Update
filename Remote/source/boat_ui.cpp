@@ -55,6 +55,7 @@ static lv_obj_t *safetyStatusLabel; // Live STOP/interlock state in footer.
 
 static bool mapExpanded = false;   // Map full-screen state.
 static bool sonarExpanded = false; // Sonar full-screen state.
+static bool mapManagerActive = false; // Avoid map reads while import replaces SD files.
 
 static StopCallback stopCallback = nullptr;
 
@@ -295,7 +296,7 @@ static void mapSourceCycleEvent(lv_event_t *event)
     if (mapSourceLabel) lv_label_set_text(mapSourceLabel, mapSource_modeLabel(mode));
     updateBoatScreen(boatState);
 }
-static void mapManagerOpenEvent(lv_event_t *event){if(lv_event_get_code(event)!=LV_EVENT_CLICKED)return;const bool gpsFresh=boatState.gpsValid&&(uint32_t)(millis()-boatState.gpsLastUpdateMs)<=2000U;lv_obj_add_flag(headerPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(contentPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(footerPanel,LV_OBJ_FLAG_HIDDEN);mapManagerUI_open(mainScreen,boatState.latitude,boatState.longitude,gpsFresh,[]{lv_obj_remove_flag(headerPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_remove_flag(contentPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_remove_flag(footerPanel,LV_OBJ_FLAG_HIDDEN);});}
+static void mapManagerOpenEvent(lv_event_t *event){if(lv_event_get_code(event)!=LV_EVENT_CLICKED)return;const bool gpsFresh=boatState.gpsValid&&(uint32_t)(millis()-boatState.gpsLastUpdateMs)<=2000U;mapManagerActive=true;lv_obj_add_flag(headerPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(contentPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(footerPanel,LV_OBJ_FLAG_HIDDEN);mapManagerUI_open(mainScreen,boatState.latitude,boatState.longitude,gpsFresh,[]{mapManagerActive=false;lv_obj_remove_flag(headerPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_remove_flag(contentPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_remove_flag(footerPanel,LV_OBJ_FLAG_HIDDEN);updateBoatScreen(boatState);});}
 static void createMapPanel()
 {
     mapPanel=createPanel(contentPanel,5,5,385,315);
@@ -722,7 +723,8 @@ void updateBoatScreen(const BoatState &state)
     }
 
     missionUI_initStorage();
-    updateMapMissionMarkers(state);
+    // Map Manager copies into the active SD folder; pause hidden-map reads during import.
+    if (!mapManagerActive) updateMapMissionMarkers(state);
 
     // Show selected link and failover state.
     const char *radioText = "РАДИО: НЯМА";
