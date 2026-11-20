@@ -70,3 +70,10 @@ This remains a development baseline and must not be used to operate the boat. Ke
 - Added a defensive null-display check to the LVGL flush callback; no API signature changes were made pending the actual target compiler.
 
 - Target compile exposed two source issues in `boat_ui.cpp`: LVGL 9.6 line points changed to `lv_point_precise_t`, and footer live-input/safety labels lacked global declarations. Both were fixed; retry pending.
+
+
+## 2026-11-20 target-compile review update
+
+- Target compile run #11 exposed source errors in calibration UI event target handling, map renderer line-point types and the map manager chunk-copy helper declaration. Corrected using LVGL 9.6 API/type and source newline fixes.
+- Exact candidate libraries were installed by CI and identified in output (LVGL 9.6.0, Display Panel 1.0.0, IO Expander 1.0.1, esp-lib-utils 0.1.2, RF24 1.4.11; ESP32 core 3.0.2).
+- Compile remains failing/pending retry; no complete target compile or link success. Review the next compiler output before declaring the source consistent.
