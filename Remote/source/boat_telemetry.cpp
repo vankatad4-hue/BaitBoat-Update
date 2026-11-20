@@ -44,12 +44,15 @@ void telemetryApplyToBoatState(BoatState &s,uint32_t now){
  const bool navFresh=telemetry.navigationValid&&fresh(now,telemetry.navigationReceivedAtMs,NAV_MAX_AGE);
  const bool sonarFresh=telemetry.sonarSummaryValid&&fresh(now,telemetry.sonarReceivedAtMs,SONAR_MAX_AGE);
  s.batteryVoltage=voltageFresh?telemetry.batteryVoltage:0.0f;s.batteryPercent=percentFresh?telemetry.batteryPercent:0.0f;
- s.latitude=telemetry.latitude;s.longitude=telemetry.longitude;s.headingValid=statusFresh&&navFresh&&(telemetry.safetyFlags&(1U<<4))!=0&&telemetry.heading>=0.0f;\n s.heading=s.headingValid?telemetry.heading:0.0f;
+ s.latitude=telemetry.latitude;s.longitude=telemetry.longitude;s.headingValid=statusFresh&&navFresh&&(telemetry.safetyFlags&(1U<<4))!=0&&telemetry.heading>=0.0f;
+ s.heading=s.headingValid?telemetry.heading:0.0f;
  s.speed=voltageFresh||navFresh?telemetry.speed:0.0f;s.gpsFixType=telemetry.gpsFixType;s.gpsSatellites=telemetry.gpsSatellites;
  s.gpsAccuracyMeters=telemetry.gpsAccuracyMeters;s.gpsLastUpdateMs=telemetry.coordinatePairReceivedAtMs;
  s.gpsValid=statusFresh&&gpsFresh&&telemetry.gpsConnected&&telemetry.gpsFixType>=3&&telemetry.latitude>=-90.0f&&telemetry.latitude<=90.0f&&telemetry.longitude>=-180.0f&&telemetry.longitude<=180.0f;
  s.sonarActive=sonarFresh&&(telemetry.sonarHealth==1||telemetry.sonarHealth==2);
- s.motorLeftActive=statusFresh&&(telemetry.safetyFlags&(1U<<1))!=0;s.motorRightActive=statusFresh&&(telemetry.safetyFlags&(1U<<2))!=0;\n s.lowBattery=statusFresh&&(telemetry.safetyFlags&(1U<<5))!=0;\n s.failsafeActive=statusFresh&&((telemetry.safetyFlags&(1U<<6))!=0||telemetry.reportedMode==3);
+ s.motorLeftActive=statusFresh&&(telemetry.safetyFlags&(1U<<1))!=0;s.motorRightActive=statusFresh&&(telemetry.safetyFlags&(1U<<2))!=0;
+ s.lowBattery=statusFresh&&(telemetry.safetyFlags&(1U<<5))!=0;
+ s.failsafeActive=statusFresh&&((telemetry.safetyFlags&(1U<<6))!=0||telemetry.reportedMode==3);
  if(statusFresh&&telemetry.reportedMode<=2)s.mode=(BoatMode)telemetry.reportedMode;
  if(statusFresh&&telemetry.stopState<=1&&telemetry.statusPrimary){s.emergencyStop=telemetry.stopState==1;s.emergencyStopConfirmed=true;}else s.emergencyStopConfirmed=false;
  s.actuatorSafetyReady=statusFresh&&telemetry.statusPrimary&&telemetry.stopState==0&&(telemetry.safetyFlags&1U)!=0&&!s.failsafeActive&&s.radioPrimaryConnected&&s.radioActiveLink==RADIO_UI_NRF_PRIMARY;
