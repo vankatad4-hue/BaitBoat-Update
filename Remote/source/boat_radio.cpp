@@ -1,4 +1,8 @@
 #include "boat_radio.h"
+#include "radio_payload_codec.h"
+#include "radio_ack_tracker.h"
+#include "boat_telemetry.h"
+#include "boat_state.h"
 #include "radio_protocol.h"
 #include "radio_command_codec.h"
 #include "radio_key_store.h"
@@ -12,6 +16,7 @@
 #include <string.h>
 
 static DualRadioManager g_linkManager;
+static RadioAckTracker g_ackTracker;
 static SC16IS750Bridge g_uartBridge(Wire,0x48);
 static E22UartLink g_lora(g_uartBridge,
     [](bool m0,bool m1,void*){ g_uartBridge.setE22Mode(m0,m1); },
@@ -88,7 +93,7 @@ bool boatRadio_begin() {
     g_loraConfigured=false;g_nrfReady=false;g_begun=false;
     memset(g_authKey,0,sizeof(g_authKey));
     g_sessionEpoch=(uint8_t)esp_random(); if(g_sessionEpoch==0)g_sessionEpoch=1;
-    g_txSequence=0;g_lastPrimaryHeartbeat=0;g_lastBackupTxMs=0;g_lastBackupTxAttemptMs=0;g_backupTxSent=false;g_loraPending=false;g_loraPendingPriority=0;g_boatSequenceGuard.reset();g_boatSessionStarted=false;
+    g_txSequence=0;g_lastPrimaryHeartbeat=0;g_lastBackupTxMs=0;g_lastBackupTxAttemptMs=0;g_backupTxSent=false;g_loraPending=false;g_loraPendingPriority=0;g_boatSequenceGuard.reset();g_boatSessionStarted=false;g_ackTracker.reset(0);telemetryInit();
 
     // Display/SD setup initializes shared SPI/I2C. nRF CE/CSN pins are provisional.
     g_nrfReady=g_nrf.begin(true);
@@ -113,25 +118,56 @@ bool boatRadio_begin() {
 
 bool boatRadio_sendCommand(const BoatCommand &command) {
     if(!g_begun) return false;
-    return g_linkManager.send(command,radioSendTransport,millis());
+    const uint32_t now=millis();
+    const bool queued=g_linkManager.send(command,radioSendTransport,now);
+    if(queued && command.type!=CMD_MANUAL_MOTORS) {
+        const uint16_t id=(uint16_t)(command.commandId&0xFFFFU);
+        const uint8_t mode=(uint8_t)command.mode;
+        const uint16_t timeout=(command.type>=CMD_RELEASE_HOPPER_LEFT && command.type<=CMD_RELEASE_HOOK_RIGHT)?3500U:2500U;
+        if(id!=0) g_ackTracker.begin(id,(uint8_t)command.type,mode,now,timeout);
+    }
+    return queued;
 }
 
+static bool dispatchValidatedPayload(ManagedLink link,const RadioFrame &frame,uint32_t now) {
+    RadioDecodedPayload decoded{};
+    switch(frame.type) {
+        case RADIO_MSG_HEARTBEAT:
+            return radio_decodeHeartbeatPayload(frame.payload,decoded);
+        case RADIO_MSG_ACK:
+            if(!radio_decodeAckPayload(frame.payload,decoded)) return false;
+            // Authenticated, session-bound ACKs may update only a matching command record.
+            g_ackTracker.observe(decoded,link==LINK_NRF_PRIMARY?RADIO_ACK_LINK_PRIMARY:RADIO_ACK_LINK_BACKUP,
+                                 frame.sessionEpoch,now);
+            return true;
+        case RADIO_MSG_TELEMETRY:
+            if(!radio_decodeTelemetryPayload(frame.payload,decoded)) return false;
+            return telemetryApplyRadioPayload(decoded,link==LINK_NRF_PRIMARY,now);
+        case RADIO_MSG_LINK_PROBE:
+            return true;
+        default:
+            return false;
+    }
+}
 static void validateInboundFrame(ManagedLink link,const RadioFrame &frame) {
     const uint32_t now=millis();
-    if(!radioKey_get(g_authKey)) {g_linkManager.reportFailure(link);return;}
-    const bool valid=radio_frameVerify(frame,g_authKey) &&
-        frame.sourceId==BOAT_DEVICE_ID && frame.destinationId==REMOTE_DEVICE_ID &&
-        (frame.type==RADIO_MSG_SESSION_START || frame.type==RADIO_MSG_HEARTBEAT || frame.type==RADIO_MSG_TELEMETRY ||
-         frame.type==RADIO_MSG_ACK || frame.type==RADIO_MSG_LINK_PROBE) &&
-        (frame.type!=RADIO_MSG_SESSION_START || (frame.sequence==0 && frame.payload[0]==frame.sessionEpoch));
-    if(valid) {
-        if(frame.type==RADIO_MSG_SESSION_START) {
-            if(frame.sequence!=0 || frame.payload[0]!=frame.sessionEpoch || !g_boatSequenceGuard.accept(frame.sessionEpoch,frame.sequence,true)) {g_linkManager.reportFailure(link);return;}
-            g_boatSessionStarted=true;
-        } else if(!g_boatSessionStarted || !g_boatSequenceGuard.accept(frame.sessionEpoch,frame.sequence,false)) {g_linkManager.reportFailure(link);return;}
+    if(!radioKey_get(g_authKey)){g_linkManager.reportFailure(link);return;}
+    const bool envelopeValid=radio_frameVerify(frame,g_authKey)&&
+        frame.sourceId==BOAT_DEVICE_ID&&frame.destinationId==REMOTE_DEVICE_ID&&
+        (frame.type==RADIO_MSG_SESSION_START||frame.type==RADIO_MSG_HEARTBEAT||
+         frame.type==RADIO_MSG_TELEMETRY||frame.type==RADIO_MSG_ACK||frame.type==RADIO_MSG_LINK_PROBE)&&
+        (frame.type!=RADIO_MSG_SESSION_START||(frame.sequence==0&&frame.payload[0]==frame.sessionEpoch));
+    if(!envelopeValid){g_linkManager.reportFailure(link);return;}
+    if(frame.type==RADIO_MSG_SESSION_START) {
+        if(!g_boatSequenceGuard.accept(frame.sessionEpoch,frame.sequence,true)){g_linkManager.reportFailure(link);return;}
+        g_boatSessionStarted=true;g_ackTracker.reset(frame.sessionEpoch);telemetryInit();
+        g_linkManager.reportValidRx(link,true,now);return;
     }
-    if(valid) g_linkManager.reportValidRx(link,true,now);
-    else g_linkManager.reportFailure(link);
+    if(!g_boatSessionStarted||!g_boatSequenceGuard.accept(frame.sessionEpoch,frame.sequence,false)){
+        g_linkManager.reportFailure(link);return;
+    }
+    if(!dispatchValidatedPayload(link,frame,now)){g_linkManager.reportFailure(link);return;}
+    g_linkManager.reportValidRx(link,true,now);
 }
 
 void boatRadio_update() {
@@ -140,7 +176,7 @@ void boatRadio_update() {
     if(radioKey_get(g_authKey)) {
         if(g_nrfReady && (uint32_t)(now-g_lastPrimaryHeartbeat)>=100U) {
             g_lastPrimaryHeartbeat=now;RadioFrame hb;radio_frameInit(hb,RADIO_MSG_HEARTBEAT,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,++g_txSequence,0,now,g_sessionEpoch);
-            hb.payload[0]=1;hb.payload[1]=g_loraConfigured?1:0;radio_frameSeal(hb,g_authKey);g_nrf.sendFrame(hb);
+            hb.payload[0]=(uint8_t)(1U|(g_nrfReady?2U:0U)|(g_loraConfigured?4U:0U)|(boatState.emergencyStopConfirmed&&boatState.emergencyStop?8U:0U));hb.payload[1]=1;radio_frameSeal(hb,g_authKey);g_nrf.sendFrame(hb);
         }
         if(g_loraConfigured && g_loraPending && (!g_backupTxSent || (uint32_t)(now-g_lastBackupTxMs)>=3000U) && (uint32_t)(now-g_lastBackupTxAttemptMs)>=250U) {
             g_lastBackupTxAttemptMs=now;
@@ -148,7 +184,7 @@ void boatRadio_update() {
         }
         if(g_loraConfigured && !g_loraPending && (!g_backupTxSent || (uint32_t)(now-g_lastBackupTxMs)>=3000U) && (uint32_t)(now-g_lastBackupTxAttemptMs)>=250U) {
             g_lastBackupTxAttemptMs=now;RadioFrame hb;radio_frameInit(hb,RADIO_MSG_HEARTBEAT,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,++g_txSequence,0,now,g_sessionEpoch);
-            hb.payload[0]=g_nrfReady?1:0;hb.payload[1]=1;
+            hb.payload[0]=(uint8_t)(1U|(g_nrfReady?2U:0U)|(g_loraConfigured?4U:0U)|(boatState.emergencyStopConfirmed&&boatState.emergencyStop?8U:0U));hb.payload[1]=1;
             if(radio_frameSeal(hb,g_authKey) && g_lora.sendFrame(hb,now)){g_lastBackupTxMs=now;g_backupTxSent=true;}
         }
     }
@@ -162,6 +198,7 @@ void boatRadio_update() {
         RadioFrame frame;
         while(g_lora.receiveFrame(frame)) validateInboundFrame(LINK_LORA_BACKUP,frame);
     }
+    g_ackTracker.update(now);
     g_linkManager.tick(millis());
 }
 
@@ -170,6 +207,8 @@ BoatRadioLink boatRadio_getActiveLink(){return toPublicLink(g_linkManager.active
 BoatRadioState boatRadio_getState(){return toPublicState(g_linkManager.state());}
 bool boatRadio_primaryConnected(){return g_linkManager.primaryHealthy(millis());}
 bool boatRadio_backupConnected(){return g_linkManager.backupHealthy(millis());}
+bool boatRadio_getCommandAck(uint16_t commandId,RadioCommandAckRecord &record){return g_ackTracker.get(commandId,record);}
+uint8_t boatRadio_pendingCommandAcks(){return g_ackTracker.pendingCount();}
 void boatRadio_setTransport(RadioSendFn transport){(void)transport;} // fixed in this adapter
 void boatRadio_setReady(ManagedLink link,bool ready){g_linkManager.setTransportReady(link,ready);}
 void boatRadio_reportValidPacket(ManagedLink link,bool authenticated,uint32_t receivedAtMs){g_linkManager.reportValidRx(link,authenticated,receivedAtMs);}
