@@ -107,3 +107,5 @@ No propulsion, release, live battery charging in the proposed enclosure, or wate
 - Relative waypoint/home markers added to the main map placeholder; only nearby markers within ±150m are shown and GPS invalid hides them.
 - This is a relative visualization, not a true map or safe navigation display. Mission execution is disabled.
 - Remote source marker ver026; package rebuild/checksum and firmware compile/hardware validation not yet verified.
+
+- Hardware verification checklist: `Remote/docs/MISSION_NVS_TEST_PLAN_VER026.md` (not yet run).
