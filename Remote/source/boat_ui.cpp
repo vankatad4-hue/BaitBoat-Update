@@ -710,7 +710,7 @@ static void updateMapMissionMarkers(const BoatState &state)
  auto place=[&](lv_obj_t *obj,float lat,float lon){
   const double east=(lon-state.longitude)*111320.0*cosLat;const double north=(lat-state.latitude)*111320.0;
   if(fabs(east)>150.0||fabs(north)>150.0){lv_obj_add_flag(obj,LV_OBJ_FLAG_HIDDEN);return;}
-  const int x=(int)(192.0+east*scale-lv_obj_get_width(obj)/2.0);const int y=(int)(192.0-north*scale-lv_obj_get_height(obj)/2.0);
+  const double centerX=mapExpanded?390.0:192.0;const int x=(int)(centerX+east*scale-lv_obj_get_width(obj)/2.0);const int y=(int)(192.0-north*scale-lv_obj_get_height(obj)/2.0);
   lv_obj_set_pos(obj,x,y);lv_obj_remove_flag(obj,LV_OBJ_FLAG_HIDDEN);
  };
  for(uint8_t i=0;i<4;i++){float lat=0,lon=0;bool bait=false,hook=false;char marker[16];
