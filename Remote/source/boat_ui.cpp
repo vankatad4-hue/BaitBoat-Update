@@ -492,7 +492,9 @@ static void createFooter()
 
     // Show live input validity and calibration status, not a generic reminder.
     inputStatusLabel = createLabel(footerPanel, "STICKS: NOT CALIBRATED", 15, 8);
-    safetyStatusLabel = createLabel(footerPanel, "SAFETY: STOP LATCHED | ACK: 0", 15, 34);
+    safetyStatusLabel = createLabel(footerPanel, "STOP: UNKNOWN", 15, 34);
+    lv_obj_set_width(safetyStatusLabel, 150);
+    lv_label_set_long_mode(safetyStatusLabel, LV_LABEL_LONG_DOT);
     // Create a button for joystick calibration.
 lv_obj_t *sticksButton = lv_button_create(footerPanel);
 
@@ -775,7 +777,7 @@ void updateBoatScreen(const BoatState &state)
     char safetyText[128];
     const char *stopText = state.emergencyStop ? (state.emergencyStopConfirmed ? "STOP CONFIRMED" : "STOP LATCHED / UNCONFIRMED") : (state.emergencyStopConfirmed ? "STOP RELEASED" : "STOP STATE UNKNOWN");
     const char *healthText = state.failsafeActive ? "FAILSAFE" : (state.lowBattery ? "LOW BATTERY" : (state.actuatorSafetyReady ? "INTERLOCKS OK" : "INTERLOCKS NOT READY"));
-    snprintf(safetyText,sizeof(safetyText),"SAFETY: %s | %s | ACK PENDING:%u",stopText,healthText,(unsigned)boatRadio_pendingCommandAcks());
+    snprintf(safetyText,sizeof(safetyText),"STOP:%s | %s | ACK:%u",stopText,healthText,(unsigned)boatRadio_pendingCommandAcks());
     if (safetyStatusLabel) lv_label_set_text(safetyStatusLabel,safetyText);
 
     // Change STOP button text when emergency stop is active.
