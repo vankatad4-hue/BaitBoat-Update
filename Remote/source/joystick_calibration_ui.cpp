@@ -35,22 +35,22 @@ static lv_timer_t *refreshTimer = nullptr;
 // --------------------------------------------------
 
 static const lv_color_t BG =
-    lv_color_hex(0x101820);
+    lv_color_hex(0x081522);
 
 static const lv_color_t PANEL =
-    lv_color_hex(0x1C2935);
+    lv_color_hex(0x10243A);
 
 static const lv_color_t TEXT =
     lv_color_hex(0xFFFFFF);
 
 static const lv_color_t GREEN =
-    lv_color_hex(0x43A047);
+    lv_color_hex(0x20C979);
 
 static const lv_color_t RED =
     lv_color_hex(0xD32F2F);
 
 static const lv_color_t BLUE =
-    lv_color_hex(0x1565C0);
+    lv_color_hex(0x174F92);
 
 // --------------------------------------------------
 // CREATE LABEL
@@ -109,11 +109,11 @@ static lv_obj_t *makeButton(
     lv_obj_set_pos(button, x, y);
 
     // Set button background colour.
-    lv_obj_set_style_bg_color(
-        button,
-        colour,
-        LV_PART_MAIN
-    );
+    lv_obj_set_style_bg_color(button, colour, LV_PART_MAIN);
+    lv_obj_set_style_radius(button, 8, LV_PART_MAIN);
+    lv_obj_set_style_border_width(button, 1, LV_PART_MAIN);
+    lv_obj_set_style_border_color(button, lv_color_hex(0x347FC0), LV_PART_MAIN);
+    lv_obj_set_style_text_color(button, TEXT, LV_PART_MAIN);
 
     // Create button text.
     lv_obj_t *label = lv_label_create(button);
@@ -153,11 +153,11 @@ static void enterCalibrationEvent(lv_event_t *event)
     // Attempt to enter protected calibration mode.
     if (joystick_calibrationEnter())
     {
-        setStatus("CALIBRATION ACTIVE - MOTOR OUTPUT DISABLED");
+        setStatus("КАЛИБРАЦИЯ — МОТОРИТЕ СА ИЗКЛЮЧЕНИ");
     }
     else
     {
-        setStatus("LOCKED: CONFIRM EMERGENCY STOP ON BOAT");
+        setStatus("БЛОКИРАНО: ПОТВЪРДИ STOP НА ЛОДКАТА");
     }
 }
 
@@ -176,11 +176,11 @@ static void centreCalibrationEvent(lv_event_t *event)
     // Capture the centre of all four axes.
     if (joystick_calibrateCentre())
     {
-        setStatus("CENTRE VALUES CAPTURED");
+        setStatus("ЦЕНТРАЛНИТЕ СТОЙНОСТИ СА ЗАПИСАНИ");
     }
     else
     {
-        setStatus("CENTRE CAPTURE FAILED - CHECK ADC");
+        setStatus("ГРЕШКА — ПРОВЕРИ ADC");
     }
 }
 
@@ -199,11 +199,11 @@ static void startEndpointEvent(lv_event_t *event)
     // Start recording axis endpoints.
     if (joystick_beginEndpointCapture())
     {
-        setStatus("MOVE ALL FOUR AXES TO THEIR FULL TRAVEL");
+        setStatus("ДВИЖИ 4-ТЕ СТИКА ДО КРАЙНИТЕ ПОЗИЦИИ");
     }
     else
     {
-        setStatus("ENDPOINT CAPTURE COULD NOT START");
+        setStatus("НЕ МОЖЕ ДА СТАРТИРА ЗАПИС НА КРАЙНИТЕ");
     }
 }
 
@@ -222,11 +222,11 @@ static void finishEndpointEvent(lv_event_t *event)
     // Validate and save the captured endpoints in RAM.
     if (joystick_endEndpointCapture())
     {
-        setStatus("ENDPOINTS ACCEPTED - NOT YET SAVED TO FLASH");
+        setStatus("КРАЙНИТЕ СА ПРИЕТИ — НЕ СА ЗАПИСАНИ ВЪВ FLASH");
     }
     else
     {
-        setStatus("INVALID ENDPOINTS - MOVE ALL AXES FURTHER");
+        setStatus("НЕВАЛИДНИ КРАЙНИ — ДВИЖИ СТИКОВЕТЕ ДОКРАЙ");
     }
 }
 
@@ -248,7 +248,7 @@ static void layoutEvent(lv_event_t *event)
     // Require valid readings and neutral sticks.
     if (!data.readingsValid || !data.neutral)
     {
-        setStatus("CENTRE ALL JOYSTICKS BEFORE CHANGING LAYOUT");
+        setStatus("ЦЕНТРИРАЙ СТИКОВЕТЕ ПРЕДИ СМЯНА НА РЕЖИМА");
         return;
     }
 
@@ -265,14 +265,14 @@ static void layoutEvent(lv_event_t *event)
     // Refresh the settings label.
     if (joystick_getLayout() == CONTROL_TANK)
     {
-        lv_label_set_text(layoutLabel, "LAYOUT: TANK");
+        lv_label_set_text(layoutLabel, "УПРАВЛЕНИЕ: TANK");
     }
     else
     {
-        lv_label_set_text(layoutLabel, "LAYOUT: STEERING");
+        lv_label_set_text(layoutLabel, "УПРАВЛЕНИЕ: STEERING");
     }
 
-    setStatus("CONTROL LAYOUT UPDATED");
+    setStatus("РЕЖИМЪТ НА УПРАВЛЕНИЕ Е СМЕНЕН");
 }
 
 // --------------------------------------------------
@@ -294,7 +294,7 @@ static void overrideEvent(lv_event_t *event)
 
         lv_label_set_text(
             overrideLabel,
-            "AUTOPILOT OVERRIDE: SWITCH TO MANUAL"
+            "АВТОПИЛОТ: ПРЕВКЛЮЧВА КЪМ РЪЧНО"
         );
     }
     else
@@ -303,11 +303,11 @@ static void overrideEvent(lv_event_t *event)
 
         lv_label_set_text(
             overrideLabel,
-            "AUTOPILOT OVERRIDE: TEMPORARY"
+            "АВТОПИЛОТ: ВРЕМЕНЕН OVERRIDE"
         );
     }
 
-    setStatus("AUTOPILOT OVERRIDE SETTING UPDATED");
+    setStatus("OVERRIDE НАСТРОЙКАТА Е ОБНОВЕНА");
 }
 
 // --------------------------------------------------
@@ -337,7 +337,7 @@ static void deadZoneEvent(lv_event_t *event)
     snprintf(
         text,
         sizeof(text),
-        "DEAD ZONE: %d ADC COUNTS",
+        "МЪРТВА ЗОНА: %d ADC",
         value
     );
 
@@ -401,11 +401,11 @@ static void refreshScreen(lv_timer_t *timer)
     // Display reading validity.
     if (!data.readingsValid)
     {
-        setStatus("JOYSTICK READ ERROR - MOTOR OUTPUT INHIBITED");
+        setStatus("ГРЕШКА ПРИ ЧЕТЕНЕ — МОТОРИТЕ СА БЛОКИРАНИ");
     }
     else if (data.calibrationMode && data.endpointCapture)
     {
-        setStatus("CAPTURING ENDPOINTS - MOTOR OUTPUT DISABLED");
+        setStatus("ЗАПИС НА КРАЙНИ — МОТОРИТЕ СА ИЗКЛЮЧЕНИ");
     }
     else if (data.calibrationMode)
     {
@@ -414,25 +414,25 @@ static void refreshScreen(lv_timer_t *timer)
     else if (!boatState.emergencyStopConfirmed ||
              !boatState.emergencyStop)
     {
-        setStatus("CALIBRATION LOCKED - CONFIRM EMERGENCY STOP");
+        setStatus("КАЛИБРАЦИЯТА Е БЛОКИРАНА — ПОТВЪРДИ STOP");
     }
     else if (!data.calibrationValid)
     {
-        setStatus("NOT CALIBRATED - CAPTURE CENTRE AND ENDPOINTS");
+        setStatus("НЕСЪПРОВЕРЕНИ — ЗАПИШИ ЦЕНТЪР И КРАЙНИ");
     }
     else if (data.neutral)
     {
-        setStatus("JOYSTICKS NEUTRAL");
+        setStatus("СТИКОВЕТЕ СА В НЕУТРАЛНА ПОЗИЦИЯ");
     }
     else
     {
-        setStatus("JOYSTICK MOVEMENT DETECTED");
+        setStatus("ОТЧЕТЕНО ДВИЖЕНИЕ НА СТИК");
     }
 
     // Update the left X axis line.
     updateAxisLabel(
         axisLabels[0],
-        "LEFT X ",
+        "ЛЯВ X ",
         data.raw.leftX,
         data.calibration.leftX,
         data.values.leftX
@@ -441,7 +441,7 @@ static void refreshScreen(lv_timer_t *timer)
     // Update the left Y axis line.
     updateAxisLabel(
         axisLabels[1],
-        "LEFT Y ",
+        "ЛЯВ Y ",
         data.raw.leftY,
         data.calibration.leftY,
         data.values.leftY
@@ -450,7 +450,7 @@ static void refreshScreen(lv_timer_t *timer)
     // Update the right X axis line.
     updateAxisLabel(
         axisLabels[2],
-        "RIGHT X",
+        "ДЕСЕН X",
         data.raw.rightX,
         data.calibration.rightX,
         data.values.rightX
@@ -459,7 +459,7 @@ static void refreshScreen(lv_timer_t *timer)
     // Update the right Y axis line.
     updateAxisLabel(
         axisLabels[3],
-        "RIGHT Y",
+        "ДЕСЕН Y",
         data.raw.rightY,
         data.calibration.rightY,
         data.values.rightY
@@ -468,11 +468,11 @@ static void refreshScreen(lv_timer_t *timer)
     // Refresh the layout label.
     if (joystick_getLayout() == CONTROL_TANK)
     {
-        lv_label_set_text(layoutLabel, "LAYOUT: TANK");
+        lv_label_set_text(layoutLabel, "УПРАВЛЕНИЕ: TANK");
     }
     else
     {
-        lv_label_set_text(layoutLabel, "LAYOUT: STEERING");
+        lv_label_set_text(layoutLabel, "УПРАВЛЕНИЕ: STEERING");
     }
 
     // Refresh the dead-zone label.
@@ -481,7 +481,7 @@ static void refreshScreen(lv_timer_t *timer)
     snprintf(
         deadText,
         sizeof(deadText),
-        "DEAD ZONE: %d ADC COUNTS",
+        "МЪРТВА ЗОНА: %d ADC",
         data.calibration.deadZone
     );
 
@@ -492,7 +492,7 @@ static void refreshScreen(lv_timer_t *timer)
     {
         lv_label_set_text(
             overrideLabel,
-            "AUTOPILOT OVERRIDE: TEMPORARY"
+            "АВТОПИЛОТ: ВРЕМЕНЕН"
         );
     }
     else
@@ -538,7 +538,7 @@ void joystickCalibrationUI_open(lv_obj_t *returnScreen)
 
     makeLabel(
         calScreen,
-        "JOYSTICK CALIBRATION / CONTROL SETTINGS",
+        "КАЛИБРАЦИЯ НА СТИКОВЕ / УПРАВЛЕНИЕ",
         15,
         10,
         760
@@ -550,7 +550,7 @@ void joystickCalibrationUI_open(lv_obj_t *returnScreen)
 
     statusLabel = makeLabel(
         calScreen,
-        "WAITING FOR JOYSTICK READINGS",
+        "ОЧАКВАНЕ НА ДАННИ ОТ СТИКОВЕТЕ",
         15,
         43,
         770
@@ -580,7 +580,7 @@ void joystickCalibrationUI_open(lv_obj_t *returnScreen)
     // Axis column headings.
     makeLabel(
         axisPanel,
-        "AXIS       RAW      MIN     CENTRE     MAX       NORMALISED",
+        "ОС     RAW     МИН     ЦЕНТЪР     МАКС     НОРМ.",
         5,
         5,
         750
@@ -589,7 +589,7 @@ void joystickCalibrationUI_open(lv_obj_t *returnScreen)
     // Left horizontal axis.
     axisLabels[0] = makeLabel(
         axisPanel,
-        "LEFT X",
+        "ЛЯВ X",
         5,
         40,
         750
@@ -598,7 +598,7 @@ void joystickCalibrationUI_open(lv_obj_t *returnScreen)
     // Left vertical axis.
     axisLabels[1] = makeLabel(
         axisPanel,
-        "LEFT Y",
+        "ЛЯВ Y",
         5,
         75,
         750
@@ -607,7 +607,7 @@ void joystickCalibrationUI_open(lv_obj_t *returnScreen)
     // Right horizontal axis.
     axisLabels[2] = makeLabel(
         axisPanel,
-        "RIGHT X",
+        "ДЕСЕН X",
         5,
         110,
         750
@@ -616,7 +616,7 @@ void joystickCalibrationUI_open(lv_obj_t *returnScreen)
     // Right vertical axis.
     axisLabels[3] = makeLabel(
         axisPanel,
-        "RIGHT Y",
+        "ДЕСЕН Y",
         5,
         145,
         750
@@ -628,7 +628,7 @@ void joystickCalibrationUI_open(lv_obj_t *returnScreen)
 
     enterButton = makeButton(
         calScreen,
-        "ENTER CALIBRATION",
+        "ВХОД КАЛИБР.",
         15,
         275,
         185,
@@ -645,7 +645,7 @@ void joystickCalibrationUI_open(lv_obj_t *returnScreen)
 
     centreButton = makeButton(
         calScreen,
-        "CAPTURE CENTRE",
+        "ЗАПИС ЦЕНТЪР",
         210,
         275,
         175,
@@ -662,7 +662,7 @@ void joystickCalibrationUI_open(lv_obj_t *returnScreen)
 
     endpointButton = makeButton(
         calScreen,
-        "START ENDPOINTS",
+        "ЗАПИС КРАЙНИ",
         395,
         275,
         175,
@@ -679,7 +679,7 @@ void joystickCalibrationUI_open(lv_obj_t *returnScreen)
 
     finishButton = makeButton(
         calScreen,
-        "FINISH ENDPOINTS",
+        "ЗАВЪРШИ",
         580,
         275,
         200,
@@ -700,7 +700,7 @@ void joystickCalibrationUI_open(lv_obj_t *returnScreen)
 
     layoutButton = makeButton(
         calScreen,
-        "CHANGE LAYOUT",
+        "СМЯНА РЕЖИМ",
         15,
         330,
         180,
@@ -710,7 +710,7 @@ void joystickCalibrationUI_open(lv_obj_t *returnScreen)
 
     layoutLabel = makeLabel(
         calScreen,
-        "LAYOUT: TANK",
+        "УПРАВЛЕНИЕ: TANK",
         205,
         342,
         180
@@ -725,7 +725,7 @@ void joystickCalibrationUI_open(lv_obj_t *returnScreen)
 
     overrideButton = makeButton(
         calScreen,
-        "CHANGE OVERRIDE",
+        "СМЯНА OVERRIDE",
         395,
         330,
         180,
@@ -754,7 +754,7 @@ void joystickCalibrationUI_open(lv_obj_t *returnScreen)
 
     deadZoneLabel = makeLabel(
         calScreen,
-        "DEAD ZONE: 65 ADC COUNTS",
+        "МЪРТВА ЗОНА: 65 ADC",
         15,
         415,
         260
@@ -789,7 +789,7 @@ void joystickCalibrationUI_open(lv_obj_t *returnScreen)
 
     lv_obj_t *backButton = makeButton(
         calScreen,
-        "BACK",
+        "НАЗАД",
         650,
         400,
         130,
@@ -827,7 +827,7 @@ void joystickCalibrationUI_close()
     // Require all four axes to be neutral before leaving.
     if (!joystick_calibrationExit())
     {
-        setStatus("CENTRE ALL JOYSTICKS BEFORE EXITING");
+        setStatus("ЦЕНТРИРАЙ СТИКОВЕТЕ ЗА ИЗХОД");
         return;
     }
 
