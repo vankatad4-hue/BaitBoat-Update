@@ -9,7 +9,7 @@
 #include "boat_commands.h"
 #include "boat_telemetry.h"
 #include "release_button_guard.h"
-#include "mission_ui.h"
+#include "mission_ui.h"\n#include "map_renderer.h"
 #include <math.h>
 // --------------------------------------------------
 // SCREEN DIMENSIONS
@@ -43,7 +43,7 @@ static lv_obj_t *gpsCoordinatesLabel; // Latest boat latitude and longitude.
 static lv_obj_t *gpsDetailsLabel;  // Satellite count, accuracy and heading.
 static lv_obj_t *boatMarker;       // Boat position marker on the map viewport.
 static lv_obj_t *mapWaypointMarkers[16];
-static lv_obj_t *mapHomeMarker;
+static lv_obj_t *mapHomeMarker;\nstatic lv_obj_t *mapViewport;\nstatic lv_obj_t *mapZoomLabel;
 static lv_obj_t *sonarTitle;       // Sonar panel title.
 
 static lv_obj_t *stopButton;       // Emergency stop button.
@@ -266,114 +266,25 @@ static void createHeader()
 // CREATE MAP PANEL
 // --------------------------------------------------
 
+static void mapZoomInEvent(lv_event_t *event){if(lv_event_get_code(event)==LV_EVENT_CLICKED){mapRenderer_zoomIn();if(mapZoomLabel){char z[8];snprintf(z,sizeof(z),"Z%u",(unsigned)mapRenderer_getZoom());lv_label_set_text(mapZoomLabel,z);}}}
+static void mapZoomOutEvent(lv_event_t *event){if(lv_event_get_code(event)==LV_EVENT_CLICKED){mapRenderer_zoomOut();if(mapZoomLabel){char z[8];snprintf(z,sizeof(z),"Z%u",(unsigned)mapRenderer_getZoom());lv_label_set_text(mapZoomLabel,z);}}}
 static void createMapPanel()
 {
-    // Create the map panel on the left.
-    mapPanel = createPanel(
-        contentPanel,
-        5,
-        5,
-        385,
-        345
-    );
-
-    // Create the map heading.
-    mapTitle = createLabel(
-        mapPanel,
-        "MAP",
-        12,
-        10
-    );
-
-    // Show the latest coordinates received from the boat over the radio.
-    gpsCoordinatesLabel = createLabel(
-        mapPanel,
-        "LAT: --.------   LON: --.------",
-        12,
-        38
-    );
-
-    // Show GPS fix quality and offline map availability separately.
-    gpsMapStatusLabel = createLabel(
-        mapPanel,
-        "GPS: NO FIX  |  SD: CHECKING",
-        12,
-        62
-    );
-
-    // Draw a simple map viewport grid until real offline map tiles are installed.
-    // These guide lines are deliberately not presented as geographic features.
-    for (int x = 48; x < 385; x += 48)
-    {
-        lv_obj_t *gridLine = lv_obj_create(mapPanel);
-        lv_obj_set_pos(gridLine, x, 92);
-        lv_obj_set_size(gridLine, 1, 205);
-        lv_obj_set_style_bg_color(gridLine, lv_color_hex(0x294354), LV_PART_MAIN);
-        lv_obj_set_style_bg_opa(gridLine, LV_OPA_COVER, LV_PART_MAIN);
-        lv_obj_set_style_border_width(gridLine, 0, LV_PART_MAIN);
-        lv_obj_set_style_pad_all(gridLine, 0, LV_PART_MAIN);
-        lv_obj_clear_flag(gridLine, LV_OBJ_FLAG_SCROLLABLE);
-    }
-
-    for (int y = 112; y < 300; y += 40)
-    {
-        lv_obj_t *gridLine = lv_obj_create(mapPanel);
-        lv_obj_set_pos(gridLine, 8, y);
-        lv_obj_set_size(gridLine, 365, 1);
-        lv_obj_set_style_bg_color(gridLine, lv_color_hex(0x294354), LV_PART_MAIN);
-        lv_obj_set_style_bg_opa(gridLine, LV_OPA_COVER, LV_PART_MAIN);
-        lv_obj_set_style_border_width(gridLine, 0, LV_PART_MAIN);
-        lv_obj_set_style_pad_all(gridLine, 0, LV_PART_MAIN);
-        lv_obj_clear_flag(gridLine, LV_OBJ_FLAG_SCROLLABLE);
-    }
-
-    // Boat marker is hidden until a valid GPS fix is received.
-    boatMarker = lv_obj_create(mapPanel);
-    lv_obj_set_size(boatMarker, 18, 18);
-    lv_obj_align(boatMarker, LV_ALIGN_CENTER, 0, 20);
-    lv_obj_set_style_radius(boatMarker, 9, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(boatMarker, lv_color_hex(0x00D5FF), LV_PART_MAIN);
-    lv_obj_set_style_border_color(boatMarker, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-    lv_obj_set_style_border_width(boatMarker, 2, LV_PART_MAIN);
-    lv_obj_clear_flag(boatMarker, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_add_flag(boatMarker, LV_OBJ_FLAG_HIDDEN);
-
-    // Persistent waypoint/home overlay markers (relative view, not a basemap).
-    for (uint8_t i=0;i<16;i++) {
-        mapWaypointMarkers[i]=lv_label_create(mapPanel);
-        lv_label_set_text(mapWaypointMarkers[i],"W");
-        lv_obj_set_style_text_color(mapWaypointMarkers[i],lv_color_hex(0x7CFC00),LV_PART_MAIN);
-        lv_obj_set_style_bg_color(mapWaypointMarkers[i],lv_color_hex(0x102030),LV_PART_MAIN);
-        lv_obj_set_style_bg_opa(mapWaypointMarkers[i],LV_OPA_COVER,LV_PART_MAIN);
-        lv_obj_set_style_pad_all(mapWaypointMarkers[i],2,LV_PART_MAIN);
-        lv_obj_add_flag(mapWaypointMarkers[i],LV_OBJ_FLAG_HIDDEN);
-    }
-    mapHomeMarker=lv_label_create(mapPanel);
-    lv_label_set_text(mapHomeMarker,"H");
-    lv_obj_set_style_text_color(mapHomeMarker,lv_color_hex(0xFFD740),LV_PART_MAIN);
-    lv_obj_set_style_bg_color(mapHomeMarker,lv_color_hex(0x102030),LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(mapHomeMarker,LV_OPA_COVER,LV_PART_MAIN);
-    lv_obj_set_style_pad_all(mapHomeMarker,2,LV_PART_MAIN);
-    lv_obj_add_flag(mapHomeMarker,LV_OBJ_FLAG_HIDDEN);
-
-    // Report GPS details without inventing a position when no fix exists.
-    gpsDetailsLabel = createLabel(
-        mapPanel,
-        "SAT: --   ACC: -- m   HDG: --°",
-        12,
-        315
-    );
-
-    // Allow the user to expand the map.
-    lv_obj_add_flag(mapPanel, LV_OBJ_FLAG_CLICKABLE);
-
-    // Register the map touch event.
-    lv_obj_add_event_cb(
-        mapPanel,
-        mapTouchEvent,
-        LV_EVENT_CLICKED,
-        nullptr
-    );
+    mapPanel=createPanel(contentPanel,5,5,385,345);
+    mapTitle=createLabel(mapPanel,"OFFLINE MAP",10,8);
+    gpsCoordinatesLabel=createLabel(mapPanel,"LAT: --.------  LON: --.------",10,31);
+    gpsMapStatusLabel=createLabel(mapPanel,"GPS: NO FIX | SD: CHECKING",10,53);
+    mapViewport=lv_obj_create(mapPanel);
+    lv_obj_set_pos(mapViewport,8,82);lv_obj_set_size(mapViewport,369,220);
+    lv_obj_set_style_border_width(mapViewport,0,LV_PART_MAIN);lv_obj_set_style_pad_all(mapViewport,0,LV_PART_MAIN);
+    lv_obj_set_style_bg_color(mapViewport,lv_color_hex(0x263746),LV_PART_MAIN);lv_obj_set_style_clip_corner(mapViewport,true,LV_PART_MAIN);
+    lv_obj_clear_flag(mapViewport,LV_OBJ_FLAG_SCROLLABLE);mapRenderer_create(mapViewport);
+    lv_obj_t *zoomOut=lv_button_create(mapPanel);lv_obj_set_size(zoomOut,42,34);lv_obj_set_pos(zoomOut,8,307);
+    lv_label_set_text(lv_label_create(zoomOut),"-");lv_obj_center(lv_obj_get_child(zoomOut,0));lv_obj_add_event_cb(zoomOut,mapZoomOutEvent,LV_EVENT_CLICKED,nullptr);
+    lv_obj_t *zoomIn=lv_button_create(mapPanel);lv_obj_set_size(zoomIn,42,34);lv_obj_set_pos(zoomIn,54,307);
+    lv_label_set_text(lv_label_create(zoomIn),"+");lv_obj_center(lv_obj_get_child(zoomIn,0));lv_obj_add_event_cb(zoomIn,mapZoomInEvent,LV_EVENT_CLICKED,nullptr);
+    mapZoomLabel=createLabel(mapPanel,"Z15",104,316);gpsDetailsLabel=createLabel(mapPanel,"SAT: -- ACC: --m HDG: --",160,316);
+    lv_obj_add_flag(mapPanel,LV_OBJ_FLAG_CLICKABLE);lv_obj_add_event_cb(mapPanel,mapTouchEvent,LV_EVENT_CLICKED,nullptr);
 }
 
 // --------------------------------------------------
@@ -705,19 +616,12 @@ void toggleSonarPanel()
 
 static void updateMapMissionMarkers(const BoatState &state)
 {
- if(!state.gpsValid||(uint32_t)(millis()-state.gpsLastUpdateMs)>2000U){for(uint8_t i=0;i<16;i++)lv_obj_add_flag(mapWaypointMarkers[i],LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(mapHomeMarker,LV_OBJ_FLAG_HIDDEN);return;}
- const double scale=0.65;const double cosLat=fmax(0.15,cos(state.latitude*3.141592653589793/180.0));
- auto place=[&](lv_obj_t *obj,float lat,float lon){
-  const double east=(lon-state.longitude)*111320.0*cosLat;const double north=(lat-state.latitude)*111320.0;
-  if(fabs(east)>150.0||fabs(north)>150.0){lv_obj_add_flag(obj,LV_OBJ_FLAG_HIDDEN);return;}
-  const double centerX=mapExpanded?390.0:192.0;const int x=(int)(centerX+east*scale-lv_obj_get_width(obj)/2.0);const int y=(int)(192.0-north*scale-lv_obj_get_height(obj)/2.0);
-  lv_obj_set_pos(obj,x,y);lv_obj_remove_flag(obj,LV_OBJ_FLAG_HIDDEN);
- };
- for(uint8_t i=0;i<16;i++){float lat=0,lon=0;bool bait=false,hook=false;char marker[16];
-  if(missionUI_getWaypoint(i,&lat,&lon,&bait,&hook)){snprintf(marker,sizeof(marker),"W%u%s%s",(unsigned)(i+1),bait?"B":"",hook?"H":"");lv_label_set_text(mapWaypointMarkers[i],marker);place(mapWaypointMarkers[i],lat,lon);}
-  else lv_obj_add_flag(mapWaypointMarkers[i],LV_OBJ_FLAG_HIDDEN);
- }
- float hlat=0,hlon=0;if(missionUI_getHome(&hlat,&hlon))place(mapHomeMarker,hlat,hlon);else lv_obj_add_flag(mapHomeMarker,LV_OBJ_FLAG_HIDDEN);
+    MapRendererWaypoint points[16]={};
+    for(uint8_t i=0;i<16;i++){float lat=0,lon=0;bool bait=false,hook=false;points[i].valid=missionUI_getWaypoint(i,&lat,&lon,&bait,&hook);points[i].lat=lat;points[i].lon=lon;points[i].bait=bait;points[i].hook=hook;}
+    float hlat=0,hlon=0;bool hv=missionUI_getHome(&hlat,&hlon);
+    bool fresh=state.gpsValid&&(uint32_t)(millis()-state.gpsLastUpdateMs)<=2000U;
+    mapRenderer_update(fresh,state.latitude,state.longitude,state.heading,hv,hlat,hlon,points,(uint8_t)missionUI_getSelectedIndex(),state.mode==MODE_RETURN_HOME);
+    if(mapZoomLabel){char z[8];snprintf(z,sizeof(z),"Z%u",(unsigned)mapRenderer_getZoom());lv_label_set_text(mapZoomLabel,z);}
 }
 
 void updateBoatScreen(const BoatState &state)
