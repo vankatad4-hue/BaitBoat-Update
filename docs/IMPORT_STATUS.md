@@ -19,6 +19,8 @@ The Boat and Remote project folders, source files, documentation, and preserved 
 - [ZIP packaging policy](ZIP_RELEASE_POLICY_R1.md) and `.github/workflows/package-flytec-zips.yml` define packaging and SHA256 artifacts.
 - The Heltec controller pin audit is pending physical revision identification; boat GPIOs remain unset.
 
+- [ZIP build status](ZIP_BUILD_STATUS_R1.md) records ver005 checksums and the pending ver006 workflow approval.
+
 ## Working rule
 Before changes, inspect the relevant files in this repository. Commit approved source and documentation updates here. Keep the Boat and Remote projects separate while updating shared decisions in both when necessary. Do not overwrite released ZIPs; increment the package version file for each deliverable modification and preserve previous releases. Verify the automated ZIP artifacts and checksum before declaring the new archive issued.
 
