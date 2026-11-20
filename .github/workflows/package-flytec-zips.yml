@@ -8,6 +8,13 @@ on:
       - 'Remote/**'
       - 'Boat/**'
       - '.github/workflows/package-flytec-zips.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'Remote/**'
+      - 'Boat/**'
+      - '.github/workflows/package-flytec-zips.yml'
   workflow_dispatch:
 
 permissions:
