@@ -21,10 +21,10 @@
 - ACCEPTED is queue acceptance only. There is no connected command executor, telemetry source, EXECUTED ACK, actuator output or navigation/failsafe application.
 
 ## Release/archive review
-- Current markers: Remote ver023 / Boat ver014. Boat ver014 ZIP checksum and structure independently verified; Remote ver023 binary remains unverified. Older Boat archives ver011–013 are superseded.
-- Generated ZIPs and manifest are present for Remote ver023 / Boat ver014 snapshots. Boat ver014 archive is independently verified.
-- Remote ver023 ZIP binary was not retrievable and remains unverified.
-- Remote ver023 ZIP: present, but the binary could not be retrieved through the available file fetch path; checksum is manifest-only and not independently verified.
+- Current markers: Remote ver024 / Boat ver014. Boat ver014 ZIP checksum and structure independently verified; Remote ver024 binary remains unverified. Older Boat archives ver011–013 are superseded.
+- Generated ZIPs and manifest are present for Remote ver024 / Boat ver014 snapshots. Boat ver014 archive is independently verified.
+- Remote ver024 ZIP binary was not retrievable and remains unverified.
+- Remote ver024 ZIP: present, but the binary could not be retrieved through the available file fetch path; checksum is manifest-only and not independently verified.
 - Archives are source snapshots, not fabrication or operational approvals.
 
 ## Decisions to retain
