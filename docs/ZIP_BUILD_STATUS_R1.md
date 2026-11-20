@@ -20,3 +20,8 @@ Boat ver014 adds the portable fail-closed command policy and policy tests. Archi
 
 ## Validation boundary
 No full ESP32 build, native schematic/ERC/DRC, PCB, RF/antenna, power/thermal or hardware validation. Do not operate motors or solenoids.
+
+
+## Remote ver024 UI/input update
+- Remote version marker advanced to ver024 for touchscreen mode requests, live joystick status, compact safety/ACK footer, and stale/unknown battery display.
+- ZIP/checksum generation is handled by the repository workflow; output and checksum still require workflow verification. No firmware compile or hardware test.
