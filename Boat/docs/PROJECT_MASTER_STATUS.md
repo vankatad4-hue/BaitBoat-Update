@@ -61,7 +61,7 @@ Current code scaffold includes:
 - Motor driver fit: `BOAT_MOTOR_DRIVER_FIT_REVIEW_R1.md`
 
 ## ZIP status
-- Current development snapshots: Remote ver023 / Boat ver013. Boat ver012 checksum and archive structure independently verified; Remote ver023 binary remains unverified.
+- Current development snapshots: Remote ver023 / Boat ver014. Boat ver012 checksum and archive structure independently verified; Remote ver023 binary remains unverified.
 - See repository `docs/ZIP_RELEASE_POLICY_R1.md`.
 
 Do not connect motor/solenoid power or operate the boat.
@@ -87,6 +87,10 @@ Remote decodes authenticated telemetry/ACK and applies freshness/safety gates. B
 - ACCEPTED does not imply execution. No command application, interlocks, telemetry sender or actuator path.
 - Review: BOAT_ACK_SESSION_INTEGRATION_R1.md. Source is not compiled or tested on ESP32.
 
+## Boat ver014 fail-closed command policy milestone (2026-11-20)
+- Added portable command policy scaffold with boot STOP latch, link-specific freshness, mode prerequisite checks, steering limits and independent release interlocks.
+- Release requests are not outputs; no driver is connected. CI workflow now includes policy tests, but run status not yet verified.
+
 ## Boat ver013 host-test build cleanup milestone (2026-11-20)
 - Removed duplicate encoder definitions identified during review of the host test build command.
 - Added CI workflow to compile/run the portable Boat host tests with warnings-as-errors. Run result is not yet observed.
@@ -102,4 +106,4 @@ Remote decodes authenticated telemetry/ACK and applies freshness/safety gates. B
 - Test source and host stubs are committed, but tests were **not run** because network checkout was unavailable. No compile claim is made.
 
 ## Package revision status
-Current package markers: Remote ver023 / Boat ver013; package rebuild pending. Boat ver012 ZIP checksum and structure independently verified historically; ver013 ZIP rebuild pending. Remote ver023 binary remains unverified. Deterministic packaging workflow is in place. Boat payload decoder/encoder are portable utilities. Session echo, queue-level ACK and duplicate handling are scaffolded, but no telemetry source, application command executor, EXECUTED ACK or actuator integration exists.
+Current package markers: Remote ver023 / Boat ver014; package rebuild pending. Boat ver013 ZIP verified historically; ver014 package rebuild pending. Remote ver023 binary remains unverified. Deterministic packaging workflow is in place. Boat payload decoder/encoder are portable utilities. Session echo, queue-level ACK and duplicate handling are scaffolded, but no telemetry source, application command executor, EXECUTED ACK or actuator integration exists.
