@@ -1,3 +1,5 @@
+**SUPERSEDED:** Current pairing and settings are in `REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R3.md`. R1 contains historical candidate details; do not use its module power or channel suggestions as the current design.
+
 # Dual-radio redundancy architecture R1 — Remote + Boat
 
 **Decision update (2026-11-20):** Add a LoRa backup link alongside the nRF24L01+ PA/LNA primary link. This is a paired system: the remote AND the boat must have LoRa modules for a usable redundant connection. This document supersedes any statement that the nRF24 is the only radio.

@@ -1,73 +1,150 @@
-# Flytec V080 bait boat and remote — master project record R2
+# Flytec V080 Retrofit — Master Status R5
 
-**Consolidated:** 2026-11-20 (schematic design update). Repository source is canonical; latest schematic capture specification is documented below.
+Updated: 2026-11-20. Development branch; no firmware compile, hardware test, ERC/DRC, or operational release has been validated.
 
-## Archive versioning
-ZIPs use Flytec_Remote_verXXX.zip and Flytec_Boat_verXXX.zip. Never overwrite a prior release. ver005 archives exist but are not fully synchronized to current repository work.
+## Selected architecture
+- Retain Flytec V080 hull, main switch, battery indicator, two 550 brushed motors.
+- Replace boat control electronics.
+- Remote: Waveshare ESP32-S3-Touch-LCD-4.3 Standard, 800×480/LVGL9.6.0, touchscreen, two joysticks,16 physical buttons,OK/confirm.
+- Primary radio: nRF24L01+ PA/LNA on both ends,2.4GHz,250kbps initial.
+- Backup: matching EBYTE E22-900T22S UART LoRa modules on remote and boat. Tracker integrated SX1262 unused for first test.
+- Remote LEFT antenna=2.4GHz nRF; RIGHT=868MHz LoRa. ESP32 Wi-Fi/Bluetooth uses onboard antenna.
+- Mission: manual waypoint save→autopilot to waypoint→bait/hook release→return home. Boat-side failsafe must return only if GNSS/heading/battery/geofence health valid; otherwise stop safely.
 
-## Project
-Retain Flytec V080 hull, motors, battery indicator and main switch; replace boat control electronics. Remote is a new handheld design using existing Waveshare 4.3 touchscreen board.
+## Remote hardware R5 — mechanical/button revision
+- R5 shell CAD envelope310×209×69.5mm; two-piece front/rear shell prototype, central 4.3in display, twin sticks, two 4×2 button banks (four columns across, two rows high per side), OK and power keys, dual antenna exits.
+- Right bank top four keys are independent H-L/H-R/K-L/K-R release controls. Combined release commands are disabled/rejected.
+- MCP23017 physical button scanning/debounce, mapping and release/OK event wiring are in remote loop; GPIO crosswalk and actual hardware remain unverified.
+- Remote release commands require authenticated primary link, STOP-confirmed released and boat interlock telemetry. Host-tested 1.2s release-key + 0.8s OK confirm within4s guard exists. `actuatorSafetyReady` is false by default and is not set by current telemetry, so release remains disabled.
+- CAD source: `Remote/New_Handheld_Remote/CAD/`; mechanical and physical key map R5 documents.
 
-## Boat baseline
-- 12V 550 brushed motors; motor startup/stall current unmeasured.
-- Reported pack 3S4P, BMS 20A; verify actual cell/pack data.
-- Solenoids FW0630 009 DC12V bait and FW0630 001 DC12V hook; coil current/resistance/duty not measured.
-- Carrier PCB envelope 77×79×14mm, compartment lid clearance ~30mm.
-- Heltec Wireless Tracker V1.2 ESP32-S3/UC6580 GNSS candidate.
-- GY-91 MPU-9250 + BMP280 motion/heading candidate; exact breakout/pinout and calibration pending.
-- nRF24L01+ PA/LNA 250kbps initial; 500m range goal unvalidated.
-- Cytron MDD20A motor-driver candidate; confirm motor current before use.
-- Sonar: full CHIRP echogram/fish arches desired, module/interface still unselected.
-- Autopilot mission: save waypoint, send, release bait/hook, return; failsafe return-home only with valid navigation/system health.
+## Remote hardware R4
+- Enclosure target300×210×70mm; mechanical envelope provisional.
+- 1S4P18650 pack, fuse/protection candidates.
+- Controller/display 5V: Waveshare CS8501 onboard boost.
+- nRF radio3.3V: dedicated TPS63070.
+- LoRa E22 VCC5V: dedicated BAT_PROT→TPS61023 boost, not parallel with CS8501.
+- E22 UART through SC16IS750 I2C bridge@0x48; UART9600 8N1; 3.3V logic.
+- Provisional nRF pins CE=GPIO6(Sensor AD unused),CSN=GPIO15(RS485 TX path; RS485 cable disconnected),SPI11/12/13,channel76. IRQ→MCP23017 0x21 GPA1. Exact board revision, pin crosswalk, loading and continuity must be verified.
+- I2C8/9; ADS1115 axes@0x4A and monitor@0x4B; MCP23017 buttons@0x20/radio IO@0x21.
+- Carrier PCB target100×75mm,4-layer1.6mm,2oz outer copper candidate; size/stack fit provisional.
 
-## Remote schematic design progress (2026-11-20)
-- GPIO/peripheral assignments checked against official Waveshare online docs; PORT1 physical pin-number crosswalk remains provisional due schematic/document discrepancy. Confirm exact board revision/orientation before wiring; see `WAVESHARE_HEADER_MAPPING_AND_PIN_ASSIGNMENTS_R2.md`.
-- Capture-sheet design and net-level drafts created: `SCHEMATIC_CAPTURE_SHEETS_R1.md`, `SCHEMATIC_NETLIST_BLOCKS_R1.md`, `SCHEMATIC_CAPTURE_CHECKLIST_R1.md`.
-- Battery protection/power branches specified; controller power via onboard CS8501 boost, external TPS61023 fallback only; radio TPS63070 dedicated rail.
-- Controls: ADS1115 @0x48 for four joystick axes, MCP23017 @0x20 for buttons, second ADS1115 @0x49 for battery/NTC/optional radio rail monitoring, MCP23017 @0x21 for radio CE/CSN/IRQ candidate.
-- Shared SPI GPIO11/12/13 with onboard TF card; radio priority and bus serialization required.
-- Expander-based radio control remains an explicit validation gate; no native KiCad capture/ERC/bench test has yet been performed.
+## Boat hardware R2
+- Reported3S4P pack and20A BMS; confirm.
+- Controller candidate Heltec Wireless Tracker ESP32-S3+UC6580GNSS; exact revision/pins not frozen.
+- nRF24 primary; matching E22 LoRa backup.
+- E22 VCC from5V electronics buck (candidate≥2A peak);UART/mode logic3.3V.
+- Motor driver Cytron MDD20A candidate; board88.9×78.74mm exceeds77×79mm carrier envelope, requires separate placement or mechanical revision.
+- Bait FW0630 009 and hook FW0630 001 nominal12V. Coil current/voltage tolerance, MOSFET/flyback/fuse and supply unverified.
+- Boat control carrier77×79×14mm measured preliminary; lid clearance~30mm. Full CAD fit not done.
 
-## Remote baseline
-- Waveshare ESP32-S3-Touch-LCD-4.3 Standard, 800×480; onboard ESP32 antenna.
-- 2 joysticks, 16 buttons (2×4 banks on each side), touch UI; ergonomic remote concept remains.
-- Pack 1S4P 18650; exact cells and BMS not selected.
-- nRF24 PA/LNA module with external antenna. Wi-Fi/Bluetooth coexistence requires testing.
+## Radio configuration
+- nRF: channel76,250kbps,fixed32,CRC16,auto-ack/retries,PA_LOW initial. Pair addresses configured.
+- E22: network/address0,UART9600 8N1,air62.5kbps,subpacket32,10dBm,channel18=868.125MHz,transparent. Config write/readback in code.
+- 868.125MHz is in1% duty sub-band. E22 channel step1MHz cannot select869.525MHz 10% sub-band. Estimated25ms/frame; 3s interval≈0.83%. Actual airtime and persistent duty counter required before field operation.
+- LoRa backup limited to STOP/RETURN, low-rate telemetry and restricted steering if airtime budget allows; no sonar and no mission/release actions.
 
-## Revised remote power tree
-- Pack/BMS output → fuse candidate → reverse-protection P-MOS candidate → BAT_PROT.
-- Controller/display 5V: use Waveshare onboard CS8501 battery boost via single-cell PH2.0 connector. Manufacturer documentation says boost from single cell to 5V and board consumption 5V/450mA. Verify current/transient/thermal performance. External TPS61023 remains fallback only; do not parallel converters.
-- Radio 3.3V: dedicated TPS63070 buck-boost. 1.5µH candidate; feedback 470k/150k, nominal 3.3067V; effective capacitors and configuration pending tests. EN candidate controlled after boot, default OFF.
-- Protection shortlist: Littelfuse 0458004.DR 4A fast-acting fuse; onsemi FDS6575 P-MOS (Drain pack side, Source protected output); battery ADC divider and NTC. Parts/coordination not validated.
-- Current estimate at 3V loaded: controller 5V/450mA at assumed 90% ≈0.83A battery; radio 3.3V/300mA at assumed 90% ≈0.37A; total ≈1.20A. Estimate only.
+## Firmware implementation scaffold
+Remote:
+- nRF24 transport, E22 transparent UART driver, SC16IS750 bridge, bounded RX queues.
+- CRC16+HMAC packet codec, command codec/backup restrictions, LinkManager states, primary/backup heartbeat scheduler, UI link status.
+- Key store returns false by default; no authenticated link or command TX until key provisioning.
+Boat:
+- nRF/E22 transport classes, authenticated receive/queue, duplicate-action cache, local failsafe evaluator.
+- Boat dual-radio port is not connected to a main application; no motor/solenoid execution, telemetry/app ACK or autopilot integration.
+- Session start/sequence scaffold is incomplete for persistent replay protection and secure reboot/session negotiation.
+- Neither remote nor boat source compiled or bench-tested in this branch.
 
-## Remote controls/peripherals
-- Board I2C GPIO8/9 shared with touch/CH422G/RTC.
-- ADS1115 candidate (I2C 0x48) for four joystick axes, 16-bit, up to 860SPS aggregate; verify latency/noise.
-- MCP23017 candidate (I2C 0x20) for 16 button inputs; active-low contacts and software debounce.
-- Battery sensing GPIO6/Sensor-AD candidate.
-- nRF SPI candidate GPIO11/12/13 shared with TF card; separate CS. Candidate CSN GPIO15 and CE GPIO43 are provisional; GPIO attachments and header exposure must be verified. IRQ omitted/polled initially.
-- I2C addresses/pullups, SPI sharing and GPIO map not frozen.
+## Test sketches
+- Remote/Boat nRF24 bench probes.
+- Remote SC16/E22 and Boat direct-UART E22 bench probes.
+- Fixed CRC-only probe frames; no authenticated commands or actuators. Boat pin macros disabled until board audit.
 
-## Engineering status
-Power and interface documentation updated. Native KiCad schematics, ERC, PCB layout, fabrication BOM, exact pin/connector assignment, bench validation and hardware bring-up are still not completed. Do not treat docs/net drafts as fabrication-ready.
+- E22 bench configuration byte decode is documented in `Remote/docs/E22_CONFIGURATION_DECODE_R1.md`.
+- Path audit corrected: test sketches were present; initial fetch failure was retrieval/path-check issue.
+
+## Electrical/PCB status
+- Detailed electrical capture sheets, pin tables/CSV, power net drafts, BOM candidate docs and Mermaid block diagrams exist.
+- Native KiCad schematic, ERC/DRC, footprints, PCB layout and fabrication files **not created**.
+- Remote hardware test-build spec: `Remote/New_Handheld_Remote/PCB/REMOTE_HARDWARE_TEST_BUILD_R4.md`.
+- Remote schematic capture: `Remote/New_Handheld_Remote/PCB/SCHEMATIC_CAPTURE_SHEETS_R4.md`; netlist `REMOTE_NETLIST_BLOCKS_R4.md`.
+- Remote power nets: `Remote/New_Handheld_Remote/PCB/POWER_SCHEMATIC_NET_DRAFT_R8.md`; capture spec `POWER_SHEET_CAPTURE_SPEC_R6.md`; BOM `REMOTE_POWER_BOM_CANDIDATES_R6.md`.
+- Boat test build: `Boat/docs/BOAT_HARDWARE_TEST_BUILD_R2.md`.
+- Boat electrical capture: `Boat/docs/BOAT_ELECTRICAL_SCHEMATIC_DESIGN_R2.md`; schematic sheets `BOAT_SCHEMATIC_CAPTURE_SHEETS_R2.md`.
+
+## Versioned ZIP status
+- [Build and checksum status](../../docs/ZIP_BUILD_STATUS_R1.md)
+- Preserved baseline archives: Remote `Flytec_Remote_ver004.zip`, Boat `Flytec_Boat_ver004.zip`.
+- Next snapshot markers are Remote `006` and Boat `006`; the packaging workflow creates versioned ZIPs and SHA256 artifacts from the branch snapshot. These are pending successful workflow verification, not yet confirmed generated/downloadable archives.
+- Packaging policy: `docs/ZIP_RELEASE_POLICY_R1.md`.
+
+## Boat controller pin audit
+- New `Boat/docs/BOAT_CONTROLLER_PIN_AUDIT_R1.md` reserves onboard SX1262, GNSS, TFT, USB, power and boot/strap resources based on manufacturer documentation.
+- Exact Tracker revision is unknown. All boat nRF/E22 GPIOs remain unset; GPIO17/18 are only preliminary UART candidates and must be verified against the exact schematic.
+- Boat connector table R3 emphasizes safe reset states and remains TBD for MCU pins.
+
+## Freeze/test blockers
+1. Exact Waveshare and Heltec board revisions/pin maps and connector continuity.
+2. E22/nRF physical modules, antennas and RF bench test.
+3. TPS61023/TPS63070 component-level schematics, layout and thermal validation.
+4. Battery pack/BMS/fuse/wiring current/thermal measurements.
+5. Motor startup/stall current and motor-driver fit.
+6. Solenoid resistance/current/voltage tolerance and driver design.
+7. Secure key provisioning, replay protection/session negotiation, app ACK and boat main loop/failsafe/actuator integration.
+8. EU/Bulgaria RF channel/EIRP/duty-cycle compliance.
+9. Native KiCad/ERC/DRC and physical mechanical fit.
+
+## Release status
+- Repository branch: `hardware-ready-dual-radio-r1`; draft PR #1 remains open and unmerged.
+- ZIP snapshot ver006 is pending Actions workflow verification. Existing ver004 archives are preserved.
+- Release archives ver004 remain unchanged. ver005 is the next snapshot and not yet verified.
+- Do not operate boat or connect actuator power. Bench tests only.
+
+- Consolidated remote pin map and connector CSV R4 are the current versions; older R2 docs marked superseded. Consolidated remote power BOM/capture spec R6 are current; R5 docs marked superseded.
+
+- LoRa TX-slot scheduler updated: one E22 frame/endpoint/3s target; remote pending queue priority STOP>RETURN>manual, and heartbeat suppressed while a command is queued. This is provisional until actual airtime is measured.
 
 
-## New radio redundancy decision — 2026-11-20
-- **Added LoRa as backup communications**, alongside nRF24L01+ PA/LNA primary. Both remote and boat must carry matching LoRa modules for the backup link.
-- Candidate module: EBYTE E22-900T22S-V2 UART/SX1262 EU868-capable family; exact SKU/configuration is not finalized or purchased. UART pins remain unassigned until GPIO/header audit.
-- Remote antenna ports reassigned: RIGHT = EU868 LoRa; LEFT = nRF24 2.4GHz. ESP32 Wi-Fi/Bluetooth uses the Waveshare board's onboard antenna; no external Wi-Fi antenna connector planned.
-- LoRa is for heartbeat, low-rate telemetry, reduced-rate/manual safety control, STOP and RETURN. It will not carry sonar streaming. Mission start and bait/hook release are disabled over backup by default.
-- Firmware requirements: dual-link LinkManager, primary/backup/no-link UI, handover hysteresis, duplicate command suppression, packet freshness/sequence checks, authenticated/replay-protected commands, independent boat failsafe. Failover must be bench/field tested.
-- LoRa module power is provisionally from Waveshare CS8501 5V rail with local bulk/decoupling; simultaneous display/backlight+nRF+LoRa load/thermal test required. If margin inadequate, design a separate boost branch (never parallel boosts).
-- EU868/Bulgaria channel, radiated power, duty cycle, airtime and antenna gain/cable loss compliance must be verified; module's 22dBm capability is not an approved setting.
-- Design record: Remote/docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R1.md. Capture/net/power/BOM documents have LoRa addenda. No firmware code has yet been merged or bench-tested, and no hardware purchased.
+## Current sync notes
+- Root/Boat/Remote README files and docs/IMPORT_STATUS.md now reference the pin audit, ZIP version markers, and packaging policy.
+- Repository path discrepancy was corrected in docs/REPOSITORY_PATH_AUDIT_R1.md: the four radio bench sketches and two READMEs were present.
+- E22 register/profile decode is recorded in Remote/docs/E22_CONFIGURATION_DECODE_R1.md. The exact purchased module variant and actual register readback must still be confirmed.
 
 
-## Dual-radio documentation and firmware scaffold files
-- Shared architecture/antenna/power/regulatory design: `Remote/docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R1.md`.
-- Protocol, packet safety, failover state machine, code architecture and pseudocode: `Remote/docs/DUAL_RADIO_PROTOCOL_FIRMWARE_SPEC_R1.md`.
-- Boat-side implementation requirements: `Boat/docs/DUAL_RADIO_BACKUP_LINK_R1.md`.
-- Remote radio API scaffold: `Remote/source/boat_radio.h/.cpp` (still returns disconnected; no actual drivers).
-- Command scaffold adds stable `commandId` and `createdAtMs` fields: `Remote/source/boat_commands.h/.cpp`; no packet-level duplicate handling or authentication yet.
-- No firmware was compiled in this update. No release ZIP ver006 was created; ver005 archives remain unchanged.
+## Remote software progress update — 2026-11-20
+
+- Added library-free ADS1115 four-channel joystick input driver; provisional address 0x4A, AIN0–AIN3.
+- Wired the joystick processing callback into the main Arduino sketch. ADC errors fail closed and inhibit stick motor commands.
+- Added joystick calibration NVS persistence and validation. Invalid or absent calibration remains fail-closed; completing endpoint capture marks calibration valid.
+- Added settings controls for Tank/Steering layout, autopilot manual-override behavior, dead zone and opening the calibration UI.
+- Added repository SVG front-panel preview and updated R5 physical button concept.
+
+**Not verified:** exact Waveshare GPIO/I2C pins, ADS1115 address straps, analog input voltage ranges, compile against target board/LVGL, ADC hardware tests, radio/boat operation. Do not enable propulsion until calibration, ADC, radio, command safety and boat-side failsafe tests pass.
+
+
+## Remote concept R6 update (2026-11-20)
+- Styling/layout is now being aligned to `Remote/New_Handheld_Remote/CONCEPT/Flytec_Remote_Concept_Reference.jpg` (wide ergonomic grip silhouette, raised display bezel, upper joystick pods, central power key, dual antenna exits).
+- User-confirmed physical button arrangement: **4 columns × 2 rows on each side** (8 keys per bank), replacing the previous 2 columns × 4 rows.
+- R6 concept SVG and mechanical/button-map documents are committed. These remain visual design references only; the enclosure CAD has not been dimensionally redesigned or checked for component fit yet.
+
+
+## Remote mechanical CAD R6 progress (2026-11-20)
+- Added parametric OpenSCAD source `Remote/New_Handheld_Remote/CAD/Flytec_Remote_Enclosure_R6.scad` with 4-column × 2-row button banks on each side, central touchscreen opening, twin stick apertures, central power key, USB-C opening, rear antenna ports, rear tray, preliminary screw bosses, display support ledges, joystick support rings and assembly-preview geometry.
+- CAD workflow expanded to export R6 front/rear/button-cap STL and assembly PNG in addition to R5 artifacts; print package and checksum names revised to R5/R6 combined.
+- Added R6 mechanical draft and limitations documentation. No CAD render/export has yet been verified by the workflow; dimensions/components are placeholders, and no fit validation has been performed.
+
+
+## R6 enclosure CAD validation (2026-11-20)
+- Reworked R6 parametric enclosure with target 310×209mm perimeter, 66.5mm rear tray, 3.5mm front panel, raised 2mm preliminary collars around release keys, separate physical OK/confirm switch below the display, and power switch above display.
+- Antenna pass-through positions shifted to Y=82mm. Four release-button apertures are enlarged to 18mm; collar OD21mm/ID17.6mm.
+- Local OpenSCAD renders/exports succeeded for front, rear, cap set and assembly. Mesh check: front and rear watertight, each single connected mesh; button-cap plate watertight with 17 individual caps.
+- Local files are preliminary validation only. The real CAD workflow has been updated to export R6 front/rear/buttons, angled preview, and orthographic front-layout preview. GitHub Actions results and generated repository STLs/ZIP are still pending verification.
+
+
+## Remote CAD R6.1 internal fit draft (2026-11-20)
+- Rear shell CAD now includes sculpted palm pads, 100×75mm placeholder carrier-board mounting posts, and a grip-mounted 1S4P battery cradle envelope.
+- Battery assumption: four 18650 envelopes (Ø18.6×65mm), two in each grip, stacked through shell depth. This is an initial arrangement only; no cell restraint, insulation, pack wiring, fuse/BMS, charge or thermal design is complete.
+- Added OpenSCAD preview modes for internal component layout and battery cradle, plus GitHub workflow exports for internal/top preview PNGs and battery cradle STL.
+- Locally exported meshes: front panel and rear shell watertight one-part meshes; button-cap plate watertight with 17 parts. Rear shell is now a larger integrated mesh and requires print orientation/support review.
+- Prototype external depth including grip pads and front/collar stack is approximately 87mm. This replaces the earlier ~70mm nominal estimate for the R6 shell without palm pads.
+- Fit remains unverified against actual Waveshare board, sticks, switches, antennas, connectors, battery cells or PCB.

@@ -1,3 +1,5 @@
+# SUPERSEDED by POWER_SHEET_CAPTURE_SPEC_R6.md
+
 # Remote Power + Peripheral Schematic Capture Specification R5
 
 Capture specification only; no native KiCad/ERC/PCB or hardware validation.

@@ -1,0 +1,27 @@
+Connector,Pin,Signal,Net,Direction/notes
+J_NRF,1,GND,GND,Radio ground
+J_NRF,2,VCC,3V3_RADIO,3.3V rail; burst current to be measured
+J_NRF,3,MOSI,MCU_SPI_MOSI,TBD pin; board resource audit required
+J_NRF,4,SCK,MCU_SPI_SCK,TBD pin; board resource audit required
+J_NRF,5,MISO,MCU_SPI_MISO,TBD pin; board resource audit required
+J_NRF,6,CSN,MCU_GPIO_NRF_CSN,TBD direct GPIO; idle high
+J_NRF,7,CE,MCU_GPIO_NRF_CE,TBD direct GPIO; safe low at reset
+J_NRF,8,IRQ_N,MCU_GPIO_NRF_IRQ,TBD input; optional
+J_E22,1,VCC,5V_E22,Electronics buck; branch fuse/current limit
+J_E22,2,GND,GND,Ground
+J_E22,3,TXD,MCU_UART_RX,TBD 3.3V UART input
+J_E22,4,RXD,MCU_UART_TX,TBD 3.3V UART output
+J_E22,5,M0,MCU_GPIO_M0,TBD; defined boot state
+J_E22,6,M1,MCU_GPIO_M1,TBD; defined boot state
+J_E22,7,AUX,MCU_GPIO_AUX,TBD input; readiness polling
+J_E22,8,NRST,MCU_GPIO_NRST,TBD optional; reset asserted safely
+J_E22_RF,1,RF,ANT_E22,50ohm 868MHz coax; antenna connected before TX
+J_MOTOR,1,PWM1,MCU_PWM1,TBD; default low
+J_MOTOR,2,DIR1,MCU_DIR1,TBD; safe default
+J_MOTOR,3,PWM2,MCU_PWM2,TBD; default low
+J_MOTOR,4,DIR2,MCU_DIR2,TBD; safe default
+J_MOTOR,5,GND,LOGIC_GND,Signal ground
+J_BAIT,1,COIL+,SOL_12V,Supply only after coil tolerance/current verification
+J_BAIT,2,COIL-,Q_BAIT_DRAIN,Low-side MOSFET; gate default off
+J_HOOK,1,COIL+,SOL_12V,Supply only after coil tolerance/current verification
+J_HOOK,2,COIL-,Q_HOOK_DRAIN,Low-side MOSFET; gate default off

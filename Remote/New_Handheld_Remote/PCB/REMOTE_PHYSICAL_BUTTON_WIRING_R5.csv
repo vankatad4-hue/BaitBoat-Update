@@ -1,0 +1,18 @@
+Button,Expander,Pin,GPIO bit,Active,Meaning
+L1,MCP23017 0x20,GPIOA0,0,LOW,Emergency STOP
+L2,MCP23017 0x20,GPIOA1,1,LOW,Manual/Autopilot
+L3,MCP23017 0x20,GPIOA2,2,LOW,Return Home
+L4,MCP23017 0x20,GPIOA3,3,LOW,Save waypoint (not integrated)
+L5,MCP23017 0x20,GPIOA4,4,LOW,Waypoint select (not integrated)
+L6,MCP23017 0x20,GPIOA5,5,LOW,Map full-screen
+L7,MCP23017 0x20,GPIOA6,6,LOW,Sonar full-screen
+L8,MCP23017 0x20,GPIOA7,7,LOW,Settings shortcut (placeholder)
+R1,MCP23017 0x20,GPIOB0,8,LOW,Left hopper release
+R2,MCP23017 0x20,GPIOB1,9,LOW,Right hopper release
+R3,MCP23017 0x20,GPIOB2,10,LOW,Left hook release
+R4,MCP23017 0x20,GPIOB3,11,LOW,Right hook release
+R5,MCP23017 0x20,GPIOB4,12,LOW,Release status placeholder
+R6,MCP23017 0x20,GPIOB5,13,LOW,Release lock status placeholder
+R7,MCP23017 0x20,GPIOB6,14,LOW,Map/sonar split placeholder
+R8,MCP23017 0x20,GPIOB7,15,LOW,Cancel pending action
+OK,MCP23017 0x21,GPIOA4,4,LOW,Release confirmation (separate)

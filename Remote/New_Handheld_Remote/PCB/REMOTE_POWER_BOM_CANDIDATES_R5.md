@@ -1,3 +1,5 @@
+# SUPERSEDED by REMOTE_POWER_BOM_CANDIDATES_R6.md
+
 # Remote Power + Controls BOM Candidate R5
 
 **Candidate list only. Validate MPN/package/footprint/datasheet and ratings before procurement.**
@@ -32,7 +34,7 @@
 | J_I2C | 4P | 3V3/GND/SDA/SCL, board-side access TBD |
 | Testpoints | battery/rails/bus/analog | Access for bring-up |
 
-Controller/display 5V boost is on the Waveshare board (CS8501); external TPS61023 is fallback only. Onboard board load spec 5V/450mA and battery boost/charge current documentation must be bench-confirmed for this use.
+Controller/display 5V is from Waveshare CS8501. E22 uses a dedicated external TPS61023 1S→5V branch; converter outputs are separate and never paralleled. Onboard board load spec 5V/450mA and battery boost/charge current documentation must be bench-confirmed for this use.
 
 
 ## LoRa backup radio addendum (R1)
@@ -45,4 +47,22 @@ Controller/display 5V boost is on the Waveshare board (CS8501); external TPS6102
 | Boat U_LORA | Matching module on boat | Required for redundant link; remote-only installation is not functional redundancy |
 | Boat ANT_LORA | 868MHz 50Ω antenna | Install separated from nRF antenna, motor wiring and metal obstructions |
 
-Supply from CS8501 5V rail is provisional. Simultaneous-load test first; separate boost if needed, never parallel converters.
+E22 5V supply is a dedicated TPS61023 branch from BAT_PROT. CS8501 output is not shared with E22.
+
+
+## E22 power correction R4
+- U_E22 VCC: CS8501 5V rail (candidate branch; datasheet indicates ≥5V guarantees output power). UART and mode/status logic remain 3.3V. Reserve 150mA TX peak until actual 10dBm current measured.
+- C_E22: 100µF+10µF+100nF local candidates. Scope rail under simultaneous display/backlight+nRF+LoRa TX.
+- Separate 5V converter only if CS8501 margin fails; do not parallel boost outputs.
+
+
+## E22 dedicated supply R5
+| Ref | Candidate | Function / validation |
+|---|---|---|
+| U_LORA_BOOST | TPS61023 1S-to-5V boost (external converter) | Dedicated E22 VCC only; component values/layout per TI reference design; validate 150mA peak and rail transient/thermal |
+| C_LORA_IN | 2×10µF + 100nF | Converter input; effective capacitance/DC-bias check |
+| C_LORA_OUT | 2×22µF + 100µF + 100nF | Converter output/module local; ESR and stability verify |
+| L_LORA | Reference-design inductor | Select from TPS61023 datasheet/application design; saturation/current rating verify |
+| D_LORA | Reference-design diode, if topology requires | Select exact reference design |
+
+CS8501 rail remains controller/display only. The LoRa converter is a separate battery branch and must not be connected in parallel to CS8501 output.

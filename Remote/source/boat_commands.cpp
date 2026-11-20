@@ -118,34 +118,32 @@ bool boatCommands_setManualMotors(int16_t left, int16_t right)
     return sendCommand(command);
 }
 
-// --------------------------------------------------
-// BAIT RELEASE
-// --------------------------------------------------
-
-bool boatCommands_releaseBait()
+// Release actions fail closed until authenticated primary-link telemetry
+// confirms STOP released and the boat-side actuator interlocks are healthy.
+static bool releaseRequestAllowed()
 {
-    // Create a bait-release command.
-    BoatCommand command = {};
-
-    command.type = CMD_BAIT_RELEASE;
-    command.activate = true;
-
-    // Send the request.
-    return sendCommand(command);
+    return boatState.radioConnected &&
+           boatState.radioActiveLink == RADIO_UI_NRF_PRIMARY &&
+           boatState.emergencyStopConfirmed && !boatState.emergencyStop &&
+           boatState.actuatorSafetyReady;
 }
 
 // --------------------------------------------------
-// HOOK RELEASE
-// --------------------------------------------------
+// Combined hopper/hook commands are intentionally disabled; the new
+// independent channel functions below are the only release API.
+bool boatCommands_releaseBait(){ return false; }
+bool boatCommands_releaseHook(){ return false; }
 
-bool boatCommands_releaseHook()
+static bool sendIndependentRelease(BoatCommandType type)
 {
-    // Create a hook-release command.
+    if (!releaseRequestAllowed()) return false;
     BoatCommand command = {};
-
-    command.type = CMD_HOOK_RELEASE;
+    command.type = type;
     command.activate = true;
-
-    // Send the request.
     return sendCommand(command);
 }
+
+bool boatCommands_releaseHopperLeft(){ return sendIndependentRelease(CMD_RELEASE_HOPPER_LEFT); }
+bool boatCommands_releaseHopperRight(){ return sendIndependentRelease(CMD_RELEASE_HOPPER_RIGHT); }
+bool boatCommands_releaseHookLeft(){ return sendIndependentRelease(CMD_RELEASE_HOOK_LEFT); }
+bool boatCommands_releaseHookRight(){ return sendIndependentRelease(CMD_RELEASE_HOOK_RIGHT); }

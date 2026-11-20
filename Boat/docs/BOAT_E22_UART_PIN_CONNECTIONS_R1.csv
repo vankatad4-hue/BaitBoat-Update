@@ -1,0 +1,10 @@
+Connector,Pin,Net,Function,Notes
+J_E22,1,5V_E22,Module supply,Boat buck 5V; fuse branch
+J_E22,2,GND,Module ground,Low-noise electronics return
+J_E22,3,E22_TXD,Module UART TX→MCU RX,3.3V logic
+J_E22,4,E22_RXD,MCU TX→module UART RX,3.3V logic
+J_E22,5,E22_M0,Mode pin,Defined normal/config levels
+J_E22,6,E22_M1,Mode pin,Defined normal/config levels
+J_E22,7,E22_AUX,Busy/ready status,Input; nonblocking
+J_E22,8,E22_NRST,Reset,Active-low; optional but accessible
+J_E22_RF,1,RF_868,50Ω RF,Separate coax bulkhead/antenna

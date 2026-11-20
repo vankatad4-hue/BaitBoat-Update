@@ -1,0 +1,22 @@
+Connector,Pin,Signal,MCU/Device,Net,Direction/notes
+J_NRF,1,GND,Radio,GND,Ground
+J_NRF,2,VCC,Radio,RADIO_3V3,3.3V radio rail
+J_NRF,3,MOSI,ESP32-S3,GPIO11,SPI shared TF
+J_NRF,4,SCK,ESP32-S3,GPIO12,SPI shared TF
+J_NRF,5,MISO,ESP32-S3,GPIO13,SPI shared TF
+J_NRF,6,CSN,ESP32-S3,GPIO15,RS485 TX path repurposed; bus disconnected
+J_NRF,7,CE,ESP32-S3,GPIO6,Sensor AD repurposed; no sensor
+J_NRF,8,IRQ_N,MCP23017,0x21 GPA1,Poll initially
+J_E22,1,VCC,E22,LORA_5V,5V dedicated TPS61023
+J_E22,2,GND,E22,GND,Ground
+J_E22,3,TXD,E22,SC16 UART RX,3.3V logic
+J_E22,4,RXD,E22,SC16 UART TX,3.3V logic
+J_E22,5,M0,E22,SC16 GPIO0,Mode
+J_E22,6,M1,E22,SC16 GPIO1,Mode
+J_E22,7,AUX,E22,SC16 GPIO2,Ready/busy
+J_E22,8,NRST,E22,SC16 GPIO3,Reset
+J_E22_RF,1,RF,E22,RIGHT 868MHz antenna,50-ohm coax
+J_WAVE,1,BAT+,Waveshare, BAT_PROT,PH2.0 polarity physically verify
+J_WAVE,2,GND,Waveshare,GND,PH2.0
+J_I2C,1,SDA,ESP32-S3,GPIO8,Shared bus
+J_I2C,2,SCL,ESP32-S3,GPIO9,Shared bus

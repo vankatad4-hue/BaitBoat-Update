@@ -687,21 +687,18 @@ void updateBoatScreen(const BoatState &state)
         lv_obj_add_flag(boatMarker, LV_OBJ_FLAG_HIDDEN);
     }
 
-    // Update radio connection status.
-    if (state.radioConnected)
+    // Show selected link and failover state.
+    const char *radioText = "LINK: NONE";
+    switch (state.radioLinkState)
     {
-        lv_label_set_text(
-            connectionLabel,
-            "RADIO: CONNECTED"
-        );
+        case RADIO_UI_PRIMARY: radioText = "LINK: NRF24 PRIMARY"; break;
+        case RADIO_UI_DEGRADED: radioText = "LINK: DEGRADED"; break;
+        case RADIO_UI_BACKUP: radioText = "LINK: LORA BACKUP"; break;
+        case RADIO_UI_NO_LINK: radioText = "LINK: NO LINK"; break;
+        case RADIO_UI_RECOVERY: radioText = "LINK: RECOVERING"; break;
+        default: radioText = "LINK: DISCONNECTED"; break;
     }
-    else
-    {
-        lv_label_set_text(
-            connectionLabel,
-            "RADIO: DISCONNECTED"
-        );
-    }
+    lv_label_set_text(connectionLabel, radioText);
 
     // Display battery percentage.
     char batteryText[32];

@@ -1,0 +1,52 @@
+Subsystem,Device,Pin/Signal,Net,Controller/connector,Notes
+Waveshare,I2C,GPIO8 SDA,I2C_SDA,Board I2C port,Shared
+Waveshare,I2C,GPIO9 SCL,I2C_SCL,Board I2C port,Shared
+Waveshare,SPI,GPIO11 MOSI,SPI_MOSI,TF/radio shared,Shared SPI
+Waveshare,SPI,GPIO12 SCK,SPI_SCK,TF/radio shared,Shared SPI
+Waveshare,SPI,GPIO13 MISO,SPI_MISO,TF/radio shared,Shared SPI
+nRF24,Module,VCC,RADIO_3V3,Carrier J_NRF pin2,Decoupling local
+nRF24,Module,GND,GND,Carrier J_NRF pin1
+nRF24,Module,MOSI,SPI_MOSI,Carrier J_NRF pin3
+nRF24,Module,SCK,SPI_SCK,Carrier J_NRF pin4
+nRF24,Module,MISO,SPI_MISO,Carrier J_NRF pin5
+nRF24,Module,CE,NRF_CE,GPIO6 Sensor AD repurposed,Direct GPIO; no sensor connected
+nRF24,Module,CSN,NRF_CSN,GPIO15 RS485 TX repurposed,Direct GPIO; RS485 bus disconnected and transceiver inactive
+nRF24,Module,IRQ_N,NRF_IRQ_N,MCP23017 0x21 GPA1,Active low
+LoRa,E22,VCC,LORA_VCC,BAT_PROT,2.7-5.5V; lower output-power config at 1S voltage
+LoRa,E22,GND,GND
+LoRa,E22,TXD,LORA_UART_RX,SC16IS750 UART RX
+LoRa,E22,RXD,LORA_UART_TX,SC16IS750 UART TX,3.3V logic
+LoRa,E22,M0,LORA_M0,SC16IS750 GPIO0,Default low
+LoRa,E22,M1,LORA_M1,SC16IS750 GPIO1,Default low
+LoRa,E22,AUX,LORA_AUX,SC16IS750 GPIO2,Input
+LoRa,E22,NRST,LORA_NRST,SC16IS750 GPIO3,Reset output
+LoRa,E22,ANT,ANT_LORA_868,RIGHT coax port,50 ohm
+UART bridge,SC16IS750,SDA/I2C,I2C_SDA,GPIO8
+UART bridge,SC16IS750,SCL/I2C,I2C_SCL,GPIO9
+UART bridge,SC16IS750,A0/A1,UART_BRIDGE_ADDR,3V3/3V3,7bit 0x48 (confirm datasheet straps)
+UART bridge,SC16IS750,IRQ,BRIDGE_IRQ,MCP23017 0x21 GPA2,Active-low
+ADC axes,ADS1115 0x4A,AIN0,LX,Joystick left X
+ADC axes,ADS1115 0x4A,AIN1,LY,Joystick left Y
+ADC axes,ADS1115 0x4A,AIN2,RX,Joystick right X
+ADC axes,ADS1115 0x4A,AIN3,RY,Joystick right Y
+ADC axes,ADS1115 0x4A,ADDR,Address strap,SDA,7bit 0x4A
+ADC monitor,ADS1115 0x4B,AIN0,BAT_SENSE,220k/68k divider
+ADC monitor,ADS1115 0x4B,AIN1,NTC_SENSE,10k NTC divider
+ADC monitor,ADS1115 0x4B,AIN2,RADIO_SENSE,Optional 100k/100k
+ADC monitor,ADS1115 0x4B,ADDR,Address strap,SCL,7bit 0x4B
+Buttons,MCP23017 0x20,GPA0-7,BTN_L0-7,Left 2x4 bank,Normally-open to GND
+Buttons,MCP23017 0x20,GPB0-7,BTN_R0-7,Right 2x4 bank,Normally-open to GND
+Radio GPIO,MCP23017 0x21,GPA0,SPARE,Reserved
+Radio GPIO,MCP23017 0x21,GPA1,NRF_IRQ_N,IRQ input
+Radio GPIO,MCP23017 0x21,GPA2,BRIDGE_IRQ,Bridge interrupt
+Radio GPIO,MCP23017 0x21,GPA3,RADIO_EN,Enable gate candidate
+Power,Pack,J_PACK.1,PACK_PLUS,Pack+
+Power,Pack,J_PACK.2,PACK_MINUS,GND
+Power,Protection,F_MAIN,PACK_FUSED,4A candidate
+Power,Protection,Q_REV,BAT_PROT,Reverse protection
+Power,Waveshare,J_BAT.1,BAT_PROT,Board battery positive,Polarity verify
+Power,Waveshare,J_BAT.2,GND,Board battery negative,Polarity verify
+Power,Converter,TPS63070,VOUT,RADIO_3V3,3.3V radio rail
+nRF24,Module,CE,NRF_CE,GPIO6 Sensor AD repurposed,Direct MCU GPIO; no sensor connected
+nRF24,Module,CSN,NRF_CSN,GPIO15 RS485 TX repurposed,Direct MCU GPIO; RS485 bus disconnected/driver disabled
+nRF24,Module,IRQ_N,NRF_IRQ_N,MCP23017 0x21 GPA1,Polling initially

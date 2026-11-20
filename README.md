@@ -1,64 +1,47 @@
 # Flytec V080 Bait Boat Retrofit
 
-**This GitHub repository is the canonical source of truth for the project.**
-
-## Project layout
-- Boat firmware, configuration, documentation and releases: Boat/
-- Remote firmware, UI, documentation and releases: Remote/
-- Shared architecture, decisions, safety and validation: docs/
-
-## Workflow
-Check relevant repository files first; implement approved changes; update documentation; coordinate shared interfaces; review and verify; increment releases without overwriting. GitHub is authoritative.
+**GitHub repository is the canonical project source.** Development branch: `hardware-ready-dual-radio-r1`.
 
 ## Baseline
-- Retain Flytec V080 hull, 12V 550 brushed motors, battery indicator and main switch; replace control electronics.
-- Boat controller: Heltec Wireless Tracker V1.2 (ESP32-S3 + UC6580 GNSS) candidate.
-- Remote: Waveshare ESP32-S3-Touch-LCD-4.3 Standard, 800×480, LVGL 9.6.0, Arduino IDE.
-- Radio: dual link — primary nRF24L01+ PA/LNA 2.4GHz, backup LoRa EU868 (SX1262/E22 UART module candidate) on both remote and boat; 500m remains an unvalidated range goal.
-- Motor driver: Cytron MDD20A candidate, current validation required.
-- Sonar: CHIRP echogram/fish-arch module; selection/integration pending.
+- Retain V080 hull,12V550 brushed motors,main switch,battery indicator; replace control electronics.
+- Boat controller candidate Heltec Wireless Tracker ESP32-S3+UC6580 GNSS.
+- Remote Waveshare ESP32-S3-Touch-LCD-4.3 Standard,800×480,LVGL9.6.0; R5 handheld CAD and four independent bait/hook release controls (H-L/H-R/K-L/K-R).
+- Primary nRF24L01+ PA/LNA2.4GHz; backup matching E22-900T22S UART LoRa modules on both ends.500m remains unvalidated.
+- CHIRP sonar selection/integration pending.
+
+## Current development status
+- Remote/boat nRF and E22 transport scaffolds, SC16 bridge, CRC/HMAC protocol, command codec, dual-radio manager, heartbeat, dedupe and failsafe helpers exist.
+- Secure key provisioning returns false; no authenticated control, actuator execution or boat application.
+- Remote envelope300×210×70mm,carrier100×75mm proposed. Boat carrier77×79×14mm; MDD20A candidate does not fit that footprint.
+- Remote R5 CAD/print prototypes, physical button scan/debounce and release-confirmation guard are added; R3 BOM and R5 pin/button allocation documented; native host tests pass. Physical GPIO crosswalk, boat actuator execution/interlocks, full Arduino compile, native KiCad/ERC/DRC, fabrication PCB and hardware tests remain incomplete.
+
+## Main documents
+- [Master project status](Remote/docs/PROJECT_MASTER_STATUS.md)
+- [Remote test build R4](Remote/New_Handheld_Remote/PCB/REMOTE_HARDWARE_TEST_BUILD_R4.md)
+- [Remote schematic capture R4](Remote/New_Handheld_Remote/PCB/SCHEMATIC_CAPTURE_SHEETS_R4.md)
+- [Remote power net draft R8](Remote/New_Handheld_Remote/PCB/POWER_SCHEMATIC_NET_DRAFT_R8.md)
+- [Remote pin map R4](Remote/New_Handheld_Remote/PCB/REMOTE_HARDWARE_PIN_ASSIGNMENTS_R4.md)
+- [Remote connector CSV R4](Remote/New_Handheld_Remote/PCB/REMOTE_ELECTRICAL_PIN_CONNECTIONS_R4.csv)
+- [Remote mechanical envelope](Remote/New_Handheld_Remote/MECHANICAL/REMOTE_MECHANICAL_ENVELOPE_R4.md)
+- [Dual-radio architecture R3](Remote/docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R3.md)
+- [Firmware protocol spec R2](Remote/docs/DUAL_RADIO_PROTOCOL_FIRMWARE_SPEC_R3.md)
+- [Boat test build R2](Boat/docs/BOAT_HARDWARE_TEST_BUILD_R2.md)
+- [Boat electrical design R2](Boat/docs/BOAT_ELECTRICAL_SCHEMATIC_DESIGN_R2.md)
+- [Boat controller pin audit R1](Boat/docs/BOAT_CONTROLLER_PIN_AUDIT_R1.md)
+- [Boat radio pin assignment R3](Boat/docs/BOAT_RADIO_PIN_ASSIGNMENTS_R3.md)
+- [E22 configuration decode R1](Remote/docs/E22_CONFIGURATION_DECODE_R1.md)
+- [Repository path audit R1](docs/REPOSITORY_PATH_AUDIT_R1.md)
+- [ZIP packaging policy R1](docs/ZIP_RELEASE_POLICY_R1.md)
 
 ## Safety
-Motor/solenoid current, battery/BMS, wiring/fuses, connectors and pinouts require validation. Outputs default OFF on reset/invalid control. Return-home on link loss only if navigation/system health are valid.
+Do not connect motor/solenoid power or operate boat. Hardware pins, power, RF compliance, failsafe and actuator interlocks require verification. Bench radio sketches transmit fixed CRC-only test frames.
 
-## Release names
-Flytec_Boat_verXXX.zip and Flytec_Remote_verXXX.zip. Never overwrite prior releases.
 
-## Remote power progress (2026-11-20)
-- Protected 1S4P Li-ion pack; charging is not a custom circuit in this phase.
-- **Controller/display 5V:** revised baseline uses Waveshare board's onboard CS8501 single-cell battery boost through PH2.0 battery input. Manufacturer describes single-cell-to-5V boost and lists board load 5V/450mA. Validate onboard converter current, transients and thermal. External TPS61023 is fallback only, not to be paralleled with onboard boost.
-- **nRF24 radio 3.3V:** TPS63070 buck-boost; 1.5µH candidate; 470k/150k feedback, nominal 3.3067V; effective capacitance and RF bursts need validation.
-- **LoRa backup:** candidate E22 UART module may need 5V for full power; provisional separate filtered branch from Waveshare 5V boost, with simultaneous-load test required. Separate boost if rail margin is insufficient; never parallel converter outputs.
-- Battery protection: BMS, 4A fast-acting fuse candidate, FDS6575 reverse P-MOS candidate (Drain pack-side, Source protected-output), ADC sense and NTC. Exact coordination and tests pending.
-- Previous 1.20A controller+nRF estimate was based on assumed loads/efficiency and did not include LoRa. Recalculate and measure total load with LoRa enabled before selecting converters, fuse and battery/BMS.
-- Native KiCad schematic, ERC, PCB, review and hardware bring-up are incomplete.
+## Versioned project ZIPs
+- [ZIP build status](docs/ZIP_BUILD_STATUS_R1.md)
+- Last preserved archives: `Remote/releases/Flytec_Remote_ver004.zip` and `Boat/releases/Flytec_Boat_ver004.zip`.
+- Current package markers: Remote `006`, Boat `006`.
+- Automated packaging workflow: `.github/workflows/package-flytec-zips.yml`. On push it commits the versioned ZIPs and SHA-256 manifest to the branch and uploads downloadable Actions artifacts. On pull requests it uploads artifacts only. Verify successful workflow completion and checksums before treating ver005 as issued.
+- Each ZIP excludes previous ZIPs to avoid nested archives. See [ZIP release policy](docs/ZIP_RELEASE_POLICY_R1.md).
 
-## Current power documents
-- Remote/New_Handheld_Remote/PCB/5V_CONTROLLER_POWER_ARCHITECTURE_REVIEW_R1.md
-- Remote/New_Handheld_Remote/PCB/BOOST_CONVERTER_SELECTION_REVIEW_R3.md
-- Remote/New_Handheld_Remote/PCB/BATTERY_INPUT_PROTECTION_DESIGN_R4.md
-- Remote/New_Handheld_Remote/PCB/POWER_SHEET_CAPTURE_SPEC_R5.md
-- Remote/New_Handheld_Remote/PCB/REMOTE_POWER_BOM_CANDIDATES_R5.md
-- Remote/New_Handheld_Remote/PCB/POWER_SCHEMATIC_NET_DRAFT_R7.md
-- Remote/New_Handheld_Remote/PCB/POWER_DISTRIBUTION_DESIGN_R4.md
-- Remote/New_Handheld_Remote/PCB/REMOTE_POWER_AND_CONTROL_BLOCK_DIAGRAM_R1.md
-- Remote/New_Handheld_Remote/PCB/REMOTE_PERIPHERAL_INTERFACE_PINOUT_DRAFT_R1.md
-- Remote/New_Handheld_Remote/PCB/WAVESHARE_GPIO_RESOURCE_AUDIT_R1.md
-- Remote/New_Handheld_Remote/PCB/TPS63070_PIN_NET_MAP_R3.md
-- Remote/New_Handheld_Remote/PCB/TPS63070_COMPONENT_CALCULATIONS_REVIEW_R2.md
-- Remote/New_Handheld_Remote/PCB/TPS61023_COMPONENT_CALCULATIONS_R1.md (fallback study)
-
-## Dual-radio redundancy update (2026-11-20)
-- Remote RIGHT antenna: EU868 LoRa; LEFT antenna: nRF24 2.4GHz. ESP32 Wi-Fi/Bluetooth uses onboard antenna.
-- Boat requires matching LoRa radio/antenna. LoRa backup limited to safety/low-rate traffic, not sonar.
-- Failover protocol, power budget and EU/Bulgaria regulatory constraints are documented in `Remote/docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R1.md`.
-
-## Firmware integration status — dual radio
-- The remote radio source remains a non-operational stub; its API now describes primary nRF24 + backup LoRa and exposes link-state diagnostics.
-- Command scaffolding stamps a stable ID and timestamp for future cross-link duplicate suppression.
-- Protocol and failover code specification: `Remote/docs/DUAL_RADIO_PROTOCOL_FIRMWARE_SPEC_R1.md`; hardware/radio/antenna architecture: `Remote/docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R1.md`.
-- No radio driver, authenticated packet codec, failover supervisor, or boat failsafe has been implemented or compiled. Do not operate the boat.
-
-- Remote/New_Handheld_Remote/PCB/SCHEMATIC_CAPTURE_SHEETS_R1.md
-- Remote/New_Handheld_Remote/PCB/SCHEMATIC_NETLIST_BLOCKS_R1.md
-- Remote/New_Handheld_Remote/PCB/SCHEMATIC_CAPTURE_CHECKLIST_R1.md
+**Pin audit result:** the Heltec Wireless Tracker revision is not identified; all boat radio GPIO assignments remain disabled/TBD. The integrated SX1262/GNSS/TFT/USB and boot/strap resources are reserved pending physical board identification.

@@ -12,12 +12,19 @@ enum BoatMode
     MODE_RETURN_HOME   // Return to stored home position.
 };
 
+enum RadioUiLink : uint8_t { RADIO_UI_NONE=0, RADIO_UI_NRF_PRIMARY, RADIO_UI_LORA_BACKUP };
+enum RadioUiState : uint8_t { RADIO_UI_DISCONNECTED=0, RADIO_UI_PRIMARY, RADIO_UI_DEGRADED, RADIO_UI_BACKUP, RADIO_UI_NO_LINK, RADIO_UI_RECOVERY };
+
 // Current state of the boat.
 struct BoatState
 {
     BoatMode mode;         // Current operating mode.
 
     bool radioConnected;   // Radio communication status.
+    bool radioPrimaryConnected;
+    bool radioBackupConnected;
+    RadioUiLink radioActiveLink;
+    RadioUiState radioLinkState;
     bool gpsValid;         // True only while the latest GPS fix is valid and fresh.
     uint8_t gpsFixType;    // GNSS fix type reported by the boat (0=no fix, 3=3D fix, etc.).
     uint8_t gpsSatellites; // Number of satellites used in the solution.
@@ -42,6 +49,7 @@ struct BoatState
 
     bool emergencyStop;             // True when the boat reports STOP active.
     bool emergencyStopConfirmed;    // True only when telemetry confirms the current emergency-stop state (active or released).
+    bool actuatorSafetyReady;      // Fresh authenticated telemetry must set true only after boat interlocks pass.
 };
 
 // Global boat state shared between software modules.
