@@ -16,7 +16,7 @@ This folder contains the hardware design workspace for the new handheld bait-boa
 - CAD R5: revised shell with upper-right release-key zone; OpenSCAD sources plus a separately generated and locally validated prototype STL/preview package. GitHub CAD-export commit is still pending workflow verification. Exact component fit is pending.
 - Right-bank upper four physical keys now dedicated to independent hopper-left, hopper-right, hook-left, hook-right. Release requires two-step hold-confirm; backup LoRa prohibited.
 - Release command IDs/codecs and native host test added; button scanning and boat actuator integration remain pending.
-- PCB: power design, connector plan, schematic drafts.
+- PCB: power design, connector plan, schematic drafts; R3 BOM and R5 button/expander map added.
 - MECHANICAL: dimensions, component envelopes, placement.
 - WIRING: cable and connector interface documents.
 - docs: design decisions, RF, bring-up.
