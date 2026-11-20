@@ -82,5 +82,11 @@ Remote now decodes authenticated telemetry/ACK frames and applies freshness/safe
 - Added host tests for valid round-trips and malformed/range inputs. These tests are protocol-only and do not validate radio frames or hardware.
 - Boat ver009 notes record this addition. No ESP32 compile or device testing.
 
-## Boat session/ACK scaffold milestone (ver010)\n- Boat now uses the remote session epoch, replies to SESSION_START, and tracks primary/backup sequences separately.\n- Queue deduplicates pending command IDs across radios; queued non-manual commands receive ACCEPTED, executed duplicates DUPLICATE, queue overflow BUSY.\n- ACCEPTED does not imply execution. No command application, interlocks, telemetry sender or actuator path.\n- Review: BOAT_ACK_SESSION_INTEGRATION_R1.md. Source is not compiled or tested on ESP32.\n\n## Package revision status
+## Boat session/ACK scaffold milestone (ver010)
+- Boat now uses the remote session epoch, replies to SESSION_START, and tracks primary/backup sequences separately.
+- Queue deduplicates pending command IDs across radios; queued non-manual commands receive ACCEPTED, executed duplicates DUPLICATE, queue overflow BUSY.
+- ACCEPTED does not imply execution. No command application, interlocks, telemetry sender or actuator path.
+- Review: BOAT_ACK_SESSION_INTEGRATION_R1.md. Source is not compiled or tested on ESP32.
+
+## Package revision status
 Current package markers: Remote ver023 / Boat ver010. Generated ZIPs and SHA256 manifest are committed; independent extraction/checksum verification is pending. Boat payload decoder/encoder are portable utilities. Session echo, queue-level ACK and duplicate handling are scaffolded, but no telemetry source, application command executor, EXECUTED ACK or actuator integration exists.
