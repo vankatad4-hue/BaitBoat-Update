@@ -38,3 +38,5 @@ No Google online mode shall be advertised as functional until API key provisioni
 - It explains AUTO fallback intent, offline-only behavior and that Wi-Fi association does not prove internet access.
 - The UI explicitly marks Google provider unavailable and unconfigured.
 - P1 is only partially complete: preference presentation is wired; provider/service interface and internet-health reporting are still absent.
+
+\n## P2 groundwork note (2026-11-20)\n- MAP settings now polls Wi-Fi association every 2 seconds using a UI timer and displays Internet reachability as UNKNOWN.\n- Polling is nonblocking and the timer is deleted on category changes to avoid dangling LVGL label callbacks.\n- This is not a true internet probe; P2 still requires a bounded, worker-based reachability check and loss/recovery handling.\n
