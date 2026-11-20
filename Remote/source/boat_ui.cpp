@@ -705,7 +705,7 @@ void toggleSonarPanel()
 
 static void updateMapMissionMarkers(const BoatState &state)
 {
- if(!state.gpsValid){for(uint8_t i=0;i<4;i++)lv_obj_add_flag(mapWaypointMarkers[i],LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(mapHomeMarker,LV_OBJ_FLAG_HIDDEN);return;}
+ if(!state.gpsValid||(uint32_t)(millis()-state.gpsLastUpdateMs)>2000U){for(uint8_t i=0;i<4;i++)lv_obj_add_flag(mapWaypointMarkers[i],LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(mapHomeMarker,LV_OBJ_FLAG_HIDDEN);return;}
  const double scale=0.65;const double cosLat=fmax(0.15,cos(state.latitude*3.141592653589793/180.0));
  auto place=[&](lv_obj_t *obj,float lat,float lon){
   const double east=(lon-state.longitude)*111320.0*cosLat;const double north=(lat-state.latitude)*111320.0;
