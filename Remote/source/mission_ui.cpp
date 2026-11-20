@@ -9,7 +9,7 @@
 
 // This UI deliberately does not send mission or release commands.
 // Local waypoint storage is persistent in NVS; boat-side
-// mission validation/execution are implemented.
+// mission validation/execution remain unimplemented.
 static constexpr uint8_t SLOT_COUNT = 4;
 struct WaypointSlot { bool valid; float lat, lon; bool baitMark, hookMark; };
 static WaypointSlot slots[SLOT_COUNT] = {};
@@ -28,11 +28,11 @@ static uint32_t crc32(const uint8_t *data, size_t len) {
  return ~crc;
 }
 static bool validCoordinate(float lat,float lon){return isfinite(lat)&&isfinite(lon)&&lat>=-90.0f&&lat<=90.0f&&lon>=-180.0f&&lon<=180.0f;}
-static void persist() {
- if(!storageReady)return;
+static bool persist() {
+ if(!storageReady)return false;
  StoredMission s={};s.magic=STORE_MAGIC;memcpy(s.points,slots,sizeof(slots));s.homeValid=homeValid;s.homeLat=homeLat;s.homeLon=homeLon;s.selected=(int8_t)selectedSlot;
  s.crc=crc32(reinterpret_cast<const uint8_t*>(&s),offsetof(StoredMission,crc));
- missionPrefs.putBytes("mission",&s,sizeof(s));
+ return missionPrefs.putBytes("mission",&s,sizeof(s))==sizeof(s);
 }
 static void loadPersisted() {
  if(storageAttempted)return;storageAttempted=true;
@@ -106,7 +106,7 @@ static void selectSlot(lv_event_t *e)
     if(lv_event_get_code(e)!=LV_EVENT_CLICKED) return;
     int index=(int)(intptr_t)lv_event_get_user_data(e);
     if(index<0||index>=SLOT_COUNT||!slots[index].valid){setStatus("SLOT EMPTY — SAVE A CURRENT FIX FIRST");return;}
-    selectedSlot=index; persist(); refresh(); setStatus("WAYPOINT SELECTED");
+    selectedSlot=index; const bool saved=persist(); refresh(); setStatus(saved?"WAYPOINT SELECTED":"SELECTED RAM ONLY");
 }
 static void saveCurrent(lv_event_t *e)
 {
@@ -124,27 +124,27 @@ static void setHome(lv_event_t *e)
     if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;
     if(!currentFixIsFresh()){setStatus("HOME SET BLOCKED: NEED FRESH VALID GNSS FIX");return;}
     homeLat=boatState.latitude;homeLon=boatState.longitude;homeValid=true;
-    persist();refresh();setStatus(storageReady?"HOME SAVED TO NVS":"HOME SAVED RAM ONLY");
+    const bool saved=persist();refresh();setStatus(saved?"HOME SAVED TO NVS":"SAVE FAILED - RAM ONLY");
 }
 static void clearSlot(lv_event_t *e)
 {
     if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;
     if(selectedSlot<0||!slots[selectedSlot].valid){setStatus("SELECT A VALID WAYPOINT TO CLEAR");return;}
-    slots[selectedSlot]={}; selectedSlot=-1;persist();refresh();setStatus("WAYPOINT CLEARED");
+    slots[selectedSlot]={}; selectedSlot=-1;const bool saved=persist();refresh();setStatus(saved?"WAYPOINT CLEARED":"CLEAR RAM ONLY - NVS WRITE FAILED");
 }
 static void toggleBait(lv_event_t *e)
 {
     if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;
     if(selectedSlot<0||!slots[selectedSlot].valid){setStatus("SELECT A WAYPOINT FIRST");return;}
-    slots[selectedSlot].baitMark=!slots[selectedSlot].baitMark;persist();refresh();
-    setStatus("BAIT RELEASE MARKER EDITED — PLANNING ONLY, NOT A COMMAND");
+    slots[selectedSlot].baitMark=!slots[selectedSlot].baitMark;const bool saved=persist();refresh();
+    setStatus(saved?"BAIT MARK SAVED — PLANNING ONLY":"BAIT MARK RAM ONLY — NVS WRITE FAILED");
 }
 static void toggleHook(lv_event_t *e)
 {
     if(lv_event_get_code(e)!=LV_EVENT_CLICKED)return;
     if(selectedSlot<0||!slots[selectedSlot].valid){setStatus("SELECT A WAYPOINT FIRST");return;}
-    slots[selectedSlot].hookMark=!slots[selectedSlot].hookMark;persist();refresh();
-    setStatus("HOOK RELEASE MARKER EDITED — PLANNING ONLY, NOT A COMMAND");
+    slots[selectedSlot].hookMark=!slots[selectedSlot].hookMark;const bool saved=persist();refresh();
+    setStatus(saved?"HOOK MARK SAVED — PLANNING ONLY":"HOOK MARK RAM ONLY — NVS WRITE FAILED");
 }
 static void startMission(e)
 {
