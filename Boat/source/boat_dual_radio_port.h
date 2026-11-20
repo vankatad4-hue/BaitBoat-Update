@@ -7,6 +7,7 @@
 #include "radio_command_codec.h"
 #include "radio_key_store.h"
 #include "boat_radio_safety.h"
+#include "radio_payload_encoder.h"
 
 // All physical GPIO values must be audited/frozen for the exact Tracker SKU.
 // Default -1 macros intentionally keep radio hardware disabled.
@@ -58,9 +59,10 @@ private:
     bool nrfReady_,e22Configured_;
     uint8_t key_[32];
     uint8_t sessionEpoch_;
-    RadioSequenceGuard seqGuard_;
+    RadioSequenceGuard primarySeqGuard_,backupSeqGuard_,crossRadioSeqGuard_;
+    bool sessionStartSeenPrimary_,sessionStartSeenBackup_;
     BoatCommandDeduplicator dedupe_;
-    struct QueuedCommand { BoatCommand cmd; ManagedLink link; bool duplicate; };
+    struct QueuedCommand { BoatCommand cmd; ManagedLink link; bool duplicate; uint8_t epoch; };
     QueuedCommand queue_[4];
     uint8_t qWrite_,qRead_,qCount_;
     uint32_t lastNrfRxMs_,lastE22RxMs_;
@@ -68,6 +70,9 @@ private:
     uint16_t txSequence_;
     bool authenticated_;
     bool sessionStarted_;
+    bool lastNrfRxValid_,lastE22RxValid_;
     void receive(ManagedLink link,const RadioFrame &frame);
     bool enqueue(const BoatCommand &cmd,ManagedLink link,bool duplicate);
+    bool commandPending(uint8_t epoch,uint16_t commandId) const;
+    bool sendCommandAck(ManagedLink link,const BoatCommand &cmd,uint8_t result,uint8_t stopState,uint8_t interlockFlags,uint32_t now);
 };
