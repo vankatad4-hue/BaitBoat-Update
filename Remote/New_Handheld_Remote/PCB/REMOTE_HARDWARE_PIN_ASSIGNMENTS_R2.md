@@ -16,8 +16,9 @@
 ## Controller bus assignment
 - I2C: GPIO8 SDA / GPIO9 SCL, 400kHz target only after rise-time/pullup check.
 - SPI: GPIO11 MOSI / GPIO12 SCK / GPIO13 MISO, shared TF card. Start nRF SPI at 1MHz for bring-up, increase only after test.
-- nRF24 CSN: GPIO6 candidate (sensor AD terminal repurposed, no sensor attached); direct GPIO is required for low-latency CSN.
-- nRF24 CE: MCP23017 U_RADIO_IO @0x21 GPA0. Bench timing test; if fails, move to direct GPIO once exact connector map confirms spare.
+- nRF24 CE: GPIO6 candidate (Sensor AD terminal repurposed; no sensor connected). Direct CE required.
+- nRF24 CSN: GPIO15 candidate (RS485 TXD pin repurposed; onboard RS485 transceiver must be disabled/isolated so it cannot drive the external bus). Direct CSN required.
+- nRF24 CE/CSN are direct GPIO in R2. U_RADIO_IO GPA0 remains spare; no radio timing signals are driven by I2C expander.
 - nRF24 IRQ: U_RADIO_IO GPA1 input; active-low; poll expander at 1kHz maximum or route to available MCU interrupt pin if confirmed.
 - LoRa E22 UART: NXP SC16IS750 I2C-UART bridge U_LORA @0x48; UART 9600 8N1 initial.
 - E22 M0/M1/AUX/NRST: SC16IS750 GPIO0/GPIO1/GPIO2/GPIO3. M0=M1=LOW for normal transparent mode. AUX input; RESET output with reset pull-up.
@@ -35,3 +36,11 @@ GPIO6 may be connected to Sensor AD circuitry and GPIO15/16 to RS485 transceiver
 
 ## E22 settings R3
 Module configuration via UART bridge in 9600 8N1; set channel18=868.125MHz, air rate62.5kbps, 32byte subpacket, 10dBm output, transparent mode, both module addresses/network ID zero. Use documented config-mode pin levels and readback. Normal transparent M0/M1 low. E22 AUX is used for ready/busy, no blocking wait in control loop.
+
+
+## nRF direct pin bench wiring R2
+- CE=GPIO6 (Sensor AD terminal; repurpose; confirm loading and logic levels).
+- CSN=GPIO15 (RS485 TXD; disable/isolate onboard RS485 transceiver and verify DE remains inactive before radio connection).
+- SPI=GPIO11 MOSI, GPIO12 SCK, GPIO13 MISO.
+- nRF IRQ=U_RADIO_IO 0x21 GPA1 (polling only initially).
+- This allocation is provisional but source defaults are now set to 6/15 for test; do not wire until board schematic and continuity are checked.
