@@ -1,4 +1,6 @@
-# Boat board integration R4 — engineering candidate, not wiring freeze
+# Boat board integration R4 — SUPERSEDED historical candidate
+
+**Do not build from this revision.** Owner decision restores the Heltec-only MDD20A design; use [R5](BOAT_BOARD_INTEGRATION_R5.md). The companion-controller proposal below is retained only as historical engineering evidence.
 
 Selected architecture remains Heltec Wireless Tracker V1.2 + UC6580, GY-91 MPU-9250/AK8963, MDD20A, external nRF24 and E22, modular carrier. No hardware has been purchased or inspected for this step.
 

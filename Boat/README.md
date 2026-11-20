@@ -21,9 +21,11 @@
 - Lid clearance~30mm; full CAD fit not done.
 
 ## Firmware
-Boat source includes nRF/E22 transport classes, authenticated receive/queue scaffold, duplicate-action cache and failsafe helper. GPIO macros unset, secure key provisioning returns false, no main boat application, no motor/solenoid/autopilot integration or ACK. Not operational.
+The active version has a diagnostic ESP32-S3 application, authenticated dual-radio and mission software, sensor acquisition source, manual/mission release supervisor, telemetry, and direct MDD20A output planner. The owner has removed the companion MCU architecture. No physical driver attached; all actuator GPIOs remain unassigned and secure key provisioning is disabled by default. Not operational.
 
 ## Hardware docs
+- [Active Heltec-only board integration R5](docs/BOAT_BOARD_INTEGRATION_R5.md)
+- [Active R5 GPIO/connector schedule](docs/BOAT_HARDWARE_PIN_CONNECTIONS_R5.csv)
 - [Boat test build R2](docs/BOAT_HARDWARE_TEST_BUILD_R2.md)
 - [Boat electrical capture R2](docs/BOAT_ELECTRICAL_SCHEMATIC_DESIGN_R2.md)
 - [Boat block/power diagrams](docs/BOAT_BLOCK_AND_POWER_SCHEMATICS_R1.md)
@@ -42,13 +44,12 @@ Boat source includes nRF/E22 transport classes, authenticated receive/queue scaf
 
 ## ZIP snapshots
 - [Shared build status](../docs/ZIP_BUILD_STATUS_R1.md)
-- Latest preserved archive: `releases/Flytec_Boat_ver004.zip`.
-- Current package version marker: `releases/VERSION` = `006`.
+- Current Boat version marker: `releases/VERSION` = `014`; development snapshots in Actions. VER015 gated on acceptance.
 - Packaging automation: [ZIP release policy](../docs/ZIP_RELEASE_POLICY_R1.md) and `.github/workflows/package-flytec-zips.yml`. Workflow artifacts are generated after a branch push; integrity must be verified before calling them released.
 
 ## Status
 Native KiCad/ERC/DRC, exact board pin audit, converter/driver selection, current measurements, RF/antenna tests, secure key/session, failsafe and actuator integration remain open. Bench only.
 
 
-## Latest Remote compile status
-Remote target compile #19 passed (run 44781879101) on 3f189cb1ac65a764aec678893f1df857d113c815. This has no bearing on Boat readiness: Boat firmware remains uncompiled, not integrated into an application executor, and no telemetry, actuator, navigation or failsafe execution is implemented. Keep outputs disconnected.
+## Latest verified target baseline
+Remote #87 and Boat #16 were verified before this architecture rollback; rerun Boat target and regression on the new source. Physical acceptance remains NOT RUN.

@@ -12,7 +12,7 @@ Keep high-current motor and solenoid power wiring physically separate from logic
 2. Navigation sensor: GY-91-style MPU-9250 + BMP280, initially I²C; verify the exact board and pinout.
 3. Radio: nRF24L01+ PA/LNA with a dedicated, low-noise 3.3 V supply and local decoupling.
 4. Motor driver: Cytron MDD20A dual brushed-motor driver, separate physical board.
-5. Solenoid driver: independent two-channel low-side MOSFET board with per-coil suppression and branch protection.
+5. Solenoid driver: four independent low-side MOSFET channels with per-coil suppression, branch protection and measured idle feedback.
 6. Power distribution: battery input protection, fusing and regulated logic rails.
 7. Sonar: separate CHIRP electronics/transducer module; select only after live echogram/raw echo-profile capability is demonstrated.
 
@@ -49,3 +49,6 @@ Calibrate the MPU-9250 magnetometer after final installation. Keep it away from 
 ## Pin assignment status
 
 No final MCU GPIO assignments are approved yet. Verify the exact Heltec board pinout, GNSS UART/power, antenna clearances, sensor-board revision and connector electrical requirements before allocating pins or producing schematics.
+
+## Active Boat controller decision — R5
+Heltec Tracker alone controls the MDD20A over direct PWM/DIR. No RP2040 or other companion MCU. Non-programmable I/O expansion may be evaluated for coil selection/feedback only. Independent electrical STOP/watchdog/one-hot protection remains mandatory. See [current R5 design](../Boat/docs/BOAT_BOARD_INTEGRATION_R5.md). This decision does not modify the Remote.

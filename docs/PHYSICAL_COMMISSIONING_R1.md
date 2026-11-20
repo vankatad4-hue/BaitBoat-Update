@@ -39,3 +39,7 @@ The current driver contract is not an implementation of specific sensor or power
 Test ID | source commit / firmware SHA256 | board/driver rev | setup | actual measured values | PASS/FAIL/BLOCKED | log/trace/photo path | date/operator | corrective action and retest.
 
 Official versions remain Remote 028 and Boat 014 until acceptance. The next planned versions are Remote 029 and Boat 015. No test above is marked passed based on a simulated driver.
+
+
+## Owner design decision — Heltec-only MDD20A restoration (R5)
+The owner explicitly rejected the RP2040 companion and restored the original Heltec Tracker + Cytron MDD20A direct PWM/DIR design. This supersedes the R4 companion recommendation and all companion development commits. Removed companion Pico SDK source, wired protocol/master/safety core, companion-only tests and Actions workflow from the active branch; Git history retains them. Kept Tracker GNSS/IMU/ADC acquisition, output planner, existing radio/session/mission/release/telemetry and independent electrical watchdog/STOP requirements. Added a fail-closed direct GPIO profile validator and regression; diagnostic sketch remains unassigned. New active R5 design and pin schedule supersede R4. No MCU pins, expander part, high-current cutoff, or PCB frozen: authoritative V1.2 pin map and exact GPIO budget unresolved. Four independent solenoids retained. Remote source unchanged; release version markers Remote028/Boat014 retained. Re-run Boat target, 21 host groups and ZIP packaging; record actual results. All physical acceptance gates remain open.

@@ -8,6 +8,7 @@
 #include "boat_dual_radio_port.h"
 #include "boat_application_port.h"
 #include "tracker_sensor_port.h"
+#include "mdd20a_direct_profile.h"
 #if __has_include("tracker_commissioned_config.h")
 #include "tracker_commissioned_config.h"
 static HardwareSerial gnssUart(2);
@@ -19,7 +20,9 @@ static BoatDualRadioPort radio;
 static BoatApplicationPort application(radio);
 void setup(){
  Serial.begin(115200);
- Serial.println("Flytec Boat: diagnostic-only firmware; actuator output disabled.");
+ Serial.println("Flytec Boat: Heltec-only MDD20A diagnostic firmware; actuator output disabled.");
+ const auto motorProfile=mdd20aUnassignedProfile();
+ if(!mdd20aDirectProfileValid(motorProfile,0))Serial.println("MDD20A direct GPIO profile unassigned; no motor outputs configured.");
  const bool ready=radio.begin();
  Serial.println(ready?"Radio transport configured; awaiting secure session.":"Radio pin configuration unavailable.");
  #if __has_include("tracker_commissioned_config.h")

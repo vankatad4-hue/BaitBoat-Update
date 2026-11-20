@@ -127,11 +127,7 @@ jobs:
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/carrier_output_plan_test.cpp -o /tmp/boat_carrier_output
           /tmp/boat_carrier_output
-      - name: Carrier wired protocol and independent safety supervisor
+      - name: Direct MDD20A pin profile fail-closed
         run: |
-          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/carrier_link_test.cpp -o /tmp/carrier_link_test
-          /tmp/carrier_link_test
-      - name: Tracker master transport against simulated companion
-        run: |
-          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IBoat/tests/carrier_master_stubs -IBoat/source Boat/source/carrier_master_port.cpp Boat/tests/carrier_master_test.cpp -o /tmp/carrier_master_test
-          /tmp/carrier_master_test
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/mdd20a_direct_profile_test.cpp -o /tmp/boat_mdd20a_profile
+          /tmp/boat_mdd20a_profile

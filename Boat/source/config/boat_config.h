@@ -14,3 +14,7 @@
 
 // TODO: Define verified hardware pin assignments after V1.2 pinout review.
 // No sensor, radio or actuator pins are assigned in this scaffold.
+
+// Active architecture: Heltec is the sole Boat processor. Cytron MDD20A
+// uses direct PWM/DIR; independent electrical interlocks and passive I/O
+// expansion are permitted. No secondary programmable controller or protocol.
