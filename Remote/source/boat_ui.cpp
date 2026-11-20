@@ -42,7 +42,7 @@ static lv_obj_t *gpsMapStatusLabel; // GPS fix / offline-map status.
 static lv_obj_t *gpsCoordinatesLabel; // Latest boat latitude and longitude.
 static lv_obj_t *gpsDetailsLabel;  // Satellite count, accuracy and heading.
 static lv_obj_t *boatMarker;       // Boat position marker on the map viewport.
-static lv_obj_t *mapWaypointMarkers[4];
+static lv_obj_t *mapWaypointMarkers[16];
 static lv_obj_t *mapHomeMarker;
 static lv_obj_t *sonarTitle;       // Sonar panel title.
 
@@ -339,7 +339,7 @@ static void createMapPanel()
     lv_obj_add_flag(boatMarker, LV_OBJ_FLAG_HIDDEN);
 
     // Persistent waypoint/home overlay markers (relative view, not a basemap).
-    for (uint8_t i=0;i<4;i++) {
+    for (uint8_t i=0;i<16;i++) {
         mapWaypointMarkers[i]=lv_label_create(mapPanel);
         lv_label_set_text(mapWaypointMarkers[i],"W");
         lv_obj_set_style_text_color(mapWaypointMarkers[i],lv_color_hex(0x7CFC00),LV_PART_MAIN);
@@ -705,7 +705,7 @@ void toggleSonarPanel()
 
 static void updateMapMissionMarkers(const BoatState &state)
 {
- if(!state.gpsValid||(uint32_t)(millis()-state.gpsLastUpdateMs)>2000U){for(uint8_t i=0;i<4;i++)lv_obj_add_flag(mapWaypointMarkers[i],LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(mapHomeMarker,LV_OBJ_FLAG_HIDDEN);return;}
+ if(!state.gpsValid||(uint32_t)(millis()-state.gpsLastUpdateMs)>2000U){for(uint8_t i=0;i<16;i++)lv_obj_add_flag(mapWaypointMarkers[i],LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(mapHomeMarker,LV_OBJ_FLAG_HIDDEN);return;}
  const double scale=0.65;const double cosLat=fmax(0.15,cos(state.latitude*3.141592653589793/180.0));
  auto place=[&](lv_obj_t *obj,float lat,float lon){
   const double east=(lon-state.longitude)*111320.0*cosLat;const double north=(lat-state.latitude)*111320.0;
@@ -713,7 +713,7 @@ static void updateMapMissionMarkers(const BoatState &state)
   const double centerX=mapExpanded?390.0:192.0;const int x=(int)(centerX+east*scale-lv_obj_get_width(obj)/2.0);const int y=(int)(192.0-north*scale-lv_obj_get_height(obj)/2.0);
   lv_obj_set_pos(obj,x,y);lv_obj_remove_flag(obj,LV_OBJ_FLAG_HIDDEN);
  };
- for(uint8_t i=0;i<4;i++){float lat=0,lon=0;bool bait=false,hook=false;char marker[16];
+ for(uint8_t i=0;i<16;i++){float lat=0,lon=0;bool bait=false,hook=false;char marker[16];
   if(missionUI_getWaypoint(i,&lat,&lon,&bait,&hook)){snprintf(marker,sizeof(marker),"W%u%s%s",(unsigned)(i+1),bait?"B":"",hook?"H":"");lv_label_set_text(mapWaypointMarkers[i],marker);place(mapWaypointMarkers[i],lat,lon);}
   else lv_obj_add_flag(mapWaypointMarkers[i],LV_OBJ_FLAG_HIDDEN);
  }
