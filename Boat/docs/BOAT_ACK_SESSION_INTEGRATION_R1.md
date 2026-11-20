@@ -34,7 +34,7 @@
 - No ESP32 compile, unit test of the port, or hardware test has been performed.
 
 ## Next gate
-1. Portable command queue tests cover FIFO/full/wrap/session-epoch pending lookup; source is committed but tests have not been executed. Still add fake-radio tests for port/session flow, same command on both radios, queue-full ACK behavior and frame-envelope correlation.
+1. Portable queue, payload, safety/dedupe, codec and sequence tests are now included in a GitHub Actions workflow. The workflow has not yet been confirmed passing. Queue tests cover FIFO/full/wrap/session-epoch pending lookup. Still add fake-radio tests for port/session flow, same command on both radios, queue-full ACK behavior and frame-envelope correlation.
 2. Add a boat application state model and telemetry source contract; keep outputs disabled.
 3. Integrate the queue into a fail-closed application loop with STOP and link-watchdog priority.
 4. Implement ACCEPTED→EXECUTED/REJECTED lifecycle only after command policy/interlocks are independently tested.
