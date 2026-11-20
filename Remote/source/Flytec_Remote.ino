@@ -89,8 +89,6 @@ void setup()
     // Initialise joystick processing once and register one reader.
     joystick_begin();
     joystick_setReadCallback(readJoystickHardware);
-    joystick_setLayout(CONTROL_TANK);
-    joystick_setAutopilotOverride(OVERRIDE_TEMPORARY);
 
     // Route application commands through the radio transport.
     boatCommands_setTransport(boatRadio_sendCommand);
