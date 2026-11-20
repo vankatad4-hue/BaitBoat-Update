@@ -290,7 +290,7 @@ Boat:
 - Tests added for coverage-index export, not executed. Firmware compile and hardware tests pending. Remote version remains 028; ver029 development not packaged.
 
 
-- Consolidated Remote history is maintained at `Remote/releases/CHANGELOG_MASTER_VER011.md` (history document revision VER008; source marker still ver028).
+- Consolidated Remote history is maintained at `Remote/releases/CHANGELOG_MASTER_VER012.md` (history document revision VER008; source marker still ver028).
 
 - ver029.3 robustness follow-up: coverage index uses PSRAM/binary search, import validates tile byte lengths/count and cache refresh. Added map-tools test workflow; CI result not confirmed.
 
@@ -335,3 +335,11 @@ Boat:
 - Sonar is still a placeholder: no CHIRP data feed/echogram is implemented. This is a UI layout update only.
 - Source: `Remote/source/boat_ui.cpp`. Commits: `39006c91b759201b`, `5b5c95a76575f51f`, `0ddabd38f9d2d027`, `bbc257156d7f4117`.
 - **Not compiled or LVGL Pro-tested.** Layout preview is conceptual; all touch targets, Bulgarian font glyph coverage, clipping, panel expansion, and screen transitions must be checked in the LVGL Pro simulator before hardware.
+
+
+## Mission planner visual/UI pass — 2026-11-20
+- Mission waypoint manager now uses the shared dark marine palette, blue action buttons with rounded touch styling, a blue panel outline and Bulgarian labels throughout its visible controls/status messages.
+- The 16 waypoint slots remain arranged as a 4×4 grid. Slot select, save-current-fix, set-home, clear, bait/hook planning flags, back and disabled mission-start callbacks are preserved.
+- Selected waypoint label clarified. Mission execution remains deliberately blocked; planning markers are not sent as boat commands.
+- Source: `Remote/source/mission_ui.cpp`. Commits: `67e0a87e9cb24219`, `699936ef55033318`.
+- Not compiled or LVGL Pro-tested; layout, Bulgarian glyphs and text fitting need simulator validation.
