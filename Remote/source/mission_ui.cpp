@@ -16,6 +16,7 @@ static int selectedSlot = -1;
 static void setStatus(const char *s);
 static Preferences missionPrefs;
 static bool storageReady = false;
+static bool storageAttempted = false;
 static constexpr uint32_t STORE_MAGIC = 0x42544D50UL;
 struct StoredMission { uint32_t magic; WaypointSlot points[SLOT_COUNT]; bool homeValid; float homeLat, homeLon; int8_t selected; uint32_t crc; };
 static uint32_t crc32(const uint8_t *data, size_t len) {
@@ -31,6 +32,7 @@ static void persist() {
  missionPrefs.putBytes("mission",&s,sizeof(s));
 }
 static void loadPersisted() {
+ if(storageAttempted)return;storageAttempted=true;
  storageReady=missionPrefs.begin("baitmission",false);
  if(!storageReady){setStatus("NVS OPEN FAILED - RAM ONLY");return;}
  StoredMission s={};
@@ -101,7 +103,7 @@ static void selectSlot(lv_event_t *e)
     if(lv_event_get_code(e)!=LV_EVENT_CLICKED) return;
     int index=(int)(intptr_t)lv_event_get_user_data(e);
     if(index<0||index>=SLOT_COUNT||!slots[index].valid){setStatus("SLOT EMPTY — SAVE A CURRENT FIX FIRST");return;}
-    selectedSlot=index; refresh(); setStatus("WAYPOINT SELECTED (RAM ONLY)");
+    selectedSlot=index; persist(); refresh(); setStatus("WAYPOINT SELECTED");
 }
 static void saveCurrent(lv_event_t *e)
 {
