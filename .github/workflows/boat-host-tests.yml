@@ -108,3 +108,7 @@ jobs:
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/boat_hardware_status_test.cpp -o /tmp/boat_hardware_status
           /tmp/boat_hardware_status
+      - name: Coherent live telemetry encoding
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/source/radio_payload_encoder.cpp Boat/source/radio_payload_codec.cpp Boat/tests/boat_hardware_telemetry_test.cpp -o /tmp/boat_hardware_telemetry
+          /tmp/boat_hardware_telemetry

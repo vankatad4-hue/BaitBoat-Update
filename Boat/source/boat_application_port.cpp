@@ -1,5 +1,6 @@
 #include "boat_application_port.h"
 #include "boat_hardware_status.h"
+#include "boat_hardware_telemetry.h"
 BoatApplicationPort *BoatApplicationPort::active_=nullptr;
 bool BoatApplicationPort::attach(const BoatPhysicalDriver &driver,const BoatActuatorConfig &config){
  if(attached_||active_||!driver.read||!driver.apply||!driver.disable)return false;
@@ -17,7 +18,18 @@ bool BoatApplicationPort::prepareGate(){
  const auto in=boatHardware_inputs(active_->sample_,millis(),false);
  return active_->executor_.stopped()&&!in.stopActive&&in.stationary&&in.releaseIdle&&in.releaseInterlocks&&in.fix.batteryHealthy;
 }
+void BoatApplicationPort::finishManual(bool success){
+ if(!manualPending_)return;
+ manualPending_=false;
+ const auto status=boatHardware_status(sample_,millis(),executor_.stopped(),radio_.missionPhase(),radio_.detachedReturnActive(),radio_.primaryFresh(millis()));
+ radio_.completeApplicationAction(manualRelease_,generation_,success,status.stopState,(status.safetyFlags&1)?1:0);
+}
+void BoatApplicationPort::publishData(uint32_t now){
+ const auto b=boatHardware_telemetry(sample_,now,++sampleSequence_,255,radio_.missionPhase());
+ for(uint8_t i=0;i<b.count;++i)radio_.sendHardwareTelemetry(b.payload[i]);
+}
 void BoatApplicationPort::fault(){
+ finishManual(false);
  executor_.stop();radio_.localEmergencyStop();releaseTransaction_=0;
  if(driver_.disable)driver_.disable();
 }
@@ -34,6 +46,10 @@ void BoatApplicationPort::tick(){
  auto in=boatHardware_inputs(sample_,now,executor_.stopped());
  if(!sample_.physicalStopReleased||!sample_.watchdogReady||!in.fix.batteryHealthy){fault();radio_.update();radio_.sendHardwareTelemetry(boatHardware_status(sample_,millis(),true,MC_ABORTED,false,radio_.primaryFresh(millis())));return;}
  radio_.update();
+ if(generation_!=radio_.sessionGeneration()){
+  if(manualPending_){manualPending_=false;executor_.stop();radio_.localEmergencyStop();driver_.disable();}
+  executor_.cancelManual();generation_=radio_.sessionGeneration();
+ }
  in=boatHardware_inputs(sample_,millis(),executor_.stopped());
  in.primaryFresh=radio_.primaryFresh(millis());in.backupFresh=radio_.backupFresh(millis());
  BoatCommand cmd{};bool duplicate=false;ManagedLink link=LINK_NONE;
@@ -43,13 +59,21 @@ void BoatApplicationPort::tick(){
   if(cmd.type==CMD_CLEAR_STOP){
    // Remote clear-STOP API checks calibrated neutral sticks; local driver
    // independently confirms stationary propulsion and all interlocks.
-   executor_.clearStop(sample_,millis(),link==LINK_NRF_PRIMARY&&in.primaryFresh,in.stationary);
+   const bool ok=!executor_.releaseBusy()&&executor_.clearStop(sample_,millis(),link==LINK_NRF_PRIMARY&&in.primaryFresh,in.stationary);
+   radio_.completeApplicationAction(cmd,generation_,ok,2,0);
    continue;
   }
-  if(cmd.type==CMD_MANUAL_MOTORS&&radio_.missionPhase()!=MC_MANUAL_REQUESTED)
+  const auto phase=radio_.missionPhase();
+  const bool manualMode=phase==MC_IDLE||phase==MC_COMPLETE||phase==MC_ABORTED;
+  if(cmd.type==CMD_MANUAL_MOTORS&&manualMode&&!manualPending_)
    executor_.manual(cmd.leftMotor,cmd.rightMotor,cmd.createdAtMs,link==LINK_NRF_PRIMARY&&in.primaryFresh);
-  // Manual mode transitions/releases need their own physical completion
-  // feedback and are intentionally not executed by this first bridge.
+  if(cmd.type>=CMD_RELEASE_HOPPER_LEFT&&cmd.type<=CMD_RELEASE_HOOK_RIGHT){
+   in=boatHardware_inputs(sample_,millis(),executor_.stopped());in.primaryFresh=radio_.primaryFresh(millis());
+   const bool allowed=manualMode&&!manualPending_&&link==LINK_NRF_PRIMARY&&cmd.activate&&
+     executor_.beginManualRelease((uint16_t)cmd.commandId,(int8_t)(cmd.type-CMD_RELEASE_HOPPER_LEFT),in,millis());
+   if(allowed){manualRelease_=cmd;manualPending_=true;}
+   else radio_.completeApplicationAction(cmd,generation_,false,2,0);
+  }
  }
  in=boatHardware_inputs(sample_,millis(),executor_.stopped());
  in.primaryFresh=radio_.primaryFresh(millis());in.backupFresh=radio_.backupFresh(millis());
@@ -58,6 +82,7 @@ void BoatApplicationPort::tick(){
  const bool missionActive=phase>=MC_PREPARED&&phase<=MC_RETURNING;
  const auto intent=radio_.missionIntent();
  const uint16_t tx=radio_.missionTransaction();
+ if(!missionActive)releaseTransaction_=0;
  if(missionActive&&tx!=releaseTransaction_){executor_.newMissionIdentity();releaseTransaction_=tx;}
  if(intent.intent==INTENT_RELEASE&&missionActive){
   if(!executor_.beginRelease(tx,intent.token,intent.channel,in,millis())){
@@ -69,6 +94,8 @@ void BoatApplicationPort::tick(){
  const auto out=executor_.tick(in,millis(),intent,radio_.missionNavigation(),missionActive,overrideActive,left,right,sample_.safetyAt);
  if(!driver_.apply(out,100)){fault();return;}
  const auto completion=executor_.takeCompletion();
- if(completion.valid)radio_.missionReleaseComplete(completion.transaction,completion.token,completion.success);
+ if(completion.valid){if(manualPending_)finishManual(completion.success);else radio_.missionReleaseComplete(completion.transaction,completion.token,completion.success);}
+ if(manualPending_&&executor_.stopped())finishManual(false);
+ if(millis()-lastDataAt_>=500U){lastDataAt_=millis();publishData(lastDataAt_);}
  if(millis()-lastStatusAt_>=200U){lastStatusAt_=millis();radio_.sendHardwareTelemetry(boatHardware_status(sample_,lastStatusAt_,executor_.stopped(),radio_.missionPhase(),radio_.detachedReturnActive(),radio_.primaryFresh(lastStatusAt_)));}
 }

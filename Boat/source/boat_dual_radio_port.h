@@ -68,6 +68,8 @@ public:
     void markActionExecuted(uint8_t sender,uint8_t epoch,uint16_t commandId);
     bool sendFrame(ManagedLink link,const RadioFrame &frame);
     bool sendHeartbeat(ManagedLink link,uint32_t nowMs);
+    uint32_t sessionGeneration()const{return generation_;}
+    bool completeApplicationAction(const BoatCommand &cmd,uint32_t generation,bool success,uint8_t stopState,uint8_t interlocks);
     bool sessionEstablished() const { return sessionStarted_; }
     bool primaryReady() const { return nrfReady_; }
     bool backupReady() const { return e22Configured_; }
@@ -82,7 +84,9 @@ private:
     bool nrfReady_,e22Configured_;
     uint8_t key_[32],rootKey_[32];
     SessionHandshake handshake_;
-    uint32_t lastSessionRx_=0;
+    uint32_t lastSessionRx_=0,generation_=0;
+    uint16_t lastReleaseId_=0;
+    bool releaseIdSeen_=false;
     uint8_t sessionEpoch_;
     RadioSessionCounter primarySeqGuard_,backupSeqGuard_,crossRadioSeqGuard_;
     BoatCommandDeduplicator dedupe_;

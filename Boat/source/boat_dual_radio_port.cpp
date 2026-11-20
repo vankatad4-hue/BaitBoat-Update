@@ -45,6 +45,7 @@ bool BoatDualRadioPort::sendMissionFeedback(const MissionControlFeedback &status
  return missionFeedbackEncode(status,f.payload)&&radio_frameSeal(f,key_)&&sendFrame(LINK_NRF_PRIMARY,f);
 }
 void BoatDualRadioPort::resetSession(bool preserveReturn){
+ ++generation_;releaseIdSeen_=false;
  ExecInputs in{};const bool ready=preserveReturn&&missionInputs(in,millis());
  detachedReturn_=ready&&controller_.divertHome(in,true);
  stickLease_.reset();missionIntent_={INTENT_STOP,-1,0};
@@ -100,6 +101,7 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
    SessionHandshakePacket reply{};bool newSession=false;
    if(!handshake_.boatReceive((SessionHandshakeMessage)f.type,f.payload,radioPlatformNonce(),rootKey_,radioPlatformHmac,now,true,reply,newSession))return;
    if(newSession){
+     ++generation_;releaseIdSeen_=false;
      handshake_.frameKey(key_);sessionStarted_=true;lastSessionRx_=now;txSequence_=0;
      primarySeqGuard_.resetAfterHandshake();backupSeqGuard_.resetAfterHandshake();crossRadioSeqGuard_.resetAfterHandshake();
      lastNrfRxValid_=lastE22RxValid_=false;commandQueue_.clear();mission_.reset();dedupe_.clear();stickLease_.reset();if(!detachedReturn_){abortMission();controller_.resetSession();}
@@ -185,10 +187,13 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
    if(cmd.type!=CMD_MANUAL_MOTORS) sendCommandAck(link,cmd,RADIO_ACK_ACCEPTED,0,0,now);
    return;
  }
+ const bool release=cmd.type>=CMD_RELEASE_HOPPER_LEFT&&cmd.type<=CMD_RELEASE_HOOK_RIGHT;
+ if(release&&releaseIdSeen_){const uint16_t delta=(uint16_t)(id-lastReleaseId_);if(!delta||delta>=0x8000U){sendCommandAck(link,cmd,RADIO_ACK_REJECTED_SAFETY,2,0,now);return;}}
  if(!enqueue(cmd,link,false)) {
    if(cmd.type!=CMD_MANUAL_MOTORS) sendCommandAck(link,cmd,RADIO_ACK_BUSY,0,0,now);
    return;
  }
+ if(release){lastReleaseId_=id;releaseIdSeen_=true;}
  // ACCEPTED means only queued for application review. It is not EXECUTED.
  if(cmd.type!=CMD_MANUAL_MOTORS) sendCommandAck(link,cmd,RADIO_ACK_ACCEPTED,0,0,now);
 }
@@ -214,6 +219,11 @@ bool BoatDualRadioPort::takeCommand(BoatCommand &cmd,bool &duplicate,ManagedLink
     link=(ManagedLink)linkId;return true;
  }
  return false;
+}
+bool BoatDualRadioPort::completeApplicationAction(const BoatCommand &cmd,uint32_t generation,bool success,uint8_t stopState,uint8_t interlocks){
+ if(generation!=generation_||!sessionReady())return false;
+ if(success)dedupe_.markExecuted(REMOTE_ID,sessionEpoch_,(uint16_t)cmd.commandId);
+ return sendCommandAck(LINK_NRF_PRIMARY,cmd,success?RADIO_ACK_EXECUTED:RADIO_ACK_REJECTED_SAFETY,stopState,interlocks,millis());
 }
 void BoatDualRadioPort::markActionExecuted(uint8_t sender,uint8_t epoch,uint16_t commandId) {
  dedupe_.markExecuted(sender,epoch,commandId);

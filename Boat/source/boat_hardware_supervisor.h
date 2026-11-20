@@ -9,6 +9,9 @@ struct BoatHardwareSample {
  bool safetyValid,physicalStopReleased,batteryHealthy,stationary,releaseInterlocks,releaseIdle,watchdogReady;
  bool outputFeedbackValid,leftMotorActive,rightMotorActive;
  uint8_t batteryPercent,gpsFixType,satellites;
+ uint16_t batteryMillivolts,speedCmPerSecond;
+ uint32_t batteryAt,speedAt;
+ bool voltageValid,speedValid;
 };
 struct BoatActuatorConfig {
  uint16_t pulseMs[4]; // actual coil characterization required
@@ -42,16 +45,22 @@ public:
  }
  bool stopped()const{return stopLatched_;}
  void manual(int16_t left,int16_t right,uint32_t receivedAt,bool authenticatedPrimary){
-  manualValid_=authenticatedPrimary&&!stopLatched_&&left>=-1000&&left<=1000&&right>=-1000&&right<=1000;
+  manualValid_=!pulseActive_&&!awaitIdle_&&authenticatedPrimary&&!stopLatched_&&left>=-1000&&left<=1000&&right>=-1000&&right<=1000;
   manualLeft_=left;manualRight_=right;manualAt_=receivedAt;
  }
  void cancelManual(){manualValid_=false;}
+ bool releaseBusy()const{return pulseActive_||awaitIdle_;}
+ bool beginManualRelease(uint16_t id,int8_t channel,const ExecInputs &in,uint32_t now){
+  if(releaseBusy()||(manualValid_&&now-manualAt_<200U&&(manualLeft_||manualRight_)))return false;
+  newMissionIdentity();if(!beginRelease(id,1,channel,in,now))return false;
+  manualRelease_=true;cancelManual();return true;
+ }
  // Mission release is a single tokenized edge, not a continuously repeated command.
  bool beginRelease(uint16_t tx,uint16_t token,int8_t channel,const ExecInputs &in,uint32_t now){
   if(!configured_||stopLatched_||!tx||!token||channel<0||channel>3||pulseActive_||awaitIdle_||
     (tx==lastTx_&&token<=lastToken_)||in.stopActive||!in.primaryFresh||!in.stationary||
     !in.releaseIdle||!in.releaseInterlocks||!in.fix.batteryHealthy)return false;
-  lastTx_=tx;lastToken_=token;channel_=channel;pulseAt_=now;pulseActive_=true;return true;
+  manualRelease_=false;lastTx_=tx;lastToken_=token;channel_=channel;pulseAt_=now;pulseActive_=true;return true;
  }
  void newMissionIdentity(){if(!pulseActive_&&!awaitIdle_){lastTx_=lastToken_=0;}}
  BoatActuatorOutput tick(const ExecInputs &in,uint32_t now,ExecOutput intent,const MissionNavigationResult &nav,bool missionActive,bool overrideActive,int16_t overrideLeft,int16_t overrideRight,uint32_t safetySampleAt){
@@ -59,8 +68,8 @@ public:
   if(!configured_||stopLatched_||in.stopActive||!in.fix.batteryHealthy){stop();return off;}
   if(pulseActive_||awaitIdle_){
    cancelManual();
-   if(!missionActive||!in.primaryFresh||!in.stationary||!in.releaseInterlocks){
-    completion_={lastTx_,lastToken_,false,true};pulseActive_=awaitIdle_=false;return off;
+   if((manualRelease_?missionActive:!missionActive)||!in.primaryFresh||!in.stationary||!in.releaseInterlocks){
+    completion_={lastTx_,lastToken_,false,true};pulseActive_=awaitIdle_=false;stopLatched_=true;return off;
    }
    if(pulseActive_){
     if(now-pulseAt_<cfg_.pulseMs[channel_])return {0,0,channel_};
@@ -91,7 +100,7 @@ public:
  struct Completion{uint16_t transaction,token;bool success,valid;};
  Completion takeCompletion(){auto value=completion_;completion_={};return value;}
 private:
- BoatActuatorConfig cfg_{};bool configured_=false,stopLatched_=true,manualValid_=false,pulseActive_=false,awaitIdle_=false;
+ BoatActuatorConfig cfg_{};bool manualRelease_=false,configured_=false,stopLatched_=true,manualValid_=false,pulseActive_=false,awaitIdle_=false;
  int16_t manualLeft_=0,manualRight_=0;int8_t channel_=-1;
  uint32_t manualAt_=0,pulseAt_=0,offAt_=0;
  uint16_t lastTx_=0,lastToken_=0;Completion completion_{};

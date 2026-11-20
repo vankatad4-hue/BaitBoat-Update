@@ -2,7 +2,7 @@
 #include <cassert>
 #include <iostream>
 static BoatHardwareSample sample(uint32_t t){
- return {{0,1000,1,90,true,true,true,true},t,t,t,true,true,true,true,true,true,true,true,false,false,75,3,8};
+ return {{0,1000,1,90,true,true,true,true},t,t,t,true,true,true,true,true,true,true,true,false,false,75,3,8,12000,0,0,0,true,true};
 }
 int main(){
  BoatActuatorSupervisor s;auto hw=sample(0);
@@ -26,6 +26,7 @@ int main(){
  assert(s.beginRelease(1,2,1,in,403));in.primaryFresh=false;
  assert(s.tick(in,404,stop,nav,true,false,0,0,404).releaseChannel==-1);
  done=s.takeCompletion();assert(done.valid&&!done.success);
+ assert(s.stopped());hw=sample(404);assert(s.clearStop(hw,404,true,true));
  MissionNavigationResult home={true,false,15,90,0};
  assert(s.tick(in,405,{INTENT_NAV_HOME,-1,0},home,true,false,0,0,405).left==400);
  in.stopActive=true;assert(s.tick(in,406,{INTENT_NAV_HOME,-1,0},home,true,false,0,0,406).left==0&&s.stopped());

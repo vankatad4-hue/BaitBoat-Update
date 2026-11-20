@@ -25,6 +25,11 @@ private:
  BoatHardwareSample sample_{};
  bool attached_=false,sampleOK_=false;
  uint16_t releaseTransaction_=0;
- uint32_t lastStatusAt_=0;
+ uint32_t lastStatusAt_=0,lastDataAt_=0,generation_=0;
+ uint8_t sampleSequence_=0;
+ bool manualPending_=false;
+ BoatCommand manualRelease_{};
+ void finishManual(bool success);
+ void publishData(uint32_t now);
  void fault();
 };
