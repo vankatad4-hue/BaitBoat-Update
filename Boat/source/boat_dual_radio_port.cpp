@@ -55,7 +55,7 @@ void BoatDualRadioPort::update() {
 }
 void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  const uint32_t now=millis();
- if(!authenticated_||f.flags||f.sourceId!=REMOTE_ID||f.destinationId!=BOAT_ID)return;
+ if(!authenticated_||!radioLinkFlagMatches(f.flags,link==LINK_LORA_BACKUP)||f.sourceId!=REMOTE_ID||f.destinationId!=BOAT_ID)return;
  if(f.type>=SESSION_HELLO&&f.type<=SESSION_CONFIRM){
    if(link!=LINK_NRF_PRIMARY||f.sequence||f.commandId||f.sessionEpoch||!radio_frameVerify(f,rootKey_))return;
    SessionHandshakePacket reply{};bool newSession=false;
@@ -155,7 +155,7 @@ void BoatDualRadioPort::markActionExecuted(uint8_t sender,uint8_t epoch,uint16_t
 bool BoatDualRadioPort::sendFrame(ManagedLink link,const RadioFrame &f) {
  if(!sessionStarted_||!radio_frameVerify(f,key_)||!f.sequence||f.sequence>=RadioSessionCounter::REKEY_AT)return false;
  if(link==LINK_NRF_PRIMARY && nrfReady_)return nrf_.sendFrame(f);
- if(link==LINK_LORA_BACKUP && e22Configured_)return e22_.sendFrame(f,millis());
+ if(link==LINK_LORA_BACKUP && e22Configured_){RadioFrame backup=f;backup.flags=RADIO_FLAG_BACKUP_LINK;if(!radio_frameSeal(backup,key_))return false;return e22_.sendFrame(backup,millis());}
  return false;
 }
 bool BoatDualRadioPort::sendHeartbeat(ManagedLink link,uint32_t now) {

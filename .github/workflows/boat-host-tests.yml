@@ -78,7 +78,7 @@ jobs:
           cmp Remote/source/radio_handshake.h Boat/source/radio_handshake.h
           cmp Remote/source/radio_session_v2.h Boat/source/radio_session_v2.h
           cmp Remote/source/radio_session_platform.h Boat/source/radio_session_platform.h
-          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/radio_handshake_test.cpp -lcrypto -o /tmp/boat_handshake
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IBoat/tests/stubs Boat/tests/radio_handshake_test.cpp -lcrypto -o /tmp/boat_handshake
           /tmp/boat_handshake
       - name: Mission execution commands and neutral override simulation
         run: |

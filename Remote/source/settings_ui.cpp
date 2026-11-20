@@ -451,8 +451,8 @@ static void buildWiFiSection(lv_obj_t *parent)
         keyboard = lv_keyboard_create(settingsScreen);
         lv_obj_set_size(keyboard, 800, 205);
         lv_obj_align(keyboard, LV_ALIGN_BOTTOM_MID, 0, 0);
-        for(auto &ctrl:bgCtrl)ctrl=1;
-        bgCtrl[32]=6;
+        for(auto &ctrl:bgCtrl)ctrl=static_cast<lv_buttonmatrix_ctrl_t>(1);
+        bgCtrl[32]=static_cast<lv_buttonmatrix_ctrl_t>(6);
         lv_keyboard_set_map(keyboard,LV_KEYBOARD_MODE_USER_1,bgLower,bgCtrl);
         lv_keyboard_set_map(keyboard,LV_KEYBOARD_MODE_USER_2,bgUpper,bgCtrl);
         lv_keyboard_set_mode(keyboard, LV_KEYBOARD_MODE_TEXT_LOWER);

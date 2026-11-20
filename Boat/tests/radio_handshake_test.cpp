@@ -1,4 +1,5 @@
 #include "../source/radio_handshake.h"
+#include "../source/radio_protocol.h"
 #include <openssl/hmac.h>
 #include <cassert>
 #include <iostream>
@@ -6,6 +7,9 @@ static bool sha256(const uint8_t key[32],const uint8_t *bytes,size_t n,uint8_t o
  unsigned len=0;return HMAC(EVP_sha256(),key,32,bytes,n,out,&len)!=nullptr&&len==32;
 }
 int main(){
+ assert(radioLinkFlagMatches(0,false)&&radioLinkFlagMatches(RADIO_FLAG_BACKUP_LINK,true));
+ assert(!radioLinkFlagMatches(0,true)&&!radioLinkFlagMatches(RADIO_FLAG_BACKUP_LINK,false));
+ assert(!radioLinkFlagMatches(0x80,false)&&!radioLinkFlagMatches(0x81,true));
  uint8_t root[32];memset(root,0xab,sizeof(root));
  SessionHandshake remote,boat;SessionHandshakePacket x{},y{},oldProof{},oldConfirm{};bool newSession=false;
  assert(remote.startRemote(100,0));assert(remote.remotePacket(x)&&x.type==SESSION_HELLO);

@@ -10,6 +10,11 @@ static constexpr uint8_t RADIO_FRAME_MAGIC1 = 0x4D;
 static constexpr uint8_t RADIO_PROTOCOL_VERSION = 1;
 static constexpr size_t RADIO_FRAME_SIZE = 32;
 static constexpr size_t RADIO_AUTH_TAG_SIZE = 8;
+// Link identity is part of the authenticated header; a frame copied to the
+// other radio must not refresh that link or be accepted as its command.
+static constexpr uint8_t RADIO_FLAG_BACKUP_LINK = 0x01;
+inline bool radioLinkFlagMatches(uint8_t flags,bool backup){return flags==(backup?RADIO_FLAG_BACKUP_LINK:0);}
+
 
 enum RadioMessageType : uint8_t {
     RADIO_MSG_HEARTBEAT = 1,
