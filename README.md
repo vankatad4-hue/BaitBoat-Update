@@ -51,3 +51,9 @@ Flytec_Boat_verXXX.zip and Flytec_Remote_verXXX.zip. Never overwrite prior relea
 - Remote RIGHT antenna: EU868 LoRa; LEFT antenna: nRF24 2.4GHz. ESP32 Wi-Fi/Bluetooth uses onboard antenna.
 - Boat requires matching LoRa radio/antenna. LoRa backup limited to safety/low-rate traffic, not sonar.
 - Failover protocol, power budget and EU/Bulgaria regulatory constraints are documented in `Remote/docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R1.md`.
+
+## Firmware integration status — dual radio
+- The remote radio source remains a non-operational stub; its API now describes primary nRF24 + backup LoRa and exposes link-state diagnostics.
+- Command scaffolding stamps a stable ID and timestamp for future cross-link duplicate suppression.
+- Protocol and failover code specification: `Remote/docs/DUAL_RADIO_PROTOCOL_FIRMWARE_SPEC_R1.md`; hardware/radio/antenna architecture: `Remote/docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R1.md`.
+- No radio driver, authenticated packet codec, failover supervisor, or boat failsafe has been implemented or compiled. Do not operate the boat.
