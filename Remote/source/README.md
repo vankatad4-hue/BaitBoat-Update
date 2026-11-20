@@ -70,3 +70,12 @@ Authenticated receive frames are dispatched to strict payload decoders. Remote A
 - Footer safety summary reports STOP confirmation state, low-battery/failsafe/interlock state and pending non-manual command ACK count.
 - Battery display is unknown (`--`) until fresh percentage telemetry is available.
 - This is feedback/request UI only. Boat application command execution remains absent, key provisioning is fail-closed, and the source has not been compiled for the exact Waveshare/LVGL target.
+
+
+## Remote ver025 — waypoint/mission-planning UI scaffold
+- Footer now includes a MISSION button opening a dedicated planning screen.
+- Four volatile RAM waypoint slots: save current fresh GNSS position, select, clear, and show coordinate values.
+- A HOME coordinate can be set from the current fresh GNSS fix. Both actions reject invalid or >2-second-old fixes.
+- Selected waypoint can be tagged with planned BAIT / HOOK markers; they do not issue actuator commands.
+- START MISSION is explicitly blocked and displays why. No mission execution, persistent storage, geofence, authenticated boat command or release sequence is implemented.
+- Preview: `UI_PREVIEW_MISSION_VER025.svg`. Target build and touch/hardware validation remain pending.
