@@ -1,6 +1,7 @@
 #include "mission_protocol.h"
 #include "mission_lifecycle.h"
 #include "mission_upload.h"
+#include "mission_wire.h"
 #include <cassert>
 #include <iostream>
 int main(){
@@ -33,5 +34,10 @@ int main(){
  assert(sender.state()==UPLOAD_PREPARED&&receiver.getPrepared(got,700));
  MissionUpload timeout;assert(timeout.begin(upload,0,true));assert(timeout.next(0,true,wire));assert(timeout.next(500,true,wire));assert(timeout.next(1000,true,wire));assert(!timeout.next(1500,true,wire));assert(timeout.state()==UPLOAD_FAILED);
  MissionUpload inhibited;assert(inhibited.begin(upload,0,true));assert(!inhibited.next(1,false,wire));assert(inhibited.state()==UPLOAD_FAILED);
+ uint16_t ackId=0;MissionOpcode ackOp=MISSION_BEGIN;MissionReceive ackResult=MISSION_REJECTED;
+ assert(missionAck_encode(42,MISSION_COMMIT,MISSION_PREPARED,wire));
+ assert(missionAck_decode(wire,ackId,ackOp,ackResult)&&ackId==42&&ackOp==MISSION_COMMIT&&ackResult==MISSION_PREPARED);
+ wire[7]=1;assert(!missionAck_decode(wire,ackId,ackOp,ackResult));
+ assert(!missionAck_encode(0,MISSION_BEGIN,MISSION_PARTIAL,wire));
  std::cout<<"Mission transaction and feedback state simulation passed\n";
 }
