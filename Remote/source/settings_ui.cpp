@@ -4,6 +4,8 @@
 #include <Preferences.h>
 #include <cstring>
 #include "display_port.h"
+#include "joystick.h"
+#include "joystick_calibration_ui.h"
 
 // Persistent remote preferences are stored in the ESP32 NVS partition.
 static Preferences settingsPrefs;
@@ -444,6 +446,76 @@ static void buildInfoSection(lv_obj_t *parent, const char *heading, const char *
     makeLabel(parent, description, 18, 65);
 }
 
+
+// ------------------ CONTROLS SETTINGS ------------------
+static lv_obj_t *controlDeadZoneSlider = nullptr;
+static lv_obj_t *controlDeadZoneLabel = nullptr;
+static lv_obj_t *controlLayoutLabel = nullptr;
+static lv_obj_t *controlOverrideLabel = nullptr;
+
+static void saveControlPrefs()
+{
+    settingsPrefs.begin("flytec", false);
+    settingsPrefs.putUChar("joy_layout", (uint8_t)joystick_getLayout());
+    settingsPrefs.putUChar("joy_override", (uint8_t)joystick_getAutopilotOverride());
+    settingsPrefs.putUShort("joy_deadzone", (uint16_t)lv_slider_get_value(controlDeadZoneSlider));
+    settingsPrefs.end();
+}
+
+static void layoutSettingsEvent(lv_event_t *event)
+{
+    (void)event;
+    const JoystickSnapshot snap=joystick_getSnapshot();
+    if(!snap.readingsValid || !snap.neutral){
+        lv_label_set_text(controlLayoutLabel,"Center sticks first; layout unchanged.");
+        return;
+    }
+    joystick_setLayout(joystick_getLayout()==CONTROL_TANK?CONTROL_STEERING:CONTROL_TANK);
+    lv_label_set_text(controlLayoutLabel,joystick_getLayout()==CONTROL_TANK?"Layout: TANK":"Layout: STEERING");
+    saveControlPrefs();
+}
+static void overrideSettingsEvent(lv_event_t *event)
+{
+    (void)event;
+    joystick_setAutopilotOverride(joystick_getAutopilotOverride()==OVERRIDE_TEMPORARY?OVERRIDE_TO_MANUAL:OVERRIDE_TEMPORARY);
+    lv_label_set_text(controlOverrideLabel,joystick_getAutopilotOverride()==OVERRIDE_TEMPORARY?"Override: TEMPORARY CONTROL":"Override: SWITCH TO MANUAL");
+    saveControlPrefs();
+}
+static void controlDeadZoneEvent(lv_event_t *event)
+{
+    (void)event;
+    const int value=lv_slider_get_value(controlDeadZoneSlider);
+    joystick_setDeadZone(value);
+    char label[64]; snprintf(label,sizeof(label),"Dead zone: %d ADC counts",value);
+    lv_label_set_text(controlDeadZoneLabel,label);
+    saveControlPrefs();
+}
+static void openCalibrationEvent(lv_event_t *event)
+{
+    (void)event;
+    joystickCalibrationUI_open(returnToScreen);
+}
+static void buildControlsSection(lv_obj_t *parent)
+{
+    makeLabel(parent,"JOYSTICK / CONTROL",12,12);
+    controlLayoutLabel=makeLabel(parent,joystick_getLayout()==CONTROL_TANK?"Layout: TANK":"Layout: STEERING",12,54);
+    makeButton(parent,"TOGGLE LAYOUT",340,48,180,layoutSettingsEvent);
+    controlOverrideLabel=makeLabel(parent,joystick_getAutopilotOverride()==OVERRIDE_TEMPORARY?"Override: TEMPORARY CONTROL":"Override: SWITCH TO MANUAL",12,105);
+    makeButton(parent,"TOGGLE OVERRIDE",340,98,180,overrideSettingsEvent);
+    JoystickSnapshot snap=joystick_getSnapshot();
+    makeLabel(parent,"Dead zone",12,158);
+    controlDeadZoneSlider=lv_slider_create(parent);
+    lv_obj_set_pos(controlDeadZoneSlider,220,156);
+    lv_obj_set_size(controlDeadZoneSlider,300,24);
+    lv_slider_set_range(controlDeadZoneSlider,10,120);
+    lv_slider_set_value(controlDeadZoneSlider,snap.calibration.deadZone,LV_ANIM_OFF);
+    lv_obj_add_event_cb(controlDeadZoneSlider,controlDeadZoneEvent,LV_EVENT_RELEASED,nullptr);
+    char label[64];snprintf(label,sizeof(label),"Dead zone: %d ADC counts",snap.calibration.deadZone);
+    controlDeadZoneLabel=makeLabel(parent,label,12,194);
+    makeLabel(parent,"Calibration requires a confirmed boat STOP; motor output is inhibited while calibrating.",12,240);
+    makeButton(parent,"OPEN CALIBRATION",12,282,220,openCalibrationEvent);
+}
+
 // Switch the right-hand settings panel when a category is selected.
 static void categoryEvent(lv_event_t *event)
 {
@@ -489,7 +561,7 @@ static void categoryEvent(lv_event_t *event)
         displayPort_setBacklight(backlightOn);
     }
     else if (strcmp(category, "CONTROLS") == 0)
-        buildInfoSection(settingsContent, "REMOTE CONTROLS", "Joystick calibration is available from the main screen. Dead-zone and sensitivity tuning will be connected here.");
+        buildControlsSection(settingsContent);
     else if (strcmp(category, "SONAR") == 0)
         buildSonarSection(settingsContent);
     else if (strcmp(category, "MAP") == 0)
@@ -551,6 +623,15 @@ void settingsUI_open(lv_obj_t *returnScreen)
     makeCategoryButton(nav, "SONAR", "SONAR", 198);
     makeCategoryButton(nav, "MAP", "MAP", 248);
     makeCategoryButton(nav, "SYSTEM", "SYSTEM", 298);
+
+    settingsPrefs.begin("flytec", true);
+    const uint8_t savedLayout=settingsPrefs.getUChar("joy_layout",0);
+    const uint8_t savedOverride=settingsPrefs.getUChar("joy_override",0);
+    const uint16_t savedDeadZone=settingsPrefs.getUShort("joy_deadzone",65);
+    settingsPrefs.end();
+    if(savedLayout<=1) joystick_setLayout((ControlLayout)savedLayout);
+    if(savedOverride<=1) joystick_setAutopilotOverride((AutopilotOverride)savedOverride);
+    joystick_setDeadZone(savedDeadZone);
 
     settingsPrefs.begin("flytec", true);
     const bool backlightOn = settingsPrefs.getBool("backlight", true);
