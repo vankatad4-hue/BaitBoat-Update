@@ -148,3 +148,12 @@ Boat:
 - Locally exported meshes: front panel and rear shell watertight one-part meshes; button-cap plate watertight with 17 parts. Rear shell is now a larger integrated mesh and requires print orientation/support review.
 - Prototype external depth including grip pads and front/collar stack is approximately 87mm. This replaces the earlier ~70mm nominal estimate for the R6 shell without palm pads.
 - Fit remains unverified against actual Waveshare board, sticks, switches, antennas, connectors, battery cells or PCB.
+
+
+## Remote CAD R6.1 internal fit draft (2026-11-20)
+- Rear shell CAD integrates sculpted rear palm pads, 100×75mm carrier mounting posts, and a grip-mounted 1S4P battery cradle placeholder.
+- Battery arrangement assumption: four 18650 envelopes (Ø18.6×65mm), two per grip, stacked in shell depth. Cell restraint, insulation, pack wiring, fuse/BMS, charge and thermal design are not complete.
+- Lower-center body bridge extended for a provisional USB-C opening; exact connector location still awaits measurement.
+- Added internal layout and battery cradle CAD modes; workflow exports internal/top previews and cradle STL.
+- Local mesh tests: front panel and rear shell watertight, each one component; button plate watertight with 17 components; cradle feature mesh watertight with two components. CAD generation only, no hardware fit validation.
+- Overall shell depth including grip pads and front/collar stack approximately 87mm, revised from the prior ~70mm estimate.
