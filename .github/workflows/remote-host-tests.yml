@@ -49,3 +49,8 @@ jobs:
             Remote/source/boat_telemetry.cpp Remote/source/radio_payload_codec.cpp \
             Remote/tests/boat_telemetry_test.cpp -o /tmp/remote_telemetry
           /tmp/remote_telemetry
+      - name: Lake storage isolation and simulated SD recovery
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/lake_stubs -IRemote/source \
+            Remote/source/lake_storage.cpp Remote/tests/lake_storage_test.cpp -o /tmp/remote_lake_storage
+          /tmp/remote_lake_storage

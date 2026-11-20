@@ -1,6 +1,8 @@
 #include "lake_storage.h"
 #include "boat_state.h"
 #include <SD.h>
+#include <cstring>
+#include <cstdio>
 static uint8_t active = 0;
 static bool ready = false;
 static String root(uint8_t n) {
@@ -42,7 +44,7 @@ bool lakeStorage_select(uint8_t n){
        boatState.failsafeActive) return false;
     if(n==active) return true;
     const char *tmp="/active_lake.tmp", *dst="/active_lake.bin", *bak="/active_lake.bak";
-    SD.remove(tmp);
+    if(SD.exists(tmp)&&!SD.remove(tmp))return false;
     File f=SD.open(tmp,FILE_WRITE); if(!f) return false;
     uint8_t bytes[2]={n,(uint8_t)(n^0xff)};
     size_t count=f.write(bytes,2); f.flush(); f.close();
@@ -55,6 +57,13 @@ bool lakeStorage_select(uint8_t n){
             if(SD.exists(bak) && !SD.remove(bak)) return false;
             if(!SD.rename(dst,bak)) return false;
         }
+    }
+    // Preserve the implicit initial selection if the first promotion fails.
+    if(!SD.exists(dst)&&!SD.exists(bak)){
+        File backup=SD.open(bak,FILE_WRITE);if(!backup)return false;
+        uint8_t prior[2]={active,(uint8_t)(active^0xff)};
+        size_t nbytes=backup.write(prior,2);backup.flush();backup.close();
+        if(nbytes!=2||!readSelection(bak,check)||check!=active)return false;
     }
     if(!SD.rename(tmp,dst)) return false;
     active=n; return true;

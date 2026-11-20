@@ -135,3 +135,8 @@ Remote Target Compile #14 failed on a Remote offline-map source declaration (`g_
 
 ## Compile status update — 2026-11-20
 Remote CI target compile run #19 (ID 44781879101) succeeded on commit 3f189cb1ac65a764aec678893f1df857d113c815, including compile/link and firmware artifact upload. ESP32-S3 16MB/OPI PSRAM huge_app configuration; 1,430,957-byte sketch (45%), 178,136-byte globals (54%, 149,544 bytes remaining); no C++ errors/warnings reported. Boat remains uncompiled and non-operational. This is not hardware validation. Next work: audit and test Remote runtime lifecycle, map import validation, renderer allocation/cache and settings Wi-Fi timers; keep all outputs disconnected.
+
+
+## Eight-lake development checkpoint — 2026-11-20
+Remote package marker remains 028; Boat 014. Source now has eight SD lake profiles, sixteen mission slots and separate Home per profile, checked active selection, recoverable name and mission records, and A/B offline map installation. Lake selection UI uses standard LVGL keyboard and confirmed STOP/manual/connected-radio/inactive-motor gates. Mission execution remains blocked; boat-side synchronization is not implemented.
+Latest observed before this update: host #41 passed (6a3d88c), packaging #977 passed, target #42 running. Host #41 did not exercise the new SD storage. This update adds a mock SD host test compiling actual lake_storage.cpp: eight profiles, safe switching, name persistence, isolated paths, map marker rename failure, short writes and unavailable card. Results pending. The mock does not test actual FAT/SD durability, mission serialization or LVGL. Verify new CI and fix real failures before bumping the release marker. Hardware remains untested.

@@ -434,3 +434,8 @@ Target Compile #14 failed on missing declaration for `g_map_attribution` in the 
 - Build uses ESP32-S3 16MB Flash, OPI PSRAM, huge_app partition. Size 1,430,957 bytes / 45%; globals 178,136 bytes / 54% (149,544 bytes remaining). No C++ errors or warnings reported.
 - This validates CI compilation only. Actual display/touch, Wi-Fi, SD, radio, input and safety behavior require physical testing. Keep key provisioning and control TX disabled/fail-closed.
 - Next: audit settings/Wi-Fi timer teardown/re-entry, Map Manager parser/import safety, renderer cache/PSRAM and LVGL lifecycle; fix issues and rebuild.
+
+
+## Eight-lake development checkpoint — 2026-11-20
+Remote package marker remains 028; Boat 014. Source now has eight SD lake profiles, sixteen mission slots and separate Home per profile, checked active selection, recoverable name and mission records, and A/B offline map installation. Lake selection UI uses standard LVGL keyboard and confirmed STOP/manual/connected-radio/inactive-motor gates. Mission execution remains blocked; boat-side synchronization is not implemented.
+Latest observed before this update: host #41 passed (6a3d88c), packaging #977 passed, target #42 running. Host #41 did not exercise the new SD storage. This update adds a mock SD host test compiling actual lake_storage.cpp: eight profiles, safe switching, name persistence, isolated paths, map marker rename failure, short writes and unavailable card. Results pending. The mock does not test actual FAT/SD durability, mission serialization or LVGL. Verify new CI and fix real failures before bumping the release marker. Hardware remains untested.

@@ -29,7 +29,7 @@ static bool readRecord(const char *path, StoredMission &record){
 static bool writeSdMission(const StoredMission &record){
  if(!sdMissionAvailable())return false;
  String tmp=lakeStorage_path("/waypoints.tmp"), dst=lakeStorage_path("/waypoints.bin"), bak=lakeStorage_path("/waypoints.bak");
- SD.remove(tmp.c_str());
+ if(SD.exists(tmp.c_str())&&!SD.remove(tmp.c_str()))return false;
  File out=SD.open(tmp.c_str(),FILE_WRITE);if(!out)return false;
  size_t written=out.write(reinterpret_cast<const uint8_t*>(&record),sizeof(record));out.flush();out.close();
  StoredMission check={};
@@ -47,10 +47,11 @@ static bool readSdMission(StoredMission &record){
  return readRecord(lakeStorage_path("/waypoints.bin").c_str(),record)||
         readRecord(lakeStorage_path("/waypoints.bak").c_str(),record);
 }
+static void applyStored(const StoredMission &r);
 static bool persist(){
  StoredMission r={};r.magic=STORE_MAGIC;memcpy(r.points,slots,sizeof(slots));r.homeValid=homeValid;r.homeLat=homeLat;r.homeLon=homeLon;r.selected=(int8_t)selectedSlot;r.crc=crc32(reinterpret_cast<const uint8_t*>(&r),offsetof(StoredMission,crc));
  if(writeSdMission(r))return true;
- StoredMission old={}; if(readSdMission(old)){memcpy(slots,old.points,sizeof(slots));homeValid=old.homeValid;homeLat=old.homeLat;homeLon=old.homeLon;selectedSlot=old.selected;}else{memset(slots,0,sizeof(slots));homeValid=false;selectedSlot=-1;storageReady=false;}return false;
+ StoredMission old={}; if(readSdMission(old)){applyStored(old);}else{memset(slots,0,sizeof(slots));homeValid=false;selectedSlot=-1;storageReady=false;}return false;
 }
 static void applyStored(const StoredMission &r){
  for(uint8_t i=0;i<SLOT_COUNT;i++)if(r.points[i].valid&&!validCoordinate(r.points[i].lat,r.points[i].lon))slots[i]={};
