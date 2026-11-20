@@ -110,6 +110,16 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  // ACCEPTED means only queued for application review. It is not EXECUTED.
  if(cmd.type!=CMD_MANUAL_MOTORS) sendCommandAck(link,cmd,RADIO_ACK_ACCEPTED,0,0,now);
 }
+bool BoatDualRadioPort::commandPending(uint8_t epoch,uint16_t commandId) const {
+ return commandQueue_.contains(epoch,commandId);
+}
+bool BoatDualRadioPort::sendCommandAck(ManagedLink link,const BoatCommand &cmd,uint8_t result,uint8_t stopState,uint8_t interlockFlags,uint32_t now) {
+ RadioFrame f;
+ radio_frameInit(f,RADIO_MSG_ACK,BOAT_ID,REMOTE_ID,++txSequence_,(uint16_t)cmd.commandId,now,sessionEpoch_);
+ if(!radio_encodeAckPayload(result,(uint8_t)cmd.type,(uint16_t)cmd.commandId,stopState,interlockFlags,f.payload))return false;
+ if(!radio_frameSeal(f,key_))return false;
+ return sendFrame(link,f);
+}
 bool BoatDualRadioPort::enqueue(const BoatCommand &cmd,ManagedLink link,bool duplicate) {
  return commandQueue_.push(cmd,(uint8_t)link,duplicate,sessionEpoch_);
 }
