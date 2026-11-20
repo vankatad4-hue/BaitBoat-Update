@@ -9,7 +9,7 @@ part="assembly"; $fn=72;
 W=310; H=209; body_depth=66.5; front_th=3.5; wall=3.0;
 screen_w=108; screen_h=72; screen_y=7;
 stick_x=108; stick_y=66; stick_open=25;
-power_d=18; power_y=96;
+power_d=18; power_y=55;
 button_d=14.2; pitch_x=19.5; pitch_y=21.0;
 bank_center_x=108; bank_center_y=-31;
 antenna_d=8.6; antenna_x=112; antenna_y=94;
@@ -102,9 +102,9 @@ module assembly_preview(){
   translate([0,screen_y,body_depth+front_th+.1]) color("#0a1822") cube([screen_w-3,screen_h-3,1],center=true);
   joystick_centres() translate([0,0,body_depth+front_th+.1]) color("#303840") cylinder(d=21,h=9);
   bank_centres(-1) translate([0,0,body_depth+front_th+.1]) color("#c7c9cb") button_cap(false);
-  bank_centres(1) translate([0,0,body_depth+front_th+.1]) color("#c7c9cb") button_cap(false);
-  // Highlight right-bank top row in red for the four guarded release actions.
+  // Right-bank top row is four releases; bottom row are ordinary utility keys.
   for(col=[0:3]) translate([antenna_x-29.25+col*pitch_x,bank_center_y,body_depth+front_th+.1]) color("#bd4c43") button_cap(true);
+  for(col=[0:3]) translate([antenna_x-29.25+col*pitch_x,bank_center_y-pitch_y,body_depth+front_th+.1]) color("#c7c9cb") button_cap(false);
   translate([0,power_y,body_depth+front_th+.1]) color("#4e92cc") cylinder(d=15,h=5);
 }
 if(part=="front") front_panel();
