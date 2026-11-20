@@ -2,7 +2,7 @@
 #define OFFLINE_MAP_COVERAGE_H
 #include <Arduino.h>
 struct CoverageTile { uint8_t z; uint32_t x,y; uint8_t present; };
-bool mapCoverage_begin();
+bool mapCoverage_begin(const char *root);
 bool mapCoverage_hasIndex();
 bool mapCoverage_tilePresent(uint8_t z,uint32_t x,uint32_t y);
 void mapCoverage_getStats(uint16_t &planned,uint16_t &present,uint16_t &missing);

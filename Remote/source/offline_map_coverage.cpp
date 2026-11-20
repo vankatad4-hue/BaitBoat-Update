@@ -36,14 +36,15 @@ static bool parseUnsignedField(const char *text, unsigned long maxValue, unsigne
     return true;
 }
 
-bool mapCoverage_begin()
+bool mapCoverage_begin(const char *root)
 {
     if (rows) { heap_caps_free(rows); rows = nullptr; }
     rowCount = presentCount = missingCount = 0;
     valid = false;
     calculationCapped = false;
 
-    File f = SD.open(lakeStorage_path("/maps/coverage_index.csv").c_str(), FILE_READ);
+    if (!root || !*root) return false;
+    File f = SD.open((String(root)+"/coverage_index.csv").c_str(), FILE_READ);
     if (!f) return false;
     rows = (CoverageRecord *)heap_caps_malloc(sizeof(CoverageRecord) * INDEX_LIMIT, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     if (!rows) { f.close(); return false; }

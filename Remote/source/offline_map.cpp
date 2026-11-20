@@ -7,14 +7,17 @@
 #include <SD.h>
 #include <esp_heap_caps.h>
 
+static String g_map_root;
+static OfflineMapStyle g_style=OFFLINE_MAP_STREET;
 static bool g_sd_available = false;                 // SD filesystem was mounted by the display adapter.
 static bool g_map_pack_available = false;           // Map manifest was found and validated.
 static char g_map_attribution[256] = {0};            // Validated map-pack source attribution.
 
 // Require a valid pack header, complete coverage flag and source attribution/licence metadata.
-static bool offlineMap_checkManifest()
+static bool offlineMap_checkManifest(const char *root)
 {
-    File manifest = SD.open(lakeStorage_path("/maps/manifest.txt").c_str(), FILE_READ);
+    if (!root || !*root) return false;
+    File manifest = SD.open((String(root)+"/manifest.txt").c_str(), FILE_READ);
     if (!manifest) return false;
 
     char signature[12] = {0};
@@ -28,12 +31,16 @@ static bool offlineMap_checkManifest()
     bool hasAttribution = false;
     bool hasLicence = false;
     bool hasZooms = false;
+    bool hasStyle = false;
     g_map_attribution[0] = '\0';
     char line[256] = {0};
     while (manifest.available()) {
         const size_t count = manifest.readBytesUntil('\n', line, sizeof(line) - 1);
         line[count] = '\0';
-        if (strncmp(line, "pack_complete=true", 18) == 0) complete = true;
+        if(count && line[count-1]=='\r')line[count-1]='\0';
+        if(strcmp(line,"style=street")==0){g_style=OFFLINE_MAP_STREET;hasStyle=true;}
+        if(strcmp(line,"style=satellite")==0){g_style=OFFLINE_MAP_SATELLITE;hasStyle=true;}
+        if (strcmp(line, "pack_complete=true") == 0) complete = true;
         if (strncmp(line, "attribution=", 12) == 0 && line[12] != '\0') {
             hasAttribution = true;
             strncpy(g_map_attribution, line + 12, sizeof(g_map_attribution) - 1);
@@ -43,7 +50,7 @@ static bool offlineMap_checkManifest()
         if (strncmp(line, "zoom_levels=", 12) == 0 && line[12] != '\0') hasZooms = true;
     }
     manifest.close();
-    return complete && hasAttribution && hasLicence && hasZooms;
+    return complete && hasAttribution && hasLicence && hasZooms && hasStyle;
 }
 
 // Initialise offline-map storage and validate its map-pack manifest.
@@ -59,7 +66,10 @@ bool offlineMap_begin(bool sdCardReady)
         return false;                               // Keep the map grid as a safe visual fallback.
     }
 
-    g_map_pack_available = offlineMap_checkManifest() && mapCoverage_begin(); // Verify the map-pack format marker.
+    g_map_root=lakeStorage_mapRoot();
+    // Legacy root pack belongs exclusively to Lake 01, until a local pack is installed.
+    if(lakeStorage_active()==0 && g_map_root==lakeStorage_path("/maps") && !SD.exists((g_map_root+"/manifest.txt").c_str()) && !SD.exists(lakeStorage_path("/map_slot.bin").c_str()) && !SD.exists(lakeStorage_path("/map_slot.bak").c_str())) g_map_root="/maps";
+    g_map_pack_available = offlineMap_checkManifest(g_map_root.c_str()) && mapCoverage_begin(g_map_root.c_str()); // Verify the map-pack format marker.
     Serial.println(g_map_pack_available ? "MAP: Offline map pack found." : "MAP: No offline map pack installed."); // Log status.
     return g_map_pack_available;                    // Return true only when a compatible map pack is present.
 }
@@ -67,7 +77,7 @@ bool offlineMap_begin(bool sdCardReady)
 // Report whether a compatible map pack is installed.
 bool offlineMap_hasMapData()
 {
-    return g_map_pack_available;                    // Manifest and coverage index must both validate.
+    return lakeStorage_ready() && g_map_pack_available;                    // Manifest and coverage index must both validate.
 }
 
 // Copy the validated attribution string to a caller-owned buffer.
@@ -85,7 +95,7 @@ void offlineMap_getCoverageStats(uint16_t &planned,uint16_t &present,uint16_t &m
 // Read one raw RGB565 tile from the selected map style and zoom level.
 uint16_t *offlineMap_readTile(OfflineMapStyle style, uint8_t zoom, uint32_t tileX, uint32_t tileY)
 {
-    if (!g_sd_available || !g_map_pack_available || !mapCoverage_tilePresent(zoom,tileX,tileY))   // Require pack/index and indexed tile presence.
+    if (!lakeStorage_ready() || !g_sd_available || !g_map_pack_available || style!=g_style || !mapCoverage_tilePresent(zoom,tileX,tileY))   // Require pack/index and indexed tile presence.
     {
         return nullptr;                              // No tile can be loaded safely.
     }
@@ -101,7 +111,7 @@ uint16_t *offlineMap_readTile(OfflineMapStyle style, uint8_t zoom, uint32_t tile
 
     const char *styleFolder = (style == OFFLINE_MAP_SATELLITE) ? "satellite" : "street"; // Select style directory.
     char path[96];                                  // Hold the full tile path without dynamic String allocation.
-    snprintf(path, sizeof(path), "%s/%s/%u/%lu/%lu.rgb565", lakeStorage_path("/maps").c_str(), styleFolder, static_cast<unsigned>(zoom), static_cast<unsigned long>(tileX), static_cast<unsigned long>(tileY)); // Build tile path.
+    snprintf(path, sizeof(path), "%s/%s/%u/%lu/%lu.rgb565", g_map_root.c_str(), styleFolder, static_cast<unsigned>(zoom), static_cast<unsigned long>(tileX), static_cast<unsigned long>(tileY)); // Build tile path.
 
     File tileFile = SD.open(path, FILE_READ);        // Open the requested tile in read-only mode.
     if (!tileFile)                                  // A missing tile is not replaced with a fake land/water image.
@@ -142,3 +152,8 @@ void offlineMap_freeTile(uint16_t *pixels)
         heap_caps_free(pixels);                      // Return the tile buffer to PSRAM.
     }
 }
+
+bool offlineMap_validateStaged(const char *root){
+    return lakeStorage_ready() && offlineMap_checkManifest(root) && mapCoverage_begin(root);
+}
+OfflineMapStyle offlineMap_getStyle(){return g_style;}

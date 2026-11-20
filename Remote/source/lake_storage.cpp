@@ -59,3 +59,45 @@ bool lakeStorage_select(uint8_t n){
     if(!SD.rename(tmp,dst)) return false;
     active=n; return true;
 }
+
+static bool mapSlot(uint8_t &slot) {
+    if(!lakeStorage_ready()) return false;
+    String current=lakeStorage_path("/map_slot.bin"), backup=lakeStorage_path("/map_slot.bak");
+    if(readSelection(current.c_str(),slot) && slot<2) return true;
+    if(readSelection(backup.c_str(),slot) && slot<2) return true;
+    if(SD.exists(current.c_str()) || SD.exists(backup.c_str())) return false;
+    slot=0; return true;
+}
+static String mapRoot(uint8_t slot) {return lakeStorage_path(slot==0?"/maps":"/maps-alt");}
+String lakeStorage_mapRoot(){uint8_t slot;return mapSlot(slot)?mapRoot(slot):String();}
+String lakeStorage_mapStage(){uint8_t slot;return mapSlot(slot)?mapRoot(1-slot):String();}
+bool lakeStorage_makeDirectories(const char *path){
+    if(!lakeStorage_ready() || !path || path[0]!='/') return false;
+    String dir(path);
+    for(unsigned int i=1;i<=dir.length();++i){
+        if(i!=dir.length() && dir[i]!='/')continue;
+        String p=dir.substring(0,i);
+        if(!SD.exists(p.c_str()) && !SD.mkdir(p.c_str())) return false;
+    }
+    return true;
+}
+bool lakeStorage_commitMap(const String &stagedRoot){
+    uint8_t old; if(!mapSlot(old) || stagedRoot!=mapRoot(1-old))return false;
+    uint8_t next=1-old, check;
+    String dst=lakeStorage_path("/map_slot.bin"), tmp=lakeStorage_path("/map_slot.tmp"), bak=lakeStorage_path("/map_slot.bak");
+    if(SD.exists(tmp.c_str())&&!SD.remove(tmp.c_str()))return false;
+    File out=SD.open(tmp.c_str(),FILE_WRITE);if(!out)return false;
+    uint8_t bytes[2]={next,(uint8_t)(next^0xff)};
+    size_t written=out.write(bytes,2);out.flush();out.close();
+    if(written!=2||!readSelection(tmp.c_str(),check)||check!=next)return false;
+    // Ensure recovery points to the old slot, including the initial implicit slot 0.
+    if(!readSelection(bak.c_str(),check)||check!=old){
+        if(SD.exists(bak.c_str())&&!SD.remove(bak.c_str()))return false;
+        File backup=SD.open(bak.c_str(),FILE_WRITE);if(!backup)return false;
+        uint8_t prior[2]={old,(uint8_t)(old^0xff)};
+        size_t n=backup.write(prior,2);backup.flush();backup.close();
+        if(n!=2||!readSelection(bak.c_str(),check)||check!=old)return false;
+    }
+    if(SD.exists(dst.c_str())&&!SD.remove(dst.c_str()))return false;
+    return SD.rename(tmp.c_str(),dst.c_str());
+}

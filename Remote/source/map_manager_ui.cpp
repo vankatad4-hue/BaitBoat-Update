@@ -12,6 +12,8 @@
 #include <string.h>
 static constexpr uint16_t LIMIT=6000;struct ImportRow{uint8_t z;uint32_t x,y;};
 static lv_obj_t *page,*centreLabel,*estimateLabel,*packLabel,*coverageLabel,*progress,*importLabel,*importBtn;static lv_obj_t*zoomLabels[6];static float lat=43,lon=25;static bool chosen[6]={true,true,true,true,false,false};static uint8_t zlist[6]={14,15,16,17,18,19};static MapManagerReturnCallback onBack;
+static String stageRoot;
+static uint8_t importLake=0;
 static ImportRow *importRows=nullptr;static uint16_t importCount=0,importIndex=0;static bool importing=false;static uint8_t importStyle=0;static File inFile,outFile;static uint8_t copyPhase=0;static const char*copyFiles[2]={"/map-import/coverage_index.csv","/map-import/manifest.txt"};static uint32_t copied=0,totalBytes=0,currentCopyBytes=0,expectedCopyBytes=0;
 static lv_obj_t*label(lv_obj_t*p,const char*t,int x,int y,int w=750){lv_obj_t*l=lv_label_create(p);lv_label_set_text(l,t);lv_obj_set_pos(l,x,y);lv_obj_set_width(l,w);lv_label_set_long_mode(l,LV_LABEL_LONG_WRAP);return l;}
 static void refresh()
@@ -142,9 +144,9 @@ static bool copyStart(const char *src, const char *dst)
     if (last)
     {
         *last = '\0';
-        if (!SD.exists(dir) && !SD.mkdir(dir)) { inFile.close(); return false; }
+        if (!lakeStorage_makeDirectories(dir)) { inFile.close(); return false; }
     }
-    SD.remove(dst);
+    if(SD.exists(dst) && !SD.remove(dst)){inFile.close();return false;}
     outFile = SD.open(dst, FILE_WRITE);
     if (!outFile) { inFile.close(); return false; }
     return true;
@@ -167,7 +169,7 @@ static int copyChunk()
     }
     if (!inFile.available())
     {
-        inFile.close(); outFile.close();
+        outFile.flush(); inFile.close(); outFile.close();
         return currentCopyBytes == expectedCopyBytes ? 1 : -1;
     }
     if (!n) return -1;
@@ -320,14 +322,16 @@ static void importStart(lv_event_t *event)
 
     importIndex = 0; copyPhase = 0; copied = 0;
     totalBytes = (uint32_t)((uint64_t)importCount * OFFLINE_MAP_TILE_BYTES + indexBytes + manifestBytes);
-    // Invalidate the active pack before touching its tile files. A partial copy
-    // must never be accepted as a valid installed pack.
-    SD.remove(lakeStorage_path("/maps/manifest.txt").c_str());
+    stageRoot=lakeStorage_mapStage();importLake=lakeStorage_active();
+    if(!stageRoot.length()||!lakeStorage_makeDirectories(stageRoot.c_str())){abortImport();lv_label_set_text(importLabel,"SD staging unavailable");return;}
+    String marker=stageRoot+"/manifest.txt";
+    if(SD.exists(marker.c_str())&&!SD.remove(marker.c_str())){abortImport();lv_label_set_text(importLabel,"SD staging invalidation failed");return;}
+    // The active slot is never modified during copying.
     importing = true;
-    lv_label_set_text(importLabel, "ИМПОРТ: копиране към активната папка...");
+    lv_label_set_text(importLabel, "ИМПОРТ: копиране към резервната папка...");
 }
 static void back(lv_event_t*e){if(lv_event_get_code(e)==LV_EVENT_CLICKED&&!importing){lv_obj_del(page);if(onBack)onBack();}}
 static void button(lv_obj_t*p,const char*t,int x,int y,int w,lv_event_cb_t cb,void*ud=nullptr){lv_obj_t*b=lv_button_create(p);lv_obj_set_size(b,w,38);lv_obj_set_pos(b,x,y);lv_obj_set_style_bg_color(b,lv_color_hex(0x174F92),LV_PART_MAIN);lv_obj_set_style_radius(b,8,LV_PART_MAIN);lv_obj_set_style_border_width(b,1,LV_PART_MAIN);lv_obj_set_style_border_color(b,lv_color_hex(0x347FC0),LV_PART_MAIN);lv_obj_set_style_text_color(b,lv_color_hex(0xFFFFFF),LV_PART_MAIN);lv_label_set_text(lv_label_create(b),t);lv_obj_center(lv_obj_get_child(b,0));lv_obj_add_event_cb(b,cb,LV_EVENT_CLICKED,ud);}
 void mapManagerUI_open(lv_obj_t*parent,float gpsLat,float gpsLon,bool gpsValid,MapManagerReturnCallback cb){onBack=cb;lat=gpsValid?gpsLat:43;lon=gpsValid?gpsLon:25;page=lv_obj_create(parent);lv_obj_set_size(page,790,440);lv_obj_center(page);lv_obj_set_style_bg_color(page,lv_color_hex(0x081522),LV_PART_MAIN);lv_obj_set_style_pad_all(page,10,LV_PART_MAIN);lv_obj_set_style_radius(page,10,LV_PART_MAIN);lv_obj_set_style_border_width(page,1,LV_PART_MAIN);lv_obj_set_style_border_color(page,lv_color_hex(0x2366A4),LV_PART_MAIN);label(page,"МЕНИДЖЪР НА ОФЛАЙН КАРТИ",8,4,400);centreLabel=label(page,"",8,38);label(page,"ПРОМЯНА НА ЦЕНТЪРА ±0.001° (~111 м)",8,70);button(page,"ШИР +",8,100,80,[](lv_event_t*){nLat(1);});button(page,"ШИР -",94,100,80,[](lv_event_t*){nLat(-1);});button(page,"ДЪЛ -",180,100,80,[](lv_event_t*){nLon(-1);});button(page,"ДЪЛ +",266,100,80,[](lv_event_t*){nLon(1);});button(page,"ТЕКУЩ GPS",354,100,130,[](lv_event_t*){if(boatState.gpsValid&&(uint32_t)(millis()-boatState.gpsLastUpdateMs)<=2000U){lat=boatState.latitude;lon=boatState.longitude;refresh();}else{lv_label_set_text(importLabel,"GPS FIX IS NOT FRESH; centre unchanged.");}});label(page,"МАЩАБ (избери)",8,151);for(int i=0;i<6;i++){lv_obj_t*b=lv_button_create(page);lv_obj_set_size(b,72,40);lv_obj_set_pos(b,8+i*80,176);lv_obj_set_style_bg_color(b,lv_color_hex(0x174F92),LV_PART_MAIN);lv_obj_set_style_radius(b,8,LV_PART_MAIN);lv_obj_set_style_border_width(b,1,LV_PART_MAIN);lv_obj_set_style_border_color(b,lv_color_hex(0x347FC0),LV_PART_MAIN);lv_obj_set_style_text_color(b,lv_color_hex(0xFFFFFF),LV_PART_MAIN);zoomLabels[i]=lv_label_create(b);lv_obj_center(zoomLabels[i]);lv_obj_add_event_cb(b,zoomToggle,LV_EVENT_CLICKED,(void*)(intptr_t)i);}estimateLabel=label(page,"ОЦЕНКА",8,230);packLabel=label(page,"СТАТУС НА ПАКЕТА",8,267);coverageLabel=label(page,"ПОКРИТИЕ",8,304);progress=lv_bar_create(page);lv_obj_set_size(progress,760,20);lv_obj_set_pos(progress,8,337);lv_bar_set_range(progress,0,100);importLabel=label(page,"ИМПОРТ: постави лицензиран пакет в /map-import/",8,361);importBtn=lv_button_create(page);lv_obj_set_size(importBtn,180,38);lv_obj_set_pos(importBtn,8,390);lv_label_set_text(lv_label_create(importBtn),"ИМПОРТ НА ПАКЕТ");lv_obj_center(lv_obj_get_child(importBtn,0));lv_obj_add_event_cb(importBtn,importStart,LV_EVENT_CLICKED,nullptr);button(page,"НАЗАД",665,390,100,back);refresh();}
-void mapManagerUI_tick(){static uint32_t lastTick=0;if(!importing||millis()-lastTick<25)return;lastTick=millis();char src[100],dst[100];if(importIndex<importCount){ImportRow r=importRows[importIndex];const char*style=importStyle?"satellite":"street";snprintf(src,sizeof(src),"/map-import/%s/%u/%lu/%lu.rgb565",style,r.z,(unsigned long)r.x,(unsigned long)r.y);snprintf(dst,sizeof(dst),"%s/%s/%u/%lu/%lu.rgb565",lakeStorage_path("/maps").c_str(),style,r.z,(unsigned long)r.x,(unsigned long)r.y);if(!inFile){if(!copyStart(src,dst)){abortImport();lv_label_set_text(importLabel,"ГРЕШКА: липсва плочка или SD запис/отвор");return;}}int state=copyChunk();if(state<0){abortImport();lv_label_set_text(importLabel,"ГРЕШКА SD — активният пакет остава изключен");return;}if(state==1)importIndex++;}else{if(copyPhase<2){const char*srcPath=copyFiles[copyPhase];String dstPath=lakeStorage_path(copyPhase==0?"/maps/coverage_index.csv":"/maps/manifest.txt");if(!inFile){if(!copyStart(srcPath,dstPath.c_str())){abortImport();lv_label_set_text(importLabel,"ГРЕШКА при копиране на индекс/manifest");return;}}int state=copyChunk();if(state<0){abortImport();lv_label_set_text(importLabel,"ГРЕШКА индекс/manifest — пакетът е изключен");return;}if(state==1)copyPhase++;}else{importing=false;boatState.offlineMapReady=offlineMap_begin(true);mapRenderer_invalidateTiles();if(importRows){heap_caps_free(importRows);importRows=null;}importCount=0;lv_label_set_text(importLabel,boatState.offlineMapReady?"ИМПОРТЪТ ЗАВЪРШИ — ПАКЕТЪТ Е ПРОВЕРЕН":"ИМПОРТЪТ ЗАВЪРШИ, НО ПРОВЕРКАТА НЕ УСПЯ");refresh();lv_bar_set_value(progress,100,LV_ANIM_OFF);return;}}
+void mapManagerUI_tick(){static uint32_t lastTick=0;if(!importing||millis()-lastTick<25)return;lastTick=millis();if(!lakeStorage_ready()||lakeStorage_active()!=importLake){abortImport();lv_label_set_text(importLabel,"SD/profile changed; import cancelled");return;}char src[100],dst[100];if(importIndex<importCount){ImportRow r=importRows[importIndex];const char*style=importStyle?"satellite":"street";snprintf(src,sizeof(src),"/map-import/%s/%u/%lu/%lu.rgb565",style,r.z,(unsigned long)r.x,(unsigned long)r.y);snprintf(dst,sizeof(dst),"%s/%s/%u/%lu/%lu.rgb565",stageRoot.c_str(),style,r.z,(unsigned long)r.x,(unsigned long)r.y);if(!inFile){if(!copyStart(src,dst)){abortImport();lv_label_set_text(importLabel,"ГРЕШКА: липсва плочка или SD запис/отвор");return;}}int state=copyChunk();if(state<0){abortImport();lv_label_set_text(importLabel,"ГРЕШКА SD — старият пакет е запазен");return;}if(state==1)importIndex++;}else{if(copyPhase<2){const char*srcPath=copyFiles[copyPhase];String dstPath=stageRoot+(copyPhase==0?"/coverage_index.csv":"/manifest.txt");if(!inFile){if(!copyStart(srcPath,dstPath.c_str())){abortImport();lv_label_set_text(importLabel,"ГРЕШКА при копиране на индекс/manifest");return;}}int state=copyChunk();if(state<0){abortImport();lv_label_set_text(importLabel,"ГРЕШКА индекс/manifest — старият пакет е запазен");return;}if(state==1)copyPhase++;}else{bool committed=offlineMap_validateStaged(stageRoot.c_str())&&lakeStorage_commitMap(stageRoot);abortImport();boatState.offlineMapReady=offlineMap_begin(true);mapRenderer_invalidateTiles();if(boatState.offlineMapReady)mapRenderer_setStyle(offlineMap_getStyle());importCount=0;lv_label_set_text(importLabel,committed&&boatState.offlineMapReady?"ИМПОРТЪТ ЗАВЪРШИ — ПАКЕТЪТ Е ПРОВЕРЕН":"ИМПОРТЪТ НЕ УСПЯ — ПРОВЕРИ SD");refresh();lv_bar_set_value(progress,100,LV_ANIM_OFF);return;}}
 char status[100];snprintf(status,sizeof(status),"ИМПОРТ %u/%u плочки | %lu/%lu байта",(unsigned)importIndex,(unsigned)importCount,(unsigned long)copied,(unsigned long)totalBytes);lv_label_set_text(importLabel,status);lv_bar_set_value(progress,totalBytes?(uint64_t)copied*100/totalBytes:0,LV_ANIM_OFF);}

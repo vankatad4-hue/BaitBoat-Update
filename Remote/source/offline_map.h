@@ -32,3 +32,7 @@ uint16_t *offlineMap_readTile(OfflineMapStyle style, uint8_t zoom, uint32_t tile
 void offlineMap_freeTile(uint16_t *pixels);
 
 #endif
+
+// Validate the staged manifest/index before publishing its slot; restore via offlineMap_begin.
+bool offlineMap_validateStaged(const char *root);
+OfflineMapStyle offlineMap_getStyle();
