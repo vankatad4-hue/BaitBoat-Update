@@ -112,3 +112,10 @@ jobs:
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/source/radio_payload_encoder.cpp Boat/source/radio_payload_codec.cpp Boat/tests/boat_hardware_telemetry_test.cpp -o /tmp/boat_hardware_telemetry
           /tmp/boat_hardware_telemetry
+      - name: Production application bridge with simulated radio and hardware
+        run: |
+          mkdir -p /tmp/boat_app_test
+          cp Boat/source/boat_application_port.cpp Boat/source/boat_application_port.h /tmp/boat_app_test/
+          cp Boat/tests/application_stubs/boat_dual_radio_port.h /tmp/boat_app_test/
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I/tmp/boat_app_test -IBoat/source -IBoat/tests/stubs /tmp/boat_app_test/boat_application_port.cpp Boat/tests/boat_application_integration_test.cpp -o /tmp/boat_application
+          /tmp/boat_application

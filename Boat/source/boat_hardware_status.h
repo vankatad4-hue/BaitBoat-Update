@@ -18,7 +18,7 @@ inline RadioDecodedPayload boatHardware_status(const BoatHardwareSample &s,uint3
  if(out.stopState==0&&in.releaseInterlocks&&primary&&!detached&&out.boatMode!=3)out.safetyFlags|=1U;
  if(s.leftMotorActive)out.safetyFlags|=2U;
  if(s.rightMotorActive)out.safetyFlags|=4U;
- if(in.fix.fresh&&std::isfinite(in.fix.accuracyM)&&in.fix.accuracyM>0&&s.gpsFixType>=3){out.safetyFlags|=8U;out.gpsFixType=s.gpsFixType;out.satellites=s.satellites;}
+ if(in.fix.fresh&&std::isfinite(in.fix.accuracyM)&&in.fix.accuracyM>0&&in.fix.accuracyM<=655.34&&in.fix.latE7>=-900000000&&in.fix.latE7<=900000000&&in.fix.lonE7>=-1800000000&&in.fix.lonE7<=1800000000&&s.gpsFixType>=3){out.safetyFlags|=8U;out.gpsFixType=s.gpsFixType;out.satellites=s.satellites;}
  if(in.fix.headingValid&&std::isfinite(in.fix.headingDeg)&&in.fix.headingDeg>=0&&in.fix.headingDeg<360)out.safetyFlags|=16U;
  if(!in.fix.batteryHealthy)out.safetyFlags|=32U;
  if(detached||!primary||out.boatMode==3)out.safetyFlags|=64U;

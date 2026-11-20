@@ -45,6 +45,7 @@ public:
  }
  bool stopped()const{return stopLatched_;}
  void manual(int16_t left,int16_t right,uint32_t receivedAt,bool authenticatedPrimary){
+  if(manualNeedsNeutral_){if(authenticatedPrimary&&!pulseActive_&&!awaitIdle_&&!left&&!right)manualNeedsNeutral_=false;manualValid_=false;return;}
   manualValid_=!pulseActive_&&!awaitIdle_&&authenticatedPrimary&&!stopLatched_&&left>=-1000&&left<=1000&&right>=-1000&&right<=1000;
   manualLeft_=left;manualRight_=right;manualAt_=receivedAt;
  }
@@ -53,7 +54,7 @@ public:
  bool beginManualRelease(uint16_t id,int8_t channel,const ExecInputs &in,uint32_t now){
   if(releaseBusy()||(manualValid_&&now-manualAt_<200U&&(manualLeft_||manualRight_)))return false;
   newMissionIdentity();if(!beginRelease(id,1,channel,in,now))return false;
-  manualRelease_=true;cancelManual();return true;
+  manualRelease_=true;manualNeedsNeutral_=true;cancelManual();return true;
  }
  // Mission release is a single tokenized edge, not a continuously repeated command.
  bool beginRelease(uint16_t tx,uint16_t token,int8_t channel,const ExecInputs &in,uint32_t now){
@@ -100,7 +101,7 @@ public:
  struct Completion{uint16_t transaction,token;bool success,valid;};
  Completion takeCompletion(){auto value=completion_;completion_={};return value;}
 private:
- BoatActuatorConfig cfg_{};bool manualRelease_=false,configured_=false,stopLatched_=true,manualValid_=false,pulseActive_=false,awaitIdle_=false;
+ BoatActuatorConfig cfg_{};bool manualNeedsNeutral_=false,manualRelease_=false,configured_=false,stopLatched_=true,manualValid_=false,pulseActive_=false,awaitIdle_=false;
  int16_t manualLeft_=0,manualRight_=0;int8_t channel_=-1;
  uint32_t manualAt_=0,pulseAt_=0,offAt_=0;
  uint16_t lastTx_=0,lastToken_=0;Completion completion_{};

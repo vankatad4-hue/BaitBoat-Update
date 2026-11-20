@@ -48,7 +48,8 @@ void BoatApplicationPort::tick(){
  radio_.update();
  if(generation_!=radio_.sessionGeneration()){
   if(manualPending_){manualPending_=false;executor_.stop();radio_.localEmergencyStop();driver_.disable();}
-  executor_.cancelManual();generation_=radio_.sessionGeneration();
+  executor_.cancelManual();if(!radio_.detachedReturnActive()){executor_.stop();driver_.disable();}
+  generation_=radio_.sessionGeneration();
  }
  in=boatHardware_inputs(sample_,millis(),executor_.stopped());
  in.primaryFresh=radio_.primaryFresh(millis());in.backupFresh=radio_.backupFresh(millis());
@@ -60,6 +61,7 @@ void BoatApplicationPort::tick(){
    // Remote clear-STOP API checks calibrated neutral sticks; local driver
    // independently confirms stationary propulsion and all interlocks.
    const bool ok=!executor_.releaseBusy()&&executor_.clearStop(sample_,millis(),link==LINK_NRF_PRIMARY&&in.primaryFresh,in.stationary);
+   // This ACK confirms the local latch operation only, not physical outputs.
    radio_.completeApplicationAction(cmd,generation_,ok,2,0);
    continue;
   }
