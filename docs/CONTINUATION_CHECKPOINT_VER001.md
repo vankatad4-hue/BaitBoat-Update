@@ -152,3 +152,5 @@ When continuing in a new chat:
 - Target compile attempt #4 progressed past LVGL config setup and failed at missing `RF24.h`. RF24 1.4.11 was added to workflow dependencies; compile retry pending.
 
 - Display flush callback was hardened to avoid signaling LVGL through a null display pointer. Compile verification is still pending.
+
+- LVGL 9.6 target compile revealed and fixed: precise line-point API type mismatch in the sonar demo plot and missing live footer-label pointer declarations. Compile retry pending.
