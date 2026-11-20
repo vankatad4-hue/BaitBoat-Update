@@ -41,3 +41,12 @@ The pin functions on Waveshare documentation are confirmed, but physical PORT1 p
 - E22 transparent UART framing and native Heltec SX1262 raw packet protocol require PHY settings to be matched and interop bench-tested.
 - LoRa airtime/duty-cycle must be enforced for the selected EU subband. Do not assume a 2–5Hz backup control rate is compliant.
 - No actuator connection until boat watchdog and release command idempotency are complete and tested.
+
+
+## LoRa profile R3 (supersedes prior channel assumptions)
+- Remote and boat use matching E22-900T22S modules.
+- Initial config: channel 0x12 = 868.125MHz, UART 9600 8N1, air rate 62.5kbps, subpacket 32 bytes, output 10dBm, transparent mode, network/address 0x0000, LBT initially off.
+- E22 config write: `C0 00 09 00 00 00 67 C3 12 00 00 00`; readback must match. M1=1/M0=0 for config, M1=M0=0 for normal; M1=M0=1 is sleep, not configuration.
+- 868.125MHz is within the 868.0–868.6MHz 1% duty sub-band. E22's 1MHz channel step cannot reach the 869.525MHz center of the 10% sub-band. Strict airtime control is required.
+- Driver estimate is 20ms/frame until measured. A 1% budget allows 36s/h; one 20ms TX per 2s is 1%. Remote and boat airtime are tracked independently. Default backup control ≤0.5Hz, no sonar. Actual airtime and duty counter persistence are mandatory before legal field operation.
+- Source integration now configures remote SC16IS750 and E22 at boot. It does **not** transmit because key provisioning is absent; nRF24 driver is not integrated.
