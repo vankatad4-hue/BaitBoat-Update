@@ -233,3 +233,11 @@ Boat:
 - Preview file: `Remote/source/UI_PREVIEW_MISSION_VER025.svg`.
 - Also repaired missing declarations for ver024 input/safety footer labels discovered during source review.
 - ver025 source is not yet compiled against the actual board/LVGL package and is not hardware tested.
+
+
+## Remote ver026 waypoint storage and map overlay (2026-11-20)
+- Waypoint/home and planned bait/hook flags now persist in ESP32 NVS Preferences with record magic + CRC32 check.
+- Main placeholder map adds relative waypoint/home markers; markers are hidden when GNSS is invalid or more than 150m from the boat. This overlay is only illustrative, not a navigational map or route.
+- The mission UI's save-current and set-home require fresh GNSS (<2s). Selection and marker edits persist.
+- Mission start remains blocked. No boat mission execution, geofence/route validation, release command or authenticated operational path.
+- Source version marker Remote ver026. ZIP/checksum and target build/hardware test are pending.
