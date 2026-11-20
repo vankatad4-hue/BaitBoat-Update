@@ -26,7 +26,9 @@ static lv_timer_t *wifiConnectTimer = nullptr;
 static uint32_t wifiConnectStartedAt = 0;
 static lv_obj_t *mapSourceLabel = nullptr;
 static lv_obj_t *mapWiFiLabel = nullptr;
-static lv_timer_t *mapStatusTimer = nullptr;\nstatic bool wifiScanActive = false;\nstatic bool wifiConnectActive = false;
+static lv_timer_t *mapStatusTimer = nullptr;
+static bool wifiScanActive = false;
+static bool wifiConnectActive = false;\nstatic bool wifiScanActive = false;\nstatic bool wifiConnectActive = false;
 // Sonar preference widgets; values are persisted locally until boat-side sync exists.
 static lv_obj_t *sonarRange = nullptr;
 static lv_obj_t *sonarУСИЛВАНЕ = nullptr;
@@ -295,108 +297,92 @@ static void buildSonarSection(lv_obj_t *parent)
 static void wifiScanPoll(lv_timer_t *timer)
 {
     const int result = WiFi.scanComplete();
-    if (result == WIFI_SCAN_RUNNING)
-        return;
-
-    if (wifiScanTimer != nullptr)
-    {
-        lv_timer_del(wifiScanTimer);
-        wifiScanTimer = nullptr;
-    }
-
+    if (result == WIFI_SCAN_RUNNING) return;
+    wifiScanActive = false;
+    if (wifiScanTimer != nullptr) { lv_timer_del(wifiScanTimer); wifiScanTimer = nullptr; }
     if (result == WIFI_SCAN_FAILED)
     {
-        lv_label_set_text(wifiStatus, "СКАНИРАНЕТО НЕ УСПЯ. ВЪВЕДИ SSID РЪЧНО.");
+        if (wifiStatus) lv_label_set_text(wifiStatus, "СКАНИРАНЕТО НЕ УСПЯ. ВЪВЕДИ SSID РЪЧНО.");
         WiFi.scanDelete();
+        (void)timer;
         return;
     }
-
     String output;
-    const int shown = (result > 8) ? 8 : result;
+    const int shown = result > 8 ? 8 : result;
     for (int i = 0; i < shown; ++i)
-    {
-        output += String(i + 1) + ". " + WiFi.SSID(i) + " (" +
-                  String(WiFi.RSSI(i)) + " dBm)\n";
-    }
-    if (result == 0)
-        output = "НЕ СА НАМЕРЕНИ МРЕЖИ. ВЪВЕДИ SSID РЪЧНО.";
-    else
-        output += "ИЗБЕРИ ИЛИ ВЪВЕДИ ИМЕТО В ПОЛЕТО SSID.";
-
-    lv_label_set_text(scanResults, output.c_str());
-    lv_label_set_text(wifiStatus, "СКАНИРАНЕТО ЗАВЪРШИ.");
+        output += String(i + 1) + ". " + WiFi.SSID(i) + " (" + String(WiFi.RSSI(i)) + " dBm)\n";
+    if (result == 0) output = "НЕ СА НАМЕРЕНИ МРЕЖИ. ВЪВЕДИ SSID РЪЧНО.";
+    else output += "ИЗБЕРИ ИЛИ ВЪВЕДИ ИМЕТО В ПОЛЕТО SSID.";
+    if (scanResults) lv_label_set_text(scanResults, output.c_str());
+    if (wifiStatus) lv_label_set_text(wifiStatus, "СКАНИРАНЕТО ЗАВЪРШИ.");
     WiFi.scanDelete();
     (void)timer;
 }
 
-// Start a non-blocking Wi-Fi scan.
 static void scanWiFiEvent(lv_event_t *event)
 {
     (void)event;
-    if (wifiScanTimer != nullptr)
-        return;
-
-    lv_label_set_text(wifiStatus, "СКАНИРАНЕ НА WI-FI МРЕЖИ...");
-    WiFi.mode(WIFI_STA);
-    const int result = WiFi.scanNetworks(true, true); // Async scan; show hidden networks as well.
-    if (result == WIFI_SCAN_FAILED)
+    if (wifiScanTimer != nullptr) return;
+    if (wifiStatus) lv_label_set_text(wifiStatus, "СКАНИРАНЕ НА WI-FI МРЕЖИ...");
+    if (wifiScanActive)
     {
-        lv_label_set_text(wifiStatus, "СКАНИРАНЕТО НЕ МОЖЕ ДА СТАРТИРА.");
+        // Category was hidden while scan continued; resume polling the existing scan.
+        wifiScanTimer = lv_timer_create(wifiScanPoll, 250, nullptr);
         return;
     }
+    WiFi.mode(WIFI_STA);
+    const int result = WiFi.scanNetworks(true, true);
+    if (result == WIFI_SCAN_FAILED)
+    {
+        if (wifiStatus) lv_label_set_text(wifiStatus, "СКАНИРАНЕТО НЕ МОЖЕ ДА СТАРТИРА.");
+        return;
+    }
+    wifiScanActive = (result == WIFI_SCAN_RUNNING);
     wifiScanTimer = lv_timer_create(wifiScanPoll, 250, nullptr);
 }
 
-// Poll Wi-Fi association without blocking the LVGL event loop.
 static void wifiConnectPoll(lv_timer_t *timer)
 {
-    const wl_status_t status = WiFi.status();
-    if (status == WL_CONNECTED)
+    if (WiFi.status() == WL_CONNECTED)
     {
-        lv_label_set_text(wifiStatus, "WI-FI Е СВЪРЗАН.");
+        wifiConnectActive = false;
+        if (wifiStatus) lv_label_set_text(wifiStatus, "WI-FI Е СВЪРЗАН.");
         lv_timer_del(timer);
         wifiConnectTimer = nullptr;
         return;
     }
-    if (static_cast<uint32_t>(millis() - wifiConnectStartedAt) >= 20000U)
+    if ((uint32_t)(millis() - wifiConnectStartedAt) >= 20000U)
     {
-        lv_label_set_text(wifiStatus, "ИЗТЕЧЕ ВРЕМЕТО. ПРОВЕРИ SSID / ПАРОЛА.");
+        wifiConnectActive = false;
+        if (wifiStatus) lv_label_set_text(wifiStatus, "ИЗТЕЧЕ ВРЕМЕТО. ПРОВЕРИ SSID / ПАРОЛА.");
         lv_timer_del(timer);
         wifiConnectTimer = nullptr;
     }
 }
 
-// Save the Wi-Fi profile locally, then start a non-blocking connection attempt.
 static void connectWiFiEvent(lv_event_t *event)
 {
     (void)event;
     const char *ssid = lv_textarea_get_text(ssidArea);
     const char *password = lv_textarea_get_text(passwordArea);
-    if (ssid == nullptr || ssid[0] == '\0')
+    if (!ssid || !ssid[0])
     {
-        lv_label_set_text(wifiStatus, "ПЪРВО ВЪВЕДИ ИМЕ НА МРЕЖА.");
+        if (wifiStatus) lv_label_set_text(wifiStatus, "ПЪРВО ВЪВЕДИ ИМЕ НА МРЕЖА.");
         return;
     }
-
-    if (wifiConnectTimer != nullptr)
-    {
-        lv_timer_del(wifiConnectTimer);
-        wifiConnectTimer = nullptr;
-    }
-
+    if (wifiConnectTimer) { lv_timer_del(wifiConnectTimer); wifiConnectTimer = nullptr; }
     settingsPrefs.begin("flytec", false);
     settingsPrefs.putString("wifi_ssid", ssid);
-    settingsPrefs.putString("wifi_pass", password != nullptr ? password : "");
+    settingsPrefs.putString("wifi_pass", password ? password : "");
     settingsPrefs.end();
-
     WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid, password != nullptr ? password : "");
+    WiFi.begin(ssid, password ? password : "");
     wifiConnectStartedAt = millis();
-    lv_label_set_text(wifiStatus, "СВЪРЗВАНЕ КЪМ WI-FI...");
+    wifiConnectActive = true;
+    if (wifiStatus) lv_label_set_text(wifiStatus, "СВЪРЗВАНЕ КЪМ WI-FI...");
     wifiConnectTimer = lv_timer_create(wifiConnectPoll, 500, nullptr);
 }
 
-// Build the Wi-Fi category, including text fields and the virtual keyboard.
 static void buildWiFiSection(lv_obj_t *parent)
 {
     makeLabel(parent, "WI-FI МРЕЖА", 18, 12);
@@ -419,7 +405,8 @@ static void buildWiFiSection(lv_obj_t *parent)
 
     makeButton(parent, "СКАНИРАЙ", 370, 78, 120, scanWiFiEvent);
     makeButton(parent, "СВЪРЖИ", 370, 160, 120, connectWiFiEvent);
-    wifiStatus = makeLabel(parent, "WI-FI НЕ Е СВЪРЗАН.", 18, 220);
+    wifiStatus = makeLabel(parent, wifiConnectActive ? "СВЪРЗВАНЕ КЪМ WI-FI..." :
+                           (WiFi.status() == WL_CONNECTED ? "WI-FI Е СВЪРЗАН." : "WI-FI НЕ Е СВЪРЗАН."), 18, 220);
     scanResults = makeLabel(parent, "ТУК ЩЕ СЕ ПОЯВЯТ ОТКРИТИТЕ МРЕЖИ.", 18, 250);
 
     if (keyboard == nullptr)
@@ -432,9 +419,11 @@ static void buildWiFiSection(lv_obj_t *parent)
         lv_obj_add_event_cb(keyboard, keyboardEvent, LV_EVENT_CANCEL, nullptr);
     }
     lv_obj_add_flag(keyboard, LV_OBJ_FLAG_HIDDEN);
+    // Reattach polls when the category is revisited after timers were stopped.
+    if (wifiScanActive && wifiScanTimer == nullptr) wifiScanTimer = lv_timer_create(wifiScanPoll, 250, nullptr);
+    if (wifiConnectActive && wifiConnectTimer == nullptr) wifiConnectTimer = lv_timer_create(wifiConnectPoll, 500, nullptr);
 }
 
-// Build the display category with controls supported by the present board configuration.
 static void buildDisplaySection(lv_obj_t *parent)
 {
     makeLabel(parent, "ДИСПЛЕЙ", 18, 12);
