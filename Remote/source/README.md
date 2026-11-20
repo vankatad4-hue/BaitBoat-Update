@@ -4,7 +4,7 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 
 ## Versioning
 - ZIP: `Flytec_Remote_verXXX.zip`.
-- Preserve older archives; current marker `releases/VERSION` is `026`.
+- Preserve older archives; current marker `releases/VERSION` is `027`.
 - Increment for every package change and follow `../../docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Controller/display baseline
@@ -89,3 +89,10 @@ Authenticated receive frames are dispatched to strict payload decoders. Remote A
 - Version source marker ver026; archive and checksum are not yet verified.
 
 - Hardware verification checklist: `Remote/docs/MISSION_NVS_TEST_PLAN_VER026.md` (not yet run).
+
+
+## Remote ver027 — 16 waypoints + SD map storage
+- Waypoint plan expanded to 16 persistent NVS slots plus independent Home. UI presents four rows × four columns; each slot can be selected and saved. BAIT/HOOK flags persist.
+- Save uses fresh GNSS (<2s) and reports NVS write success/failure. CRC validation retained. Marker array supports all 16, still on placeholder local grid.
+- Integrated TF/microSD designated as offline-map data storage. Existing manifest/tile reader uses `/maps/manifest.txt` and RGB565 XYZ tile files; tile rendering and map pack generation remain not implemented.
+- See `../docs/OFFLINE_MAP_SD_STORAGE_VER027.md` and test plan.
