@@ -40,7 +40,6 @@ static uint8_t g_authKey[32];
 static RadioSequenceGuard g_boatSequenceGuard;
 static bool g_boatSessionStarted=false;
 static uint8_t g_boatSessionEpoch=0;
-static uint8_t g_boatSessionEpoch=0;
 
 static BoatRadioLink toPublicLink(ManagedLink link) {
     if(link==LINK_NRF_PRIMARY) return RADIO_LINK_NRF24_PRIMARY;
