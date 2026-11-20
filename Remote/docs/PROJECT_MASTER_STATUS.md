@@ -408,3 +408,12 @@ Boat:
 - UI source is unreleased ver029 development (latest polish ver029.13); static echogram remains demo-only. UI checklist `UI_BUILD_VER029_9.md` and SVG previews are available.
 - Latest consolidated changelog VER021. Source markers remain Remote 028 / Boat 014; current branch archives are unverified snapshots.
 - Workflow #880 previously succeeded with archive-preservation guard. Latest documentation sync triggered packaging run #888 (pending at last check); verify its outcome when resuming. No target compile or LVGL test has occurred.
+
+
+## Source audit / compile preparation — VER022 (2026-11-20)
+- Findings recorded in `docs/SOURCE_CONSISTENCY_AUDIT_R1.md`; consolidated development changelog VER022.
+- Remote authenticated session markers now retry independently per link until confirmation (nRF 500ms; E22 3s duty-limited). Boat resends same-session replies for idempotent retry recovery.
+- Fixes are source-only, not compiled or integration-tested. Auth key provisioning remains disabled/fail-closed.
+- No reproducible target build manifest or dependency lock. Exact Waveshare/display-library compatibility and board SKU still require confirmation.
+- Remote host-test workflow is missing; no complete host test run is claimed.
+- Current markers remain Remote 028 / Boat 014; no ZIP/release bump. Branch archives remain unverified.
