@@ -28,7 +28,7 @@ bool BoatDualRadioPort::begin() {
  serial_.begin(9600,SERIAL_8N1,BOAT_E22_UART_RX_PIN,BOAT_E22_UART_TX_PIN);
  e22Configured_=e22_.configureEU868TestProfile();
 #endif
- if(authenticated_) { if(nrfReady_)sendSessionStart(LINK_NRF_PRIMARY,millis()); if(e22Configured_)sendSessionStart(LINK_LORA_BACKUP,millis()); }
+ if(authenticated_) { if(nrfReady_)sendSessionStart(LINK_NRF_PRIMARY,millis()); if(e22Configured_ && sendSessionStart(LINK_LORA_BACKUP,millis()))lastE22HeartbeatTxMs_=millis(); }
  return nrfReady_||e22Configured_;
 }
 void BoatDualRadioPort::update() {
