@@ -28,22 +28,26 @@ The project uses the LVGL 9 object model (`lv_display_*`, `lv_indev_*`, `lv_scre
 
 Open `Flytec_Remote.ino` from this folder. `Boat_menu_update.ino` was removed because it contained a second empty `setup()` and `loop()`.
 
-## Updated dual-radio architecture (2026-11-20)
+## Dual-radio architecture R2 (2026-11-20)
 
 - **Primary:** nRF24L01+ PA/LNA, matching modules on remote and boat, 2.4GHz, 250kbps initial setting.
-- **Backup:** LoRa UART module candidate EBYTE E22-900T22S-V2 / SX1262 family, configured for EU863–870, installed on both remote and boat.
+- **Backup remote:** EBYTE E22-900T22S UART module candidate, EU868.
+- **Backup boat:** Heltec Wireless Tracker candidate's integrated SX1262, if exact revision/band confirmed; no extra E22 module by default.
 - Remote RIGHT antenna is LoRa 868MHz; LEFT antenna is nRF24 2.4GHz. Waveshare ESP32-S3 Wi-Fi/Bluetooth uses its onboard antenna.
-- LoRa carries heartbeat, low-rate telemetry, reduced-rate steering with speed cap, STOP and RETURN only. No sonar stream; mission-start and release commands disabled over backup by default.
+- LoRa PHY must be configured identically on remote E22 and boat's native SX1262; interoperability is not assumed. Backup is safety/low-rate traffic, no sonar, no bait/hook release or mission start.
 - Dual-link state machine, authenticated/replay-protected packets, duplicate suppression, failover hysteresis, command ACK/state confirmation and boat-local failsafe are specified but not implemented.
 - 500m remains an unvalidated target. Regulatory power/channel/duty-cycle and antenna gain/cable-loss compliance must be verified for Bulgaria/EU.
-- See `../docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R1.md` and `../docs/DUAL_RADIO_PROTOCOL_FIRMWARE_SPEC_R1.md`.
+- See `../docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R2.md`, `../docs/DUAL_RADIO_PROTOCOL_FIRMWARE_SPEC_R2.md`, and `../New_Handheld_Remote/PCB/REMOTE_HARDWARE_PIN_ASSIGNMENTS_R2.md`.
 
 ## Current modules
 
 - `Flytec_Remote.ino`: application entry point; one joystick callback and one initialisation sequence.
 - `boat_state.h/.cpp`: shared boat state; starts STOP-latched and unconfirmed.
 - `boat_commands.h/.cpp`: application command objects and transport callback.
-- `boat_radio.h/.cpp`: non-operational dual-radio API scaffold (nRF primary + LoRa backup); drivers, authenticated packet decoder, ACKs and failover are not implemented.
+- `boat_radio.h/.cpp`: command routing and radio state API integrated with dual-link supervisor; transport remains disabled without drivers.
+- `radio_protocol.h/.cpp`: fixed 32-byte frame, CRC16 and HMAC-SHA256 authentication tag.
+- `radio_command_codec.h/.cpp`: command encode/decode, freshness and backup-policy checks.
+- `dual_radio_manager.h/.cpp`: health, failover, recovery hysteresis and restricted LoRa command policy.
 - `boat_ui.h/.cpp`: main map/sonar placeholder screen and STOP/STICKS controls.
 - `joystick.h/.cpp`: four-axis normalisation, calibration and safety gates.
 - `joystick_calibration_ui.h/.cpp`: LVGL 9.6 calibration/settings screen.
@@ -55,7 +59,7 @@ Open `Flytec_Remote.ino` from this folder. `Boat_menu_update.ino` was removed be
 
 ## Safety state
 
-The remote starts with `emergencyStop=true` and `emergencyStopConfirmed=false`. A future validated telemetry handler must set the confirmation flag only after receiving an authenticated/valid boat status packet. Both nRF24 primary and LoRa backup transports remain non-operational stubs and never connect or transmit. The joystick ADC reader returns false. Motor commands are additionally inhibited until a complete four-axis calibration succeeds.
+The remote starts with `emergencyStop=true` and `emergencyStopConfirmed=false`. A future validated telemetry handler must set the confirmation flag only after receiving an authenticated/valid boat status packet. No radio hardware driver is registered. Link state remains disconnected and command sends return false. The joystick ADC reader returns false. Motor commands are additionally inhibited until a complete four-axis calibration succeeds.
 
 Calibration values currently exist only in RAM; persistent Preferences/NVS storage has not yet been implemented.
 
@@ -272,3 +276,10 @@ This release adds documentation only. Radio and joystick inputs remain non-opera
 - `boat_radio.h/.cpp` now expose primary/backup connection status, active-link and link-state enums. They deliberately return disconnected values until drivers/LinkManager are implemented.
 - `BoatCommand` now carries `sequence`, stable `commandId`, and `createdAtMs`; current sender stamps command ID equal to sequence and time. This is only an application scaffold, not wire-protocol authentication or boat-side duplicate suppression.
 - Do not connect to actuators. Release-command idempotency, backup-mode restrictions and authenticated acknowledgements remain implementation and test gates.
+
+
+## Hardware design revision R2
+- Added pin assignment proposal: `New_Handheld_Remote/PCB/REMOTE_HARDWARE_PIN_ASSIGNMENTS_R2.md`; nRF CSN direct GPIO6 candidate, CE through MCP23017 only for bench timing validation; LoRa E22 UART via SC16IS750 I2C-UART bridge @0x48 to avoid GPIO15/16 RS485 conflict. ADC addresses changed to 0x4A/0x4B. Exact physical header crosswalk remains pending.
+- Added detailed schematic sheet spec, pin connections CSV, test build and BOM R2. Native KiCad capture/ERC/PCB still not completed.
+- Revised remote envelope target 300×210×70mm; physical fit check is required.
+- LoRa airtime/profile and Bulgarian/EU legality must be checked; initial backup command cadence is capped at 1Hz in software policy.
