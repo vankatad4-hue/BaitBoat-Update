@@ -29,8 +29,11 @@ static bool sendCommand(BoatCommand &command)
         return false;
     }
 
-    // Assign a new sequence number.
+    // Assign a unique logical ID. Link retries must retain this ID so the
+    // boat can suppress duplicate execution across nRF/LoRa failover.
     command.sequence = ++commandSequence;
+    command.commandId = command.sequence;
+    command.createdAtMs = millis();
 
     // Send the command through the registered transport.
     return commandTransport(command);
