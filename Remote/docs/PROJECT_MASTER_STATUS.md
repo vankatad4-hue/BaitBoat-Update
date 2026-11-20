@@ -109,3 +109,9 @@ Power and interface documentation updated. Native KiCad schematics, ERC, PCB lay
 
 ## Finalization blockers
 Native KiCad capture and ERC/DRC, exact physical PORT1 crosswalk, final footprints, board revisions, nRF/LoRa drivers, secure key provisioning, boat receiver/action cache integration, motor/solenoid current measurements, MDD20A fit, converter thermal and RF legality/interoperability tests remain outstanding. No ver006 ZIP release created.
+
+
+## R3 pairing decision (supersedes R2 LoRa pairing)
+- Initial hardware prototype will use **identical EBYTE E22-900T22S UART modules on both remote and boat**. This avoids assuming transparent E22 ↔ raw native SX1262 interoperability. Heltec Tracker's integrated SX1262 remains unused for this link unless later compatibility testing supports it.
+- Boat UART must be allocated on a verified spare pair from exact Tracker board schematic; GNSS, integrated LoRa, USB, strapping and other board functions remain reserved. If no direct UART is safe, bridge or controller change.
+- Reference: `Remote/docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R3.md`, `Boat/docs/BOAT_LORA_HARDWARE_DECISION_R3.md`.
