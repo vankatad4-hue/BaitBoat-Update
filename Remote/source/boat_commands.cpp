@@ -1,6 +1,7 @@
 
 #include "boat_commands.h"
 #include "boat_radio.h"
+#include "joystick.h"
 
 // Next command sequence number.
 static uint32_t commandSequence = 0;
@@ -64,6 +65,8 @@ bool boatCommands_sendStop()
 
 bool boatCommands_clearStop()
 {
+    const auto j=joystick_getSnapshot();
+    if(!boatState.emergencyStop||!boatState.emergencyStopConfirmed||!boatRadio_primaryConnected()||boatState.motorLeftActive||boatState.motorRightActive||!j.readingsValid||!j.calibrationValid||j.calibrationMode||!j.neutral)return false;
     // Create a stop-clear request.
     BoatCommand command = {};
 
@@ -87,7 +90,8 @@ bool boatCommands_setMode(BoatMode mode)
         return false;
     }
 
-    // No autonomous mode request until authenticated mission upload/feedback is wired.
+    // Autonomous mode goes through the prepared mission protocol, not an ordinary mode frame.
+    if(boatRadio_missionLocked())return mode==MODE_MANUAL?boatRadio_missionControl(MCTRL_SWITCH_MANUAL):mode==MODE_AUTOPILOT?boatRadio_missionControl(MCTRL_START):false;
     if (mode != MODE_MANUAL) return false;
     // Create the mode-change command.
     BoatCommand command = {};

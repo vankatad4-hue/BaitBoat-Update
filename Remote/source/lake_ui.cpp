@@ -1,4 +1,6 @@
 #include "lake_ui.h"
+#include "bulgarian_keyboard.h"
+#include "boat_radio.h"
 #include "lake_storage.h"
 #include "mission_ui.h"
 #include "offline_map.h"
@@ -7,7 +9,8 @@
 #include "boat_ui.h"
 void boatUI_refreshLakeLabel();
 static lv_obj_t *page=nullptr,*parentScreen=nullptr,*status=nullptr,*field=nullptr,*keyboard=nullptr,*labels[LAKE_COUNT]={};
-static uint8_t selected=0;
+static uint8_t selected=0,keyboardLayout=0;
+static lv_obj_t *language=nullptr;
 static lv_obj_t *label(lv_obj_t *p,const char *text,int x,int y,int w){
     lv_obj_t *l=lv_label_create(p);lv_label_set_text(l,text);lv_obj_set_pos(l,x,y);lv_obj_set_width(l,w);lv_label_set_long_mode(l,LV_LABEL_LONG_DOT);return l;
 }
@@ -32,7 +35,7 @@ static void pick(lv_event_t *e){
     lv_label_set_text(status,"ИЗБЕРИ АКТИВИРАНЕ ИЛИ ПРОМЕНИ ИМЕ");
 }
 static void activate(lv_event_t *){
-    if(!lakeStorage_select(selected)){lv_label_set_text(status,"БЛОКИРАНО: SD, РАДИО, РЪЧЕН РЕЖИМ И ПОТВЪРДЕН STOP");return;}
+    if(boatRadio_missionLocked()||!lakeStorage_select(selected)){lv_label_set_text(status,"БЛОКИРАНО: SD, РАДИО, РЪЧЕН РЕЖИМ И ПОТВЪРДЕН STOP");return;}
     missionUI_reloadStorage();
     boatState.offlineMapReady=offlineMap_begin(boatState.sdCardReady);
     mapRenderer_resetProfile();
@@ -44,10 +47,11 @@ static void saveName(lv_event_t *){
     bool ok=lakeStorage_setName(selected,lv_textarea_get_text(field));refreshNames();
     lv_label_set_text(status,ok?"ИМЕТО Е ЗАПИСАНО НА SD":"ГРЕШКА SD / НЕВАЛИДНО ИМЕ");
 }
-static void showKeyboard(lv_event_t *){lv_keyboard_set_textarea(keyboard,field);lv_obj_remove_flag(keyboard,LV_OBJ_FLAG_HIDDEN);lv_obj_move_foreground(keyboard);}
-static void hideKeyboard(lv_event_t *){lv_obj_add_flag(keyboard,LV_OBJ_FLAG_HIDDEN);}
+static void toggleLanguage(lv_event_t *){keyboardLayout=(keyboardLayout+1U)%3U;lv_keyboard_set_mode(keyboard,flytecKeyboardMode(keyboardLayout));lv_label_set_text(lv_obj_get_child(language,0),flytecKeyboardNextLabel(keyboardLayout));}
+static void showKeyboard(lv_event_t *){lv_keyboard_set_textarea(keyboard,field);lv_obj_remove_flag(keyboard,LV_OBJ_FLAG_HIDDEN);lv_obj_move_foreground(keyboard);lv_obj_remove_flag(language,LV_OBJ_FLAG_HIDDEN);lv_obj_move_foreground(language);}
+static void hideKeyboard(lv_event_t *){lv_keyboard_set_textarea(keyboard,nullptr);lv_obj_add_flag(keyboard,LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(language,LV_OBJ_FLAG_HIDDEN);}
 bool lakeUI_close(){if(!page||lv_screen_active()!=page)return false;
-    if(keyboard&&!lv_obj_has_flag(keyboard,LV_OBJ_FLAG_HIDDEN)){lv_obj_add_flag(keyboard,LV_OBJ_FLAG_HIDDEN);return true;}
+    if(keyboard&&!lv_obj_has_flag(keyboard,LV_OBJ_FLAG_HIDDEN)){hideKeyboard(nullptr);return true;}
     lv_obj_t *old=page;page=nullptr;boatUI_refreshLakeLabel();lv_screen_load(parentScreen);lv_obj_delete_async(old);return true;
 }
 static void closePage(lv_event_t *){lakeUI_close();}
@@ -70,8 +74,10 @@ void lakeUI_open(lv_obj_t *parent){
     button(page,"АКТИВИРАЙ",12,369,240,48,activate);
     button(page,"НАЗАД",548,369,240,48,closePage);
     status=label(page,"* АКТИВНО | > ИЗБРАНО | СМЯНА САМО ПРИ STOP",12,432,775);
-    keyboard=lv_keyboard_create(page);lv_obj_set_size(keyboard,800,205);lv_obj_align(keyboard,LV_ALIGN_BOTTOM_MID,0,0);
-    lv_keyboard_set_mode(keyboard,LV_KEYBOARD_MODE_TEXT_LOWER);lv_keyboard_set_textarea(keyboard,field);
+    keyboard=lv_keyboard_create(page);lv_obj_set_size(keyboard,800,205);lv_obj_align(keyboard,LV_ALIGN_TOP_MID,0,0);
+    flytecInstallBulgarianKeyboard(keyboard);keyboardLayout=0;
+    language=button(page,"EN / БГ",650,215,136,40,toggleLanguage);lv_obj_add_flag(language,LV_OBJ_FLAG_HIDDEN);
+    lv_keyboard_set_mode(keyboard,LV_KEYBOARD_MODE_TEXT_LOWER);lv_keyboard_set_textarea(keyboard,nullptr);
     lv_obj_add_event_cb(keyboard,hideKeyboard,LV_EVENT_READY,nullptr);lv_obj_add_event_cb(keyboard,hideKeyboard,LV_EVENT_CANCEL,nullptr);
     lv_obj_add_flag(keyboard,LV_OBJ_FLAG_HIDDEN);
     char name[LAKE_NAME_BYTES];lakeStorage_getName(selected,name,sizeof(name));lv_textarea_set_text(field,name);

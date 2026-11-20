@@ -1,4 +1,5 @@
 #include "settings_ui.h"
+#include "bulgarian_keyboard.h"
 #include <Arduino.h>
 #include <WiFi.h>
 #include <Preferences.h>
@@ -109,26 +110,11 @@ static void stopWiFiUiTimers()
 }
 
 // Hide the virtual keyboard without deleting the entered text.
-// Phonetic QWERTY-style Bulgarian. Additional Cyrillic keys occupy row ends.
-static const char * const bgLower[]={
-    "я","в","е","р","т","ъ","у","и","о","п","ш","щ","\n",
-    "а","с","д","ф","г","х","й","к","л","ч","\n",
-    "з","ь","ц","ж","б","н","м","ю","\n",
-    LV_SYMBOL_BACKSPACE,LV_SYMBOL_LEFT," ",LV_SYMBOL_RIGHT,LV_SYMBOL_OK,""
-};
-static const char * const bgUpper[]={
-    "Я","В","Е","Р","Т","Ъ","У","И","О","П","Ш","Щ","\n",
-    "А","С","Д","Ф","Г","Х","Й","К","Л","Ч","\n",
-    "З","Ь","Ц","Ж","Б","Н","М","Ю","\n",
-    LV_SYMBOL_BACKSPACE,LV_SYMBOL_LEFT," ",LV_SYMBOL_RIGHT,LV_SYMBOL_OK,""
-};
-static lv_buttonmatrix_ctrl_t bgCtrl[35];
 static void keyboardLanguageEvent(lv_event_t *event){
     if(lv_event_get_code(event)!=LV_EVENT_CLICKED||!keyboard)return;
     keyboardLayout=(keyboardLayout+1U)%3U;
-    lv_keyboard_set_mode(keyboard, keyboardLayout==0?LV_KEYBOARD_MODE_TEXT_LOWER:
-                                    keyboardLayout==1?LV_KEYBOARD_MODE_USER_1:LV_KEYBOARD_MODE_USER_2);
-    lv_label_set_text(lv_obj_get_child(keyboardLanguage,0),keyboardLayout==0?"EN / БГ":keyboardLayout==1?"БГ / БГ↑":"БГ↑ / EN");
+    lv_keyboard_set_mode(keyboard,flytecKeyboardMode(keyboardLayout));
+    lv_label_set_text(lv_obj_get_child(keyboardLanguage,0),flytecKeyboardNextLabel(keyboardLayout));
 }
 static void hideKeyboard()
 {
@@ -451,10 +437,7 @@ static void buildWiFiSection(lv_obj_t *parent)
         keyboard = lv_keyboard_create(settingsScreen);
         lv_obj_set_size(keyboard, 800, 205);
         lv_obj_align(keyboard, LV_ALIGN_BOTTOM_MID, 0, 0);
-        for(auto &ctrl:bgCtrl)ctrl=static_cast<lv_buttonmatrix_ctrl_t>(1);
-        bgCtrl[32]=static_cast<lv_buttonmatrix_ctrl_t>(6);
-        lv_keyboard_set_map(keyboard,LV_KEYBOARD_MODE_USER_1,bgLower,bgCtrl);
-        lv_keyboard_set_map(keyboard,LV_KEYBOARD_MODE_USER_2,bgUpper,bgCtrl);
+        flytecInstallBulgarianKeyboard(keyboard);
         lv_keyboard_set_mode(keyboard, LV_KEYBOARD_MODE_TEXT_LOWER);
         keyboardLanguage=makeButton(settingsScreen,"EN / БГ",660,230,130,keyboardLanguageEvent);
         lv_obj_add_flag(keyboardLanguage,LV_OBJ_FLAG_HIDDEN);
