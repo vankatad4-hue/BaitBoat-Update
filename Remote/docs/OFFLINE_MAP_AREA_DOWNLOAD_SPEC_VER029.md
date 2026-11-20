@@ -53,3 +53,11 @@ For each selected zoom z, convert north/west and south/east bounds to XYZ tile i
 - [ ] Offline source licensing catalogue, actual area download, resumable tile jobs, coverage index and pack verification.
 - [ ] Google online provider adapter and credentials/attribution integration.
 - [ ] Target compile and physical Waveshare tests.
+
+
+## Stage and install on the remote SD
+1. Export an offline-licensed pack with the desktop MBTiles exporter.
+2. Copy the exporter output's `maps/` directory contents to SD under `/map-import/` (so files are `/map-import/manifest.txt`, `coverage_index.csv`, and style tile folders).
+3. Open Map Manager and press **IMPORT STAGED PACK**. It accepts complete packs only, checks attribution/licence fields and the index, then copies tiles in small chunks. The progress bar switches from area coverage to copied bytes/tiles.
+4. The manifest is installed last. On completion the firmware revalidates the pack and invalidates cached tiles.
+5. Keep the staged folder until the active pack is confirmed. Import currently requires free space for active and staged copies.
