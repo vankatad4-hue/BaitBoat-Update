@@ -43,7 +43,7 @@ struct RadioFrame {
     uint8_t payload[8];
     uint16_t crc16;
     uint8_t authTag[8];    // truncated HMAC-SHA256; provision a unique key, never a shared default
-    uint8_t reserved;
+    uint8_t sessionEpoch;
 };
 #pragma pack(pop)
 
@@ -53,5 +53,5 @@ uint16_t radio_crc16(const uint8_t *data, size_t length);
 bool radio_frameSeal(RadioFrame &frame, const uint8_t key[32]);
 bool radio_frameVerify(const RadioFrame &frame, const uint8_t key[32]);
 void radio_frameInit(RadioFrame &frame, RadioMessageType type, uint8_t src, uint8_t dst,
-                     uint16_t seq, uint16_t cmdId, uint32_t nowMs);
+                     uint16_t seq, uint16_t cmdId, uint32_t nowMs, uint8_t sessionEpoch = 0);
 bool radio_tickFresh(uint16_t receivedTick, uint16_t nowTick, uint16_t maxAgeMs);
