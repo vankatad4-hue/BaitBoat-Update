@@ -21,11 +21,17 @@ bool telemetryApplyRadioPayload(const RadioDecodedPayload &p,bool primary,uint32
   telemetry.latitudeRecordValid=true;telemetry.latitudeSample=p.coordinateSample;telemetry.latitude=(float)p.coordinateE7/10000000.0f;
   telemetry.gpsAccuracyMeters=(p.horizontalAccuracyCm==0xFFFFU)?0.0f:(float)p.horizontalAccuracyCm/100.0f;telemetry.latitudeReceivedAtMs=now;
   telemetry.coordinatePairValid=telemetry.longitudeRecordValid&&telemetry.latitudeSample==telemetry.longitudeSample&&(uint32_t)(now-telemetry.longitudeReceivedAtMs)<=COORD_PAIR_MAX_GAP;
-  if(telemetry.coordinatePairValid)telemetry.coordinatePairReceivedAtMs=now;telemetry.receivedAtMs=now;return true;
+  if(telemetry.coordinatePairValid) {
+   telemetry.coordinatePairReceivedAtMs=now;
+  }
+  telemetry.receivedAtMs=now;return true;
  case RADIO_PAYLOAD_GNSS_LONGITUDE:
   telemetry.longitudeRecordValid=true;telemetry.longitudeSample=p.coordinateSample;telemetry.longitude=(float)p.coordinateE7/10000000.0f;telemetry.longitudeReceivedAtMs=now;
   telemetry.coordinatePairValid=telemetry.latitudeRecordValid&&telemetry.latitudeSample==telemetry.longitudeSample&&(uint32_t)(now-telemetry.latitudeReceivedAtMs)<=COORD_PAIR_MAX_GAP;
-  if(telemetry.coordinatePairValid)telemetry.coordinatePairReceivedAtMs=now;telemetry.receivedAtMs=now;return true;
+  if(telemetry.coordinatePairValid) {
+   telemetry.coordinatePairReceivedAtMs=now;
+  }
+  telemetry.receivedAtMs=now;return true;
  case RADIO_PAYLOAD_NAVIGATION:
   telemetry.navigationValid=true;telemetry.heading=(p.headingCentidegrees==0xFFFFU)?-1.0f:(float)p.headingCentidegrees/100.0f;
   telemetry.speed=(p.speedCmPerSecond==0xFFFFU)?0.0f:(float)p.speedCmPerSecond/100.0f;telemetry.navigationStatus=p.navigationStatus;
