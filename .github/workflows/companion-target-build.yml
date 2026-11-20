@@ -1,0 +1,43 @@
+name: RP2040 carrier diagnostic target
+on:
+  push:
+    branches: [hardware-ready-dual-radio-r1]
+    paths:
+      - 'Boat/companion/**'
+      - 'Boat/source/carrier*'
+      - '.github/workflows/companion-target-build.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ARM toolchain
+        run: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib cmake ninja-build
+      - name: Fetch pinned Pico SDK
+        run: git clone --branch 2.1.1 --depth 1 https://github.com/raspberrypi/pico-sdk.git /tmp/pico-sdk
+      - name: Build disabled-output Pico firmware
+        env:
+          PICO_SDK_PATH: /tmp/pico-sdk
+        run: |
+          set -o pipefail
+          (cmake -S Boat/companion -B /tmp/carrier-build -G Ninja -DPICO_BOARD=pico -DPICO_NO_PICOTOOL=1 -DCMAKE_BUILD_TYPE=Release &&
+          cmake --build /tmp/carrier-build) 2>&1 | tee /tmp/carrier-build.log
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: flytec-rp2040-diagnostic
+          path: |
+            /tmp/carrier-build/flytec_carrier.elf
+            /tmp/carrier-build/flytec_carrier.bin
+            /tmp/carrier-build/flytec_carrier.uf2
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: carrier-build-log
+          path: /tmp/carrier-build.log
+          if-no-files-found: ignore
