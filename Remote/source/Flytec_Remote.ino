@@ -8,7 +8,7 @@
 #include "boat_commands.h"
 #include "boat_radio.h"
 #include "boat_telemetry.h"
-#include "offline_map.h"
+#include "offline_map.h"\n#include "offline_map_coverage.h"
 #include "display_port.h"
 #include "physical_button_scanner.h"
 #include "release_button_guard.h"
