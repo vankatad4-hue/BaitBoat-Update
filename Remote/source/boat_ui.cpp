@@ -330,7 +330,7 @@ static void createMapPanel()
     // Boat marker is hidden until a valid GPS fix is received.
     boatMarker = lv_obj_create(mapPanel);
     lv_obj_set_size(boatMarker, 18, 18);
-    lv_obj_align(boatMarker, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_align(boatMarker, LV_ALIGN_CENTER, 0, 20);
     lv_obj_set_style_radius(boatMarker, 9, LV_PART_MAIN);
     lv_obj_set_style_bg_color(boatMarker, lv_color_hex(0x00D5FF), LV_PART_MAIN);
     lv_obj_set_style_border_color(boatMarker, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
@@ -709,7 +709,7 @@ static void updateMapMissionMarkers(const BoatState &state)
  const double scale=0.65;const double cosLat=fmax(0.15,cos(state.latitude*3.141592653589793/180.0));
  auto place=[&](lv_obj_t *obj,float lat,float lon){
   const double east=(lon-state.longitude)*111320.0*cosLat;const double north=(lat-state.latitude)*111320.0;
-  if(fabs(east)>220.0||fabs(north)>220.0){lv_obj_add_flag(obj,LV_OBJ_FLAG_HIDDEN);return;}
+  if(fabs(east)>150.0||fabs(north)>150.0){lv_obj_add_flag(obj,LV_OBJ_FLAG_HIDDEN);return;}
   const int x=(int)(192.0+east*scale-lv_obj_get_width(obj)/2.0);const int y=(int)(192.0-north*scale-lv_obj_get_height(obj)/2.0);
   lv_obj_set_pos(obj,x,y);lv_obj_remove_flag(obj,LV_OBJ_FLAG_HIDDEN);
  };
