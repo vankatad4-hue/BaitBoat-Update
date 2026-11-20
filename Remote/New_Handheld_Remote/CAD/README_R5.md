@@ -6,3 +6,5 @@ R5 export workflow now serializes artifact builds and rebases before committing 
 The CAD workflow now fetches and rebases the branch before pushing generated assets.
 
 R5 CAD sources were synchronized to the generated print geometry; the build workflow exports shell, caps, preview, ZIP and SHA256.
+
+Generated CAD assets increment the Remote package version automatically when changed.
