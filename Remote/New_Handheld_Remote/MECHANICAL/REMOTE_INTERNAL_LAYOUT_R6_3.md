@@ -53,6 +53,11 @@ The display and E22 module dimensions are from manufacturer documentation; other
 - Power and high-current battery/charging paths remain on one side/lower zone; low-level ADC, SPI, and button signals route separately.
 - Antennas and connectors must not be blocked by battery, metal fasteners, or grip structures.
 
+## New fit risks from R6.4 component shortlist
+- KY-023/HW-504-style joystick candidates are commonly 34–40 mm wide and 26–39 mm tall, with stick travel and wiring extending beyond the PCB. The 36×36 placeholder is undersized/unverified; use a minimum 40×40 mm envelope until exact part selected.
+- The provisional antenna exits at X=±112, Y=82 overlap the upper area of the joystick-module envelopes centered at X=±108, Y=66. **Potential collision** between joystick body/fasteners and antenna hardware; reposition antenna exits or joystick assemblies after exact modules are chosen. Do not print the shell for assembly yet.
+- New component shortlist: [R6.4 component shortlist](../ELECTRICAL/COMPONENT_SELECTION_SHORTLIST_R6_4.md).
+
 ## Electrical/mechanical checks before final CAD
 - Decide the rail architecture from the 1S4P pack: boost/regulation, display-board input, RF supply filtering, and current capacity must be calculated before choosing converter footprints.
 - The charge/protection block shown is not a finished charger or BMS design; the exact pack configuration and protection/charging solution remain open.
