@@ -18,8 +18,9 @@ enum BoatRadioState : uint8_t {
     RADIO_STATE_RECOVERY
 };
 
-// Link-manager API is implemented. Hardware transports remain disabled until
-// verified pin allocation, RF module wiring, key provisioning and drivers exist.
+// Remote dual-radio adapter: nRF and E22 transports, authenticated frame
+// validation, link supervision and heartbeat scaffolds. Pin map is provisional;
+// key provisioning is fail-closed and commands are disabled without a key.
 bool boatRadio_begin();
 bool boatRadio_sendCommand(const BoatCommand &command);
 void boatRadio_update();
