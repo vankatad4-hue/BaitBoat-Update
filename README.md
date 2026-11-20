@@ -51,4 +51,4 @@ Do not connect motor/solenoid power or operate boat. Hardware pins, power, RF co
 ## Resume checkpoint (2026-11-20)
 Read **[Continuation Checkpoint VER001](docs/CONTINUATION_CHECKPOINT_VER001.md)** first when continuing work in another chat. It consolidates selected architecture, current source/UI work, blockers, verification status and ordered next tasks.
 
-Latest source/UI work is unreleased ver029 development; Remote marker 028 and Boat marker 014 remain unchanged. The branch ZIPs are unverified snapshots. Latest packaging workflow #880 succeeded and version-archive preservation is guarded by marker changes. No complete ESP32 firmware compile, LVGL Pro render, PCB ERC/DRC or hardware test is confirmed.
+Latest source/UI work is unreleased ver029 development; Remote marker 028 and Boat marker 014 remain unchanged. The branch ZIPs are unverified snapshots. Workflow #880 previously succeeded and version-archive preservation is guarded by marker changes; documentation sync run #888 was pending at last check. No complete ESP32 firmware compile, LVGL Pro render, PCB ERC/DRC or hardware test is confirmed.
