@@ -165,7 +165,7 @@ static void timeoutEvent(lv_event_t *event)
     else if (screenTimeoutMinutes == 5) screenTimeoutMinutes = 10;
     else screenTimeoutMinutes = 1;
     char value[48];
-    snprintf(value, sizeof(value), "Screen timeout: %u min", screenTimeoutMinutes);
+    snprintf(value, sizeof(value), "ИЗКЛЮЧВАНЕ СЛЕД: %u min", screenTimeoutMinutes);
     lv_label_set_text(timeoutLabel, value);
     saveDisplayPreferences();
 }
@@ -191,7 +191,7 @@ static void saveSonarPreferences()
     settingsPrefs.putUShort("snr_sdepth", (uint16_t)lv_slider_get_value(sonarShallowDepth));
     settingsPrefs.putUShort("snr_ddepth", (uint16_t)lv_slider_get_value(sonarDeepDepth));
     settingsPrefs.end();
-    if (sonarStatus) lv_label_set_text(sonarStatus, "Profile saved on remote. Boat/sonar sync pending hardware protocol.");
+    if (sonarStatus) lv_label_set_text(sonarStatus, "ПРОФИЛЪТ Е ЗАПАЗЕН. СИНХРОНИЗАЦИЯТА СЪС СОНАРА НЕ Е ИНТЕГРИРАНА.");
 }
 
 static void sonarPreferenceChanged(lv_event_t *event)
@@ -263,36 +263,36 @@ static void buildSonarSection(lv_obj_t *parent)
     const uint16_t deepDepth = settingsPrefs.getUShort("snr_ddepth", 20);
     settingsPrefs.end();
 
-    makeLabel(parent, "SONAR CONFIGURATION", 12, 8);
-    makeLabel(parent, "Depth / signal processing", 12, 38);
-    makeSonarDropdown(parent, "Maximum depth range", 65,
+    makeLabel(parent, "НАСТРОЙКИ НА СОНАРА", 12, 8);
+    makeLabel(parent, "ДЪЛБОЧИНА / ОБРАБОТКА", 12, 38);
+    makeSonarDropdown(parent, "МАКСИМАЛНА ДЪЛБОЧИНА", 65,
         "Auto\n5 m\n10 m\n20 m\n30 m\n50 m\n100 m", range, &sonarRange);
     makeSonarSlider(parent, "Gain", 112, 0, 100, gain, &sonarGain);
-    makeSonarSlider(parent, "Fish detection sensitivity", 153, 0, 100, sensitivity, &sonarSensitivity);
-    makeSonarDropdown(parent, "Noise rejection", 194,
+    makeSonarSlider(parent, "ЧУВСТВИТЕЛНОСТ ЗА РИБА", 153, 0, 100, sensitivity, &sonarSensitivity);
+    makeSonarDropdown(parent, "ПОТИСКАНЕ НА ШУМА", 194,
         "Off\nLow\nMedium\nHigh", noise, &sonarNoise);
-    makeSonarDropdown(parent, "Ping rate", 235,
+    makeSonarDropdown(parent, "ЧЕСТОТА НА ИЗПРАЩАНЕ", 235,
         "Low\nNormal\nHigh\nAuto", ping, &sonarPingRate);
-    makeSonarDropdown(parent, "Echogram scroll speed", 276,
+    makeSonarDropdown(parent, "СКОРОСТ НА ЕХОГРАМАТА", 276,
         "Slow\nNormal\nFast", scroll, &sonarScrollSpeed);
-    makeSonarDropdown(parent, "Colour palette", 317,
+    makeSonarDropdown(parent, "ЦВЕТОВА ПАЛИТРА", 317,
         "Classic\nHigh contrast\nGrayscale\nNight", palette, &sonarPalette);
 
-    makeLabel(parent, "Display / alarms", 12, 365);
-    makeSonarSwitch(parent, "Show fish arches / symbols", 397, arches, &sonarFishArches);
-    makeSonarSwitch(parent, "Fish detection alarm", 438, fishAlarm, &sonarFishAlarm);
-    makeSonarSwitch(parent, "Shallow-water alarm", 479, shallowAlarm, &sonarShallowAlarm);
-    makeSonarSlider(parent, "Shallow alarm depth (m)", 520, 1, 20, shallowDepth, &sonarShallowDepth);
-    makeSonarSwitch(parent, "Deep-water alarm", 561, deepAlarm, &sonarDeepAlarm);
-    makeSonarSlider(parent, "Deep alarm depth (m)", 602, 1, 100, deepDepth, &sonarDeepDepth);
-    sonarStatus = makeLabel(parent, "Changes save automatically on the remote.", 12, 650);
+    makeLabel(parent, "ИЗОБРАЖЕНИЕ / АЛАРМИ", 12, 365);
+    makeSonarSwitch(parent, "ПОКАЗВАЙ РИБНИ ДЪГИ / СИМВОЛИ", 397, arches, &sonarFishArches);
+    makeSonarSwitch(parent, "АЛАРМА ЗА РИБА", 438, fishAlarm, &sonarFishAlarm);
+    makeSonarSwitch(parent, "АЛАРМА ЗА ПЛИТКО", 479, shallowAlarm, &sonarShallowAlarm);
+    makeSonarSlider(parent, "ПРАГ ЗА ПЛИТКО (m)", 520, 1, 20, shallowDepth, &sonarShallowDepth);
+    makeSonarSwitch(parent, "АЛАРМА ЗА ДЪЛБОКО", 561, deepAlarm, &sonarDeepAlarm);
+    makeSonarSlider(parent, "ПРАГ ЗА ДЪЛБОКО (m)", 602, 1, 100, deepDepth, &sonarDeepDepth);
+    sonarStatus = makeLabel(parent, "НАСТРОЙКИТЕ СЕ ЗАПАЗВАТ В ДИСТАНЦИОННОТО.", 12, 650);
 }
 
 // Poll an asynchronous Wi-Fi scan without blocking LVGL touch and display updates.
 static void wifiScanPoll(lv_timer_t *timer)
 {
     const int result = WiFi.scanComplete();
-    if (result == WIFI_SCAN_RUNNING)
+    if (result == WIFI_СКАНИРАЙ_RUNNING)
         return;
 
     if (wifiScanTimer != nullptr)
@@ -301,9 +301,9 @@ static void wifiScanPoll(lv_timer_t *timer)
         wifiScanTimer = nullptr;
     }
 
-    if (result == WIFI_SCAN_FAILED)
+    if (result == WIFI_СКАНИРАЙ_FAILED)
     {
-        lv_label_set_text(wifiStatus, "Wi-Fi scan failed. Enter SSID manually.");
+        lv_label_set_text(wifiStatus, "СКАНИРАНЕТО НЕ УСПЯ. ВЪВЕДИ SSID РЪЧНО.");
         WiFi.scanDelete();
         return;
     }
@@ -316,12 +316,12 @@ static void wifiScanPoll(lv_timer_t *timer)
                   String(WiFi.RSSI(i)) + " dBm)\n";
     }
     if (result == 0)
-        output = "No networks found. Enter SSID manually.";
+        output = "НЕ СА НАМЕРЕНИ МРЕЖИ. ВЪВЕДИ SSID РЪЧНО.";
     else
-        output += "Select or type the network name in the SSID field.";
+        output += "ИЗБЕРИ ИЛИ ВЪВЕДИ ИМЕТО В ПОЛЕТО SSID.";
 
     lv_label_set_text(scanResults, output.c_str());
-    lv_label_set_text(wifiStatus, "Scan complete.");
+    lv_label_set_text(wifiStatus, "СКАНИРАНЕТО ЗАВЪРШИ.");
     WiFi.scanDelete();
     (void)timer;
 }
@@ -333,12 +333,12 @@ static void scanWiFiEvent(lv_event_t *event)
     if (wifiScanTimer != nullptr)
         return;
 
-    lv_label_set_text(wifiStatus, "Scanning Wi-Fi networks...");
+    lv_label_set_text(wifiStatus, "СКАНИРАНЕ НА WI-FI МРЕЖИ...");
     WiFi.mode(WIFI_STA);
     const int result = WiFi.scanNetworks(true, true); // Async scan; show hidden networks as well.
-    if (result == WIFI_SCAN_FAILED)
+    if (result == WIFI_СКАНИРАЙ_FAILED)
     {
-        lv_label_set_text(wifiStatus, "Could not start Wi-Fi scan.");
+        lv_label_set_text(wifiStatus, "СКАНИРАНЕТО НЕ МОЖЕ ДА СТАРТИРА.");
         return;
     }
     wifiScanTimer = lv_timer_create(wifiScanPoll, 250, nullptr);
@@ -348,16 +348,16 @@ static void scanWiFiEvent(lv_event_t *event)
 static void wifiConnectPoll(lv_timer_t *timer)
 {
     const wl_status_t status = WiFi.status();
-    if (status == WL_CONNECTED)
+    if (status == WL_СВЪРЖИED)
     {
-        lv_label_set_text(wifiStatus, "Connected to Wi-Fi.");
+        lv_label_set_text(wifiStatus, "WI-FI Е СВЪРЗАН.");
         lv_timer_del(timer);
         wifiConnectTimer = nullptr;
         return;
     }
     if (static_cast<uint32_t>(millis() - wifiConnectStartedAt) >= 20000U)
     {
-        lv_label_set_text(wifiStatus, "Connection timed out. Check SSID/password.");
+        lv_label_set_text(wifiStatus, "ИЗТЕЧЕ ВРЕМЕТО. ПРОВЕРИ SSID / ПАРОЛА.");
         lv_timer_del(timer);
         wifiConnectTimer = nullptr;
     }
@@ -371,7 +371,7 @@ static void connectWiFiEvent(lv_event_t *event)
     const char *password = lv_textarea_get_text(passwordArea);
     if (ssid == nullptr || ssid[0] == '\0')
     {
-        lv_label_set_text(wifiStatus, "Enter a Wi-Fi network name first.");
+        lv_label_set_text(wifiStatus, "ПЪРВО ВЪВЕДИ ИМЕ НА МРЕЖА.");
         return;
     }
 
@@ -389,35 +389,35 @@ static void connectWiFiEvent(lv_event_t *event)
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password != nullptr ? password : "");
     wifiConnectStartedAt = millis();
-    lv_label_set_text(wifiStatus, "Connecting to Wi-Fi...");
+    lv_label_set_text(wifiStatus, "СВЪРЗВАНЕ КЪМ WI-FI...");
     wifiConnectTimer = lv_timer_create(wifiConnectPoll, 500, nullptr);
 }
 
 // Build the Wi-Fi category, including text fields and the virtual keyboard.
 static void buildWiFiSection(lv_obj_t *parent)
 {
-    makeLabel(parent, "WI-FI NETWORK", 18, 12);
-    makeLabel(parent, "Network name (SSID)", 18, 52);
+    makeLabel(parent, "WI-FI МРЕЖА", 18, 12);
+    makeLabel(parent, "ИМЕ НА МРЕЖАТА (SSID)", 18, 52);
     ssidArea = lv_textarea_create(parent);
     lv_obj_set_pos(ssidArea, 18, 78);
     lv_obj_set_size(ssidArea, 330, 44);
     lv_textarea_set_one_line(ssidArea, true);
-    lv_textarea_set_placeholder_text(ssidArea, "Enter Wi-Fi name");
+    lv_textarea_set_placeholder_text(ssidArea, "ВЪВЕДИ ИМЕ НА WI-FI");
     lv_obj_add_event_cb(ssidArea, textAreaFocusEvent, LV_EVENT_FOCUSED, nullptr);
 
-    makeLabel(parent, "Password", 18, 134);
+    makeLabel(parent, "ПАРОЛА", 18, 134);
     passwordArea = lv_textarea_create(parent);
     lv_obj_set_pos(passwordArea, 18, 160);
     lv_obj_set_size(passwordArea, 330, 44);
     lv_textarea_set_one_line(passwordArea, true);
     lv_textarea_set_password_mode(passwordArea, true);
-    lv_textarea_set_placeholder_text(passwordArea, "Enter Wi-Fi password");
+    lv_textarea_set_placeholder_text(passwordArea, "ВЪВЕДИ WI-FI ПАРОЛА");
     lv_obj_add_event_cb(passwordArea, textAreaFocusEvent, LV_EVENT_FOCUSED, nullptr);
 
-    makeButton(parent, "SCAN", 370, 78, 120, scanWiFiEvent);
-    makeButton(parent, "CONNECT", 370, 160, 120, connectWiFiEvent);
-    wifiStatus = makeLabel(parent, "Wi-Fi is not connected.", 18, 220);
-    scanResults = makeLabel(parent, "Nearby networks will appear here.", 18, 250);
+    makeButton(parent, "СКАНИРАЙ", 370, 78, 120, scanWiFiEvent);
+    makeButton(parent, "СВЪРЖИ", 370, 160, 120, connectWiFiEvent);
+    wifiStatus = makeLabel(parent, "WI-FI НЕ Е СВЪРЗАН.", 18, 220);
+    scanResults = makeLabel(parent, "ТУК ЩЕ СЕ ПОЯВЯТ ОТКРИТИТЕ МРЕЖИ.", 18, 250);
 
     if (keyboard == nullptr)
     {
@@ -434,20 +434,20 @@ static void buildWiFiSection(lv_obj_t *parent)
 // Build the display category with controls supported by the present board configuration.
 static void buildDisplaySection(lv_obj_t *parent)
 {
-    makeLabel(parent, "DISPLAY", 18, 12);
-    makeLabel(parent, "Backlight power", 18, 62);
+    makeLabel(parent, "ДИСПЛЕЙ", 18, 12);
+    makeLabel(parent, "ПОДСВЕТКА", 18, 62);
     brightnessSwitch = lv_switch_create(parent);
     lv_obj_set_pos(brightnessSwitch, 250, 52);
     lv_obj_add_event_cb(brightnessSwitch, brightnessEvent, LV_EVENT_VALUE_CHANGED, nullptr);
-    makeLabel(parent, "The current CH422G backlight setup supports ON/OFF only.", 18, 105);
-    makeLabel(parent, "Variable brightness requires a PWM-capable backlight configuration.", 18, 132);
+    makeLabel(parent, "ТЕКУЕЩАТА CH422G КОНФИГУРАЦИЯ ПОДДЪРЖА САМО ВКЛ./ИЗКЛ.", 18, 105);
+    makeLabel(parent, "ПРОМЯНА НА ЯРКОСТТА ИЗИСКВА PWM ПОДСВЕТКА.", 18, 132);
 
-    makeLabel(parent, "Night theme preference (saved; theme switching pending)", 18, 185);
+    makeLabel(parent, "НОЩЕН РЕЖИМ (ЗАПАЗВА СЕ; ПРЕВКЛЮЧВАНЕТО ПРЕДСТОИ)", 18, 185);
     themeSwitch = lv_switch_create(parent);
     lv_obj_set_pos(themeSwitch, 250, 175);
     lv_obj_add_event_cb(themeSwitch, themeEvent, LV_EVENT_VALUE_CHANGED, nullptr);
-    timeoutLabel = makeLabel(parent, "Screen timeout: 5 min (setting saved; dimming not yet active)", 18, 245);
-    makeButton(parent, "CHANGE TIMEOUT", 18, 280, 190, timeoutEvent);
+    timeoutLabel = makeLabel(parent, "ИЗКЛЮЧВАНЕ СЛЕД: 5 мин. (ЗАПАЗЕНО; АВТОМАТИЧНОТО ЗАТЪМНЯВАНЕ НЕ Е АКТИВНО)", 18, 245);
+    makeButton(parent, "ПРОМЕНИ ВРЕМЕТО", 18, 280, 190, timeoutEvent);
 }
 
 // Build a clear placeholder for categories whose hardware integration is not yet complete.
@@ -469,24 +469,24 @@ static void layoutSettingsEvent(lv_event_t *event)
     (void)event;
     const JoystickSnapshot snap=joystick_getSnapshot();
     if(!snap.readingsValid || !snap.neutral){
-        lv_label_set_text(controlLayoutLabel,"Center sticks first; layout unchanged.");
+        lv_label_set_text(controlLayoutLabel,"ЦЕНТРИРАЙ СТИКОВЕТЕ. СХЕМАТА НЕ Е ПРОМЕНЕНА.");
         return;
     }
     joystick_setLayout(joystick_getLayout()==CONTROL_TANK?CONTROL_STEERING:CONTROL_TANK);
-    lv_label_set_text(controlLayoutLabel,joystick_getLayout()==CONTROL_TANK?"Layout: TANK":"Layout: STEERING");
+    lv_label_set_text(controlLayoutLabel,joystick_getLayout()==CONTROL_TANK?"СХЕМА: ТАНК":"СХЕМА: КОРМИЛО");
 }
 static void overrideSettingsEvent(lv_event_t *event)
 {
     (void)event;
     joystick_setAutopilotOverride(joystick_getAutopilotOverride()==OVERRIDE_TEMPORARY?OVERRIDE_TO_MANUAL:OVERRIDE_TEMPORARY);
-    lv_label_set_text(controlOverrideLabel,joystick_getAutopilotOverride()==OVERRIDE_TEMPORARY?"Override: TEMPORARY CONTROL":"Override: SWITCH TO MANUAL");
+    lv_label_set_text(controlOverrideLabel,joystick_getAutopilotOverride()==OVERRIDE_TEMPORARY?"ОВЕРРАЙД: ВРЕМЕНЕН":"ОВЕРРАЙД: РЪЧЕН РЕЖИМ");
 }
 static void controlDeadZoneEvent(lv_event_t *event)
 {
     (void)event;
     const int value=lv_slider_get_value(controlDeadZoneSlider);
     joystick_setDeadZone(value);
-    char label[64]; snprintf(label,sizeof(label),"Dead zone: %d ADC counts",value);
+    char label[64]; snprintf(label,sizeof(label),"МЪРТВА ЗОНА: %d ADC counts",value);
     lv_label_set_text(controlDeadZoneLabel,label);
 }
 static void openCalibrationEvent(lv_event_t *event)
@@ -496,27 +496,27 @@ static void openCalibrationEvent(lv_event_t *event)
 }
 static void buildControlsSection(lv_obj_t *parent)
 {
-    makeLabel(parent,"JOYSTICK / CONTROL",12,12);
-    controlLayoutLabel=makeLabel(parent,joystick_getLayout()==CONTROL_TANK?"Layout: TANK":"Layout: STEERING",12,54);
-    makeButton(parent,"TOGGLE LAYOUT",340,48,180,layoutSettingsEvent);
-    controlOverrideLabel=makeLabel(parent,joystick_getAutopilotOverride()==OVERRIDE_TEMPORARY?"Override: TEMPORARY CONTROL":"Override: SWITCH TO MANUAL",12,105);
-    makeButton(parent,"TOGGLE OVERRIDE",340,98,180,overrideSettingsEvent);
+    makeLabel(parent,"СТИКОВЕ / УПРАВЛЕНИЕ",12,12);
+    controlLayoutLabel=makeLabel(parent,joystick_getLayout()==CONTROL_TANK?"СХЕМА: ТАНК":"СХЕМА: КОРМИЛО",12,54);
+    makeButton(parent,"СМЕНИ СХЕМА",340,48,180,layoutSettingsEvent);
+    controlOverrideLabel=makeLabel(parent,joystick_getAutopilotOverride()==OVERRIDE_TEMPORARY?"ОВЕРРАЙД: ВРЕМЕНЕН":"ОВЕРРАЙД: РЪЧЕН РЕЖИМ",12,105);
+    makeButton(parent,"СМЕНИ ОВЕРРАЙД",340,98,180,overrideSettingsEvent);
     JoystickSnapshot snap=joystick_getSnapshot();
-    makeLabel(parent,"Dead zone",12,158);
+    makeLabel(parent,"МЪРТВА ЗОНА",12,158);
     controlDeadZoneSlider=lv_slider_create(parent);
     lv_obj_set_pos(controlDeadZoneSlider,220,156);
     lv_obj_set_size(controlDeadZoneSlider,300,24);
     lv_slider_set_range(controlDeadZoneSlider,10,120);
     lv_slider_set_value(controlDeadZoneSlider,snap.calibration.deadZone,LV_ANIM_OFF);
     lv_obj_add_event_cb(controlDeadZoneSlider,controlDeadZoneEvent,LV_EVENT_RELEASED,nullptr);
-    char label[64];snprintf(label,sizeof(label),"Dead zone: %d ADC counts",snap.calibration.deadZone);
+    char label[64];snprintf(label,sizeof(label),"МЪРТВА ЗОНА: %d ADC counts",snap.calibration.deadZone);
     controlDeadZoneLabel=makeLabel(parent,label,12,194);
-    makeLabel(parent,"Calibration requires a confirmed boat STOP; motor output is inhibited while calibrating.",12,240);
-    makeButton(parent,"OPEN CALIBRATION",12,282,220,openCalibrationEvent);
+    makeLabel(parent,"КАЛИБРИРАНЕТО ИЗИСКВА ПОТВЪРДЕН STOP. МОТОРИТЕ СА БЛОКИРАНИ.",12,240);
+    makeButton(parent,"ОТВОРИ КАЛИБРИРАНЕ",12,282,220,openCalibrationEvent);
 }
 
 // Map source preference selector. ONLINE is reserved until provider implementation.
-static lv_obj_t *mapSourceLabel = nullptr;\nstatic lv_obj_t *mapWiFiLabel = nullptr;\nstatic lv_timer_t *mapStatusTimer = nullptr;\nstatic void refreshMapConnectivityStatus(lv_timer_t *timer)\n{\n    (void)timer;\n    if (mapWiFiLabel) lv_label_set_text(mapWiFiLabel, WiFi.status() == WL_CONNECTED ? "Wi-Fi: CONNECTED | Internet: UNKNOWN" : "Wi-Fi: DISCONNECTED | Internet: UNKNOWN");\n}
+static lv_obj_t *mapSourceLabel = nullptr;\nstatic lv_obj_t *mapWiFiLabel = nullptr;\nstatic lv_timer_t *mapStatusTimer = nullptr;\nstatic void refreshMapConnectivityStatus(lv_timer_t *timer)\n{\n    (void)timer;\n    if (mapWiFiLabel) lv_label_set_text(mapWiFiLabel, WiFi.status() == WL_СВЪРЖИED ? "Wi-Fi: СВЪРЖИED | Internet: UNKNOWN" : "Wi-Fi: DISСВЪРЖИED | Internet: UNKNOWN");\n}
 static void mapSourceCycleEvent(lv_event_t *event)
 {
     (void)event;
@@ -528,15 +528,15 @@ static void mapSourceCycleEvent(lv_event_t *event)
 }
 static void buildMapSection(lv_obj_t *parent)
 {
-    makeLabel(parent, "MAP SOURCE", 18, 12);
-    makeLabel(parent, "Selected mode:", 18, 62);
-    mapSourceLabel = makeLabel(parent, mapSource_modeLabel(mapSource_getMode()), 250, 62);\n    mapWiFiLabel = makeLabel(parent, "Wi-Fi: checking... | Internet: UNKNOWN", 18, 350);\n    refreshMapConnectivityStatus(nullptr);\n    if (mapStatusTimer) lv_timer_del(mapStatusTimer);\n    mapStatusTimer = lv_timer_create(refreshMapConnectivityStatus, 2000, nullptr);
-    makeButton(parent, "CYCLE AUTO / ONLINE / OFFLINE", 18, 105, 310, mapSourceCycleEvent);
-    makeLabel(parent, "AUTO uses online maps when available; otherwise SD maps.", 18, 165);
-    makeLabel(parent, "ONLINE is optional and currently unavailable.", 18, 198);
-    makeLabel(parent, "OFFLINE uses SD map packs only; it never requests internet.", 18, 231);
-    makeLabel(parent, "Wi-Fi connected does NOT confirm internet access.", 18, 275);
-    makeLabel(parent, "Google API key, billing and renderer are not configured.", 18, 310);
+    makeLabel(parent, "ИЗТОЧНИК НА КАРТАТА", 18, 12);
+    makeLabel(parent, "РЕЖИМ:", 18, 62);
+    mapSourceLabel = makeLabel(parent, mapSource_modeLabel(mapSource_getMode()), 250, 62);\n    mapWiFiLabel = makeLabel(parent, "WI-FI: ПРОВЕРКА | ИНТЕРНЕТ: НЕИЗВЕСТЕН", 18, 350);\n    refreshMapConnectivityStatus(nullptr);\n    if (mapStatusTimer) lv_timer_del(mapStatusTimer);\n    mapStatusTimer = lv_timer_create(refreshMapConnectivityStatus, 2000, nullptr);
+    makeButton(parent, "AUTO / ONLINE / OFFLINE", 18, 105, 310, mapSourceCycleEvent);
+    makeLabel(parent, "AUTO ИЗПОЛЗВА ONLINE ПРИ НАЛИЧНОСТ; ИНАЧЕ SD.", 18, 165);
+    makeLabel(parent, "ONLINE Е ОПЦИЯ, НО НЕ Е ИНТЕГРИРАН.", 18, 198);
+    makeLabel(parent, "OFFLINE ИЗПОЛЗВА САМО SD КАРТИ.", 18, 231);
+    makeLabel(parent, "WI-FI ВРЪЗКА НЕ ОЗНАЧАВА ИНТЕРНЕТ.", 18, 275);
+    makeLabel(parent, "GOOGLE API КЛЮЧ, ПЛАЩАНЕ И РЕНДЕРЕР НЕ СА НАСТРОЕНИ.", 18, 310);
 }
 
 // Switch the right-hand settings panel when a category is selected.
@@ -564,7 +564,7 @@ static void categoryEvent(lv_event_t *event)
         lv_textarea_set_text(ssidArea, savedSsid.c_str());
         lv_textarea_set_text(passwordArea, savedPass.c_str());
     }
-    else if (strcmp(category, "DISPLAY") == 0)
+    else if (strcmp(category, "ДИСПЛЕЙ") == 0)
     {
         buildDisplaySection(settingsContent);
         settingsPrefs.begin("flytec", true);
@@ -578,7 +578,7 @@ static void categoryEvent(lv_event_t *event)
         else lv_obj_clear_state(themeSwitch, LV_STATE_CHECKED);
         char timeoutText[96];
         snprintf(timeoutText, sizeof(timeoutText),
-                 "Screen timeout: %u min (preference saved; automatic dimming not active)",
+                 "ИЗКЛЮЧВАНЕ СЛЕД: %u min (preference saved; automatic dimming not active)",
                  static_cast<unsigned>(screenTimeoutMinutes));
         lv_label_set_text(timeoutLabel, timeoutText);
         displayPort_setBacklight(backlightOn);
@@ -590,7 +590,7 @@ static void categoryEvent(lv_event_t *event)
     else if (strcmp(category, "MAP") == 0)
         buildMapSection(settingsContent);
     else
-        buildInfoSection(settingsContent, "SYSTEM", "Firmware version, storage status and restart controls will be added after hardware validation.");
+        buildInfoSection(settingsContent, "SYSTEM", "ВЕРСИЯ, СЪСТОЯНИЕ НА ПАМЕТТА И РЕСТАРТ ЩЕ СЕ ДОБАВЯТ СЛЕД ХАРДУЕРНА ПРОВЕРКА.");
 }
 
 // Create a navigation button and associate its settings category.
@@ -648,7 +648,7 @@ void settingsUI_open(lv_obj_t *returnScreen)
     // This first settings release opens the Wi-Fi category by default.
     makeLabel(nav, "РАЗДЕЛИ", 8, 8);
     makeCategoryButton(nav, "WI-FI", "WIFI", 48);
-    makeCategoryButton(nav, "ДИСПЛЕЙ", "DISPLAY", 98);
+    makeCategoryButton(nav, "ДИСПЛЕЙ", "ДИСПЛЕЙ", 98);
     makeCategoryButton(nav, "УПРАВЛЕНИЕ", "CONTROLS", 148);
     makeCategoryButton(nav, "СОНАР", "SONAR", 198);
     makeCategoryButton(nav, "КАРТА", "MAP", 248);
