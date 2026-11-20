@@ -1,4 +1,4 @@
-# Flytec V080 Retrofit — Master Status R8
+# Flytec V080 Retrofit — Master Status R9
 
 Updated: 2026-11-20. Development branch; no firmware compile, hardware test, ERC/DRC, or operational release has been validated.
 
@@ -374,7 +374,7 @@ Boat:
 - Mission UI: 16 waypoint storage slots; selected waypoint coordinate and GPS-derived distance/bearing (fresh fix only).
 - Settings localization pass; Wi-Fi/map/sonar options indicate unavailable integration rather than implying it works.
 - SVG previews and test checklist committed. LVGL Pro and firmware validation are pending.
-- Master changelog: `Remote/releases/CHANGELOG_MASTER_VER019.md` (VER015 superseded).
+- Master changelog: `Remote/releases/CHANGELOG_MASTER_VER020.md` (VER015 superseded).
 - Current source remains unreleased ver028 baseline; no ver029 ZIP or SHA generated.
 
 
@@ -395,3 +395,9 @@ Boat:
 - Selected waypoint distance/bearing numeric edge case clamped.
 - No firmware compile or LVGL Pro test yet.
 - Consolidated changelog VER019.
+
+
+## Source cleanup — ver029.13
+- Main UI source line-break cleanup and waypoint haversine clamp confirmed in repository source.
+- Changelog VER020.
+- Target build not run; use LVGL Pro before release.
