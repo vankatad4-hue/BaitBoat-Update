@@ -14,6 +14,8 @@
 ## Example storage planning
 For a 1 km square centred near latitude 43° using zoom levels 14–17, the planner logic estimates approximately 50 tile files, about 6.25 MiB raw RGB565, or roughly 6.88 MiB recommended free storage with a 10% margin. Actual tile count depends on the centre location and tile-boundary alignment.
 
+- `tools/mbtiles_area_export.py`: extracts only the planned area/zoom XYZ tile subset from a local MBTiles archive and writes RGB565 pack files, attribution/licence metadata, and a missing-tile completeness report. No network downloads occur.
+
 ## Not implemented
 - Google online renderer/API requests, online connection validation or API-key provisioning.
 - Actual map-data download.
