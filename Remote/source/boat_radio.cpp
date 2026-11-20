@@ -27,7 +27,7 @@ static constexpr uint8_t BOAT_DEVICE_ID=0x02;
 static uint8_t g_sessionEpoch=1;
 static uint16_t g_txSequence=0;
 static uint32_t g_lastPrimaryHeartbeat=0;
-static uint32_t g_lastBackupTxMs=0;
+static uint32_t g_lastBackupTxMs=0,g_lastBackupTxAttemptMs=0;
 static bool g_backupTxSent=false,g_loraPending=false;
 static uint8_t g_loraPendingPriority=0;
 static RadioFrame g_loraPendingFrame;
@@ -87,7 +87,7 @@ bool boatRadio_begin() {
     g_loraConfigured=false;g_nrfReady=false;g_begun=false;
     memset(g_authKey,0,sizeof(g_authKey));
     g_sessionEpoch=(uint8_t)esp_random(); if(g_sessionEpoch==0)g_sessionEpoch=1;
-    g_txSequence=0;g_lastPrimaryHeartbeat=0;g_lastBackupTxMs=0;g_backupTxSent=false;g_loraPending=false;g_loraPendingPriority=0;g_boatSequenceGuard.reset();
+    g_txSequence=0;g_lastPrimaryHeartbeat=0;g_lastBackupTxMs=0;g_lastBackupTxAttemptMs=0;g_backupTxSent=false;g_loraPending=false;g_loraPendingPriority=0;g_boatSequenceGuard.reset();
 
     // Display/SD setup initializes shared SPI/I2C. nRF CE/CSN pins are provisional.
     g_nrfReady=g_nrf.begin(true);
@@ -135,11 +135,12 @@ void boatRadio_update() {
             g_lastPrimaryHeartbeat=now;RadioFrame hb;radio_frameInit(hb,RADIO_MSG_HEARTBEAT,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,++g_txSequence,0,now,g_sessionEpoch);
             hb.payload[0]=1;hb.payload[1]=g_loraConfigured?1:0;radio_frameSeal(hb,g_authKey);g_nrf.sendFrame(hb);
         }
-        if(g_loraConfigured && g_loraPending && (!g_backupTxSent || (uint32_t)(now-g_lastBackupTxMs)>=3000U)) {
+        if(g_loraConfigured && g_loraPending && (!g_backupTxSent || (uint32_t)(now-g_lastBackupTxMs)>=3000U) && (uint32_t)(now-g_lastBackupTxAttemptMs)>=250U) {
+            g_lastBackupTxAttemptMs=now;
             if(g_lora.sendFrame(g_loraPendingFrame,now)){g_lastBackupTxMs=now;g_backupTxSent=true;g_loraPending=false;g_loraPendingPriority=0;}
         }
-        if(g_loraConfigured && !g_loraPending && (!g_backupTxSent || (uint32_t)(now-g_lastBackupTxMs)>=3000U)) {
-            RadioFrame hb;radio_frameInit(hb,RADIO_MSG_HEARTBEAT,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,++g_txSequence,0,now,g_sessionEpoch);
+        if(g_loraConfigured && !g_loraPending && (!g_backupTxSent || (uint32_t)(now-g_lastBackupTxMs)>=3000U) && (uint32_t)(now-g_lastBackupTxAttemptMs)>=250U) {
+            g_lastBackupTxAttemptMs=now;RadioFrame hb;radio_frameInit(hb,RADIO_MSG_HEARTBEAT,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,++g_txSequence,0,now,g_sessionEpoch);
             hb.payload[0]=g_nrfReady?1:0;hb.payload[1]=1;
             if(radio_frameSeal(hb,g_authKey) && g_lora.sendFrame(hb,now)){g_lastBackupTxMs=now;g_backupTxSent=true;}
         }
