@@ -113,3 +113,12 @@ Current package markers: Remote ver023 / Boat ver014. Boat ver014 ZIP checksum a
 - Canonical restart guide: `../../docs/CONTINUATION_CHECKPOINT_VER001.md`.
 - Remote UI changes and current integration boundaries are captured there. Boat remains scaffold-only: no command executor, actuator output, telemetry publisher, mission/autopilot, or failsafe execution.
 - Package marker Boat 014 is not evidence of an operational release; current branch archive is unverified. No target build/hardware validation.
+
+
+## Source audit / compile preparation — 2026-11-20
+- Boat dual-radio source was reviewed with Remote session-start retry logic.
+- Boat now responds idempotently to repeated authenticated same-session markers, preventing a lost reply from blocking peer session confirmation.
+- This correction is not compiled or integration-tested. Secure key provisioning remains disabled/fail-closed.
+- Boat receive/queue/ACK integration is not covered by current portable tests; the sketch remains a non-operational placeholder with no command executor, telemetry, failsafe execution or actuator outputs.
+- Build manifest/dependency lock, exact controller SKU/pins, target compile and RF/hardware validation remain blockers.
+- Source audit report: `docs/SOURCE_CONSISTENCY_AUDIT_R1.md`; changelog VER022.
