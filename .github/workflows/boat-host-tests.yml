@@ -1,0 +1,55 @@
+name: Boat portable host tests
+
+on:
+  push:
+    branches:
+      - hardware-ready-dual-radio-r1
+    paths:
+      - 'Boat/source/**'
+      - 'Boat/tests/**'
+      - '.github/workflows/boat-host-tests.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'Boat/source/**'
+      - 'Boat/tests/**'
+      - '.github/workflows/boat-host-tests.yml'
+
+jobs:
+  host-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compiler
+        run: g++ --version
+      - name: Payload encoder/decoder
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror \
+            Boat/source/radio_payload_encoder.cpp Boat/source/radio_payload_codec.cpp \
+            Boat/tests/radio_payload_encoder_test.cpp -o /tmp/boat_payload_test
+          /tmp/boat_payload_test
+      - name: Safety, deduplication and cross-radio policy
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I Boat/tests/stubs \
+            Boat/source/boat_radio_safety.cpp Boat/tests/boat_radio_safety_test.cpp \
+            -o /tmp/boat_safety_test
+          /tmp/boat_safety_test
+      - name: Command codec and backup policy
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I Boat/tests/stubs \
+            Boat/source/radio_command_codec.cpp Boat/tests/radio_command_codec_test.cpp \
+            -o /tmp/boat_codec_test
+          /tmp/boat_codec_test
+      - name: Sequence guard
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I Boat/tests/stubs \
+            Boat/source/radio_command_codec.cpp Boat/tests/radio_sequence_guard_test.cpp \
+            -o /tmp/boat_sequence_test
+          /tmp/boat_sequence_test
+      - name: Command queue
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I Boat/tests/stubs \
+            Boat/source/boat_command_queue.cpp Boat/tests/boat_command_queue_test.cpp \
+            -o /tmp/boat_queue_test
+          /tmp/boat_queue_test
