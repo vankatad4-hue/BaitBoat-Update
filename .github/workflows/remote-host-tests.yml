@@ -23,10 +23,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Compiler
         run: g++ --version
-      - name: Release guard and scanner syntax
+      - name: Release guard unit test and scanner syntax
         run: |
-          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/stubs -IRemote/source \
-            Remote/source/release_button_guard.cpp Remote/tests/release_guard_unit_test.cpp \
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/source -IRemote/tests/stubs \
+            Remote/source/boat_state.cpp Remote/source/release_button_guard.cpp Remote/tests/release_guard_unit_test.cpp \
             -o /tmp/remote_release_guard
           /tmp/remote_release_guard
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/stubs -IRemote/source \
