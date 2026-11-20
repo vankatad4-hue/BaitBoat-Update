@@ -36,6 +36,13 @@ Documents:
 - `Remote/New_Handheld_Remote/PCB/BOOST_CONVERTER_SELECTION_REVIEW_R2.md`
 - `Remote/New_Handheld_Remote/PCB/TPS61023_COMPONENT_CALCULATIONS_R1.md`
 - `Remote/New_Handheld_Remote/PCB/TPS61023_PIN_NET_MAP_R1.md`
+- `Remote/New_Handheld_Remote/PCB/BATTERY_INPUT_PROTECTION_DESIGN_R3.md`
+- `Remote/New_Handheld_Remote/PCB/POWER_SHEET_CAPTURE_SPEC_R1.md`
+- `Remote/New_Handheld_Remote/PCB/REMOTE_POWER_BOM_CANDIDATES_R1.md`
+- `Remote/New_Handheld_Remote/PCB/POWER_SCHEMATIC_NET_DRAFT_R4.md`
+- `Remote/New_Handheld_Remote/PCB/TPS63070_PIN_NET_MAP_R3.md
+- `Remote/New_Handheld_Remote/PCB/TPS61023_COMPONENT_CALCULATIONS_R1.md`
+- `Remote/New_Handheld_Remote/PCB/TPS61023_PIN_NET_MAP_R1.md`
 - `Remote/New_Handheld_Remote/PCB/TPS63070_COMPONENT_CALCULATIONS_REVIEW_R2.md`
 - `Remote/New_Handheld_Remote/PCB/BATTERY_INPUT_PROTECTION_DESIGN_R2.md`
 - `Remote/New_Handheld_Remote/PCB/POWER_SCHEMATIC_NET_DRAFT_R3.md`
