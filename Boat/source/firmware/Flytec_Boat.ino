@@ -6,7 +6,9 @@
  */
 #include <Arduino.h>
 #include "boat_dual_radio_port.h"
+#include "boat_application_port.h"
 static BoatDualRadioPort radio;
+static BoatApplicationPort application(radio);
 void setup(){
  Serial.begin(115200);
  Serial.println("Flytec Boat: diagnostic-only firmware; actuator output disabled.");
@@ -16,10 +18,6 @@ void setup(){
  // the mission preparation gate unset (default deny).
 }
 void loop(){
- radio.update();
- BoatCommand command{};bool duplicate=false;ManagedLink link=LINK_NONE;
- // Consume diagnostics without executing any accepted command or issuing
- // execution acknowledgements. Queue receipt never represents actuation.
- while(radio.takeCommand(command,duplicate,link)){}
+ application.tick(); // no commissioned driver attached: diagnostic only
  delay(1);
 }
