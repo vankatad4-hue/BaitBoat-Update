@@ -27,6 +27,20 @@
 - [Firmware protocol spec R2](Remote/docs/DUAL_RADIO_PROTOCOL_FIRMWARE_SPEC_R3.md)
 - [Boat test build R2](Boat/docs/BOAT_HARDWARE_TEST_BUILD_R2.md)
 - [Boat electrical design R2](Boat/docs/BOAT_ELECTRICAL_SCHEMATIC_DESIGN_R2.md)
+- [Boat controller pin audit R1](Boat/docs/BOAT_CONTROLLER_PIN_AUDIT_R1.md)
+- [Boat radio pin assignment R3](Boat/docs/BOAT_RADIO_PIN_ASSIGNMENTS_R3.md)
+- [E22 configuration decode R1](Remote/docs/E22_CONFIGURATION_DECODE_R1.md)
+- [Repository path audit R1](docs/REPOSITORY_PATH_AUDIT_R1.md)
+- [ZIP packaging policy R1](docs/ZIP_RELEASE_POLICY_R1.md)
 
 ## Safety
 Do not connect motor/solenoid power or operate boat. Hardware pins, power, RF compliance, failsafe and actuator interlocks require verification. Bench radio sketches transmit fixed CRC-only test frames.
+
+
+## Versioned project ZIPs
+- Last preserved archives: `Remote/releases/Flytec_Remote_ver004.zip` and `Boat/releases/Flytec_Boat_ver004.zip`.
+- Current package markers: Remote `005`, Boat `005`.
+- Automated packaging workflow: `.github/workflows/package-flytec-zips.yml`. It creates Remote and Boat ZIP artifacts and SHA-256 checksums from the branch snapshot. Verify successful workflow completion and artifact checksums before treating ver005 as issued.
+- Each ZIP excludes previous ZIPs to avoid nested archives. See [ZIP release policy](docs/ZIP_RELEASE_POLICY_R1.md).
+
+**Pin audit result:** the Heltec Wireless Tracker revision is not identified; all boat radio GPIO assignments remain disabled/TBD. The integrated SX1262/GNSS/TFT/USB and boot/strap resources are reserved pending physical board identification.
