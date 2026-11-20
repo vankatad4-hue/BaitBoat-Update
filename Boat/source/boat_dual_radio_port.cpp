@@ -10,13 +10,15 @@ BoatDualRadioPort::BoatDualRadioPort()
       [](bool m0,bool m1,void*){if(BOAT_E22_M0_PIN>=0)digitalWrite(BOAT_E22_M0_PIN,m0?HIGH:LOW);if(BOAT_E22_M1_PIN>=0)digitalWrite(BOAT_E22_M1_PIN,m1?HIGH:LOW);},
       [](void*){return BOAT_E22_AUX_PIN>=0 && digitalRead(BOAT_E22_AUX_PIN)==HIGH;},
       [](bool released,void*){if(BOAT_E22_RESET_PIN>=0)digitalWrite(BOAT_E22_RESET_PIN,released?HIGH:LOW);},nullptr),
-   nrfReady_(false),e22Configured_(false),qWrite_(0),qRead_(0),qCount_(0),
-   lastNrfRxMs_(0),lastE22RxMs_(0),lastNrfHeartbeatTxMs_(0),lastE22HeartbeatTxMs_(0),lastE22HeartbeatAttemptMs_(0),txSequence_(0),authenticated_(false),sessionStarted_(false),lastNrfRxValid_(false),lastE22RxValid_(false),sessionEpoch_((uint8_t)esp_random()),sessionStartSeenPrimary_(false),sessionStartSeenBackup_(false) {
+   nrfReady_(false),e22Configured_(false),sessionEpoch_(0),sessionStartSeenPrimary_(false),sessionStartSeenBackup_(false),
+   qWrite_(0),qRead_(0),qCount_(0),lastNrfRxMs_(0),lastE22RxMs_(0),lastNrfHeartbeatTxMs_(0),
+   lastE22HeartbeatTxMs_(0),lastE22HeartbeatAttemptMs_(0),txSequence_(0),authenticated_(false),
+   sessionStarted_(false),lastNrfRxValid_(false),lastE22RxValid_(false) {
  if(sessionEpoch_==0)sessionEpoch_=1;
  memset(key_,0,sizeof(key_));memset(queue_,0,sizeof(queue_));
 }
 bool BoatDualRadioPort::begin() {
- nrfReady_=false;e22Configured_=false;authenticated_=radioKey_get(key_);sessionStarted_=false;primarySeqGuard_.reset();backupSeqGuard_.reset();crossRadioSeqGuard_.reset();sessionStartSeenPrimary_=false;sessionStartSeenBackup_=false;lastNrfRxValid_=false;lastE22RxValid_=false;txSequence_=0;lastNrfHeartbeatTxMs_=0;lastE22HeartbeatTxMs_=0;lastE22HeartbeatAttemptMs_=0;
+ nrfReady_=false;e22Configured_=false;authenticated_=radioKey_get(key_);sessionStarted_=false;primarySeqGuard_.reset();backupSeqGuard_.reset();crossRadioSeqGuard_.reset();sessionStartSeenPrimary_=false;sessionStartSeenBackup_=false;lastNrfRxValid_=false;lastE22RxValid_=false;qWrite_=qRead_=qCount_=0;memset(queue_,0,sizeof(queue_));txSequence_=0;lastNrfHeartbeatTxMs_=0;lastE22HeartbeatTxMs_=0;lastE22HeartbeatAttemptMs_=0;
 #if BOAT_NRF_CE_PIN >= 0 && BOAT_NRF_CSN_PIN >= 0
  nrfReady_=nrf_.begin(false);
 #endif
