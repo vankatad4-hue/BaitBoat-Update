@@ -4,6 +4,7 @@
 #include "map_renderer.h"
 #include "boat_state.h"
 #include <SD.h>
+#include <esp_heap_caps.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
