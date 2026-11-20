@@ -33,7 +33,7 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 - `release_button_guard.*`: two-step release guard, primary-link and boat interlock gate; native host test available.
 - `joystick.*`, `joystick_calibration_ui.*`: calibration UI; hardware ADC reader currently fails closed.
 - `boat_ui.*`, `settings_ui.*`: UI scaffold; map and sonar displays are not operational data views.
-- `offline_map.*`, `map_projection.*`, `map_renderer.*`: SD XYZ RGB565 tile read, projection, bounded tile viewport and map overlays; source is not hardware-validated.
+- `offline_map.*`, `map_projection.*`, `map_renderer.*`: SD XYZ RGB565 tile read, projection, bounded tile viewport, waypoint overlays and validated source-attribution overlay; source is not hardware-validated.
 - `map_source.*`: persisted AUTO / ONLINE / OFFLINE map source preference scaffold; online provider is deliberately unavailable and ONLINE selection falls back to SD.
 - `boat_telemetry.*`: partial telemetry state application with local group freshness, coordinate sample pairing and primary-link safety provenance; wired to Remote receive dispatch.
 - `radio_payload_codec.*`: strict eight-byte HEARTBEAT/ACK/TELEMETRY payload validators; integrated in authenticated receive dispatch.
@@ -115,3 +115,5 @@ Authenticated receive frames are dispatched to strict payload decoders. Remote A
 - No full firmware compile or display hardware test has been performed for this change.
 
 - `tools/mbtiles_area_export.py`: crops an MBTiles archive to the planned square/zoom tile set and writes RGB565 files plus source-attribution manifest and completeness report. This is offline conversion, not network downloading; it requires Pillow and a licensed source archive.
+
+- Offline pack validation now requires complete flag, attribution, licence URL and zoom metadata. Older packs must be regenerated; renderer shows the pack attribution label.
