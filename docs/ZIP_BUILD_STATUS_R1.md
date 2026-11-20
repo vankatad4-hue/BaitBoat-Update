@@ -33,7 +33,11 @@ No full ESP32 build, native schematic/ERC/DRC, PCB, RF/antenna, power/thermal or
 - The ver025 ZIP and checksum are not verified/available yet. Keep ver024 archive as the previous snapshot; do not claim a ver025 package is ready until it is rebuilt and verified.
 
 
-## Remote ver026 source milestone
+## Remote ver027 source milestone
 - Source marker advanced to ver026; release notes `Remote/releases/RELEASE_VER026.md`.
 - Adds NVS waypoint/home persistence and local relative map overlay.
 - ver026 archive and checksum are not verified; ver024 remains the last tracked package snapshot (Remote ZIP itself still not independently verified).
+
+
+## Remote ver027 update
+- Waypoint capacity increased to 16 (NVS) plus Home. SD/microSD card is designated for offline map packs. Existing map tile reader path documented; no renderer/map pack generator yet. Target compile, SD-card test and NVS test remain pending.
