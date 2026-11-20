@@ -36,3 +36,11 @@
 - User-confirmed Remote target: Waveshare ESP32-S3-Touch-LCD-4.3 Standard SKU 25948.
 - Official older Arduino demo path references LVGL 8.x; official newer LVGL9 path is BSP-based (LVGL 9.5.0 example). The project currently requires LVGL 9.6.x.
 - Build manifest remains unfrozen pending source/API compatibility verification. No compile claim or marker bump.
+
+## Target build preparation and adapter audit
+
+- User confirmed Waveshare ESP32-S3-Touch-LCD-4.3 Standard, SKU 25948. No board variant substitution.
+- Added source-level LVGL 9.6 adapter audit and candidate build configuration documents.
+- Added GitHub Actions Arduino CLI target compile workflow with candidate pins (ESP32 core 3.0.2, LVGL 9.6.0, Display Panel 1.0.0, IO Expander 1.0.1, esp-lib-utils 0.1.2). Build run is in progress; versions are not yet validated as a resolved set.
+- Inspected the first Remote host-test CI failure: release-guard fixture did not set required fail-closed safety fields. Corrected fixture; re-run pending.
+- Display-port assumptions needing compile confirmation: vendor `drawBitmap()` return type/copy completion; `Touch::readPoints()` signature; board begin/init API; LVGL flush/buffer/input signatures. Touch orientation and physical SD/backlight behavior remain hardware-test gates.
