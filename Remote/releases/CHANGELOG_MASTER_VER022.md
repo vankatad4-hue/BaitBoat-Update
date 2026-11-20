@@ -59,3 +59,10 @@
 - Source hardening: flush callback now guards a null LVGL display handle before signaling flush completion.
 
 - LVGL 9.6 target compiler findings fixed: echogram line points use `lv_point_precise_t`; live joystick/safety footer label pointers are declared. Full compile retry pending.
+
+
+## Target compiler diagnostics and source fixes — 2026-11-20
+- Target build run #11 reached project compilation and failed with diagnostics in joystick calibration UI, map renderer and map manager.
+- Corrected the LVGL9 event target accessor to `lv_event_get_target_obj()`; updated route line points to `lv_point_precise_t`; restored the Map Manager `copyChunk()` helper that had been commented out by a literal escaped newline.
+- Exact installed candidate versions observed: ESP32 Arduino core 3.0.2, LVGL 9.6.0, ESP32_Display_Panel 1.0.0, ESP32_IO_Expander 1.0.1, esp-lib-utils 0.1.2, RF24 1.4.11.
+- Commits: `1afd17d5`, `00840087`, `7213f04e`. Retry compile pending; no compile success claimed.
