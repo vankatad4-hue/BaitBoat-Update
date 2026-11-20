@@ -59,3 +59,8 @@ jobs:
             Boat/source/boat_command_queue.cpp Boat/tests/boat_command_queue_test.cpp \
             -o /tmp/boat_queue_test
           /tmp/boat_queue_test
+      - name: Mission navigation and arrival accuracy gate
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror \
+            Boat/source/mission_protocol.cpp Boat/tests/mission_navigation_test.cpp -o /tmp/boat_mission_nav
+          /tmp/boat_mission_nav
