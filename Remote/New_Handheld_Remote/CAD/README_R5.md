@@ -30,3 +30,10 @@ Queued build enabled (non-cancelling shared concurrency); latest CAD export requ
 - Includes front-panel apertures, rear tray/cavity, provisional mounting bosses, screen support ledges, joystick mounting rings, USB-C cutout, twin antenna bulkhead exits, vent slots and preview caps.
 - This is an early geometry draft, not verified. Display/joystick/button/antenna/battery/PCB part dimensions are unconfirmed. Boss positions, cavity, screen opening, antenna alignment, hand ergonomics and printability require CAD inspection and physical fit checks.
 - Automated workflow now exports R6 front, rear, button-cap plate and assembly PNG alongside the historical R5 artifacts.
+
+### R6 CAD local validation update
+- R6 panel footprint is scaled to 310×209mm; rear tray depth 66.5mm plus front plate 3.5mm, with 2mm release collars at the four guarded keys.
+- Separate physical OK/confirm key is added below display; power key remains above display.
+- Right-bank release keys have larger aperture and preliminary raised collar; design is not a certified physical guard.
+- Local OpenSCAD export and STL mesh check succeeded: front and rear meshes are watertight single components; button plate is watertight and has 17 separate caps (12 utility, 4 release, 1 OK).
+- The workflow additionally exports an orthographic R6 front-layout PNG. Fit and print validation remain pending.
