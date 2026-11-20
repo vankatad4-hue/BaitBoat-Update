@@ -62,3 +62,16 @@ Boat controller remains a candidate Heltec Wireless Tracker ESP32-S3 with onboar
 - User explicitly confirmed the standard Waveshare ESP32-S3-Touch-LCD-4.3 unit specified above.
 - Hardware selection is no longer a design question. Purchase/physical verification remains outstanding.
 - Build dependency pinning and compilation remain the next software gate; no changes to display architecture are needed.
+
+## Dependency compatibility investigation — 2026-11-20
+
+Official Waveshare documentation confirms standard SKU 25948 and the board capabilities. Its older Arduino instructions/demo list LVGL 8.x (the wiki notes LVGL 8.3/8.4) and legacy ESP32_Display_Panel / ESP_IO_Expander versions. The newer Waveshare example repository has an LVGL v9 path, including an ESP-IDF example using `waveshare/esp32_s3_touch_lcd_4` BSP 3.0.0 and LVGL 9.5.0. These paths are not interchangeable without checking source APIs and board config.
+
+**Build decision:** Keep the project LVGL 9.6 requirement, but do not pin a dependency set yet. Next, inspect the Remote display adapter against the newer official LVGL9 BSP/API and determine whether LVGL 9.6.0 is compatible with the BSP's supported range. If not, document a deliberate version change rather than silently downgrading.
+
+Official references:
+- Board docs: https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3
+- Legacy Arduino wiki: https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-4.3
+- Official example repo: https://github.com/waveshareteam/ESP32-S3-Touch-LCD-4
+- LVGL9 example README: https://github.com/waveshareteam/ESP32-S3-Touch-LCD-4/blob/main/examples/esp-idf/07_lvgl_demo_v9/README.md
+- ESP32 Display Panel: https://github.com/esp-arduino-libs/ESP32_Display_Panel
