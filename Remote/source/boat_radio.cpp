@@ -15,7 +15,7 @@ static E22UartLink g_lora(g_uartBridge,
     [](void*){ return g_uartBridge.e22AuxReady(); },
     [](bool released,void*){ g_uartBridge.setE22Reset(released); },
     nullptr);
-static NRF24Link g_nrf(REMOTE_NRF_CE_PIN,REMOTE_NRF_CSN_PIN,&SPI,REMOTE_NRF_CHANNEL);
+static NRF24Link g_nrf(REMOTE_NRF_CE_PIN,REMOTE_NRF_CSN_PIN,&SPI,REMOTE_NRF_CHANNEL,REMOTE_NRF_SCK_PIN,REMOTE_NRF_MISO_PIN,REMOTE_NRF_MOSI_PIN);
 static bool g_loraConfigured=false;
 static bool g_nrfReady=false;
 static bool g_begun=false;
