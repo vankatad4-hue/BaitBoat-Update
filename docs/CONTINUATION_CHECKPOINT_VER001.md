@@ -63,13 +63,15 @@ Latest workflow:
 https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/44748284171
 
 ## 9. Next tasks — ordered
-### A. Documentation reconciliation (this checkpoint)
-Sync README, Remote/Boat master status, progress review, ZIP status, import status, release policy and consolidated changelog; add checkpoint. Preserve source markers.
+### A. Source consistency/compile preparation (audit R1)
+- Audit findings recorded in `docs/SOURCE_CONSISTENCY_AUDIT_R1.md`.
+- Remote/Boat session-start retry correction committed; not integration-tested.
+- Establish pinned build configuration and exact board/dependency revisions; add Remote CI host tests; add Boat dual-radio integration tests; verify session retry behavior.
+- No target compile or complete host test execution has been claimed.
 
-### B. Source consistency/compile prep
-- Audit all source for LVGL APIs/version, include/header declarations, duplicate definitions, literal escaped newlines, dead or placeholder labels, screen callbacks and dynamic resize behavior.
-- Add portable host-test workflows/tests for UI-independent modules, run CI, record exact results.
-- Review ESP32-S3 board support and display driver dependency versions. Do not claim build until reproducible build passes.
+### B. Target compilation
+- After board/dependency selection and build manifest, compile all Remote and Boat source modules, resolve diagnostics and retain logs.
+- Confirm LVGL 9.6 API compatibility, display driver calls, board macros, SPI/I2C/UART conflicts and source inclusion.
 
 ### C. LVGL Pro UI verification (user will test later)
 - Load 800×480 / LVGL 9.6 profile, inspect all screens and touch actions.
@@ -88,9 +90,16 @@ Identify exact Waveshare and Heltec revisions; audit pin/resource conflicts and 
 ### F. Integration only after gates
 Map live GNSS/boat state and mission execution; CHIRP sonar driver/data contract; authorized online map provider; HIL with dummy loads; independent failsafe review; controlled-water testing only after safety approval.
 
-## 10. Resume instructions
+## 10. Source audit update — 2026-11-20
+- Audit report: `docs/SOURCE_CONSISTENCY_AUDIT_R1.md`.
+- Remote now retries authenticated session-start markers independently (nRF 500 ms, E22 3 s, duty-limited) until per-link confirmation.
+- Boat responds to repeated same-session markers to recover lost replies.
+- These fixes are source-only and remain uncompiled/unintegrated. Key provisioning is still disabled, so the path is fail-closed.
+- Branch commits for this audit: Remote retry `849ceb09c16956ce6218006ee50314365663961a`; Boat duplicate response `636f7a9f74f59e4005e5bb5eb753deddedca196d`; audit document `2823e27496340638145838548e389bf69cb67551`.
+
+## 11. Resume instructions
 When continuing in a new chat:
-1. Open this checkpoint and `Remote/docs/PROJECT_MASTER_STATUS.md`, `Boat/docs/PROJECT_MASTER_STATUS.md`, `docs/PROJECT_PROGRESS_REVIEW_R1.md`, `docs/ZIP_BUILD_STATUS_R1.md`, `Remote/releases/CHANGELOG_MASTER_VER020.md`.
+1. Open this checkpoint and `Remote/docs/PROJECT_MASTER_STATUS.md`, `Boat/docs/PROJECT_MASTER_STATUS.md`, `docs/PROJECT_PROGRESS_REVIEW_R1.md`, `docs/ZIP_BUILD_STATUS_R1.md`, `Remote/releases/CHANGELOG_MASTER_VER022.md`.
 2. Check current branch head and workflow status; don't assume the listed SHA/run is still latest.
 3. Work on the next ordered task, inspect the exact source/docs first, commit updates to branch, and update the checkpoint/changelog/status.
 4. Never say compiled/tested unless a successful build/test run or user-provided evidence exists.
