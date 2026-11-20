@@ -40,7 +40,7 @@
 3. No secure session challenge/response or replay protection across reboot.
 4. No Boat application loop/command executor/interlock/watchdog/EXECUTED ACK.
 5. No Boat telemetry source (battery, STOP, GPS, heading, navigation, sonar) or Remote warning/status integration completed.
-6. Exact Heltec and Waveshare revisions/pin maps are not confirmed; radio GPIOs remain disabled.
+6. Remote display model is user-confirmed as Waveshare ESP32-S3-Touch-LCD-4.3 Standard SKU 25948; physical board revision and pin maps remain unconfirmed until receipt. Boat Heltec revision/pins unresolved; radio GPIOs remain disabled.
 7. Native KiCad schematics, ERC, verified footprints, PCB layout and DRC are not completed.
 8. Power path/charger/battery compatibility and converter thermal design remain unverified; Remote's proposed 1S4P pack needs special review against the Waveshare board's charging guidance.
 9. Motor startup/stall current, motor driver fit, solenoid current/duty/flyback and thermal measurements are missing.
