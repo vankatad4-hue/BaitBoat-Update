@@ -22,7 +22,7 @@ def rgb565_le(image):
     return out
 
 def single_line(value):
-    return str(value).replace("\\r", " ").replace("\\n", " ").strip()
+    return str(value).replace("\r", " ").replace("\n", " ").strip()
 
 def export_area(mbtiles_path,output_dir,style,lat,lon,side_m,zooms,provider,attribution,licence_url):
     provider=single_line(provider); attribution=single_line(attribution); licence_url=single_line(licence_url)
@@ -44,8 +44,8 @@ def export_area(mbtiles_path,output_dir,style,lat,lon,side_m,zooms,provider,attr
         dest.write_bytes(rgb565_le(image));exported+=1
     db.close()
     plan.update(exported_tile_count=exported,missing_tile_count=len(missing),missing_tiles=missing,
-                pack_complete=(not missing),mbtiles_name=metadata.get("name",Path(mbtiles_path).name),
-                mbtiles_bounds=metadata.get("bounds","unspecified"),style=style)
+                pack_complete=(not missing),mbtiles_name=single_line(metadata.get("name",Path(mbtiles_path).name)),
+                mbtiles_bounds=single_line(metadata.get("bounds","unspecified")),style=style)
     (root/"maps"/"area_plan.json").write_text(json.dumps(plan,indent=2)+"\n",encoding="utf-8")
     manifest=["FLYTEC_MAP1","format=raw-rgb565-le","tile_size=256","scheme=XYZ-WebMercator",
         f"style={style}",f"name={plan['mbtiles_name']}",f"bounds={plan['bounds_wgs84']}",
