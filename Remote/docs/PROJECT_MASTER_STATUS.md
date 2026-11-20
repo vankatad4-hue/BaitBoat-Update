@@ -269,6 +269,7 @@ Boat:
 - Added map source preference/UI scaffold (AUTO/ONLINE/OFFLINE persisted to NVS). ONLINE currently unavailable and status reports SD fallback. This is not an online renderer.
 - Added `map_area_planner.py` for 1km square geometry, XYZ tile plan, tile counts and storage estimates.
 - Added `mbtiles_area_export.py` to extract a selected tile subset from locally supplied MBTiles, convert RGB565, and report missing tiles plus source attribution/licence metadata. It does not fetch map data.
+- Firmware now rejects offline packs unless they declare complete coverage, attribution, licence URL and zoom levels; attribution is overlaid in the map view.
 - Added docs: online/offline architecture, area download spec, Google Map Tiles API integration design and ver029 milestone.
 - Example planner arithmetic at 43° latitude for zooms14–17: about50 tiles/6.25MiB raw/6.88MiB with 10% margin. Exact result varies by centre and tile boundaries.
-- Source-level tests were added, but not executed. Online provider, area-download UI, pack coverage enforcement, compile and hardware validation remain pending. Packaged ZIP and `releases/VERSION` remain ver028.
+- Source-level tests were added, but not executed. Online provider, area-download UI, per-tile coverage index, compile and hardware validation remain pending. Packaged ZIP and `releases/VERSION` remain ver028.
