@@ -63,3 +63,11 @@ The initial test boat will carry the same E22-900T22S module as the remote. Boat
 - `boat_dual_radio_port.*`: dual link polling, frame validation, backup command policy and command queue; pin macros remain unset.
 - `radio_protocol.*` and `radio_command_codec.*`: CRC/HMAC frame validation and backup restrictions.
 - `boat_radio_safety.*`: dedup cache and failsafe decision helper only; not connected to motors/solenoids.
+
+
+## Current source state (R4)
+- nRF24 and E22 UART transport classes, CRC/HMAC frame validation and command codec copied into boat source.
+- `boat_dual_radio_port.*` validates authenticated incoming frames, enforces backup command policy, and queues commands; it is not called by a main boat sketch.
+- `boat_radio_safety.*` provides deduplication and failsafe decision helpers; no motor/solenoid outputs are controlled.
+- E22 direct UART and nRF CE/CSN pin defaults are disabled (-1) pending exact Tracker board pin map. No key is provisioned; firmware fails closed.
+- Bench sketches test radio bytes only, not actuators.
