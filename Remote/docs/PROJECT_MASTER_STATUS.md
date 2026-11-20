@@ -1,4 +1,4 @@
-# Flytec V080 bait boat and remote — master project record R2
+# Flytec V080 bait boat and remote — master project record R3
 
 **Consolidated:** 2026-11-20 (schematic design update). Repository source is canonical; latest schematic capture specification is documented below.
 
@@ -71,3 +71,41 @@ Power and interface documentation updated. Native KiCad schematics, ERC, PCB lay
 - Remote radio API scaffold: `Remote/source/boat_radio.h/.cpp` (still returns disconnected; no actual drivers).
 - Command scaffold adds stable `commandId` and `createdAtMs` fields: `Remote/source/boat_commands.h/.cpp`; no packet-level duplicate handling or authentication yet.
 - No firmware was compiled in this update. No release ZIP ver006 was created; ver005 archives remain unchanged.
+
+
+# Hardware/software integration update R3 — 2026-11-20
+
+## Dual radio correction
+- Remote backup: EBYTE E22-900T22S UART LoRa candidate. Boat backup can use the **integrated SX1262** on the Heltec Wireless Tracker controller candidate. A second LoRa module on the boat is not required unless the exact board revision/band or interoperability tests fail.
+- Remote E22 UART is routed via an SC16IS750 I2C-UART bridge candidate @0x48 to avoid allocating GPIO15/16 wired to RS485. Bridge clock/crystal and footprints need schematic/datasheet review.
+- nRF24 SPI uses Waveshare GPIO11/12/13; CSN GPIO6 candidate direct; CE via MCP23017 only a bench prototype (timing must be measured). Physical header mapping remains unverified.
+- ADC addresses moved to ADS1115 0x4A/0x4B; MCP23017 button/radio I/O at 0x20/0x21.
+- LoRa antenna RIGHT 868MHz; nRF antenna LEFT 2.4GHz. Boat uses dedicated matching antennas; Heltec LoRa IPEX connector is separate from GNSS RF port.
+
+## Remote electrical capture R2 documents
+- `Remote/New_Handheld_Remote/PCB/SCHEMATIC_CAPTURE_SHEETS_R2.md`
+- `Remote/New_Handheld_Remote/PCB/REMOTE_HARDWARE_PIN_ASSIGNMENTS_R2.md`
+- `Remote/New_Handheld_Remote/PCB/REMOTE_ELECTRICAL_PIN_CONNECTIONS_R2.csv`
+- `Remote/New_Handheld_Remote/PCB/REMOTE_HARDWARE_TEST_BUILD_R2.md`
+- `Remote/New_Handheld_Remote/PCB/REMOTE_BOM_R2.md`
+- `Remote/New_Handheld_Remote/PCB/LORA_UART_BRIDGE_R1.md`
+- `Remote/New_Handheld_Remote/MECHANICAL/REMOTE_ENVELOPE_R2.md`
+
+## Software implementation status
+- Added fixed 32-byte packet frame, CRC-16/CCITT and truncated HMAC-SHA256 codec in `Remote/source/radio_protocol.*`.
+- Added command encode/decode, ID/age/backup command-policy checks in `radio_command_codec.*`.
+- Added DualRadioManager health state, degraded/backup/recovery, failback hysteresis, backup manual limit 25% and 1Hz control cap.
+- Remote radio API and UI state now expose primary/backup/degraded/recovery states. Hardware driver is not registered; all links remain disconnected and command sends fail closed.
+- Added boat-side 32-entry action-ID dedupe helper and local failsafe decision evaluator. Not connected to actuator firmware.
+- No nRF RF24 transport, E22/SC16 bridge driver, Heltec SX1262 transport, key provisioning, application ACK/telemetry, session negotiation or release-action execution code has been completed. Source not compiled/tested in this update.
+
+## Boat electrical design
+- Logical harness and schematic-interface documents: `Boat/docs/BOAT_HARDWARE_PIN_CONNECTIONS_R1.csv`, `BOAT_ELECTRICAL_SCHEMATIC_DESIGN_R1.md`, `BOAT_RADIO_PIN_ASSIGNMENTS_R1.md`.
+- MDD20A candidate size (~88.9×78.74mm) exceeds the measured 77×79mm carrier footprint. See `BOAT_MOTOR_DRIVER_FIT_REVIEW_R1.md`; physical placement/layout needs revision.
+- Solenoid coil resistance/current and motor startup/stall current remain unmeasured. Fuse, MOSFET, diode, cable and connector values cannot be finalized until measurements.
+
+## Radio regulatory airtime
+- Candidate EU SRD sub-band 869.4–869.65MHz is listed at up to 500mW ERP with 10% duty-cycle or polite spectrum access in CEPT/EU conditions; confirm Bulgaria national implementation, device conformity, antenna gain/feed loss and channel access. Initial backup command rate set to 1Hz pending airtime test. Avoid assuming 868.0–868.6MHz 1% subband is suitable for 2Hz control without compliant LBT/AFA.
+
+## Finalization blockers
+Native KiCad capture and ERC/DRC, exact physical PORT1 crosswalk, final footprints, board revisions, nRF/LoRa drivers, secure key provisioning, boat receiver/action cache integration, motor/solenoid current measurements, MDD20A fit, converter thermal and RF legality/interoperability tests remain outstanding. No ver006 ZIP release created.
