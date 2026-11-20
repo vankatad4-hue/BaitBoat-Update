@@ -53,3 +53,5 @@
 ### CI test fixes and results
 - Host run #7 passed: release guard/scanner syntax, radio payload codec, ACK tracker and telemetry freshness. Fixes included real BoatState layout in the test, a correct 91° latitude invalid vector, and braces around telemetry pair timestamp conditionals to satisfy strict warning checks.
 - Target run #3 reached sketch compilation but failed because LVGL configuration was not provided. Added tracked `Remote/source/lv_conf.h` from LVGL v9.6.0 template (project pool 128 KiB) and workflow installation step. Target retry pending.
+
+- Target compile attempt #4 exposed missing RF24 Arduino library (`RF24.h`). Pinned RF24 1.4.11 in the target workflow. Retry pending.
