@@ -67,7 +67,7 @@ Boat:
 
 ## Versioned ZIP status
 - Preserved baseline archives: Remote `Flytec_Remote_ver004.zip`, Boat `Flytec_Boat_ver004.zip`.
-- Next snapshot markers are Remote `005` and Boat `005`; the packaging workflow creates versioned ZIPs and SHA256 artifacts from the branch snapshot. These are pending successful workflow verification, not yet confirmed generated/downloadable archives.
+- Next snapshot markers are Remote `006` and Boat `006`; the packaging workflow creates versioned ZIPs and SHA256 artifacts from the branch snapshot. These are pending successful workflow verification, not yet confirmed generated/downloadable archives.
 - Packaging policy: `docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Boat controller pin audit
@@ -88,7 +88,7 @@ Boat:
 
 ## Release status
 - Repository branch: `hardware-ready-dual-radio-r1`; draft PR #1 remains open and unmerged.
-- ZIP snapshot ver005 is pending Actions workflow verification. Existing ver004 archives are preserved.
+- ZIP snapshot ver006 is pending Actions workflow verification. Existing ver004 archives are preserved.
 - Release archives ver004 remain unchanged. ver005 is the next snapshot and not yet verified.
 - Do not operate boat or connect actuator power. Bench tests only.
 
