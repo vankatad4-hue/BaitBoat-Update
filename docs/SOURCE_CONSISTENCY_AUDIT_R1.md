@@ -3,7 +3,7 @@
 **Date:** 2026-11-20  
 **Branch:** `hardware-ready-dual-radio-r1`  
 **Audited head before changes:** `1f75a2ecb2d364d56340e0050c07d50e7e71cbe6`  
-**Status:** Source review completed in part; target compilation and complete host test execution not performed.
+**Status:** Source review completed in part; target compilation and complete host test execution not performed. Remote portable host-test CI workflow has now been added; its result is pending.
 
 ## Scope and method
 
