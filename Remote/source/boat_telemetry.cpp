@@ -16,8 +16,7 @@ bool telemetryApplyRadioPayload(const RadioDecodedPayload &p,bool primary,uint32
  case RADIO_PAYLOAD_BATTERY_SPEED:
   telemetry.batteryVoltageValid=(p.batteryMillivolts!=0xFFFFU);telemetry.batteryMillivolts=p.batteryMillivolts;
   telemetry.batteryVoltage=(p.batteryMillivolts==0xFFFFU)?0.0f:(float)p.batteryMillivolts/1000.0f;
-  telemetry.speed=(p.speedCmPerSecond==0xFFFFU)?0.0f:(float)p.speedCmPerSecond/100.0f;
-  telemetry.batteryReceivedAtMs=now;telemetry.receivedAtMs=now;return true;
+  telemetry.speed=(p.speedCmPerSecond==0xFFFFU)?0.0f:(float)p.speedCmPerSecond/100.0f;telemetry.batteryReceivedAtMs=now;telemetry.receivedAtMs=now;return true;
  case RADIO_PAYLOAD_GNSS_LATITUDE:
   telemetry.latitudeRecordValid=true;telemetry.latitudeSample=p.coordinateSample;telemetry.latitude=(float)p.coordinateE7/10000000.0f;
   telemetry.gpsAccuracyMeters=(p.horizontalAccuracyCm==0xFFFFU)?0.0f:(float)p.horizontalAccuracyCm/100.0f;telemetry.latitudeReceivedAtMs=now;
