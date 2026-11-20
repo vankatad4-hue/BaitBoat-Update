@@ -1,7 +1,7 @@
 #include "dual_radio_manager.h"
 
 static constexpr uint32_t PRIMARY_STALE_MS = 250;
-static constexpr uint32_t BACKUP_STALE_MS = 3000;
+static constexpr uint32_t BACKUP_STALE_MS = 6000;
 static constexpr uint32_t RECOVERY_HOLDOFF_MS = 1500;
 static constexpr uint8_t RECOVERY_GOOD_REQUIRED = 8;
 static constexpr uint32_t BACKUP_CONTROL_INTERVAL_MS = 3000; // duty-cycle-safe conservative placeholder
