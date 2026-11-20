@@ -4,7 +4,7 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 
 ## Versioning
 - ZIP: `Flytec_Remote_verXXX.zip`.
-- Preserve older archives; current marker `releases/VERSION` is `006`.
+- Preserve older archives; current marker `releases/VERSION` is `021`.
 - Increment for every package change and follow `../../docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Controller/display baseline
@@ -34,7 +34,9 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 - `joystick.*`, `joystick_calibration_ui.*`: calibration UI; hardware ADC reader currently fails closed.
 - `boat_ui.*`, `settings_ui.*`: UI scaffold; map and sonar displays are not operational data views.
 - `offline_map.*`, `map_projection.*`: tile validation/read and projection utilities, not a complete geographic map renderer.
-- `boat_telemetry.*`: telemetry structure/validity; radio telemetry is not connected.\n- `radio_payload_codec.*`: strict eight-byte HEARTBEAT/ACK/TELEMETRY payload validators; not wired to receive dispatch.\n- `radio_ack_tracker.*`: bounded command lifecycle tracker (waiting/accepted/executed/rejected/timeout); not connected to command send/ACK receive.
+- `boat_telemetry.*`: partial telemetry state application with local group freshness, coordinate sample pairing and primary-link safety provenance; wired to Remote receive dispatch.
+- `radio_payload_codec.*`: strict eight-byte HEARTBEAT/ACK/TELEMETRY payload validators; integrated in authenticated receive dispatch.
+- `radio_ack_tracker.*`: bounded command lifecycle tracker (waiting/accepted/executed/rejected/timeout); wired to non-manual command send and authenticated ACK receive.
 
 ## Bench test sketches
 - `hardware_test/nRF24_Bench/nRF24_Bench.ino`
