@@ -30,7 +30,7 @@ static bool offlineMap_checkManifest()
         const size_t count = manifest.readBytesUntil('\n', line, sizeof(line) - 1);
         line[count] = '\0';
         if (strncmp(line, "pack_complete=true", 18) == 0) complete = true;
-        if (strncmp(line, "attribution=", 11) == 0 && line[11] != '\0') hasAttribution = true;
+        if (strncmp(line, "attribution=", 12) == 0 && line[12] != '\0') hasAttribution = true;
         if (strncmp(line, "licence_url=", 12) == 0 && line[12] != '\0') hasLicence = true;
         if (strncmp(line, "zoom_levels=", 12) == 0 && line[12] != '\0') hasZooms = true;
     }
