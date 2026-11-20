@@ -23,6 +23,8 @@ static bool g_begun=false;
 static constexpr uint8_t REMOTE_DEVICE_ID=0x01;
 static constexpr uint8_t BOAT_DEVICE_ID=0x02;
 static uint8_t g_sessionEpoch=1;
+static uint16_t g_txSequence=0;
+static uint32_t g_lastPrimaryHeartbeat=0,g_lastBackupHeartbeat=0;
 static uint8_t g_authKey[32];
 
 static BoatRadioLink toPublicLink(ManagedLink link) {
@@ -43,8 +45,10 @@ static BoatRadioState toPublicState(ManagedState state) {
 
 static bool radioSendTransport(ManagedLink link,const BoatCommand &command) {
     if(!radioKey_get(g_authKey)) return false; // fail closed; no key means no command TX
+    BoatCommand wireCommand=command;
+    wireCommand.sequence=++g_txSequence;
     RadioFrame frame;
-    if(!radio_encodeCommand(command,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,g_sessionEpoch,frame,g_authKey))
+    if(!radio_encodeCommand(wireCommand,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,g_sessionEpoch,frame,g_authKey))
         return false;
     if(link==LINK_NRF_PRIMARY && g_nrfReady) return g_nrf.sendFrame(frame);
     if(link==LINK_LORA_BACKUP && g_loraConfigured) return g_lora.sendFrame(frame,millis());
@@ -56,6 +60,7 @@ bool boatRadio_begin() {
     g_loraConfigured=false;g_nrfReady=false;g_begun=false;
     memset(g_authKey,0,sizeof(g_authKey));
     g_sessionEpoch=(uint8_t)esp_random(); if(g_sessionEpoch==0)g_sessionEpoch=1;
+    g_txSequence=0;g_lastPrimaryHeartbeat=0;g_lastBackupHeartbeat=0;
 
     // Display/SD initialization should already have initialized the shared SPI
     // and I2C buses. The exact physical radio CE/CSN pins are still unassigned.
@@ -97,6 +102,17 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame) {
 
 void boatRadio_update() {
     if(!g_begun) return;
+    const uint32_t now=millis();
+    if(radioKey_get(g_authKey)) {
+        if(g_nrfReady && (uint32_t)(now-g_lastPrimaryHeartbeat)>=100U) {
+            g_lastPrimaryHeartbeat=now;RadioFrame hb;radio_frameInit(hb,RADIO_MSG_HEARTBEAT,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,++g_txSequence,0,now,g_sessionEpoch);
+            hb.payload[0]=1;hb.payload[1]=g_loraConfigured?1:0;radio_frameSeal(hb,g_authKey);g_nrf.sendFrame(hb);
+        }
+        if(g_loraConfigured && (uint32_t)(now-g_lastBackupHeartbeat)>=3000U) {
+            g_lastBackupHeartbeat=now;RadioFrame hb;radio_frameInit(hb,RADIO_MSG_HEARTBEAT,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,++g_txSequence,0,now,g_sessionEpoch);
+            hb.payload[0]=g_nrfReady?1:0;hb.payload[1]=1;radio_frameSeal(hb,g_authKey);g_lora.sendFrame(hb,now);
+        }
+    }
     if(g_nrfReady) {
         g_nrf.update();
         RadioFrame frame;
