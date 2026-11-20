@@ -65,7 +65,7 @@ Authenticated receive frames are dispatched to strict payload decoders. Remote A
 
 
 ## UI/input milestone — Remote ver024
-- Main screen footer now provides touchscreen MANUAL, AUTOPILOT and RETURN HOME requests, alongside STOP and calibration navigation.
+- Main screen footer now provides touchscreen MANUAL, AUTOPILOT and RETURN HOME requests, alongside STOP and calibration navigation. Preview: `UI_PREVIEW_REMOTE_VER024.svg`.
 - Live stick telemetry reports raw readings before calibration and normalized values/neutral-active state after calibration. ADC failure is displayed explicitly.
 - Footer safety summary reports STOP confirmation state, low-battery/failsafe/interlock state and pending non-manual command ACK count.
 - Battery display is unknown (`--`) until fresh percentage telemetry is available.
