@@ -131,3 +131,7 @@ jobs:
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/carrier_link_test.cpp -o /tmp/carrier_link_test
           /tmp/carrier_link_test
+      - name: Tracker master transport against simulated companion
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IBoat/tests/carrier_master_stubs -IBoat/source Boat/source/carrier_master_port.cpp Boat/tests/carrier_master_test.cpp -o /tmp/carrier_master_test
+          /tmp/carrier_master_test

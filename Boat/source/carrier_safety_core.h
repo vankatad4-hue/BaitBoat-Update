@@ -30,7 +30,7 @@ public:
   if(!safe(in)||!(in.flags&GATE_ON)){lock(5);return false;}
   if(c.coil>=0){
    if(!configured_||!neutral_||awaitIdle_||!(in.flags&LEFT_IDLE)||!(in.flags&RIGHT_IDLE)){lock(6);return false;}
-   if(coil_<0){if(!allIdle(in)){lock(6);return false;}coil_=c.coil;coilAt_=now;}
+   if(coil_<0){if(cmd_.left||cmd_.right||!allIdle(in)){lock(6);return false;}coil_=c.coil;coilAt_=now;}
    else if(coil_!=c.coil){lock(6);return false;}
   }else if(coil_>=0){coil_=-1;awaitIdle_=true;offAt_=now;neutral_=false;}
   if((c.left||c.right)&&(awaitIdle_||!allIdle(in)||!neutral_)){lock(6);return false;}
@@ -50,6 +50,7 @@ public:
    // Permit alone never powers the actuators. A separate local arm edge
    // clocks the hardware latch; GATE_ON must be actual feedback.
    d.permit=configured_&&safe(in)&&neutral_;
+   if((in.flags&GATE_ON)&&!d.permit){lock(5);return {0,0,-1,false,false};}
    if(d.permit&&(in.flags&GATE_ON)){state_=ARMED;cmd_={OUTPUT,seq_,0,0,-1};}
    return d;
   }

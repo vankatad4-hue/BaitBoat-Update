@@ -16,6 +16,8 @@ private:
  TwoWire &wire_;
  uint32_t sequence_=0,at_=0;
  uint16_t lastSample_=0;
+ carrier::State lastState_=carrier::LOCKED;
+ uint8_t lastFlags_=0;
  bool haveStatus_=false;
  bool send(carrier::Op op,int16_t left,int16_t right,int8_t coil);
 };

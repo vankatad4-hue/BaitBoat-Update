@@ -11,7 +11,8 @@ bool CarrierMasterPort::send(carrier::Op op,int16_t left,int16_t right,int8_t co
 bool CarrierMasterPort::syncOff(){haveStatus_=false;return send(carrier::SYNC_OFF,0,0,-1);}
 bool CarrierMasterPort::disarm(){haveStatus_=false;return send(carrier::DISARM,0,0,-1);}
 bool CarrierMasterPort::command(int16_t left,int16_t right,int8_t coil){
- if((left||right||coil>=0)&&!healthy(millis()))return false;
+ const uint8_t required=carrier::STOP_OK|carrier::WATCHDOG_OK|carrier::INTERLOCK_OK|carrier::GATE_ON|carrier::FEEDBACK_OK;
+ if((left||right||coil>=0)&&(!healthy(millis())||lastState_!=carrier::ARMED||(lastFlags_&required)!=required))return false;
  return send(carrier::OUTPUT,left,right,coil);
 }
 bool CarrierMasterPort::readStatus(carrier::Status &status){
@@ -20,5 +21,5 @@ bool CarrierMasterPort::readStatus(carrier::Status &status){
  for(auto &b:bytes){const int v=wire_.read();if(v<0){haveStatus_=false;return false;}b=(uint8_t)v;}
  carrier::Status s{};
  if(!carrier::decodeStatus(bytes,sizeof(bytes),s)||s.echoed!=sequence_||(haveStatus_&&s.sample==lastSample_)||s.state==carrier::FAULT){haveStatus_=false;return false;}
- lastSample_=s.sample;at_=millis();haveStatus_=true;status=s;return true;
+ lastState_=s.state;lastFlags_=s.flags;lastSample_=s.sample;at_=millis();haveStatus_=true;status=s;return true;
 }

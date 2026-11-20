@@ -17,7 +17,8 @@ static constexpr uint16_t pwmLimit=0,reverseMs=0;
 static constexpr bool invertLeft=false,invertRight=false;
 static SafetyCore core;
 static CarrierOutputPlan planner;
-static uint8_t rx[SIZE],pending[SIZE],reply[SIZE];
+static uint8_t rx[SIZE],pending[SIZE],reply[SIZE],txSnapshot[SIZE];
+static volatile uint32_t pendingAt=0;
 static volatile unsigned rxLen=0,txIndex=0;
 static volatile bool pendingReady=false,rxOverflow=false,busFault=false;
 static uint16_t sample=0;
@@ -33,11 +34,12 @@ static void i2cEvent(i2c_inst_t *i2c,i2c_slave_event_t event){
   }
   break;
  case I2C_SLAVE_REQUEST:
-  i2c_write_byte_raw(i2c,txIndex<SIZE?reply[txIndex++]:0xff);break;
+  if(!txIndex)memcpy(txSnapshot,reply,SIZE);
+  i2c_write_byte_raw(i2c,txIndex<SIZE?txSnapshot[txIndex++]:0xff);break;
  case I2C_SLAVE_FINISH:
   if(rxLen||rxOverflow){
    if(rxLen!=SIZE||rxOverflow||pendingReady)busFault=true;
-   else{memcpy(pending,rx,SIZE);pendingReady=true;}
+   else{memcpy(pending,rx,SIZE);pendingAt=to_ms_since_boot(get_absolute_time());pendingReady=true;}
   }
   rxLen=0;txIndex=0;rxOverflow=false;break;
  }
@@ -81,13 +83,13 @@ int main(){
  watchdog_enable(100,true); // MCU reset backup, NOT independent electrical cutoff
  while(true){
   const uint32_t now=to_ms_since_boot(get_absolute_time());
-  uint8_t packet[SIZE];bool ready=false,fault=false;
+  uint8_t packet[SIZE];bool ready=false,fault=false;uint32_t receivedAt=0;
   const uint32_t irq=save_and_disable_interrupts();
-  ready=pendingReady;fault=busFault;if(ready)memcpy(packet,pending,SIZE);pendingReady=false;busFault=false;
+  ready=pendingReady;fault=busFault;if(ready){memcpy(packet,pending,SIZE);receivedAt=pendingAt;}pendingReady=false;busFault=false;
   restore_interrupts(irq);
   const Inputs in=readInputs();
   if(fault)core.lock(9);
-  else if(ready){Command c{};if(!decode(packet,SIZE,c))core.lock(1);else core.receive(c,now,in);}
+  else if(ready){Command c{};if(!decode(packet,SIZE,c)||now-receivedAt>=LEASE_MS)core.lock(1);else core.receive(c,receivedAt,in);}
   const auto d=core.tick(now,in);
   if(!d.permit){off();planner.reset();}
   else{
