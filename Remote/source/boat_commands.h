@@ -1,4 +1,3 @@
-
 #ifndef BOAT_COMMANDS_H
 #define BOAT_COMMANDS_H
 #include "boat_state.h"
@@ -16,25 +15,27 @@ enum BoatCommandType : uint8_t
 };
 
 // Complete application-level command.
+// commandId remains the logical identity across transport retries/failover,
+// allowing the boat to deduplicate actions. createdAtMs is local send time.
 struct BoatCommand
 {
-    uint32_t sequence;       // Unique command sequence number.
+    uint32_t sequence;        // Monotonic packet sequence.
+    uint32_t commandId;       // Stable action ID; assigned with sequence.
+    uint32_t createdAtMs;     // Timestamp for stale-command rejection.
 
-    BoatCommandType type;    // Command type.
+    BoatCommandType type;     // Command type.
+    BoatMode mode;            // Requested operating mode.
 
-    BoatMode mode;           // Requested operating mode.
+    int16_t leftMotor;        // Left motor: -1000 to +1000.
+    int16_t rightMotor;       // Right motor: -1000 to +1000.
 
-    int16_t leftMotor;       // Left motor: -1000 to +1000.
-    int16_t rightMotor;      // Right motor: -1000 to +1000.
-
-    bool activate;           // Solenoid activation request.
+    bool activate;            // Solenoid activation request.
 };
 
-// Function pointer used by the radio transport module.
-// The radio module will implement the actual transmission.
+// Function pointer used by LinkManager/radio transport.
 typedef bool (*BoatCommandTransport)(const BoatCommand &command);
 
-// Register the radio transport function.
+// Register the radio/link supervisor transport function.
 void boatCommands_setTransport(BoatCommandTransport transport);
 
 // Send an emergency stop command.
