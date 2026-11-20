@@ -65,6 +65,7 @@ private:
     uint8_t qWrite_,qRead_,qCount_;
     uint32_t lastNrfRxMs_,lastE22RxMs_;
     bool authenticated_;
+    bool sessionStarted_;
     void receive(ManagedLink link,const RadioFrame &frame);
     bool enqueue(const BoatCommand &cmd,ManagedLink link,bool duplicate);
 };
