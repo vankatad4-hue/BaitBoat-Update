@@ -453,15 +453,6 @@ static lv_obj_t *controlDeadZoneLabel = nullptr;
 static lv_obj_t *controlLayoutLabel = nullptr;
 static lv_obj_t *controlOverrideLabel = nullptr;
 
-static void saveControlPrefs()
-{
-    settingsPrefs.begin("flytec", false);
-    settingsPrefs.putUChar("joy_layout", (uint8_t)joystick_getLayout());
-    settingsPrefs.putUChar("joy_override", (uint8_t)joystick_getAutopilotOverride());
-    settingsPrefs.putUShort("joy_deadzone", (uint16_t)lv_slider_get_value(controlDeadZoneSlider));
-    settingsPrefs.end();
-}
-
 static void layoutSettingsEvent(lv_event_t *event)
 {
     (void)event;
@@ -472,14 +463,12 @@ static void layoutSettingsEvent(lv_event_t *event)
     }
     joystick_setLayout(joystick_getLayout()==CONTROL_TANK?CONTROL_STEERING:CONTROL_TANK);
     lv_label_set_text(controlLayoutLabel,joystick_getLayout()==CONTROL_TANK?"Layout: TANK":"Layout: STEERING");
-    saveControlPrefs();
 }
 static void overrideSettingsEvent(lv_event_t *event)
 {
     (void)event;
     joystick_setAutopilotOverride(joystick_getAutopilotOverride()==OVERRIDE_TEMPORARY?OVERRIDE_TO_MANUAL:OVERRIDE_TEMPORARY);
     lv_label_set_text(controlOverrideLabel,joystick_getAutopilotOverride()==OVERRIDE_TEMPORARY?"Override: TEMPORARY CONTROL":"Override: SWITCH TO MANUAL");
-    saveControlPrefs();
 }
 static void controlDeadZoneEvent(lv_event_t *event)
 {
@@ -623,15 +612,6 @@ void settingsUI_open(lv_obj_t *returnScreen)
     makeCategoryButton(nav, "SONAR", "SONAR", 198);
     makeCategoryButton(nav, "MAP", "MAP", 248);
     makeCategoryButton(nav, "SYSTEM", "SYSTEM", 298);
-
-    settingsPrefs.begin("flytec", true);
-    const uint8_t savedLayout=settingsPrefs.getUChar("joy_layout",0);
-    const uint8_t savedOverride=settingsPrefs.getUChar("joy_override",0);
-    const uint16_t savedDeadZone=settingsPrefs.getUShort("joy_deadzone",65);
-    settingsPrefs.end();
-    if(savedLayout<=1) joystick_setLayout((ControlLayout)savedLayout);
-    if(savedOverride<=1) joystick_setAutopilotOverride((AutopilotOverride)savedOverride);
-    joystick_setDeadZone(savedDeadZone);
 
     settingsPrefs.begin("flytec", true);
     const bool backlightOn = settingsPrefs.getBool("backlight", true);
