@@ -1,5 +1,6 @@
 #include "mission_protocol.h"
 #include "mission_lifecycle.h"
+#include "mission_upload.h"
 #include <cassert>
 #include <iostream>
 int main(){
@@ -19,5 +20,18 @@ int main(){
  p.releaseMask=16;assert(!missionPlan_valid(p));p.releaseMask=0;p.targetLatE7=910000000;assert(!missionPlan_valid(p));
  MissionLifecycle l;assert(l.upload(15,0));assert(!l.observe(15,MISSION_READY,1,false));assert(!l.observe(16,MISSION_READY,1,true));assert(!l.observe(15,MISSION_COMPLETE,1,true));
  assert(l.observe(15,MISSION_READY,2,true));assert(l.observe(15,MISSION_OUTBOUND,3,true));assert(l.observe(15,MISSION_PAUSED,4,true));assert(l.observe(15,MISSION_OUTBOUND,5,true));assert(l.observe(15,MISSION_RELEASING,6,true));assert(l.observe(15,MISSION_RETURNING,7,true));assert(l.observe(15,MISSION_COMPLETE,8,true));assert(l.upload(16,9));assert(l.observe(16,MISSION_READY,10,true));assert(l.observe(16,MISSION_OUTBOUND,11,true));l.tick(12,true,false);assert(l.phase()==MISSION_STOP_REQUIRED);assert(!l.observe(16,MISSION_OUTBOUND,13,true));assert(l.observe(16,MISSION_ABORTED,14,true));
+ MissionPlan upload={42,0,1,3,300,430000000,250000000,430001000,250001000};
+ MissionUpload sender;MissionAssembler receiver;
+ assert(!sender.begin(upload,0,false));assert(sender.begin(upload,0,true));
+ assert(sender.next(0,true,wire));assert(receiver.ingest(wire,0,true,true)==MISSION_PARTIAL);
+ assert(!sender.acknowledge(42,MISSION_BEGIN,MISSION_PARTIAL,1,false));
+ assert(!sender.next(499,true,wire));assert(sender.next(500,true,wire));
+ assert(receiver.ingest(wire,500,true,true)==MISSION_DUPLICATE);
+ assert(!sender.acknowledge(43,MISSION_BEGIN,MISSION_DUPLICATE,501,true));
+ assert(sender.acknowledge(42,MISSION_BEGIN,MISSION_DUPLICATE,501,true));
+ for(uint8_t op=2;op<=6;++op){assert(sender.next(600+op,true,wire));auto reply=receiver.ingest(wire,600+op,true,true);assert(sender.acknowledge(42,(MissionOpcode)op,reply,600+op,true));}
+ assert(sender.state()==UPLOAD_PREPARED&&receiver.getPrepared(got,700));
+ MissionUpload timeout;assert(timeout.begin(upload,0,true));assert(timeout.next(0,true,wire));assert(timeout.next(500,true,wire));assert(timeout.next(1000,true,wire));assert(!timeout.next(1500,true,wire));assert(timeout.state()==UPLOAD_FAILED);
+ MissionUpload inhibited;assert(inhibited.begin(upload,0,true));assert(!inhibited.next(1,false,wire));assert(inhibited.state()==UPLOAD_FAILED);
  std::cout<<"Mission transaction and feedback state simulation passed\n";
 }
