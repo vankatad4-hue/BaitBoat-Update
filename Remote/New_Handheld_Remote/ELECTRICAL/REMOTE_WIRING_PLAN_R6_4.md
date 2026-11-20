@@ -100,3 +100,6 @@ The SPI pins and GPIO6 are candidate reuse only; the board schematic and physica
 6. Isolate USB-UART and test E22 UART.
 7. Run simultaneous display, button scan, ADC sampling and radio traffic; log timing, resets, rail droop and errors.
 
+
+
+> **Archive reconciliation correction (2026-11-20):** This wiring draft is not authoritative. It incorrectly proposes a button matrix, ADS1015 and expander-driven CE/CSN. The ver009 R5 baseline instead uses MCP23017 0x20 for 16 discrete keys, MCP23017 0x21 for OK and radio I/O, ADS1115 0x4A/0x4B, SC16IS750 0x48 for E22 UART, and direct ESP32 GPIO6 CE / GPIO15 CSN (subject to isolation). Refer to the archive reconciliation document and R4 capture/netlist sheets.
