@@ -8,7 +8,7 @@ This folder contains the hardware design workspace for the new handheld bait-boa
 - Two joysticks above two button banks; 16 buttons total, 2×4 per side.
 - Ergonomic grips; no shoulder/rear buttons.
 - **Primary:** nRF24L01+ PA/LNA 2.4GHz radio; LEFT external antenna.
-- **Backup:** LoRa module (SX1262/E22 UART family candidate) in EU868; RIGHT external antenna. The boat must also carry a matching LoRa radio.
+- **Backup:** EBYTE E22-900T22S UART/SX1262 module candidate in EU868; RIGHT external antenna. Boat uses the Heltec Wireless Tracker candidate's integrated SX1262 (no extra module by default), pending exact revision/band confirmation and PHY interoperability test.
 - Waveshare ESP32-S3 Wi-Fi/Bluetooth uses its onboard antenna; no external Wi-Fi antenna path.
 - 1S4P Li-ion pack, four matched 18650 cells; cell model, BMS and protection validation pending.
 
@@ -22,7 +22,7 @@ This folder contains the hardware design workspace for the new handheld bait-boa
 ## Power baseline (updated)
 - Controller/display 5V: Waveshare board onboard CS8501 boost through single-cell battery interface; external boost is fallback only. Never parallel boost outputs.
 - nRF24 rail: dedicated TPS63070 RADIO_3V3 buck-boost.
-- LoRa module supply: provisional filtered 5V branch from CS8501 rail, subject to simultaneous display/backlight+nRF+LoRa current/thermal/transient test. Separate boost if required, never parallel.
+- LoRa E22 supply: BAT_PROT directly (module 2.7–5.5V range), with local bulk bypass; configure output power conservatively and verify at pack voltage. 5V is required by module documentation for guaranteed maximum output, but maximum output is not the target.
 - 1S4P pack, protection fuse and reverse-polarity MOS candidates pending validation.
 - Charging circuit remains outside custom design scope; board USB/charging behavior still requires bench verification.
 
@@ -30,4 +30,13 @@ This folder contains the hardware design workspace for the new handheld bait-boa
 Primary nRF24 remains the high-rate responsive link. LoRa is backup for heartbeat, low-rate telemetry, capped low-rate steering, STOP and RETURN. Mission-start and bait/hook release are disabled on backup by default. Dual-link failover, handover hysteresis, duplicate suppression, authenticated/replay-safe packets, independent boat failsafe, and link-state UI are software requirements. See `../docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R1.md`.
 
 ## Status / limitations
-Documents are engineering planning/net-level design records, not fabrication-ready schematics or BOM. Native KiCad capture, pin/footprint audit, ERC, PCB layout, firmware integration and bench/field testing remain incomplete.
+Documents are engineering planning/net-level design records, not fabrication-ready schematics or BOM. Native KiCad capture, pin/footprint audit, ERC, PCB layout, actual radio drivers, key provisioning, packet ACK/failover, firmware compile and bench/field tests remain incomplete.
+
+
+## R2 test-build design
+- Pin plan and bridge architecture: `PCB/REMOTE_HARDWARE_PIN_ASSIGNMENTS_R2.md`.
+- Detailed circuit capture spec: `PCB/SCHEMATIC_CAPTURE_SHEETS_R2.md`.
+- Pin wiring CSV: `PCB/REMOTE_ELECTRICAL_PIN_CONNECTIONS_R2.csv`.
+- Test build and validation sequence: `PCB/REMOTE_HARDWARE_TEST_BUILD_R2.md`.
+- BOM: `PCB/REMOTE_BOM_R2.md`.
+- Mechanical envelope: `MECHANICAL/REMOTE_ENVELOPE_R2.md`.
