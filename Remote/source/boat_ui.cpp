@@ -9,7 +9,8 @@
 #include "boat_commands.h"
 #include "boat_telemetry.h"
 #include "release_button_guard.h"
-#include "mission_ui.h"\n#include "map_renderer.h"
+#include "mission_ui.h"
+#include "map_renderer.h"
 #include <math.h>
 // --------------------------------------------------
 // SCREEN DIMENSIONS
@@ -43,7 +44,9 @@ static lv_obj_t *gpsCoordinatesLabel; // Latest boat latitude and longitude.
 static lv_obj_t *gpsDetailsLabel;  // Satellite count, accuracy and heading.
 static lv_obj_t *boatMarker;       // Boat position marker on the map viewport.
 static lv_obj_t *mapWaypointMarkers[16];
-static lv_obj_t *mapHomeMarker;\nstatic lv_obj_t *mapViewport;\nstatic lv_obj_t *mapZoomLabel;
+static lv_obj_t *mapHomeMarker;
+static lv_obj_t *mapViewport;
+static lv_obj_t *mapZoomLabel;
 static lv_obj_t *sonarTitle;       // Sonar panel title.
 
 static lv_obj_t *stopButton;       // Emergency stop button.
