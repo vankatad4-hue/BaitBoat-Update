@@ -9,15 +9,15 @@
 | 4 | Touch IRQ | Optional IRQ; can poll GT911 if repurposed but do not repurpose in R2 |
 | 8,9 | I2C SDA/SCL | Shared bus |
 | 11,12,13 | TF-card SPI MOSI/SCK/MISO | Shared SPI bus |
-| 15,16 | RS485 UART pins | Reserved; not used for LoRa UART |
+| 15,16 | RS485 UART pins | GPIO15 repurposed for nRF CSN; RS485 bus must be disconnected/disabled. GPIO16 unused |
 | 19,20 | USB/CAN mux | Reserved |
-| 6 | Sensor AD terminal | Reassigned as direct nRF24 CSN only if sensor terminal unused; confirm analog circuit and PORT1 crosswalk |
+| 6 | Sensor AD terminal | Reassigned as direct nRF24 CE for test; sensor terminal unused and loading checked |
 
 ## Controller bus assignment
 - I2C: GPIO8 SDA / GPIO9 SCL, 400kHz target only after rise-time/pullup check.
 - SPI: GPIO11 MOSI / GPIO12 SCK / GPIO13 MISO, shared TF card. Start nRF SPI at 1MHz for bring-up, increase only after test.
-- nRF24 CE: GPIO6 candidate (Sensor AD terminal repurposed; no sensor connected). Direct CE required.
-- nRF24 CSN: GPIO15 candidate (RS485 TXD pin repurposed; onboard RS485 transceiver must be disabled/isolated so it cannot drive the external bus). Direct CSN required.
+- nRF24 CE: GPIO6 (Sensor AD terminal repurposed; no sensor connected). Direct CE.
+- nRF24 CSN: GPIO15 (RS485 TXD repurposed; external RS485 bus disconnected and transceiver inactive). Direct CSN.
 - nRF24 CE/CSN are direct GPIO in R2. U_RADIO_IO GPA0 remains spare; no radio timing signals are driven by I2C expander.
 - nRF24 IRQ: U_RADIO_IO GPA1 input; active-low; poll expander at 1kHz maximum or route to available MCU interrupt pin if confirmed.
 - LoRa E22 UART: NXP SC16IS750 I2C-UART bridge U_LORA @0x48; UART 9600 8N1 initial.
