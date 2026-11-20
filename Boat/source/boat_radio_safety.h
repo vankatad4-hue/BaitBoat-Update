@@ -29,6 +29,6 @@ private:
     uint8_t writeIndex_;
 };
 
-// Evaluates only; it does not drive motors or actuators. Call from the boat's
+enum BoatCrossRadioCommandDecision : uint8_t {\n    BOAT_CROSSRADIO_NEW_COMMAND = 0,\n    BOAT_CROSSRADIO_DUPLICATE_EXECUTED,\n    BOAT_CROSSRADIO_DUPLICATE_PENDING,\n    BOAT_CROSSRADIO_DROP_STALE\n};\n\n// Only a sequence-rejected command may pass if its exact command ID is already\n// known pending/executed. A stale sequence with a new ID is always dropped.\nBoatCrossRadioCommandDecision boatClassifyCrossRadioCommand(bool sequenceAccepted,\n                                                            bool alreadyExecuted,\n                                                            bool pending);\n\n// Evaluates only; it does not drive motors or actuators. Call from the boat's
 // independent safety supervisor. Link loss must never enable solenoid outputs.
 BoatFailsafeDecision boatEvaluateLinkFailsafe(const BoatLinkSafetyInputs &in);
