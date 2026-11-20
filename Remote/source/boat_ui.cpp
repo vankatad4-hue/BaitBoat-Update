@@ -50,6 +50,8 @@ static lv_obj_t *mapSourceLabel;
 static lv_obj_t *sonarTitle;       // Sonar panel title.
 
 static lv_obj_t *stopButton;       // Emergency stop button.
+static lv_obj_t *inputStatusLabel;  // Live joystick read/calibration state in footer.
+static lv_obj_t *safetyStatusLabel; // Live STOP/interlock state in footer.
 
 static bool mapExpanded = false;   // Map full-screen state.
 static bool sonarExpanded = false; // Sonar full-screen state.
@@ -328,7 +330,7 @@ static void createMapPanel()
 static lv_obj_t *sonarPlot = nullptr;
 static lv_obj_t *sonarStatus = nullptr;
 
-static void sonarLine(lv_obj_t *parent, const lv_point_t *pts, uint16_t n,
+static void sonarLine(lv_obj_t *parent, const lv_point_precise_t *pts, uint16_t n,
                       lv_color_t color, uint8_t width)
 {
     lv_obj_t *line = lv_line_create(parent);
@@ -347,19 +349,19 @@ static void drawSonarPlot(uint16_t width, uint16_t height)
     const lv_color_t grid=lv_color_hex(0x244258);
     for(int i=0;i<=4;i++){
         int y=(h*i)/4, x=(w*i)/4;
-        lv_point_t hp[2]={{0,(lv_coord_t)y},{(lv_coord_t)w,(lv_coord_t)y}};
-        lv_point_t vp[2]={{(lv_coord_t)x,0},{(lv_coord_t)x,(lv_coord_t)h}};
+        lv_point_precise_t hp[2]={{0.0f,(float)y},{(float)w,(float)y}};
+        lv_point_precise_t vp[2]={{(float)x,0.0f},{(float)x,(float)h}};
         sonarLine(sonarPlot,hp,2,grid,1);sonarLine(sonarPlot,vp,2,grid,1);
     }
     // Illustrative arcs scaled to the current viewport; DEMO label remains visible.
-    lv_point_t archA[7],archB[7],bottom[7];
+    lv_point_precise_t archA[7],archB[7],bottom[7];
     const int ax[]={10,18,28,38,48,58,68}, ay[]={68,58,46,40,46,58,70};
     const int bx[]={50,58,66,74,82,90,96}, by[]={88,78,68,62,68,78,88};
     const int fx[]={2,18,34,50,66,82,98}, fy[]={96,94,97,93,96,94,97};
     for(int i=0;i<7;i++){
-        archA[i]={(lv_coord_t)(w*ax[i]/100),(lv_coord_t)(h*ay[i]/100)};
-        archB[i]={(lv_coord_t)(w*bx[i]/100),(lv_coord_t)(h*by[i]/100)};
-        bottom[i]={(lv_coord_t)(w*fx[i]/100),(lv_coord_t)(h*fy[i]/100)};
+        archA[i]={(float)(w*ax[i]/100),(float)(h*ay[i]/100)};
+        archB[i]={(float)(w*bx[i]/100),(float)(h*by[i]/100)};
+        bottom[i]={(float)(w*fx[i]/100),(float)(h*fy[i]/100)};
     }
     sonarLine(sonarPlot,archA,7,lv_color_hex(0x35E3B0),2);
     sonarLine(sonarPlot,archB,7,lv_color_hex(0xF5C84C),2);
