@@ -4,7 +4,7 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 
 ## Versioning
 - ZIP: `Flytec_Remote_verXXX.zip`.
-- Preserve older archives; current marker `releases/VERSION` is `005`.
+- Preserve older archives; current marker `releases/VERSION` is `006`.
 - Increment for every package change and follow `../../docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Controller/display baseline
