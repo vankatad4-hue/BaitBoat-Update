@@ -9,4 +9,4 @@ SHA-256:
 
 This is a software/hardware-design development archive only. It is not compiled, ERC/DRC validated, or hardware-tested. No boat actuator operation is authorized.
 
-PR artifact is verified and downloaded. The archive has not yet been committed into the repository releases folder; ver006 is the next package snapshot. See `docs/ZIP_BUILD_STATUS_R1.md`.
+PR artifact is verified and downloaded. The archive has not yet been committed into the repository releases folder; ver006 is the next package snapshot. See `../../docs/ZIP_BUILD_STATUS_R1.md`.
