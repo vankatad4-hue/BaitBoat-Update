@@ -42,11 +42,12 @@ jobs:
           arduino-cli core list
           arduino-cli lib list
 
-      - name: Stage sketch with Arduino-required folder/file name
+      - name: Stage sketch and LVGL config
         run: |
-          mkdir -p /tmp/FlytecRemoteBuild
+          mkdir -p /tmp/FlytecRemoteBuild "$HOME/Arduino"
           cp Remote/source/* /tmp/FlytecRemoteBuild/
           mv /tmp/FlytecRemoteBuild/Flytec_Remote.ino /tmp/FlytecRemoteBuild/FlytecRemoteBuild.ino
+          cp /tmp/FlytecRemoteBuild/lv_conf.h "$HOME/Arduino/lv_conf.h"
 
       - name: Compile complete Remote sketch (16 MB flash, OPI PSRAM)
         run: |
