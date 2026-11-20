@@ -33,6 +33,7 @@ static uint8_t g_loraPendingPriority=0;
 static RadioFrame g_loraPendingFrame;
 static uint8_t g_authKey[32];
 static RadioSequenceGuard g_boatSequenceGuard;
+static bool g_boatSessionStarted=false;
 
 static BoatRadioLink toPublicLink(ManagedLink link) {
     if(link==LINK_NRF_PRIMARY) return RADIO_LINK_NRF24_PRIMARY;
@@ -87,7 +88,7 @@ bool boatRadio_begin() {
     g_loraConfigured=false;g_nrfReady=false;g_begun=false;
     memset(g_authKey,0,sizeof(g_authKey));
     g_sessionEpoch=(uint8_t)esp_random(); if(g_sessionEpoch==0)g_sessionEpoch=1;
-    g_txSequence=0;g_lastPrimaryHeartbeat=0;g_lastBackupTxMs=0;g_lastBackupTxAttemptMs=0;g_backupTxSent=false;g_loraPending=false;g_loraPendingPriority=0;g_boatSequenceGuard.reset();
+    g_txSequence=0;g_lastPrimaryHeartbeat=0;g_lastBackupTxMs=0;g_lastBackupTxAttemptMs=0;g_backupTxSent=false;g_loraPending=false;g_loraPendingPriority=0;g_boatSequenceGuard.reset();g_boatSessionStarted=false;
 
     // Display/SD setup initializes shared SPI/I2C. nRF CE/CSN pins are provisional.
     g_nrfReady=g_nrf.begin(true);
@@ -123,7 +124,12 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame) {
         (frame.type==RADIO_MSG_SESSION_START || frame.type==RADIO_MSG_HEARTBEAT || frame.type==RADIO_MSG_TELEMETRY ||
          frame.type==RADIO_MSG_ACK || frame.type==RADIO_MSG_LINK_PROBE) &&
         (frame.type!=RADIO_MSG_SESSION_START || (frame.sequence==0 && frame.payload[0]==frame.sessionEpoch));
-    if(valid && !g_boatSequenceGuard.accept(frame.sessionEpoch,frame.sequence,frame.type==RADIO_MSG_SESSION_START)) {g_linkManager.reportFailure(link);return;}
+    if(valid) {
+        if(frame.type==RADIO_MSG_SESSION_START) {
+            if(frame.sequence!=0 || frame.payload[0]!=frame.sessionEpoch || !g_boatSequenceGuard.accept(frame.sessionEpoch,frame.sequence,true)) {g_linkManager.reportFailure(link);return;}
+            g_boatSessionStarted=true;
+        } else if(!g_boatSessionStarted || !g_boatSequenceGuard.accept(frame.sessionEpoch,frame.sequence,false)) {g_linkManager.reportFailure(link);return;}
+    }
     if(valid) g_linkManager.reportValidRx(link,true,now);
     else g_linkManager.reportFailure(link);
 }
