@@ -84,3 +84,11 @@
 - Initial checksum review used an incomplete SHA-256 script; corrected implementation passed the standard `abc` test vector and confirmed ver012 ZIP checksum matches manifest.
 - Previous cross-radio logic let CONTROL/ACTION frames bypass the cross-radio sequence guard entirely. This was narrowed: sequence-rejected commands now pass only if exact command ID is pending or executed; stale sequence/new ID is discarded. This reduces replay risk but is not complete anti-replay protection.\n\n## Stop conditions
 No propulsion, release, live battery charging in the proposed enclosure, or water operation until the exact hardware is identified, secure key/session is implemented, command executor/interlocks/failsafe are tested, electrical design is reviewed, and firmware/hardware test evidence is recorded.
+
+
+## Remote touchscreen/input progress — ver024
+- Main footer has touchscreen MANUAL, AUTOPILOT, RETURN HOME request buttons.
+- Live stick diagnostics now expose ADC failure, calibration-required raw values, or normalized stick values and neutral/active state.
+- Safety status strip summarizes STOP confirmation, failsafe/low-battery/interlock and pending command ACK count.
+- Stale/absent battery percentage is rendered unknown.
+- These are command request/UI feedback paths only. Boat-side execution is not integrated; authentication key is unprovisioned. Target compile/hardware validation pending.
