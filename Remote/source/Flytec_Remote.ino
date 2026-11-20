@@ -9,6 +9,7 @@
 #include "boat_radio.h"
 #include "boat_telemetry.h"
 #include "offline_map.h"
+#include "lake_storage.h"
 #include "offline_map_coverage.h"
 #include "map_manager_ui.h"
 #include "display_port.h"
@@ -82,6 +83,7 @@ void setup()
     // The display adapter mounts the TF card using the board-owned CH422G expander.
     // A missing card does not prevent the remote UI from starting.
     boatState.sdCardReady = displayReady && displayPort_sdReady();
+    lakeStorage_begin(boatState.sdCardReady);
     boatState.offlineMapReady = offlineMap_begin(boatState.sdCardReady);
 
     // Dual-radio supervisor is initialised. Hardware transports remain disabled

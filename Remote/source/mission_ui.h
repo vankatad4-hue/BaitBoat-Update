@@ -9,3 +9,5 @@ bool missionUI_getWaypoint(uint8_t index,float *lat,float *lon,bool *bait,bool *
 bool missionUI_getHome(float *lat,float *lon);
 int8_t missionUI_getSelectedIndex();
 #endif
+
+void missionUI_reloadStorage();
