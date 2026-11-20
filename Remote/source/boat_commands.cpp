@@ -3,6 +3,7 @@
 
 // Next command sequence number.
 static uint32_t commandSequence = 0;
+static uint16_t wireCommandIdSequence = 0;
 
 // Registered radio transport function.
 static BoatCommandTransport commandTransport = nullptr;
@@ -32,7 +33,9 @@ static bool sendCommand(BoatCommand &command)
     // Assign a unique logical ID. Link retries must retain this ID so the
     // boat can suppress duplicate execution across nRF/LoRa failover.
     command.sequence = ++commandSequence;
-    command.commandId = command.sequence;
+    wireCommandIdSequence++;
+    if (wireCommandIdSequence == 0) wireCommandIdSequence++;
+    command.commandId = wireCommandIdSequence;
     command.createdAtMs = millis();
 
     // Send the command through the registered transport.
