@@ -163,3 +163,7 @@ Archive correction: the former packaging workflow regenerated version-named ZIPs
 
 ### Remote target compile #14 follow-up
 Target Compile #14 failed due to undeclared module variable `g_map_attribution` in `offline_map.cpp`. Added the missing private 256-byte buffer in commit `9aa20b0d987f94ea5b49e46509ae0ba10cc9d36b`. Compile #15 is the verification run; status pending.
+
+
+## Latest Remote CI compile — 2026-11-20
+Remote target compile run #19 (44781879101) succeeded on commit 3f189cb1ac65a764aec678893f1df857d113c815: compile/link and artifact upload passed. ESP32-S3 16MB/OPI PSRAM with huge_app. Firmware 1,430,957 bytes (45% app); global RAM 178,136 bytes (54%, 149,544 bytes remaining). No C++ errors/warnings reported. This does not establish hardware functionality. Host tests #44779439310 and package run #44779439396 passed on source SHA 2289e84ad73e1931f18f357d0e437fed5e0d6c12. Next audit: settings/Wi-Fi timers, Map Manager import/index validation, renderer cache/PSRAM and LVGL object lifecycle. Boat firmware remains uncompiled and non-operational; ZIP snapshots remain unverified.
