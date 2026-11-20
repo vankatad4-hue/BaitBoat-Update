@@ -1,6 +1,6 @@
 # Waveshare ESP32-S3-Touch-LCD-4.3 Standard — GPIO Resource Audit R2
 
-**Status:** Manufacturer schematic reviewed. PORT1 pin numbering verified for documented board. Proposed assignments are schematic-stage; no hardware test yet. Verify physical revision.
+**Status:** GPIO/peripheral mapping checked against official online documentation; PORT1 pin-number crosswalk is provisional due source-document discrepancies. Confirm exact board revision and connector orientation. No hardware validation.
 
 ## Reserved MCU GPIOs
 - LCD RGB: GPIO0,1,2,3,5,7,10,14,17,18,21,38,39,40,41,42,45,46,47,48.
