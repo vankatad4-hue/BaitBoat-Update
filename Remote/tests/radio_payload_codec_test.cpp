@@ -26,7 +26,8 @@ int main() {
     assert(radio_decodeTelemetryPayload(p,d) && d.kind==RADIO_PAYLOAD_SONAR_SUMMARY && d.depthCm==300);
     p[6]=0x80; assert(!radio_decodeTelemetryPayload(p,d) && d.kind==RADIO_PAYLOAD_INVALID);
     p[0]=7; assert(!radio_decodeTelemetryPayload(p,d) && d.kind==RADIO_PAYLOAD_INVALID);
-    p[0]=3; p[1]=1; p[2]=0x01; p[3]=0x65; p[4]=0xCD; p[5]=0x1D; p[6]=0; p[7]=0;
+    // Latitude is 91.0 degrees E7 (910,000,000), outside valid range.
+    p[0]=3; p[1]=1; p[2]=0x80; p[3]=0x7F; p[4]=0x3D; p[5]=0x36; p[6]=0; p[7]=0;
     assert(!radio_decodeTelemetryPayload(p,d) && d.kind==RADIO_PAYLOAD_INVALID && d.coordinateE7==0);
     p[0]=5; p[1]=0x40; p[2]=0x9C; p[3]=0; p[4]=0; p[5]=1; p[6]=0; p[7]=0;
     assert(!radio_decodeTelemetryPayload(p,d) && d.kind==RADIO_PAYLOAD_INVALID);
