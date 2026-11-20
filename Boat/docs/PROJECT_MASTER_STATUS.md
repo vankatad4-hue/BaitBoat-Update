@@ -78,4 +78,4 @@ Remote now decodes authenticated telemetry/ACK frames and applies freshness/safe
 
 
 ## Package revision status
-Latest generated pair is Remote ver019 / Boat ver006. Next bookkeeping markers are Remote ver020 / Boat ver007. Boat payload decoder remains unused by Boat application; telemetry/ACK sender and command executor are still not implemented.
+Latest generated pair is Remote ver020 / Boat ver007. Next bookkeeping markers are Remote ver021 / Boat ver008. Boat payload decoder remains unused by Boat application; telemetry/ACK sender and command executor are still not implemented.
