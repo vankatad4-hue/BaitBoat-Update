@@ -66,6 +66,8 @@ jobs:
           /tmp/remote_map_pack
       - name: Mission protocol and state simulation (Remote and Boat codecs)
         run: |
+          cmp Remote/source/mission_wire.h Boat/source/mission_wire.h
+          cmp Remote/source/radio_protocol.h Boat/source/radio_protocol.h
           cmp Remote/source/mission_protocol.h Boat/source/mission_protocol.h
           cmp Remote/source/mission_protocol.cpp Boat/source/mission_protocol.cpp
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
