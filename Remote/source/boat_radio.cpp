@@ -7,6 +7,7 @@
 #include "radio_hw_config.h"
 #include <Wire.h>
 #include <SPI.h>
+#include <esp_system.h>
 
 static DualRadioManager g_linkManager;
 static SC16IS750Bridge g_uartBridge(Wire,0x48);
@@ -21,7 +22,7 @@ static bool g_nrfReady=false;
 static bool g_begun=false;
 static constexpr uint8_t REMOTE_DEVICE_ID=0x01;
 static constexpr uint8_t BOAT_DEVICE_ID=0x02;
-static constexpr uint8_t SESSION_EPOCH=1;
+static uint8_t g_sessionEpoch=1;
 static uint8_t g_authKey[32];
 
 static BoatRadioLink toPublicLink(ManagedLink link) {
@@ -43,7 +44,7 @@ static BoatRadioState toPublicState(ManagedState state) {
 static bool radioSendTransport(ManagedLink link,const BoatCommand &command) {
     if(!radioKey_get(g_authKey)) return false; // fail closed; no key means no command TX
     RadioFrame frame;
-    if(!radio_encodeCommand(command,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,SESSION_EPOCH,frame,g_authKey))
+    if(!radio_encodeCommand(command,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,g_sessionEpoch,frame,g_authKey))
         return false;
     if(link==LINK_NRF_PRIMARY && g_nrfReady) return g_nrf.sendFrame(frame);
     if(link==LINK_LORA_BACKUP && g_loraConfigured) return g_lora.sendFrame(frame,millis());
@@ -54,6 +55,7 @@ bool boatRadio_begin() {
     g_linkManager.begin(millis());
     g_loraConfigured=false;g_nrfReady=false;g_begun=false;
     memset(g_authKey,0,sizeof(g_authKey));
+    g_sessionEpoch=(uint8_t)esp_random(); if(g_sessionEpoch==0)g_sessionEpoch=1;
 
     // Display/SD initialization should already have initialized the shared SPI
     // and I2C buses. The exact physical radio CE/CSN pins are still unassigned.
@@ -68,6 +70,12 @@ bool boatRadio_begin() {
         g_linkManager.setTransportReady(LINK_LORA_BACKUP,false);
     }
     g_begun=g_nrfReady || g_loraConfigured;
+    // Authenticated boot/session marker; TX remains disabled until key is provisioned.
+    if(g_begun && radioKey_get(g_authKey)) {
+        RadioFrame start; radio_frameInit(start,RADIO_MSG_SESSION_START,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,0,0,millis(),g_sessionEpoch);
+        start.payload[0]=g_sessionEpoch;
+        if(radio_frameSeal(start,g_authKey)) { if(g_nrfReady)g_nrf.sendFrame(start); if(g_loraConfigured)g_lora.sendFrame(start,millis()); }
+    }
     return g_begun; // configured hardware, not a connected/authenticated boat link
 }
 
@@ -81,7 +89,7 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame) {
     if(!radioKey_get(g_authKey)) {g_linkManager.reportFailure(link);return;}
     const bool valid=radio_frameVerify(frame,g_authKey) &&
         frame.sourceId==BOAT_DEVICE_ID && frame.destinationId==REMOTE_DEVICE_ID &&
-        (frame.type==RADIO_MSG_HEARTBEAT || frame.type==RADIO_MSG_TELEMETRY ||
+        (frame.type==RADIO_MSG_SESSION_START || frame.type==RADIO_MSG_HEARTBEAT || frame.type==RADIO_MSG_TELEMETRY ||
          frame.type==RADIO_MSG_ACK || frame.type==RADIO_MSG_LINK_PROBE);
     if(valid) g_linkManager.reportValidRx(link,true,now);
     else g_linkManager.reportFailure(link);
