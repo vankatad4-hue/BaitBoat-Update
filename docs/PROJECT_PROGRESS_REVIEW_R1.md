@@ -21,7 +21,7 @@
 - ACCEPTED is queue acceptance only. There is no connected command executor, telemetry source, EXECUTED ACK, actuator output or navigation/failsafe application.
 
 ## Release/archive review
-- Current markers: Remote ver023 / Boat ver012. Boat ver012 ZIP checksum and structure independently verified; Remote ver023 binary remains unverified. Boat ver011 was previously verified; Boat ver012 supersedes it. Remote ver023 ZIP binary remains unavailable for independent verification.
+- Current markers: Remote ver023 / Boat ver013 (ZIP rebuild pending). Boat ver012 ZIP checksum and structure independently verified; Remote ver023 binary remains unverified. Boat ver011 was previously verified; Boat ver012 supersedes it. Remote ver023 ZIP binary remains unavailable for independent verification.
 - Generated ZIPs and manifest are present for Remote ver023 / Boat ver012 snapshots. Boat ver012 archive is independently verified.
 - Boat ver011 archive was verified historically; it is superseded by Boat ver012. Remote ver023 ZIP binary was not retrievable and remains unverified.
 - Remote ver023 ZIP: present, but the binary could not be retrieved through the available file fetch path; checksum is manifest-only and not independently verified.
@@ -77,6 +77,7 @@
 - Safety review, then HIL; controlled water tests only after independent failsafe validation.
 
 ## Latest engineering findings
+- Duplicate payload encoder definitions were identified during review of the host-test link command and removed. A CI workflow was added for the portable host tests; its pass/fail has not yet been observed.
 - The Boat port previously declared but did not define pending-command lookup and ACK sender; these definitions are now implemented. The queue was extracted into a portable four-entry utility and the port delegates to it. This has not been compiled.
 - Cross-radio command sequence bypass was narrowed to exact pending/executed command IDs only; stale sequence/new ID is rejected.
 - Initial checksum review used an incomplete SHA-256 script; corrected implementation passed the standard `abc` test vector and confirmed ver012 ZIP checksum matches manifest.
