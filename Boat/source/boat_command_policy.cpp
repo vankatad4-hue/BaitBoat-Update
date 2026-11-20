@@ -45,7 +45,7 @@ BoatPolicyResult boatPolicyApply(const BoatCommand &cmd,bool backup,
             state.mode=MODE_AUTOPILOT;state.missionActive=true;return BOAT_POLICY_ACCEPTED;
         }
         if(cmd.mode==MODE_RETURN_HOME) {
-            if(!(in.primaryLinkFresh||in.backupLinkFresh) || !navReady(in))
+            if((backup?!in.backupLinkFresh:!in.primaryLinkFresh) || !navReady(in))
                 return BOAT_POLICY_REJECTED_SAFETY;
             state.mode=MODE_RETURN_HOME;state.missionActive=true;out.requestReturnHome=true;
             return BOAT_POLICY_ACCEPTED;
@@ -53,8 +53,7 @@ BoatPolicyResult boatPolicyApply(const BoatCommand &cmd,bool backup,
         return BOAT_POLICY_INVALID;
     }
     if(cmd.type==CMD_MANUAL_MOTORS) {
-        if(state.mode!=MODE_MANUAL || !(in.primaryLinkFresh||in.backupLinkFresh) ||
-           (backup && !in.backupLinkFresh)) return BOAT_POLICY_REJECTED_SAFETY;
+        if(state.mode!=MODE_MANUAL || (backup?!in.backupLinkFresh:!in.primaryLinkFresh)) return BOAT_POLICY_REJECTED_SAFETY;
         const int16_t max=backup?250:1000;
         out.leftMotor=limitMotor(cmd.leftMotor,max);
         out.rightMotor=limitMotor(cmd.rightMotor,max);
