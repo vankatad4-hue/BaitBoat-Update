@@ -20,7 +20,7 @@ int main(){
     for(uint8_t i=0;i<8;i++){
         assert(lakeStorage_select(i));
         char name[48];snprintf(name,sizeof(name),"Test lake %u",(unsigned)i);
-        assert(lakeStorage_setName(i,name));
+        assert(lakeStorage_setName(i,name));assert(lakeStorage_setZoom((uint8_t)(10+i)));
         assert(lakeStorage_mapRoot()==lakeStorage_path("/maps"));
         assert(lakeStorage_commitMap(lakeStorage_mapStage()));
         assert(lakeStorage_mapRoot()==lakeStorage_path("/maps-alt"));
@@ -31,7 +31,7 @@ int main(){
     for(uint8_t i=0;i<8;i++){
         assert(lakeStorage_select(i));
         char name[48],expected[48];snprintf(expected,sizeof(expected),"Test lake %u",(unsigned)i);
-        assert(lakeStorage_getName(i,name,sizeof(name))&&strcmp(name,expected)==0);
+        assert(lakeStorage_getName(i,name,sizeof(name))&&strcmp(name,expected)==0);assert(lakeStorage_getZoom()==10+i);
         assert(SD.files[lakeStorage_path("/waypoints.bin").c_str()][0]==i);
         assert(lakeStorage_mapRoot()==lakeStorage_path("/maps-alt"));
     }
@@ -45,6 +45,8 @@ int main(){
     SD.shortWrite=true;assert(!lakeStorage_setName(0,"short write"));assert(!lakeStorage_select(1));SD.shortWrite=false;
     assert(!lakeStorage_setName(0,"  "));assert(!lakeStorage_setName(8,"bad"));
     assert(lakeStorage_path("/../other").length()==0);
+    SD.failRenameFrom="/Lake_01/zoom.tmp";assert(!lakeStorage_setZoom(19));assert(lakeStorage_getZoom()==10);SD.failRenameFrom.clear();
+    assert(!lakeStorage_setZoom(20));
     SD.mounted=false;assert(!lakeStorage_ready());assert(!lakeStorage_select(1));assert(lakeStorage_mapRoot().length()==0);
     std::cout<<"Lake storage isolation / safety / simulated write recovery passed\n";
 }

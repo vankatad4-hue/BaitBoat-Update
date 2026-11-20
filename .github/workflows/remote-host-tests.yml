@@ -76,3 +76,8 @@ jobs:
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/lake_stubs -IRemote/source \
             Remote/source/map_projection.cpp Remote/tests/map_projection_test.cpp -o /tmp/remote_map_projection
           /tmp/remote_map_projection
+      - name: Physical input debounce and release arbitration
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/button_stubs -IRemote/source -IRemote/tests/stubs \
+            Remote/source/boat_state.cpp Remote/source/physical_button_scanner.cpp Remote/source/release_button_guard.cpp Remote/tests/physical_button_test.cpp -o /tmp/remote_button_input
+          /tmp/remote_button_input
