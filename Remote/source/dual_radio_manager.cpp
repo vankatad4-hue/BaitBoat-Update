@@ -107,7 +107,7 @@ bool DualRadioManager::send(const BoatCommand &cmd, RadioSendFn sendFn, uint32_t
         if (!backupCommandAllowed(cmd)) return false;
         BoatCommand safe = cmd;
         if (safe.type == CMD_MANUAL_MOTORS) {
-            if (lastBackupControlMs_ != UINT32_MAX && (uint32_t)(now-lastBackupControlMs_) < BACKUP_CONTROL_INTERVAL_MS
+            if (lastBackupControlMs_ != UINT32_MAX && (uint32_t)(now-lastBackupControlMs_) < BACKUP_CONTROL_INTERVAL_MS)
                 return false;
             limitBackupMotorCommand(safe);
             lastBackupControlMs_ = now;
