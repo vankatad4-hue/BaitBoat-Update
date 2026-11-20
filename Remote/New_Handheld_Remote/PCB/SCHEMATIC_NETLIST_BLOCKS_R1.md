@@ -34,7 +34,7 @@ ADC2 channels all to ground-referenced single-ended signals; configure PGA appro
 I2C_SDA=ESP GPIO8; I2C_SCL=ESP GPIO9; external I2C connector shares. No additional pullups initially.
 U_ADC1 ADS1115 address 0x48: AIN0=JOY_LX; AIN1=JOY_LY; AIN2=JOY_RX; AIN3=JOY_RY.
 U_ADC2 ADS1115 address 0x49: AIN0=BAT_SENSE; AIN1=NTC_SENSE; AIN2=RADIO_SENSE (optional divider); AIN3=SPARE_ADC.
-U_BTN MCP23017 address 0x20: GPA0–7=BTN_L0–7; GPB0–7=BTN_R0–7; RESET pull-up.
+U_BTN MCP23017 address 0x20: GPA0–7=BTN_L0–7; GPB0–7=BTN_R0–7; RESET to MCU_RESET_N with pull-up; verify header pin before connecting.
 U_RADIO_IO MCP23017 address 0x21: GPA0=RADIO_CE; GPA1=RADIO_CSN; GPA2=RADIO_IRQ_N; RESET pull-up. Confirm address straps. I2C reset interaction to be defined.
 
 ## SPI
