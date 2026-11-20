@@ -362,6 +362,7 @@ void joystick_setLayout(ControlLayout layout)
 
     // Store the new layout.
     selectedLayout = layout;
+    saveCalibrationNvs();
 }
 
 // --------------------------------------------------
@@ -387,7 +388,8 @@ void joystick_setAutopilotOverride(
         return;
     }
 
-    selectedOverride = behaviour;\n    saveCalibrationNvs();
+    selectedOverride = behaviour;
+    saveCalibrationNvs();
 }
 
 // --------------------------------------------------
@@ -672,6 +674,7 @@ void joystick_setDeadZone(int deadZone)
     // Match the calibration screen slider: 10 to 120 ADC counts.
     calibration.deadZone = constrain(deadZone, 10, 120);
     snapshot.calibration = calibration;
+    saveCalibrationNvs();
 }
 
 // --------------------------------------------------
