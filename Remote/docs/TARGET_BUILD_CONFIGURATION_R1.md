@@ -41,7 +41,7 @@ This is an initial reproducible-build attempt, not a frozen validated toolchain.
 
 ## Gate before claiming complete Remote compile
 
-- [ ] Target workflow completes successfully.
+- [ ] Target workflow completes successfully (latest run #11 failed; retry pending).
 - [ ] Resolved compiler/core and all library versions recorded.
 - [ ] Full sketch and every local source module compile/link.
 - [ ] Warnings reviewed (no ignored warnings without a documented reason).
