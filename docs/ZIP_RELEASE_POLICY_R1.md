@@ -1,8 +1,8 @@
 # Versioned ZIP Packaging
 
 ## Current next package version
-- Remote: `Remote/releases/VERSION` → `019`
-- Boat: `Boat/releases/VERSION` → `006`
+- Remote: `Remote/releases/VERSION` → `022`
+- Boat: `Boat/releases/VERSION` → `009`
 - Existing ver004 archives are preserved; never overwrite them.
 
 ## Rules
@@ -14,6 +14,12 @@
 6. Packaging is automated by `.github/workflows/package-flytec-zips.yml`. On changes to the project folders on the development branch it creates GitHub Actions artifacts, plus SHA256 checksums. Artifact retention is 90 days.
 7. On push events, the workflow commits generated ZIPs and SHA256 manifest into the branch's releases folders; on PR events it uploads artifacts without committing. Confirm workflow completion and checksum integrity before calling a ZIP verified. The ZIP is a deliverable snapshot, not a fabrication/operational approval.
 8. Keep older release archives unchanged and preserve their version history.
+
+## ver022 package scope
+Remote status synchronization only; no firmware or hardware readiness changes.
+
+## ver009 package scope
+Portable Boat HEARTBEAT/ACK/TELEMETRY encoders and host tests; not connected to Boat application.
 
 ## ver019 package scope
 Remote receive dispatch, ACK tracking, telemetry freshness/safety state application and integration review R2; still bench/development scaffold only.
