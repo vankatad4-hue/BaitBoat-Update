@@ -10,6 +10,11 @@ W=310; H=209; body_depth=66.5; front_th=3.5; wall=3.0;
 screen_w=108; screen_h=72; screen_y=7;
 stick_x=108; stick_y=66; stick_open=25;
 power_d=18; power_y=55; confirm_d=16; confirm_x=bank_center_x+pitch_x/2; confirm_y=bank_center_y-3*pitch_y;
+
+// Placeholder internal dimensions for fit-preview only; verify against actual modules.
+carrier_w=100; carrier_h=75; carrier_y=-42; carrier_standoff_h=8;
+battery_grip_x=112; battery_y=-62; cell_d=18.6; cell_len=65;
+battery_saddle_z=12; battery_depth_pitch=20;
 button_d=14.2; pitch_x=19.5; pitch_y=20.5;
 bank_center_x=106; bank_center_y=-10;
 antenna_d=8.6; antenna_x=112; antenna_y=82;
