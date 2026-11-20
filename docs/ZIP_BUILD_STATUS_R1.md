@@ -25,3 +25,9 @@ No full ESP32 build, native schematic/ERC/DRC, PCB, RF/antenna, power/thermal or
 ## Remote ver024 UI/input update
 - Remote version marker advanced to ver024 for touchscreen mode requests, live joystick status, compact safety/ACK footer, and stale/unknown battery display.
 - ZIP/checksum generation is handled by the repository workflow; output and checksum still require workflow verification. No firmware compile or hardware test.
+
+
+## Remote ver025 mission UI change
+- Remote version marker is now ver025. Source includes mission/waypoint planning UI and SVG preview.
+- New release notes: `Remote/releases/RELEASE_VER025.md`.
+- The ver025 ZIP and checksum are not verified/available yet. Keep ver024 archive as the previous snapshot; do not claim a ver025 package is ready until it is rebuilt and verified.
