@@ -545,6 +545,7 @@ void toggleMapPanel()
             780,
             345
         );
+        lv_obj_set_size(mapViewport, 760, 220);
     }
     else
     {
@@ -556,6 +557,7 @@ void toggleMapPanel()
             385,
             345
         );
+        lv_obj_set_size(mapViewport, 369, 220);
 
         // Show sonar again.
         lv_obj_remove_flag(
