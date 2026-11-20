@@ -87,3 +87,5 @@ Authenticated receive frames are dispatched to strict payload decoders. Remote A
 - Main map placeholder displays home and waypoint marker labels in a local relative view, with BAIT/HOOK suffixes. This is not a navigational map: no tiles, route, compass orientation or geospatial accuracy validation.
 - Mission start stays disabled. No boat mission execution or release commands.
 - Version source marker ver026; archive and checksum are not yet verified.
+
+- Hardware verification checklist: `Remote/docs/MISSION_NVS_TEST_PLAN_VER026.md` (not yet run).
