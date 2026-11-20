@@ -38,7 +38,7 @@ Current code scaffold includes:
 - Boat dual-radio polling, receive validation and bounded command queue.
 - duplicate-action cache and local failsafe decision helper.
 - Key provisioning fails closed; no authenticated TX/control.
-- Boat radio port is not integrated into main application. No actuator output driver, GNSS/IMU driver, mission/autopilot, telemetry/application ACK or failsafe execution.
+- Boat radio port is not integrated into main application. Session echo, pending-command deduplication and queue-level ACK scaffolds exist; no actuator output driver, GNSS/IMU driver, mission/autopilot, telemetry source, EXECUTED ACK or failsafe execution.
 - Source has not been compiled or hardware-tested.
 
 ## Safety gates
