@@ -13,7 +13,7 @@ static bool wr(uint8_t a,uint8_t r,uint8_t v){Wire.beginTransmission(a);Wire.wri
 static bool rd(uint8_t a,uint8_t r,uint8_t &v){Wire.beginTransmission(a);Wire.write(r);if(Wire.endTransmission(false)!=0)return false;if(Wire.requestFrom((int)a,1)!=1)return false;v=(uint8_t)Wire.read();return true;}
 void physicalButtons_setCallback(PhysicalButtonCallback f){cb=f;}
 bool physicalButtons_begin(){
- if(!wr(BTN_EXP,IODIRA,0xFF)||!wr(BTN_EXP,IODIRB,0xFF)||!wr(BTN_EXP,GPPUA,0xFF)||!wr(BTN_EXP,GPPUB,0x7F))return false;
+ if(!wr(BTN_EXP,IODIRA,0xFF)||!wr(BTN_EXP,IODIRB,0xFF)||!wr(BTN_EXP,GPPUA,0xFF)||!wr(BTN_EXP,GPPUB,0xFF))return false;
  uint8_t dir=0,pull=0;if(!rd(RADIO_IO,IODIRA,dir)||!rd(RADIO_IO,GPPUA,pull))return false;
  dir|=(1U<<OK_BIT);pull|=(1U<<OK_BIT);
  if(!wr(RADIO_IO,IODIRA,dir)||!wr(RADIO_IO,GPPUA,pull))return false;
