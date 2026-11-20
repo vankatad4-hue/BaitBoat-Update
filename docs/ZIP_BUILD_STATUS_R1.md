@@ -7,9 +7,7 @@ PR workflow run #32 produced Remote/Boat ver005 archives and checksums. ZIP inte
 - Markers: Remote `023`, Boat `011`.
 - ZIPs: `Remote/releases/Flytec_Remote_ver023.zip`, `Boat/releases/Flytec_Boat_ver011.zip`.
 - Manifest: `releases/SHA256SUMS_ver023_011.txt`.
-- Current manifest values:
-  - Boat: `b7f3e4da863b3198e70cbee06ee72fc55918d03f40ebf23f7861fae6165b834b`
-  - Remote: `7017aab1b63a96286c6423cbcb8ed8049355b4788417b53d63d5b8abc4c25d92`
+- The ver010/023 manifest values are historical and do not apply to Boat ver011. New manifest values will be recorded after the package workflow completes.
 
 ## Independent integrity review
 - Boat ver010 ZIP was verified historically. Boat ver011 archive has not been generated/verified yet.
