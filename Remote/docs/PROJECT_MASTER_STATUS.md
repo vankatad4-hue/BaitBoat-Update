@@ -11,6 +11,12 @@ Updated: 2026-11-20. Development branch; no firmware compile, hardware test, ERC
 - Remote LEFT antenna=2.4GHz nRF; RIGHT=868MHz LoRa. ESP32 Wi-Fi/Bluetooth uses onboard antenna.
 - Mission: manual waypoint save→autopilot to waypoint→bait/hook release→return home. Boat-side failsafe must return only if GNSS/heading/battery/geofence health valid; otherwise stop safely.
 
+## Remote hardware R5 — mechanical/button revision
+- R5 shell CAD envelope310×210×68mm; two-piece front/rear shell prototype, central 4.3in display, twin sticks, two 2×4 button banks, OK and power keys, dual antenna exits.
+- Right bank top four keys are independent H-L/H-R/K-L/K-R release controls. Combined release commands are disabled/rejected.
+- Remote release commands require authenticated primary link, STOP-confirmed released and boat interlock telemetry. A host-tested 1.2s release-key + 0.8s OK confirm within4s guard exists; physical scanner/UI wiring is pending.
+- CAD source: `Remote/New_Handheld_Remote/CAD/`; mechanical and physical key map R5 documents.
+
 ## Remote hardware R4
 - Enclosure target300×210×70mm; mechanical envelope provisional.
 - 1S4P18650 pack, fuse/protection candidates.
