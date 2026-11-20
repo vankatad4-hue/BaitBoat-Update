@@ -1,4 +1,6 @@
 #include "map_renderer.h"
+// LVGL 9.6 exposes cache invalidation in this internal header, not lvgl.h.
+#include <src/misc/cache/instance/lv_image_cache.h>
 #include "offline_map.h"
 #include "map_projection.h"
 #include "lake_storage.h"
