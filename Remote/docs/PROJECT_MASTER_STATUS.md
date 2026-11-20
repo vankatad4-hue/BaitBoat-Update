@@ -51,3 +51,15 @@ Retain Flytec V080 hull, motors, battery indicator and main switch; replace boat
 
 ## Engineering status
 Power and interface documentation updated. Native KiCad schematics, ERC, PCB layout, fabrication BOM, exact pin/connector assignment, bench validation and hardware bring-up are still not completed. Do not treat docs/net drafts as fabrication-ready.
+
+
+## New radio redundancy decision — 2026-11-20
+- **Added LoRa as backup communications**, alongside nRF24L01+ PA/LNA primary. Both remote and boat must carry matching LoRa modules for the backup link.
+- Candidate module: EBYTE E22-900T22S-V2 UART/SX1262 EU868-capable family; exact SKU/configuration is not finalized or purchased. UART pins remain unassigned until GPIO/header audit.
+- Remote antenna ports reassigned: RIGHT = EU868 LoRa; LEFT = nRF24 2.4GHz. ESP32 Wi-Fi/Bluetooth uses the Waveshare board's onboard antenna; no external Wi-Fi antenna connector planned.
+- LoRa is for heartbeat, low-rate telemetry, reduced-rate/manual safety control, STOP and RETURN. It will not carry sonar streaming. Mission start and bait/hook release are disabled over backup by default.
+- Firmware requirements: dual-link LinkManager, primary/backup/no-link UI, handover hysteresis, duplicate command suppression, packet freshness/sequence checks, authenticated/replay-protected commands, independent boat failsafe. Failover must be bench/field tested.
+- LoRa module power is provisionally from Waveshare CS8501 5V rail with local bulk/decoupling; simultaneous display/backlight+nRF+LoRa load/thermal test required. If margin inadequate, design a separate boost branch (never parallel boosts).
+- EU868/Bulgaria channel, radiated power, duty cycle, airtime and antenna gain/cable loss compliance must be verified; module's 22dBm capability is not an approved setting.
+- Design record: Remote/docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R1.md. Capture/net/power/BOM documents have LoRa addenda. No firmware code has yet been merged or bench-tested, and no hardware purchased.
+
