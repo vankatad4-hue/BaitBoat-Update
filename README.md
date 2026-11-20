@@ -5,7 +5,7 @@
 ## Baseline
 - Retain V080 hull,12V550 brushed motors,main switch,battery indicator; replace control electronics.
 - Boat controller candidate Heltec Wireless Tracker ESP32-S3+UC6580 GNSS.
-- Remote Waveshare ESP32-S3-Touch-LCD-4.3 Standard,800×480,LVGL9.6.0.
+- Remote Waveshare ESP32-S3-Touch-LCD-4.3 Standard,800×480,LVGL9.6.0; R5 handheld CAD and four independent bait/hook release controls (H-L/H-R/K-L/K-R).
 - Primary nRF24L01+ PA/LNA2.4GHz; backup matching E22-900T22S UART LoRa modules on both ends.500m remains unvalidated.
 - CHIRP sonar selection/integration pending.
 
@@ -13,7 +13,7 @@
 - Remote/boat nRF and E22 transport scaffolds, SC16 bridge, CRC/HMAC protocol, command codec, dual-radio manager, heartbeat, dedupe and failsafe helpers exist.
 - Secure key provisioning returns false; no authenticated control, actuator execution or boat application.
 - Remote envelope300×210×70mm,carrier100×75mm proposed. Boat carrier77×79×14mm; MDD20A candidate does not fit that footprint.
-- Electrical capture specs, pin tables, BOM candidates, block diagrams and radio bench sketches exist. Native KiCad/ERC/DRC, fabrication PCB, compile and hardware test remain incomplete.
+- Remote R5 CAD/print prototypes, physical button scan/debounce and release-confirmation guard are added; native host tests pass. Physical GPIO crosswalk, boat actuator execution/interlocks, full Arduino compile, native KiCad/ERC/DRC, fabrication PCB and hardware tests remain incomplete.
 
 ## Main documents
 - [Master project status](Remote/docs/PROJECT_MASTER_STATUS.md)
