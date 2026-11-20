@@ -31,3 +31,7 @@
 
 ## R2 allocation is test-build, not frozen PCB
 GPIO6 may be connected to Sensor AD circuitry and GPIO15/16 to RS485 transceiver; nRF CSN GPIO6 must be checked for load/boot interactions. CE via MCP23017 must be bench-tested for RF24 timing. If either fails, allocate direct GPIO through verified PORT1 header or revise to SPI/I2C bridge. The exact 40-pin physical crosswalk is the remaining controller pin freeze blocker.
+
+
+## E22 settings R3
+Module configuration via UART bridge in 9600 8N1; set channel18=868.125MHz, air rate62.5kbps, 32byte subpacket, 10dBm output, transparent mode, both module addresses/network ID zero. Use documented config-mode pin levels and readback. Normal transparent M0/M1 low. E22 AUX is used for ready/busy, no blocking wait in control loop.
