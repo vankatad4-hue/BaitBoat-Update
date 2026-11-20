@@ -1,30 +1,26 @@
-# Dual-radio pairing decision R3 — identical E22 UART modules
+# Dual-radio pairing and antenna decision R3
 
-## Decision
-For the first test prototype, install the **same EBYTE E22-900T22S UART LoRa module at both remote and boat ends**. The Heltec Wireless Tracker candidate's integrated SX1262 remains unused for this backup link unless later firmware interop testing proves a viable alternative.
+## Pairing
+The initial backup link uses identical EBYTE E22-900T22S UART LoRa modules at remote and boat. The Heltec Tracker candidate's integrated SX1262 remains unused because raw SX1262/E22 interoperability was not proven.
 
-Reason: identical E22 modules use the same transparent UART/air protocol/configuration, avoiding the uncertain compatibility between E22's internal packet format and a native SX1262 raw packet implementation. The boat still has integrated LoRa hardware available, but it is not the default link in this prototype.
+## Remote antenna assignment
+- LEFT external antenna: nRF24 PA/LNA 2.4GHz.
+- RIGHT external antenna: E22 EU868 50Ω.
+- ESP32-S3 Wi-Fi/Bluetooth uses onboard antenna.
+- Boat has separate 2.4GHz nRF and 868MHz E22 antennas, separated from each other, GNSS, motor leads, high-current switching and metal obstructions.
 
-## Radio set
-- Remote primary nRF24L01+ PA/LNA 2.4GHz.
-- Boat primary nRF24L01+ PA/LNA 2.4GHz.
-- Remote backup E22-900T22S UART/SX1262.
-- Boat backup matching E22-900T22S UART/SX1262.
-- Remote LEFT antenna = 2.4GHz; RIGHT = EU868.
-- Boat antennas are separate matched 2.4GHz and EU868, mounted apart from GNSS and motor wiring.
+## Initial E22 settings
+- channel18=868.125MHz, network/address0, air62.5kbps, packet32,10dBm, transparent, UART9600 8N1.
+- Module VCC: remote dedicated TPS61023 5V boost; boat regulated5V electronics buck.
+- UART/M0/M1/AUX are3.3V logic. Remote SC16IS750 bridge@0x48. Boat direct UART pins TBD.
+- Remote CS8501 5V reserved for controller/display; E22 converter separate. Do not parallel boost outputs.
+- Estimated25ms airtime; one frame/3s≈0.83% in1% sub-band. RAM-only limiter is not field-compliant.
 
-## Pairing/configuration
-Configure both E22 modules identically:
-- Regional frequency/channel selected within EU863–870 after Bulgaria national rules check.
-- Air data rate and packet settings matched.
-- Network address/channel, transparent/fixed mode and UART baud/parity matched.
-- Initial UART 9600 8N1 and short application packets.
-- Output power configured legally; module maximum 22dBm is not the default.
-- Use application frame with IDs, sequence, timestamp, CRC and authentication tag; E22 UART transparent data is not an ACK by itself.
-- Test packets both directions, ACK timing, packet loss and duty-cycle enforcement.
+## Backup traffic
+STOP, RETURN_HOME, restricted manual steering, heartbeat/low-rate telemetry only. No sonar, new mission, bait/hook release. Boat executes local failsafe if both links lost. Return-home only with valid navigation and system-health checks.
 
-## Boat controller interface
-The Heltec Tracker has multiple UART resources, but exact pin assignment must avoid native GNSS, SX1262, USB, strapping and other board functions. Use direct hardware UART if a verified spare pair exists. If no spare UART pins, add SC16IS750 bridge or select an alternate controller carrier. Don't select pins from generic ESP32-S3 pin lists without the exact board schematic.
+## Regulatory
+868.125MHz is in1% duty sub-band. Confirm Bulgaria/CEPT band limits, EIRP/ERP, antenna gain/cable loss, bandwidth, duty/LBT/AFA requirements and module compliance. 10dBm module output is a test setting, not regulatory certification.
 
-## Integrated SX1262 alternative
-If later using the Tracker's onboard SX1262, the remote E22 and native SX1262 must be shown interoperable through measured/verified PHY and packet framing. It is an alternative—not an assumed drop-in.
+## Test
+Identical modules/settings, antennas attached, close-range first. Verify config readback, UART logic, packet CRC/auth, latency/packet loss, failover, power rail droop and antenna isolation. No field operation until legal airtime accounting and authenticated session/key are completed.
