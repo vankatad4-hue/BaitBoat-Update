@@ -136,3 +136,10 @@ Source cleanup: literal escaped line breaks removed from boat UI; waypoint calcu
 
 ## Continuation checkpoint
 Read `../../docs/CONTINUATION_CHECKPOINT_VER001.md` for the complete current status and restart plan. Consolidated changelog is `../releases/CHANGELOG_MASTER_VER021.md`. Existing branch archives are unverified snapshots; latest workflow #880 succeeded, but no target build/LVGL Pro/hardware test is validated.
+
+
+### LVGL configuration
+
+- The project includes `lv_conf.h` sourced from the official LVGL v9.6.0 configuration template, enabled and adjusted to a 128 KiB LVGL allocator pool and RGB565 default.
+- Keep the configuration version aligned with the pinned LVGL library. The target-build workflow copies it to Arduino's expected LVGL config search location before compiling.
+- The first target build exposed the missing config; it is now tracked in the project. Target compile validation is pending.
