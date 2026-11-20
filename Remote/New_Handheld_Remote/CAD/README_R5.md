@@ -37,3 +37,11 @@ Queued build enabled (non-cancelling shared concurrency); latest CAD export requ
 - Right-bank release keys have larger aperture and preliminary raised collar; design is not a certified physical guard.
 - Local OpenSCAD export and STL mesh check succeeded: front and rear meshes are watertight single components; button plate is watertight and has 17 separate caps (12 utility, 4 release, 1 OK).
 - The workflow additionally exports an orthographic R6 front-layout PNG. Fit and print validation remain pending.
+
+
+## R6.1 refinement
+- The R6 source now contains R6.1 internal-fit preview mode and battery-cradle export mode.
+- Rear shell integrates sculpted palm pads, carrier PCB mounting posts, and a provisional cradle for four 18650 envelopes (two cells in each grip, stacked in shell depth).
+- Component envelopes are placeholders only. Local exports were re-rendered; full geometry fit and live-cell safety remain unverified.
+- Preview files generated locally: `Remote_Internal_Layout_R6_1.png` and `Remote_Internal_Top_R6_1.png`. GitHub workflow is updated to export both and the R6.1 battery cradle mesh.
+- [R6.1 mechanical validation notes](../MECHANICAL/REMOTE_MECHANICAL_R6_1.md).
