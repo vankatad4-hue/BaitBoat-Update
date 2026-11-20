@@ -61,8 +61,7 @@ Current code scaffold includes:
 - Motor driver fit: `BOAT_MOTOR_DRIVER_FIT_REVIEW_R1.md`
 
 ## ZIP status
-- Preserved ver004 archive; package marker is `releases/VERSION` = 005.
-- Automated package artifacts and SHA256 are pending Actions verification.
+- Current development snapshots: Remote ver023 / Boat ver010. ZIP paths and checksum manifest are committed; independent archive-byte verification is pending.
 - See repository `docs/ZIP_RELEASE_POLICY_R1.md`.
 
 Do not connect motor/solenoid power or operate the boat.
@@ -70,11 +69,11 @@ Do not connect motor/solenoid power or operate the boat.
 
 ## Shared payload decoder mirror (2026-11-20)
 - Added portable HEARTBEAT/ACK/TELEMETRY payload validator files mirrored with Remote source.
-- Decoder is currently unused by boat receive path; telemetry generation and application ACK remain unimplemented. No compile/hardware validation of endpoint firmware.
+- Boat payload decoder/encoder remain portable utilities; telemetry generation and EXECUTED application ACK are not implemented. Queue-level ACCEPTED/DUPLICATE/BUSY ACK scaffold exists. No compile/hardware validation of endpoint firmware.
 
 
 ## Remote integration state note (2026-11-20)
-Remote now decodes authenticated telemetry/ACK frames and applies freshness/safety gates. Boat firmware still does not emit these payloads or execute/ACK commands. Mirrored codec is currently a portable validator only on the boat side. Do not connect actuators.
+Remote decodes authenticated telemetry/ACK and applies freshness/safety gates. Boat now has queue-level ACK and session echo scaffolds, but does not emit application telemetry or EXECUTED ACKs and has no command executor. Payload codec/encoder are portable utilities. Do not connect actuators.
 
 
 ## Boat payload encoder milestone (2026-11-20)
