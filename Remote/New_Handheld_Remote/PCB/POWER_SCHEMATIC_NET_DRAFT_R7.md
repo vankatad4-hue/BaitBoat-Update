@@ -6,7 +6,7 @@
 J_PACK PACK+ → F_MAIN (4A fast fuse candidate) → PACK_FUSED → Q_REV Drain; Q_REV Source → BAT_PROT; Gate → R_GATE 100k→GND. PACK−→GND. Verify MOSFET pin/body-diode topology against current datasheet. BAT_PROT bulk candidates 100µF+10µF+100nF to GND. BAT_PROT branches to J_WAVE_BAT and TPS63070 VIN. Fuse close to pack.
 
 ## Controller power
-BAT_PROT/GND → Waveshare PH2.0 battery interface, polarity to verify. Onboard CS8501 boost; external TPS61023 is fallback only. Do not parallel boosts.
+BAT_PROT/GND → Waveshare PH2.0 battery interface, polarity to verify. Onboard CS8501 boost is controller/display only. External TPS61023 is a dedicated E22 5V branch, separate load, not paralleled with CS8501.
 
 ## Radio converter
 TPS63070 BAT_PROT→VIN; 1.5µH candidate between L1/L2; 470k RADIO_3V3→FB; 150k FB→GND; CIN/COUT candidate values per capture sheets; VAUX 100nF; VSEL/FB2/PS-SYNC treatment datasheet verification pending; EN reset-safe default OFF. Output RADIO_3V3.
