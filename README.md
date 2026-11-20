@@ -38,6 +38,7 @@ Do not connect motor/solenoid power or operate boat. Hardware pins, power, RF co
 
 
 ## Versioned project ZIPs
+- [ZIP build status](docs/ZIP_BUILD_STATUS_R1.md)
 - Last preserved archives: `Remote/releases/Flytec_Remote_ver004.zip` and `Boat/releases/Flytec_Boat_ver004.zip`.
 - Current package markers: Remote `006`, Boat `006`.
 - Automated packaging workflow: `.github/workflows/package-flytec-zips.yml`. On push it commits the versioned ZIPs and SHA-256 manifest to the branch and uploads downloadable Actions artifacts. On pull requests it uploads artifacts only. Verify successful workflow completion and checksums before treating ver005 as issued.
