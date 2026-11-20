@@ -31,3 +31,8 @@
 ## Hardware selection confirmed
 - User confirmed Waveshare ESP32-S3-Touch-LCD-4.3 Standard, SKU 25948 for the Remote. 4.3B/BOX alternatives are excluded.
 - Selection is fixed; physical verification on receipt is pending. This does not change release markers.
+
+## Dependency compatibility investigation
+- User-confirmed Remote target: Waveshare ESP32-S3-Touch-LCD-4.3 Standard SKU 25948.
+- Official older Arduino demo path references LVGL 8.x; official newer LVGL9 path is BSP-based (LVGL 9.5.0 example). The project currently requires LVGL 9.6.x.
+- Build manifest remains unfrozen pending source/API compatibility verification. No compile claim or marker bump.
