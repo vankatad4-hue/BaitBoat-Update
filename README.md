@@ -27,18 +27,19 @@ Flytec_Boat_verXXX.zip and Flytec_Remote_verXXX.zip. Never overwrite prior relea
 ## Remote power progress (2026-11-20)
 - Protected 1S4P Li-ion pack; charging is not a custom circuit in this phase.
 - **Controller/display 5V:** revised baseline uses Waveshare board's onboard CS8501 single-cell battery boost through PH2.0 battery input. Manufacturer describes single-cell-to-5V boost and lists board load 5V/450mA. Validate onboard converter current, transients and thermal. External TPS61023 is fallback only, not to be paralleled with onboard boost.
-- **Radio 3.3V:** TPS63070 buck-boost; 1.5µH candidate; 470k/150k feedback, nominal 3.3067V; effective capacitance and radio bursts need validation.
+- **nRF24 radio 3.3V:** TPS63070 buck-boost; 1.5µH candidate; 470k/150k feedback, nominal 3.3067V; effective capacitance and RF bursts need validation.
+- **LoRa backup:** candidate E22 UART module may need 5V for full power; provisional separate filtered branch from Waveshare 5V boost, with simultaneous-load test required. Separate boost if rail margin is insufficient; never parallel converter outputs.
 - Battery protection: BMS, 4A fast-acting fuse candidate, FDS6575 reverse P-MOS candidate (Drain pack-side, Source protected-output), ADC sense and NTC. Exact coordination and tests pending.
-- At 3V loaded, estimated controller input ≈0.83A (5V/450mA at assumed 90% onboard efficiency) plus radio ≈0.37A (3.3V/300mA at assumed 90%); combined ≈1.20A. Assumptions only.
+- Previous 1.20A controller+nRF estimate was based on assumed loads/efficiency and did not include LoRa. Recalculate and measure total load with LoRa enabled before selecting converters, fuse and battery/BMS.
 - Native KiCad schematic, ERC, PCB, review and hardware bring-up are incomplete.
 
 ## Current power documents
 - Remote/New_Handheld_Remote/PCB/5V_CONTROLLER_POWER_ARCHITECTURE_REVIEW_R1.md
 - Remote/New_Handheld_Remote/PCB/BOOST_CONVERTER_SELECTION_REVIEW_R3.md
 - Remote/New_Handheld_Remote/PCB/BATTERY_INPUT_PROTECTION_DESIGN_R4.md
-- Remote/New_Handheld_Remote/PCB/POWER_SHEET_CAPTURE_SPEC_R4.md
-- Remote/New_Handheld_Remote/PCB/REMOTE_POWER_BOM_CANDIDATES_R4.md
-- Remote/New_Handheld_Remote/PCB/POWER_SCHEMATIC_NET_DRAFT_R6.md
+- Remote/New_Handheld_Remote/PCB/POWER_SHEET_CAPTURE_SPEC_R5.md
+- Remote/New_Handheld_Remote/PCB/REMOTE_POWER_BOM_CANDIDATES_R5.md
+- Remote/New_Handheld_Remote/PCB/POWER_SCHEMATIC_NET_DRAFT_R7.md
 - Remote/New_Handheld_Remote/PCB/POWER_DISTRIBUTION_DESIGN_R4.md
 - Remote/New_Handheld_Remote/PCB/REMOTE_POWER_AND_CONTROL_BLOCK_DIAGRAM_R1.md
 - Remote/New_Handheld_Remote/PCB/REMOTE_PERIPHERAL_INTERFACE_PINOUT_DRAFT_R1.md
@@ -57,3 +58,7 @@ Flytec_Boat_verXXX.zip and Flytec_Remote_verXXX.zip. Never overwrite prior relea
 - Command scaffolding stamps a stable ID and timestamp for future cross-link duplicate suppression.
 - Protocol and failover code specification: `Remote/docs/DUAL_RADIO_PROTOCOL_FIRMWARE_SPEC_R1.md`; hardware/radio/antenna architecture: `Remote/docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R1.md`.
 - No radio driver, authenticated packet codec, failover supervisor, or boat failsafe has been implemented or compiled. Do not operate the boat.
+
+- Remote/New_Handheld_Remote/PCB/SCHEMATIC_CAPTURE_SHEETS_R1.md
+- Remote/New_Handheld_Remote/PCB/SCHEMATIC_NETLIST_BLOCKS_R1.md
+- Remote/New_Handheld_Remote/PCB/SCHEMATIC_CAPTURE_CHECKLIST_R1.md
