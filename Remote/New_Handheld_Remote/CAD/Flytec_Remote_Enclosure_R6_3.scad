@@ -59,7 +59,7 @@ module internal_layout(){
  block(0,-61,84,36,6,8,"#a5aab0");
  block(-65,-74,30,20,6,5,"#e0b477"); // charge/protection placeholder
  block(71,-71,38,24,6,5,"#e0b477"); // DC/DC placeholder
- block(0,-32,44,18,6,5,"#e0b477"); // distribution
+ block(0,-35,30,12,6,5,"#e0b477"); // distribution
 }
 
 module assembly(){
