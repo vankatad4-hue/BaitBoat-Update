@@ -15,8 +15,13 @@ Front-facing view. **Both button banks are arranged four columns across × two r
 | Bottom | R5 RELEASE STATUS | R6 RELEASE LOCK/STATUS | R7 MAP/SONAR SPLIT | R8 BACK/CANCEL |
 
 ## Confirm / safety
-Dedicated OK/confirm control: hold release key ≥1200ms, release, then hold OK ≥800ms within 4000ms. STOP, stale/unverified safety telemetry, primary-link loss, timeout or cancel aborts. No actuator release over backup LoRa.
+Dedicated physical OK/confirm key is separate from the two banks and power key. Hold release key ≥1200ms, release, then hold OK ≥800ms within 4000ms. STOP, stale/unverified safety telemetry, primary-link loss, timeout or cancel aborts. No actuator release over backup LoRa.
 
 Release commands are independent; no combined hopper or hook release. Boat-side actuator execution and telemetry interlocks remain incomplete; release stays fail-closed.
 
 Preview: [R6 SVG](../CAD/REMOTE_CONCEPT_R6.svg).
+
+
+## R6 physical CAD detail
+- Separate OK/confirm switch is at lower-center of the panel (provisional location), distinct from the touchscreen and power key.
+- Four right-bank release buttons receive preliminary raised collar geometry in CAD. Collars are not a tested safety feature; retain electronic staged-confirm and boat-side interlocks.
