@@ -7,6 +7,7 @@
 #include "boat_radio.h"
 #include "boat_telemetry.h"
 #include "release_button_guard.h"
+#include "mission_ui.h"
 // --------------------------------------------------
 // SCREEN DIMENSIONS
 // --------------------------------------------------
