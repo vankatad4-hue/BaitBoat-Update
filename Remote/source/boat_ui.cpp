@@ -153,8 +153,22 @@ static lv_obj_t *createPanel(
         LV_PART_MAIN
     );
 
+    // Add a restrained blue outline for panel separation.
+    lv_obj_set_style_border_width(panel, 1, LV_PART_MAIN);
+    lv_obj_set_style_border_color(panel, lv_color_hex(0x2366A4), LV_PART_MAIN);
+
     // Return the panel.
     return panel;
+}
+
+// Apply the shared high-contrast touch-button style.
+static void styleTouchButton(lv_obj_t *button, lv_color_t fill)
+{
+    lv_obj_set_style_bg_color(button, fill, LV_PART_MAIN);
+    lv_obj_set_style_text_color(button, COLOR_TEXT, LV_PART_MAIN);
+    lv_obj_set_style_radius(button, 8, LV_PART_MAIN);
+    lv_obj_set_style_border_width(button, 1, LV_PART_MAIN);
+    lv_obj_set_style_border_color(button, lv_color_hex(0x347FC0), LV_PART_MAIN);
 }
 
 // --------------------------------------------------
@@ -254,6 +268,7 @@ static void createHeader()
 
     // Add a gear button to open remote settings.
     lv_obj_t *settingsButton = lv_button_create(headerPanel);
+    styleTouchButton(settingsButton, lv_color_hex(0x174F92));
     lv_obj_set_size(settingsButton, 100, 36);
     lv_obj_align(settingsButton, LV_ALIGN_RIGHT_MID, -8, 0);
     lv_obj_t *settingsText = lv_label_create(settingsButton);
@@ -282,11 +297,11 @@ static void mapManagerOpenEvent(lv_event_t *event){if(lv_event_get_code(event)!=
 {
     mapPanel=createPanel(contentPanel,5,5,385,315);
     mapTitle=createLabel(mapPanel,"КАРТА",10,8);
-    lv_obj_t *sourceButton=lv_button_create(mapPanel);
+    lv_obj_t *sourceButton=lv_button_create(mapPanel);styleTouchButton(sourceButton, lv_color_hex(0x174F92));
     lv_obj_set_size(sourceButton,86,28);lv_obj_set_pos(sourceButton,285,4);
     mapSourceLabel=lv_label_create(sourceButton);lv_label_set_text(mapSourceLabel,mapSource_modeLabel(mapSource_getMode()));lv_obj_center(mapSourceLabel);
     lv_obj_add_event_cb(sourceButton,mapSourceCycleEvent,LV_EVENT_CLICKED,nullptr);
-    lv_obj_t *manager=lv_button_create(mapPanel);lv_obj_set_size(manager,92,28);lv_obj_set_pos(manager,180,4);lv_label_set_text(lv_label_create(manager),"УПРАВЛЕНИЕ");lv_obj_center(lv_obj_get_child(manager,0));lv_obj_add_event_cb(manager,mapManagerOpenEvent,LV_EVENT_CLICKED,nullptr);
+    lv_obj_t *manager=lv_button_create(mapPanel);styleTouchButton(manager, lv_color_hex(0x174F92));lv_obj_set_size(manager,92,28);lv_obj_set_pos(manager,180,4);lv_label_set_text(lv_label_create(manager),"УПРАВЛЕНИЕ");lv_obj_center(lv_obj_get_child(manager,0));lv_obj_add_event_cb(manager,mapManagerOpenEvent,LV_EVENT_CLICKED,nullptr);
     gpsCoordinatesLabel=createLabel(mapPanel,"ШИР: --.------  ДЪЛ: --.------",10,31);
     gpsMapStatusLabel=createLabel(mapPanel,"GPS: НЯМА FIX | SD: ПРОВЕРКА",10,53);
     lv_obj_set_width(gpsMapStatusLabel,365);lv_label_set_long_mode(gpsMapStatusLabel,LV_LABEL_LONG_DOT);
@@ -295,9 +310,9 @@ static void mapManagerOpenEvent(lv_event_t *event){if(lv_event_get_code(event)!=
     lv_obj_set_style_border_width(mapViewport,0,LV_PART_MAIN);lv_obj_set_style_pad_all(mapViewport,0,LV_PART_MAIN);
     lv_obj_set_style_bg_color(mapViewport,lv_color_hex(0x263746),LV_PART_MAIN);lv_obj_set_style_clip_corner(mapViewport,true,LV_PART_MAIN);
     lv_obj_clear_flag(mapViewport,LV_OBJ_FLAG_SCROLLABLE);mapRenderer_create(mapViewport);
-    lv_obj_t *zoomOut=lv_button_create(mapPanel);lv_obj_set_size(zoomOut,42,32);lv_obj_set_pos(zoomOut,8,270);
+    lv_obj_t *zoomOut=lv_button_create(mapPanel);styleTouchButton(zoomOut, lv_color_hex(0x174F92));lv_obj_set_size(zoomOut,42,32);lv_obj_set_pos(zoomOut,8,270);
     lv_label_set_text(lv_label_create(zoomOut),"-");lv_obj_center(lv_obj_get_child(zoomOut,0));lv_obj_add_event_cb(zoomOut,mapZoomOutEvent,LV_EVENT_CLICKED,nullptr);
-    lv_obj_t *zoomIn=lv_button_create(mapPanel);lv_obj_set_size(zoomIn,42,32);lv_obj_set_pos(zoomIn,54,270);
+    lv_obj_t *zoomIn=lv_button_create(mapPanel);styleTouchButton(zoomIn, lv_color_hex(0x174F92));lv_obj_set_size(zoomIn,42,32);lv_obj_set_pos(zoomIn,54,270);
     lv_label_set_text(lv_label_create(zoomIn),"+");lv_obj_center(lv_obj_get_child(zoomIn,0));lv_obj_add_event_cb(zoomIn,mapZoomInEvent,LV_EVENT_CLICKED,nullptr);
     mapZoomLabel=createLabel(mapPanel,"Z15",104,278);gpsDetailsLabel=createLabel(mapPanel,"SAT: --  ACC: --m  КУРС: --",160,278);
     lv_obj_add_flag(mapPanel,LV_OBJ_FLAG_CLICKABLE);lv_obj_add_event_cb(mapPanel,mapTouchEvent,LV_EVENT_CLICKED,nullptr);
@@ -389,6 +404,7 @@ static void createFooter()
 
     // Create the emergency STOP button.
     stopButton = lv_button_create(footerPanel);
+    styleTouchButton(stopButton, COLOR_RED);
 
     // Set the STOP button size.
     lv_obj_set_size(stopButton, 210, 46);
@@ -422,18 +438,22 @@ static void createFooter()
 
     // Compact touchscreen mode controls. Boat-side command policy remains authoritative.
     lv_obj_t *manualButton = lv_button_create(footerPanel);
+    styleTouchButton(manualButton, lv_color_hex(0x174F92));
     lv_obj_set_size(manualButton, 105, 44); lv_obj_set_pos(manualButton, 10, 47);
     lv_label_set_text(lv_label_create(manualButton), "РЪЧНО"); lv_obj_center(lv_obj_get_child(manualButton,0));
     lv_obj_add_event_cb(manualButton,touchManualEvent,LV_EVENT_CLICKED,nullptr);
     lv_obj_t *autoButton = lv_button_create(footerPanel);
+    styleTouchButton(autoButton, lv_color_hex(0x174F92));
     lv_obj_set_size(autoButton, 118, 44); lv_obj_set_pos(autoButton, 120, 47);
     lv_label_set_text(lv_label_create(autoButton), "АВТОПИЛОТ"); lv_obj_center(lv_obj_get_child(autoButton,0));
     lv_obj_add_event_cb(autoButton,touchAutopilotEvent,LV_EVENT_CLICKED,nullptr);
     lv_obj_t *returnButton = lv_button_create(footerPanel);
+    styleTouchButton(returnButton, lv_color_hex(0x174F92));
     lv_obj_set_size(returnButton, 110, 44); lv_obj_set_pos(returnButton, 248, 47);
     lv_label_set_text(lv_label_create(returnButton), "КЪМ ДОМА"); lv_obj_center(lv_obj_get_child(returnButton,0));
     lv_obj_add_event_cb(returnButton,touchReturnEvent,LV_EVENT_CLICKED,nullptr);
     lv_obj_t *missionButton = lv_button_create(footerPanel);
+    styleTouchButton(missionButton, lv_color_hex(0x174F92));
     lv_obj_set_size(missionButton, 100, 44); lv_obj_set_pos(missionButton, 365, 47);
     lv_label_set_text(lv_label_create(missionButton), "МИСИЯ"); lv_obj_center(lv_obj_get_child(missionButton,0));
     lv_obj_add_event_cb(missionButton,openMissionEvent,LV_EVENT_CLICKED,nullptr);
@@ -447,6 +467,7 @@ static void createFooter()
     lv_label_set_long_mode(safetyStatusLabel, LV_LABEL_LONG_DOT);
     // Create a button for joystick calibration.
 lv_obj_t *sticksButton = lv_button_create(footerPanel);
+styleTouchButton(sticksButton, lv_color_hex(0x174F92));
 
 // Set its size.
 lv_obj_set_size(sticksButton, 80, 42);
