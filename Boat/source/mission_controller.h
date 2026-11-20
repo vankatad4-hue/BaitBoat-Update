@@ -22,6 +22,7 @@ public:
  }
  bool diverted()const{return diverted_&&phase_==MC_RETURNING;}
  MissionNavigationResult navigation(const ExecInputs &in)const{return engine_.navigation(in);}
+ bool confirmManual(const ExecInputs &in){if(phase_!=MC_MANUAL_REQUESTED||!in.stationary||!in.releaseIdle||in.stopActive)return false;phase_=MC_IDLE;return true;}
  uint16_t lastRequestId()const{return lastRequest_;}
  MissionControlFeedback status()const{return {plan_.transaction,phase_,0,0,MC_STATUS};}
  bool request(const MissionControlRequest &r,const ExecInputs &in,uint32_t now,bool authenticated,bool appReady,bool sticksNeutral,MissionControlFeedback &ack){

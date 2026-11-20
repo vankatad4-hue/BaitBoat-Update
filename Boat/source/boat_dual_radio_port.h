@@ -58,7 +58,9 @@ public:
     uint16_t missionTransaction()const{return controller_.status().transaction;}
     bool detachedReturnActive()const{return detachedReturn_;}
     MissionNavigationResult missionNavigation()const{ExecInputs in{};return missionInputs(in,millis())?controller_.navigation(in):MissionNavigationResult{};}
-    void localEmergencyStop(){abortMission();detachedReturn_=false;commandQueue_.clear();mission_.reset();}
+    void localEmergencyStop(){const bool wasDetached=detachedReturn_;abortMission();detachedReturn_=false;if(wasDetached)controller_.resetSession();commandQueue_.clear();mission_.reset();}
+    bool confirmManual(){ExecInputs in{};return missionInputs(in,millis())&&controller_.confirmManual(in);}
+    bool sendHardwareTelemetry(const RadioDecodedPayload &status);
     bool missionOverrideOutput(int16_t &left,int16_t &right)const;
     bool missionReleaseComplete(uint16_t transaction,uint16_t token,bool success);
     void update();

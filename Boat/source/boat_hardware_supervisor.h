@@ -7,6 +7,8 @@ struct BoatHardwareSample {
  MissionNavigationFix fix;
  uint32_t safetyAt,gnssAt,headingAt;
  bool safetyValid,physicalStopReleased,batteryHealthy,stationary,releaseInterlocks,releaseIdle,watchdogReady;
+ bool outputFeedbackValid,leftMotorActive,rightMotorActive;
+ uint8_t batteryPercent,gpsFixType,satellites;
 };
 struct BoatActuatorConfig {
  uint16_t pulseMs[4]; // actual coil characterization required
@@ -15,12 +17,12 @@ struct BoatActuatorConfig {
 };
 struct BoatActuatorOutput{int16_t left,right;int8_t releaseChannel;};
 inline ExecInputs boatHardware_inputs(const BoatHardwareSample &s,uint32_t now,bool stopLatched){
- const bool safe=s.safetyValid&&now-s.safetyAt<100U&&s.watchdogReady;
+ const bool safe=s.safetyValid&&now-s.safetyAt<100U&&s.watchdogReady&&s.outputFeedbackValid;
  auto fix=s.fix;
  fix.fresh=fix.fresh&&now-s.gnssAt<2000U;
  fix.headingValid=fix.headingValid&&now-s.headingAt<300U;
  fix.batteryHealthy=safe&&s.batteryHealthy&&fix.batteryHealthy;
- return {fix,stopLatched||!safe||!s.physicalStopReleased,false,false,safe&&s.stationary,safe&&s.releaseInterlocks,safe&&s.releaseIdle};
+ return {fix,stopLatched||!safe||!s.physicalStopReleased,false,false,safe&&s.stationary&&!s.leftMotorActive&&!s.rightMotorActive,safe&&s.releaseInterlocks,safe&&s.releaseIdle};
 }
 inline bool boatHardware_configValid(const BoatActuatorConfig &c){
  if(!c.maxNavMotor||c.maxNavMotor>1000||!std::isfinite(c.yawGain)||c.yawGain<=0||c.yawGain>1000)return false;
@@ -52,7 +54,7 @@ public:
   lastTx_=tx;lastToken_=token;channel_=channel;pulseAt_=now;pulseActive_=true;return true;
  }
  void newMissionIdentity(){if(!pulseActive_&&!awaitIdle_){lastTx_=lastToken_=0;}}
- BoatActuatorOutput tick(const ExecInputs &in,uint32_t now,ExecOutput intent,const MissionNavigationResult &nav,bool missionActive,bool overrideActive,int16_t overrideLeft,int16_t overrideRight){
+ BoatActuatorOutput tick(const ExecInputs &in,uint32_t now,ExecOutput intent,const MissionNavigationResult &nav,bool missionActive,bool overrideActive,int16_t overrideLeft,int16_t overrideRight,uint32_t safetySampleAt){
   const BoatActuatorOutput off={0,0,-1};
   if(!configured_||stopLatched_||in.stopActive||!in.fix.batteryHealthy){stop();return off;}
   if(pulseActive_||awaitIdle_){
@@ -65,7 +67,7 @@ public:
     pulseActive_=false;awaitIdle_=true;offAt_=now;return off;
    }
    // Require a separate post-deenergization idle sample, not same-tick confirmation.
-   if(now-offAt_>0U&&in.releaseIdle){completion_={lastTx_,lastToken_,true,true};awaitIdle_=false;}
+   if((int32_t)(safetySampleAt-offAt_)>0&&in.releaseIdle){completion_={lastTx_,lastToken_,true,true};awaitIdle_=false;}
    else if(now-offAt_>=500U){completion_={lastTx_,lastToken_,false,true};awaitIdle_=false;stopLatched_=true;}
    return off;
   }

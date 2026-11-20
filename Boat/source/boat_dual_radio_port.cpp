@@ -34,6 +34,11 @@ bool BoatDualRadioPort::missionReleaseComplete(uint16_t transaction,uint16_t tok
  const bool safe=ready&&in.primaryFresh&&!in.stopActive&&in.releaseInterlocks&&in.releaseIdle&&in.stationary;
  return controller_.releaseComplete(transaction,token,success&&safe,safe);
 }
+bool BoatDualRadioPort::sendHardwareTelemetry(const RadioDecodedPayload &status){
+ if(!sessionReady()||!primaryFresh(millis()))return false;
+ RadioFrame f;radio_frameInit(f,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,++txSequence_,0,millis(),sessionEpoch_);
+ return radio_encodeTelemetryPayload(status,f.payload)&&radio_frameSeal(f,key_)&&sendFrame(LINK_NRF_PRIMARY,f);
+}
 bool BoatDualRadioPort::sendMissionFeedback(const MissionControlFeedback &status,uint32_t now){
  if(!sessionReady()||!nrfReady_)return false;
  RadioFrame f;radio_frameInit(f,RADIO_MSG_MISSION_FEEDBACK,BOAT_ID,REMOTE_ID,++txSequence_,status.transaction,now,sessionEpoch_);

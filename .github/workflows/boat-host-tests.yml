@@ -104,3 +104,7 @@ jobs:
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/source/mission_protocol.cpp Boat/tests/boat_hardware_supervisor_test.cpp -o /tmp/boat_hardware_supervisor
           /tmp/boat_hardware_supervisor
+      - name: Physical feedback status confirmation
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/boat_hardware_status_test.cpp -o /tmp/boat_hardware_status
+          /tmp/boat_hardware_status

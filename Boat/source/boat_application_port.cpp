@@ -1,4 +1,5 @@
 #include "boat_application_port.h"
+#include "boat_hardware_status.h"
 BoatApplicationPort *BoatApplicationPort::active_=nullptr;
 bool BoatApplicationPort::attach(const BoatPhysicalDriver &driver,const BoatActuatorConfig &config){
  if(attached_||active_||!driver.read||!driver.apply||!driver.disable)return false;
@@ -28,10 +29,10 @@ void BoatApplicationPort::tick(){
   return;
  }
  sample_={};sampleOK_=driver_.read(sample_);
- if(!sampleOK_){fault();radio_.update();return;}
+ if(!sampleOK_){fault();radio_.update();radio_.sendHardwareTelemetry(boatHardware_status({},millis(),true,MC_ABORTED,false,false));return;}
  const uint32_t now=millis();
  auto in=boatHardware_inputs(sample_,now,executor_.stopped());
- if(!sample_.physicalStopReleased||!sample_.watchdogReady||!in.fix.batteryHealthy){fault();radio_.update();return;}
+ if(!sample_.physicalStopReleased||!sample_.watchdogReady||!in.fix.batteryHealthy){fault();radio_.update();radio_.sendHardwareTelemetry(boatHardware_status(sample_,millis(),true,MC_ABORTED,false,radio_.primaryFresh(millis())));return;}
  radio_.update();
  in=boatHardware_inputs(sample_,millis(),executor_.stopped());
  in.primaryFresh=radio_.primaryFresh(millis());in.backupFresh=radio_.backupFresh(millis());
@@ -52,6 +53,7 @@ void BoatApplicationPort::tick(){
  }
  in=boatHardware_inputs(sample_,millis(),executor_.stopped());
  in.primaryFresh=radio_.primaryFresh(millis());in.backupFresh=radio_.backupFresh(millis());
+ if(radio_.missionPhase()==MC_MANUAL_REQUESTED){executor_.cancelManual();radio_.confirmManual();}
  const auto phase=radio_.missionPhase();
  const bool missionActive=phase>=MC_PREPARED&&phase<=MC_RETURNING;
  const auto intent=radio_.missionIntent();
@@ -64,8 +66,9 @@ void BoatApplicationPort::tick(){
  }
  int16_t left=0,right=0;const bool overrideActive=radio_.missionOverrideOutput(left,right);
  // The driver must check and enforce the output lease independently.
- const auto out=executor_.tick(in,millis(),intent,radio_.missionNavigation(),missionActive,overrideActive,left,right);
+ const auto out=executor_.tick(in,millis(),intent,radio_.missionNavigation(),missionActive,overrideActive,left,right,sample_.safetyAt);
  if(!driver_.apply(out,100)){fault();return;}
  const auto completion=executor_.takeCompletion();
  if(completion.valid)radio_.missionReleaseComplete(completion.transaction,completion.token,completion.success);
+ if(millis()-lastStatusAt_>=200U){lastStatusAt_=millis();radio_.sendHardwareTelemetry(boatHardware_status(sample_,lastStatusAt_,executor_.stopped(),radio_.missionPhase(),radio_.detachedReturnActive(),radio_.primaryFresh(lastStatusAt_)));}
 }

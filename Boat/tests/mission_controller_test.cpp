@@ -22,6 +22,7 @@ int main(){
  assert(c.tick(in,10,true,true).intent==INTENT_NAV_TARGET);
  req={MCTRL_SWITCH_MANUAL,1,6};assert(c.request(req,in,11,true,true,true,ack)&&ack.phase==MC_MANUAL_REQUESTED);
  assert(c.tick(in,12,true,true).intent==INTENT_STOP);
+ in.stationary=false;assert(!c.confirmManual(in));in.stationary=true;assert(c.confirmManual(in)&&c.status().phase==MC_IDLE);
  assert(missionFeedbackEncode(ack,bytes));MissionControlFeedback read{};assert(missionFeedbackDecode(bytes,read)&&read.request==6);
  bytes[7]=1;assert(!missionFeedbackDecode(bytes,read));
  c.resetSession();in.stopActive=true;assert(c.stage(p,0,true,true));in.stopActive=false;
