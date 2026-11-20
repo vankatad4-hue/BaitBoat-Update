@@ -1,6 +1,6 @@
 # Flytec V080 Project Progress Review R1
 
-**Review date:** 2026-11-20  
+**Review date:** 2026-11-20 (updated after cross-radio replay-policy milestone)  
 **Branch:** hardware-ready-dual-radio-r1  
 **Overall classification:** design/development scaffold; not hardware-ready or operational.
 
@@ -21,7 +21,7 @@
 - ACCEPTED is queue acceptance only. There is no connected command executor, telemetry source, EXECUTED ACK, actuator output or navigation/failsafe application.
 
 ## Release/archive review
-- Current markers: Remote ver023 / Boat ver010.
+- Current markers: Remote ver023 / Boat ver011 (Boat ver011 ZIP/manifest regeneration pending).
 - Generated ZIPs and manifest are present in the development branch.
 - Boat ver010 ZIP: independently SHA-256 verified against the manifest. Structure checked: 60 entries, sorted names, normalized timestamps, no nested ZIP; key encoder/test/session files present. Remote ZIP binary was not retrievable and remains unverified.
 - Remote ver023 ZIP: present, but the binary could not be retrieved through the available file fetch path; checksum is manifest-only and not independently verified.
@@ -36,7 +36,7 @@
 
 ## Critical blockers
 1. Boat/Remote firmware not fully compiled against the exact ESP32/Waveshare/Heltec board libraries.
-2. Boat radio queue and ACK/session code has not been host-tested; it was reviewed but not compile-tested.
+2. Boat radio queue and ACK/session code remains not host-tested. New portable policy/dedupe/codec/sequence test files are committed, but tests could not be executed in this environment.
 3. No secure session challenge/response or replay protection across reboot.
 4. No Boat application loop/command executor/interlock/watchdog/EXECUTED ACK.
 5. No Boat telemetry source (battery, STOP, GPS, heading, navigation, sonar) or Remote warning/status integration completed.
@@ -48,8 +48,9 @@
 
 ## Recommended next work sequence
 
-### Gate A — Software protocol tests (next)
-- Add fake-radio host tests around BoatDualRadioPort: remote session marker, response, duplicate markers on both radios, stale epoch rejection, same command ID crossing radios, queue-full BUSY, and accepted ACK wire format.
+### Gate A — Software protocol tests (in progress)
+- Portable host tests now cover command backup policy, throttle clamping, command dedupe cache, failsafe truth table, sequence wrap/stale rejection, and cross-radio duplicate classification. They are committed but not executed.
+- Remaining: fake-radio integration tests around BoatDualRadioPort for session markers, same command crossing radios, stale epochs, queue-full BUSY, and ACK wire format.
 - Test ACK frame envelope/HMAC/CRC plus payload round-trip; prove that ACCEPTED never becomes execution state.
 - Test failsafe and command policy with a portable state model, including STOP, clear-STOP, manual, return-home, and independent release interlocks.
 - Review session recovery/replay behavior. Prefer a challenge/response session protocol before enabling any key.
@@ -75,5 +76,5 @@
 - Separate dummy-load motor-driver and solenoid tests, with no bait mechanisms connected.
 - Safety review, then HIL; controlled water tests only after independent failsafe validation.
 
-## Stop conditions
+## Latest engineering finding\n- Previous cross-radio logic let CONTROL/ACTION frames bypass the cross-radio sequence guard entirely. This was narrowed: sequence-rejected commands now pass only if exact command ID is pending or executed; stale sequence/new ID is discarded. This reduces replay risk but is not complete anti-replay protection.\n\n## Stop conditions
 No propulsion, release, live battery charging in the proposed enclosure, or water operation until the exact hardware is identified, secure key/session is implemented, command executor/interlocks/failsafe are tested, electrical design is reviewed, and firmware/hardware test evidence is recorded.
