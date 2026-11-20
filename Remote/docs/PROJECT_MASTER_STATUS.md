@@ -75,7 +75,7 @@ Boat:
 ## Versioned ZIP status
 - [Build and checksum status](../../docs/ZIP_BUILD_STATUS_R1.md)
 - Preserved baseline archives: Remote `Flytec_Remote_ver004.zip`, Boat `Flytec_Boat_ver004.zip`.
-- Current source markers are Remote `027` and Boat `014`. Last package snapshot is Remote ver024 / Boat ver014; Boat ver014 archive verified, Remote ver024 binary checksum remains unverified.
+- Current source markers are Remote `028` and Boat `014`. Latest source snapshot is Remote ver028 / Boat ver014. Packaging workflow should create the ver028 Remote ZIP after this branch push; compilation and archive verification still need checking.
 - Packaging policy: `docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Boat controller pin audit
@@ -96,7 +96,7 @@ Boat:
 
 ## Release status
 - Repository branch: `hardware-ready-dual-radio-r1`; draft PR #1 remains open and unmerged.
-- Last package markers: Remote ver024 / Boat ver014. Source has since advanced to Remote ver027; no ver026 archive is confirmed. Boat ver014 archive independently verified. Remote ver024 binary remains unverified.
+- Last package markers previously were Remote ver024 / Boat ver014. Remote source has advanced to ver028; package workflow output and checksum must be verified after branch push. Boat ver014 archive independently verified. Remote ver024 binary remains unverified.
 - Do not operate boat or connect actuator power. Bench tests only.
 
 - Consolidated remote pin map and connector CSV R4 are the current versions; older R2 docs marked superseded. Consolidated remote power BOM/capture spec R6 are current; R5 docs marked superseded.
@@ -254,3 +254,11 @@ Boat:
 - Mission UI uses 4×4 slot grid; map overlay can show all 16 in the local grid view.
 - Integrated microSD/TF is map-data storage. Existing SD map pack reader checks manifest and raw RGB565 tiles; full map renderer and pack creation tool remain pending.
 - Release notes and preview: `../releases/RELEASE_VER027.md`, `../source/UI_PREVIEW_MISSION_VER027.svg`. Current source marker 027. ZIP, checksum, compilation and hardware validation not done.
+
+
+## Remote software progress update — ver028 offline map + SD waypoint persistence
+- Added `map_renderer.*`: SD-backed Web-Mercator XYZ RGB565 tile viewport, bounded 3×3 tile slots, zoom buttons (5–19, default 15), boat marker, all 16 saved waypoint markers, Home and direct target route line.
+- Map panel viewport expands with map panel. North-up only; no pan/layer selector or route planning. No map tiles bundled.
+- Added desktop MBTiles-to-Flytec pack converter (`Remote/tools/mbtiles_to_flytec.py`) with TMS→XYZ row conversion and required attribution argument.
+- Mission/Home record now writes SD file `/missions/waypoints.bin` with CRC/read-back validation and temp-file rename; NVS mirror/fallback retained and legacy four-waypoint NVS migration preserved.
+- Tests: source edits not compiled. Verify LVGL image/line API compatibility, SD file operations, memory, blocking latency, zoom, tile placement, route overlays and persistence on the actual Waveshare display/card. See `Remote/docs/OFFLINE_MAP_RENDERER_VER028.md` and `Remote/docs/MISSION_SD_STORAGE_TEST_PLAN_VER028.md`.
