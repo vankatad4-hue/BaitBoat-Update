@@ -1,50 +1,45 @@
-# Flytec V080 bait boat and remote — master project record
+# Flytec V080 bait boat and remote — master project record R2
 
-**Last consolidated:** 2026-11-18
+**Consolidated:** 2026-11-20. This is the current planning record; repository source is canonical.
 
 ## Archive versioning
-Every distributed project ZIP uses `Flytec_Remote_verXXX.zip`. Start ver001; increment by one per changed project deliverable; do not overwrite prior release ZIPs.
+ZIPs use Flytec_Remote_verXXX.zip and Flytec_Boat_verXXX.zip. Never overwrite a prior release. ver005 archives exist but are not fully synchronized to current repository work.
 
-## Project objective
-Retrofit Flytec V080 bait boat while retaining hull, motors, battery indicator and main switch. Replace boat control electronics with central custom PCB/removable connectors. Remote hardware is being redesigned around a new handheld touchscreen concept while existing remote firmware work remains separate.
+## Project
+Retain Flytec V080 hull, motors, battery indicator and main switch; replace boat control electronics. Remote is a new handheld design using existing Waveshare 4.3 touchscreen board.
 
-## Boat-side baseline
-- Existing Flytec V080 hull and standard 550 brushed motors retained; 12 V motor target.
-- Reported boat pack: 3S4P Li-ion, 2500 mAh cells, BMS 20 A (verify actual pack).
-- Solenoids: FW0630 009 DC12V bait and FW0630 001 DC12V hook.
-- Boat PCB envelope 77×79×14 mm; lid clearance about 30 mm; mounting holes, motor stall current and solenoid coil current not yet measured.
-- Boat controller/GNSS: Heltec Wireless Tracker V1.2 candidate/selected direction; pin and antenna configuration must be verified.
-- Motion sensor: GY-91 style MPU-9250 + BMP280 candidate; calibration and exact breakout verified before wiring.
-- Radio: nRF24L01+ PA/LNA, 250 kbps initial test; 500 m range is unverified.
-- Radio loss during autopilot: return-home preference, gated by GNSS/heading validity, safe home and watchdog.
+## Boat baseline
+- 12V 550 brushed motors; motor startup/stall current unmeasured.
+- Reported pack 3S4P, BMS 20A; verify actual cell/pack data.
+- Solenoids FW0630 009 DC12V bait and FW0630 001 DC12V hook; coil current/resistance/duty not measured.
+- Carrier PCB envelope 77×79×14mm, compartment lid clearance ~30mm.
+- Heltec Wireless Tracker V1.2 ESP32-S3/UC6580 GNSS candidate.
+- GY-91 MPU-9250 + BMP280 motion/heading candidate; exact breakout/pinout and calibration pending.
+- nRF24L01+ PA/LNA 250kbps initial; 500m range goal unvalidated.
+- Cytron MDD20A motor-driver candidate; confirm motor current before use.
+- Sonar: full CHIRP echogram/fish arches desired, module/interface still unselected.
+- Autopilot mission: save waypoint, send, release bait/hook, return; failsafe return-home only with valid navigation/system health.
 
-## New handheld remote baseline
-- Waveshare ESP32-S3-Touch-LCD-4.3 Standard, onboard antenna accepted.
-- Screen central; joysticks upper left/right; 16 physical buttons in 2×4 banks; power button above screen; USB-C lower edge; grips.
-- 1S4P pack, four 18650 parallel; cell model not selected.
-- nRF24L01+ PA/LNA module with separate SMA antenna; 2.4 GHz coexistence with ESP32 Wi-Fi/Bluetooth must be tested.
+## Remote baseline
+- Waveshare ESP32-S3-Touch-LCD-4.3 Standard, 800×480; onboard ESP32 antenna.
+- 2 joysticks, 16 buttons (2×4 banks on each side), touch UI; ergonomic remote concept remains.
+- Pack 1S4P 18650; exact cells and BMS not selected.
+- nRF24 PA/LNA module with external antenna. Wi-Fi/Bluetooth coexistence requires testing.
 
-## Remote power design
-- Protected 1S4P pack input; charging circuit excluded.
-- 5 V display/controller rail: TPS61088 candidate, component calculations incomplete.
-- 3.3 V radio rail: TPS63070 adjustable buck-boost.
-- TPS63070 calculated baseline: R1 470 kΩ VOUT→FB, R2 150 kΩ FB→GND, 3.307 V nominal; L 1.5 µH Coilcraft XFL4020-152ME candidate; input capacitors 2×10 µF 25 V X7S 0805 + 10 µF 25 V X5R 0603; output 3×22 µF 16 V X6S 0805 + 10 µF 0603 (76 µF nominal); VAUX 100 nF.
-- TPS63070 configuration proposal: FB2 GND; VSEL static LOW; PS/SYNC HIGH power-save; EN via 10 kΩ pull-up; optional PG 100 kΩ pull-up. Verify exact control-pin connections before capture.
-- Radio design load 200 mA; estimated radio input current ≈245 mA at 3.0 V assuming 90% efficiency.
-- Whole remote estimated ≈1.13 A at 3.0 V using display 450 mA/5 V and 85% boost efficiency plus radio 200 mA and 90% efficiency. Assumptions, not measurements.
-- Main fuse 3 A time-delay provisional. Pack protection, wiring, connector, inrush, thermal and measured load must determine final value.
+## Revised remote power tree
+- Pack/BMS output → fuse candidate → reverse-protection P-MOS candidate → BAT_PROT.
+- Controller/display 5V: use Waveshare onboard CS8501 battery boost via single-cell PH2.0 connector. Manufacturer documentation says boost from single cell to 5V and board consumption 5V/450mA. Verify current/transient/thermal performance. External TPS61023 remains fallback only; do not parallel converters.
+- Radio 3.3V: dedicated TPS63070 buck-boost. 1.5µH candidate; feedback 470k/150k, nominal 3.3067V; effective capacitors and configuration pending tests. EN candidate controlled after boot, default OFF.
+- Protection shortlist: Littelfuse 0458004.DR 4A fast-acting fuse; onsemi FDS6575 P-MOS (Drain pack side, Source protected output); battery ADC divider and NTC. Parts/coordination not validated.
+- Current estimate at 3V loaded: controller 5V/450mA at assumed 90% ≈0.83A battery; radio 3.3V/300mA at assumed 90% ≈0.37A; total ≈1.20A. Estimate only.
 
-## Repository hardware workspace
-`Remote/New_Handheld_Remote/` contains mechanical, CAD, PCB, wiring and documentation. Files remain preliminary. Native KiCad schematics, ERC, PCB layout, fabrication BOM and bench validation are not complete. Do not claim these deliverables exist until verified.
+## Remote controls/peripherals
+- Board I2C GPIO8/9 shared with touch/CH422G/RTC.
+- ADS1115 candidate (I2C 0x48) for four joystick axes, 16-bit, up to 860SPS aggregate; verify latency/noise.
+- MCP23017 candidate (I2C 0x20) for 16 button inputs; active-low contacts and software debounce.
+- Battery sensing GPIO6/Sensor-AD candidate.
+- nRF SPI candidate GPIO11/12/13 shared with TF card; separate CS. Candidate CSN GPIO15 and CE GPIO43 are provisional; GPIO attachments and header exposure must be verified. IRQ omitted/polled initially.
+- I2C addresses/pullups, SPI sharing and GPIO map not frozen.
 
-## Current engineering next steps
-1. Verify TPS63070 package/pin numbers and control configuration against TI datasheet.
-2. Verify exact capacitor parts' effective capacitance under DC bias and temperature.
-3. Complete component-level TPS61088 5 V boost calculations.
-4. Capture native schematic sheets and run ERC when KiCad tools are available.
-5. Design battery protection/fuse/reverse-polarity and connectors around measured current.
-6. PCB layout and bench test both rails at battery endpoints and load transients.
-
-## Source links
-- TI TPS63070: https://www.ti.com/lit/ds/symlink/tps63070.pdf
-- TI TPS61088: https://www.ti.com/lit/ds/symlink/tps61088.pdf
+## Engineering status
+Power and interface documentation updated. Native KiCad schematics, ERC, PCB layout, fabrication BOM, exact pin/connector assignment, bench validation and hardware bring-up are still not completed. Do not treat docs/net drafts as fabrication-ready.
