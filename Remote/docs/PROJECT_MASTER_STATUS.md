@@ -262,3 +262,13 @@ Boat:
 - Added desktop MBTiles-to-Flytec pack converter (`Remote/tools/mbtiles_to_flytec.py`) with TMS→XYZ row conversion and required attribution argument.
 - Mission/Home record now writes SD file `/missions/waypoints.bin` with CRC/read-back validation and temp-file rename; NVS mirror/fallback retained and legacy four-waypoint NVS migration preserved.
 - Tests: source edits not compiled. Verify LVGL image/line API compatibility, SD file operations, memory, blocking latency, zoom, tile placement, route overlays and persistence on the actual Waveshare display/card. See `Remote/docs/OFFLINE_MAP_RENDERER_VER028.md` and `Remote/docs/MISSION_SD_STORAGE_TEST_PLAN_VER028.md`.
+
+
+## Remote ver029 development — online/offline map architecture
+- Accepted design: Google Maps online viewing through authorized Map Tiles API 2D tile requests only; offline SD maps must use independent sources whose licences permit storage/conversion. Google tiles are never downloaded for offline use or stored on SD.
+- Added map source preference/UI scaffold (AUTO/ONLINE/OFFLINE persisted to NVS). ONLINE currently unavailable and status reports SD fallback. This is not an online renderer.
+- Added `map_area_planner.py` for 1km square geometry, XYZ tile plan, tile counts and storage estimates.
+- Added `mbtiles_area_export.py` to extract a selected tile subset from locally supplied MBTiles, convert RGB565, and report missing tiles plus source attribution/licence metadata. It does not fetch map data.
+- Added docs: online/offline architecture, area download spec, Google Map Tiles API integration design and ver029 milestone.
+- Example planner arithmetic at 43° latitude for zooms14–17: about50 tiles/6.25MiB raw/6.88MiB with 10% margin. Exact result varies by centre and tile boundaries.
+- Source-level tests were added, but not executed. Online provider, area-download UI, pack coverage enforcement, compile and hardware validation remain pending. Packaged ZIP and `releases/VERSION` remain ver028.
