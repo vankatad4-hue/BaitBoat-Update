@@ -143,3 +143,7 @@ Read `../../docs/CONTINUATION_CHECKPOINT_VER001.md` for the complete current sta
 - The project includes `lv_conf.h` sourced from the official LVGL v9.6.0 configuration template, enabled and adjusted to a 128 KiB LVGL allocator pool and RGB565 default.
 - Keep the configuration version aligned with the pinned LVGL library. The target-build workflow copies it to Arduino's expected LVGL config search location before compiling.
 - The first target build exposed the missing config; it is now tracked in the project. Target compile validation is pending.
+
+
+## Latest CI compile evidence (2026-11-20)
+Remote target compile #19 passed (run 44781879101) on commit 3f189cb1ac65a764aec678893f1df857d113c815. Firmware compiled/linked and artifact upload succeeded with ESP32-S3 16MB/OPI PSRAM huge_app partition. Size: 1,430,957 bytes (45%); global RAM 178,136 bytes (54%, 149,544 remaining). No compiler errors or C++ warnings reported. CI does not validate physical display, touch, SD, radio, Wi-Fi, inputs or safety. Next audit: settings timer lifecycle, map pack import validation and renderer/cache memory safety.
