@@ -163,3 +163,11 @@ Boat:
 - Added small printable tolerance coupons before a full remote enclosure print: button apertures 13.8–15.0mm, joystick apertures 24.5–26.0mm, USB slot matrix 15.0–16.0×8.0–9.0mm, screw holes 2.8–3.4mm, and release guard apertures 17.6/18.0mm with 21mm collars.
 - OpenSCAD coupon source and guide committed. Locally generated STL coupon meshes checked watertight. Labels are test aids; no physical fit has yet been measured because target components are not purchased/available.
 - GitHub CAD workflow now includes export commands for the four coupon STL files.
+
+
+## Archive review and R6.4 reconciliation (2026-11-20)
+- Reviewed version archives Boat/Remote ver001–005, Remote ver009, and GitHub Import ver004. Remote ver005 was an integrity-verified Actions snapshot; Remote ver009 contains newer R5 electrical/CAD work but remains an unvalidated development bundle.
+- Correct R5 baseline retained: MCP23017 0x20 for 16 discrete button inputs (not a 4×4 matrix); MCP23017 0x21 for radio/OK IO; ADS1115 0x4A joystick axes and 0x4B monitoring; SC16IS750 0x48 E22 UART bridge; nRF SPI GPIO11/12/13 shared with TF, CE GPIO6 and CSN GPIO15 direct candidates only after onboard circuits are isolated; E22 UART stays on bridge.
+- Recent preliminary matrix/ADS1015/alternate GPIO documents are explicitly marked superseded by this reconciliation.
+- New records: Remote archive reconciliation and next gate Remote/New_Handheld_Remote/ELECTRICAL/ARCHIVE_RECONCILIATION_AND_NEXT_GATE_R6_4.md; consolidated schematic netlist review draft REMOTE_SCHEMATIC_NETLIST_R6_4.md.
+- Next engineering gate: reconcile connector pinout/netlist and power draft, then native schematic capture and ERC. No compiled or bench-tested hardware status changes.
