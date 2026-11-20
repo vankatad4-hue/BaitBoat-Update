@@ -222,3 +222,14 @@ Boat:
 
 ## Package status reconciliation
 - Remote version marker is now ver024; the ver024 package ZIP and checksum are expected from packaging workflow and require independent verification. Boat package remains ver014.
+
+
+## Remote mission UI milestone — ver025 (2026-11-20)
+- Dedicated waypoint/mission planning screen opened from footer.
+- Four RAM-only waypoint slots, selection, clear, save-current-fix and set-home.
+- GNSS save/home require valid state and timestamp no older than 2 seconds.
+- Selected waypoint can receive BAIT/HOOK planning markers. No actuator command is sent.
+- Mission start is blocked; no persistent waypoint store, boat mission executor, geofence validator, secure command implementation or mission ACK/state integration exists.
+- Preview file: `Remote/source/UI_PREVIEW_MISSION_VER025.svg`.
+- Also repaired missing declarations for ver024 input/safety footer labels discovered during source review.
+- ver025 source is not yet compiled against the actual board/LVGL package and is not hardware tested.
