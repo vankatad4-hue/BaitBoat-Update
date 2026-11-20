@@ -7,9 +7,10 @@ This folder contains the hardware design workspace for the new handheld bait-boa
 - Separate power button above screen; USB-C service connector.
 - Two joysticks above two button banks; 16 buttons total, 2×4 per side.
 - Ergonomic grips; no shoulder/rear buttons.
-- nRF24L01+ PA/LNA control/telemetry radio with dedicated antenna.
-- Waveshare ESP32-S3 touchscreen board uses onboard antenna; no separate ESP32 antenna path is required.
-- 1S4P Li-ion pack, four matched 18650 cells in parallel; target 2500 mAh/cell is not yet selected/validated.
+- **Primary:** nRF24L01+ PA/LNA 2.4GHz radio; LEFT external antenna.
+- **Backup:** LoRa module (SX1262/E22 UART family candidate) in EU868; RIGHT external antenna. The boat must also carry a matching LoRa radio.
+- Waveshare ESP32-S3 Wi-Fi/Bluetooth uses its onboard antenna; no external Wi-Fi antenna path.
+- 1S4P Li-ion pack, four matched 18650 cells; cell model, BMS and protection validation pending.
 
 ## Workspace
 - CAD: shell, front/rear, internal mockup; preliminary only.
@@ -18,23 +19,15 @@ This folder contains the hardware design workspace for the new handheld bait-boa
 - WIRING: cable and connector interface documents.
 - docs: design decisions, RF, bring-up.
 
-## Power design
-- Display rail: TPS61088 candidate, 5.0 V.
-- Radio rail: TPS63070 buck-boost, 3.3 V.
-- Radio rail component baseline and calculations: `PCB/TPS63070_COMPONENT_CALCULATIONS_REVIEW_R1.md`.
-- Power distribution and net-level draft: `PCB/POWER_DISTRIBUTION_DESIGN_R1.md`, `PCB/POWER_SCHEMATIC_NET_DRAFT_R1.md`.
-- Main 3 A time-delay fuse is provisional; protection, reverse polarity, current budget and thermal design require verification.
-- Charging schematic excluded from current design scope.
+## Power baseline (updated)
+- Controller/display 5V: Waveshare board onboard CS8501 boost through single-cell battery interface; external boost is fallback only. Never parallel boost outputs.
+- nRF24 rail: dedicated TPS63070 RADIO_3V3 buck-boost.
+- LoRa module supply: provisional filtered 5V branch from CS8501 rail, subject to simultaneous display/backlight+nRF+LoRa current/thermal/transient test. Separate boost if required, never parallel.
+- 1S4P pack, protection fuse and reverse-polarity MOS candidates pending validation.
+- Charging circuit remains outside custom design scope; board USB/charging behavior still requires bench verification.
 
-## TPS63070 radio rail — calculated baseline (R1)
-- Feedback: 470 kΩ/150 kΩ, calculated 3.307 V.
-- Inductor: 1.5 µH Coilcraft XFL4020-152ME candidate.
-- Input capacitors: 2×10 µF 25 V X7S 0805 + 10 µF 25 V X5R 0603.
-- Output capacitors: 3×22 µF 16 V X6S 0805 + 10 µF 0603; 76 µF nominal.
-- VAUX bypass: 100 nF.
-- FB2 grounded, VSEL static LOW, PS/SYNC HIGH power-save; EN defined by proposed 10 kΩ pull-up; optional PG 100 kΩ pull-up. Verify all control pin states and biasing against exact datasheet before schematic capture.
-- At 200 mA radio load, estimated battery current at 3.0 V is 245 mA assuming 90% efficiency.
-- Whole remote preliminary battery estimate at 3.0 V is 1.13 A using display 450 mA at 5 V/85% and radio 200 mA/90%; assumptions only, excludes transient/other loads.
+## Dual-radio redundancy
+Primary nRF24 remains the high-rate responsive link. LoRa is backup for heartbeat, low-rate telemetry, capped low-rate steering, STOP and RETURN. Mission-start and bait/hook release are disabled on backup by default. Dual-link failover, handover hysteresis, duplicate suppression, authenticated/replay-safe packets, independent boat failsafe, and link-state UI are software requirements. See `../docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R1.md`.
 
 ## Status / limitations
-Documents are engineering planning and net-level design records, not fabrication-ready schematics or BOM. Native KiCad capture, symbol/footprint pin verification, ERC, PCB layout and bench testing have not been completed.
+Documents are engineering planning/net-level design records, not fabrication-ready schematics or BOM. Native KiCad capture, pin/footprint audit, ERC, PCB layout, firmware integration and bench/field testing remain incomplete.
