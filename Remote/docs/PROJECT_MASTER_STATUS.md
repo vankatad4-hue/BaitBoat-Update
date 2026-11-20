@@ -12,7 +12,7 @@ Updated: 2026-11-20. Development branch; no firmware compile, hardware test, ERC
 - Mission: manual waypoint save→autopilot to waypoint→bait/hook release→return home. Boat-side failsafe must return only if GNSS/heading/battery/geofence health valid; otherwise stop safely.
 
 ## Remote hardware R5 — mechanical/button revision
-- R5 shell CAD envelope310×210×68mm; two-piece front/rear shell prototype, central 4.3in display, twin sticks, two 2×4 button banks, OK and power keys, dual antenna exits.
+- R5 shell CAD envelope310×209×69.5mm; two-piece front/rear shell prototype, central 4.3in display, twin sticks, two 2×4 button banks, OK and power keys, dual antenna exits.
 - Right bank top four keys are independent H-L/H-R/K-L/K-R release controls. Combined release commands are disabled/rejected.
 - MCP23017 physical button scanning/debounce, mapping and release/OK event wiring are in remote loop; GPIO crosswalk and actual hardware remain unverified.
 - Remote release commands require authenticated primary link, STOP-confirmed released and boat interlock telemetry. Host-tested 1.2s release-key + 0.8s OK confirm within4s guard exists. `actuatorSafetyReady` is false by default and is not set by current telemetry, so release remains disabled.
