@@ -4,6 +4,7 @@
 #include "boat_commands.h"
 #include "dual_radio_manager.h"
 #include "radio_ack_tracker.h"
+#include "mission_upload.h"
 
 enum BoatRadioLink : uint8_t {
     RADIO_LINK_NONE = 0,
@@ -23,6 +24,10 @@ enum BoatRadioState : uint8_t {
 // validation, link supervision and heartbeat scaffolds. Pin map is provisional;
 // key provisioning is fail-closed and commands are disabled without a key.
 bool boatRadio_begin();
+// Preparation only, never starts motors or release mechanisms.
+bool boatRadio_prepareMission(MissionPlan plan);
+MissionUploadState boatRadio_missionUploadState();
+void boatRadio_cancelMissionPreparation();
 bool boatRadio_sendCommand(const BoatCommand &command);
 void boatRadio_update();
 bool boatRadio_isConnected();
