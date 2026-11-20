@@ -21,8 +21,8 @@
 static const int SCREEN_WIDTH  = 800;
 static const int SCREEN_HEIGHT = 480;
 
-static const int HEADER_HEIGHT = 55;
-static const int FOOTER_HEIGHT = 65;
+static const int HEADER_HEIGHT = 46;
+static const int FOOTER_HEIGHT = 100;
 
 // --------------------------------------------------
 // LVGL OBJECTS
@@ -61,19 +61,19 @@ static StopCallback stopCallback = nullptr;
 // --------------------------------------------------
 
 static const lv_color_t COLOR_BACKGROUND =
-    lv_color_hex(0x101820);
+    lv_color_hex(0x081522);
 
 static const lv_color_t COLOR_PANEL =
-    lv_color_hex(0x1C2935);
+    lv_color_hex(0x10243A);
 
 static const lv_color_t COLOR_TEXT =
     lv_color_hex(0xFFFFFF);
 
 static const lv_color_t COLOR_RED =
-    lv_color_hex(0xE53935);
+    lv_color_hex(0xD91E2B);
 
 static const lv_color_t COLOR_GREEN =
-    lv_color_hex(0x43A047);
+    lv_color_hex(0x20C979);
 
 // --------------------------------------------------
 // HELPER: CREATE A LABEL
@@ -231,7 +231,7 @@ static void createHeader()
     // Display radio connection status.
     connectionLabel = createLabel(
         headerPanel,
-        "RADIO: DISCONNECTED",
+        "РАДИО: --",
         12,
         17
     );
@@ -239,7 +239,7 @@ static void createHeader()
     // Display boat battery information.
     batteryLabel = createLabel(
         headerPanel,
-        "BATTERY: --%",
+        "БАТЕРИЯ: --%",
         280,
         17
     );
@@ -247,17 +247,17 @@ static void createHeader()
     // Display operating mode.
     modeLabel = createLabel(
         headerPanel,
-        "MODE: MANUAL",
+        "РЕЖИМ: РЪЧЕН",
         535,
         17
     );
 
     // Add a gear button to open remote settings.
     lv_obj_t *settingsButton = lv_button_create(headerPanel);
-    lv_obj_set_size(settingsButton, 92, 40);
+    lv_obj_set_size(settingsButton, 100, 36);
     lv_obj_align(settingsButton, LV_ALIGN_RIGHT_MID, -8, 0);
     lv_obj_t *settingsText = lv_label_create(settingsButton);
-    lv_label_set_text(settingsText, "SETTINGS");
+    lv_label_set_text(settingsText, "НАСТРОЙКИ");
     lv_obj_center(settingsText);
     lv_obj_add_event_cb(settingsButton, [](lv_event_t *event) {
         if (lv_event_get_code(event) == LV_EVENT_CLICKED)
@@ -280,26 +280,26 @@ static void mapSourceCycleEvent(lv_event_t *event)
 }
 static void mapManagerOpenEvent(lv_event_t *event){if(lv_event_get_code(event)!=LV_EVENT_CLICKED)return;lv_obj_add_flag(headerPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(contentPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(footerPanel,LV_OBJ_FLAG_HIDDEN);mapManagerUI_open(mainScreen,boatState.latitude,boatState.longitude,boatState.gpsValid,[]{lv_obj_remove_flag(headerPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_remove_flag(contentPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_remove_flag(footerPanel,LV_OBJ_FLAG_HIDDEN);});}\nstatic void createMapPanel()
 {
-    mapPanel=createPanel(contentPanel,5,5,385,345);
-    mapTitle=createLabel(mapPanel,"MAP",10,8);
+    mapPanel=createPanel(contentPanel,5,5,385,315);
+    mapTitle=createLabel(mapPanel,"КАРТА",10,8);
     lv_obj_t *sourceButton=lv_button_create(mapPanel);
     lv_obj_set_size(sourceButton,86,28);lv_obj_set_pos(sourceButton,285,4);
     mapSourceLabel=lv_label_create(sourceButton);lv_label_set_text(mapSourceLabel,mapSource_modeLabel(mapSource_getMode()));lv_obj_center(mapSourceLabel);
     lv_obj_add_event_cb(sourceButton,mapSourceCycleEvent,LV_EVENT_CLICKED,nullptr);
-    lv_obj_t *manager=lv_button_create(mapPanel);lv_obj_set_size(manager,92,28);lv_obj_set_pos(manager,180,4);lv_label_set_text(lv_label_create(manager),"MANAGER");lv_obj_center(lv_obj_get_child(manager,0));lv_obj_add_event_cb(manager,mapManagerOpenEvent,LV_EVENT_CLICKED,nullptr);
-    gpsCoordinatesLabel=createLabel(mapPanel,"LAT: --.------  LON: --.------",10,31);
-    gpsMapStatusLabel=createLabel(mapPanel,"GPS: NO FIX | SD: CHECKING",10,53);
+    lv_obj_t *manager=lv_button_create(mapPanel);lv_obj_set_size(manager,92,28);lv_obj_set_pos(manager,180,4);lv_label_set_text(lv_label_create(manager),"УПРАВЛЕНИЕ");lv_obj_center(lv_obj_get_child(manager,0));lv_obj_add_event_cb(manager,mapManagerOpenEvent,LV_EVENT_CLICKED,nullptr);
+    gpsCoordinatesLabel=createLabel(mapPanel,"ШИР: --.------  ДЪЛ: --.------",10,31);
+    gpsMapStatusLabel=createLabel(mapPanel,"GPS: НЯМА FIX | SD: ПРОВЕРКА",10,53);
     lv_obj_set_width(gpsMapStatusLabel,365);lv_label_set_long_mode(gpsMapStatusLabel,LV_LABEL_LONG_DOT);
     mapViewport=lv_obj_create(mapPanel);
-    lv_obj_set_pos(mapViewport,8,82);lv_obj_set_size(mapViewport,369,220);
+    lv_obj_set_pos(mapViewport,8,78);lv_obj_set_size(mapViewport,369,190);
     lv_obj_set_style_border_width(mapViewport,0,LV_PART_MAIN);lv_obj_set_style_pad_all(mapViewport,0,LV_PART_MAIN);
     lv_obj_set_style_bg_color(mapViewport,lv_color_hex(0x263746),LV_PART_MAIN);lv_obj_set_style_clip_corner(mapViewport,true,LV_PART_MAIN);
     lv_obj_clear_flag(mapViewport,LV_OBJ_FLAG_SCROLLABLE);mapRenderer_create(mapViewport);
-    lv_obj_t *zoomOut=lv_button_create(mapPanel);lv_obj_set_size(zoomOut,42,34);lv_obj_set_pos(zoomOut,8,307);
+    lv_obj_t *zoomOut=lv_button_create(mapPanel);lv_obj_set_size(zoomOut,42,32);lv_obj_set_pos(zoomOut,8,270);
     lv_label_set_text(lv_label_create(zoomOut),"-");lv_obj_center(lv_obj_get_child(zoomOut,0));lv_obj_add_event_cb(zoomOut,mapZoomOutEvent,LV_EVENT_CLICKED,nullptr);
-    lv_obj_t *zoomIn=lv_button_create(mapPanel);lv_obj_set_size(zoomIn,42,34);lv_obj_set_pos(zoomIn,54,307);
+    lv_obj_t *zoomIn=lv_button_create(mapPanel);lv_obj_set_size(zoomIn,42,32);lv_obj_set_pos(zoomIn,54,270);
     lv_label_set_text(lv_label_create(zoomIn),"+");lv_obj_center(lv_obj_get_child(zoomIn,0));lv_obj_add_event_cb(zoomIn,mapZoomInEvent,LV_EVENT_CLICKED,nullptr);
-    mapZoomLabel=createLabel(mapPanel,"Z15",104,316);gpsDetailsLabel=createLabel(mapPanel,"SAT: -- ACC: --m HDG: --",160,316);
+    mapZoomLabel=createLabel(mapPanel,"Z15",104,278);gpsDetailsLabel=createLabel(mapPanel,"SAT: --  ACC: --m  КУРС: --",160,278);
     lv_obj_add_flag(mapPanel,LV_OBJ_FLAG_CLICKABLE);lv_obj_add_event_cb(mapPanel,mapTouchEvent,LV_EVENT_CLICKED,nullptr);
 }
 
@@ -310,18 +310,12 @@ static void mapManagerOpenEvent(lv_event_t *event){if(lv_event_get_code(event)!=
 static void createSonarPanel()
 {
     // Create the sonar panel on the right.
-    sonarPanel = createPanel(
-        contentPanel,
-        400,
-        5,
-        385,
-        345
-    );
+    sonarPanel = createPanel(contentPanel, 400, 5, 385, 315);
 
     // Create the sonar heading.
     sonarTitle = createLabel(
         sonarPanel,
-        "SONAR",
+        "СОНАР • CHIRP",
         12,
         10
     );
@@ -329,7 +323,7 @@ static void createSonarPanel()
     // Add a placeholder until sonar integration is implemented.
     createLabel(
         sonarPanel,
-        "CHIRP ECHOGRAM WILL APPEAR HERE",
+        "CHIRP ЕХОГРАМА — МОДУЛЪТ НЕ Е СВЪРЗАН",
         35,
         155
     );
@@ -397,15 +391,10 @@ static void createFooter()
     stopButton = lv_button_create(footerPanel);
 
     // Set the STOP button size.
-    lv_obj_set_size(stopButton, 145, 50);
+    lv_obj_set_size(stopButton, 210, 46);
 
     // Position the STOP button on the right.
-    lv_obj_align(
-        stopButton,
-        LV_ALIGN_RIGHT_MID,
-        -10,
-        0
-    );
+    lv_obj_set_pos(stopButton, 570, 47);
 
     // Set the STOP button background colour.
     lv_obj_set_style_bg_color(
@@ -418,7 +407,7 @@ static void createFooter()
     lv_obj_t *stopLabel = lv_label_create(stopButton);
 
     // Set the button text.
-    lv_label_set_text(stopLabel, "STOP");
+    lv_label_set_text(stopLabel, "СТОП");
 
     // Centre the text.
     lv_obj_center(stopLabel);
@@ -433,28 +422,28 @@ static void createFooter()
 
     // Compact touchscreen mode controls. Boat-side command policy remains authoritative.
     lv_obj_t *manualButton = lv_button_create(footerPanel);
-    lv_obj_set_size(manualButton, 80, 42); lv_obj_set_pos(manualButton, 175, 11);
-    lv_label_set_text(lv_label_create(manualButton), "MANUAL"); lv_obj_center(lv_obj_get_child(manualButton,0));
+    lv_obj_set_size(manualButton, 105, 44); lv_obj_set_pos(manualButton, 10, 47);
+    lv_label_set_text(lv_label_create(manualButton), "РЪЧНО"); lv_obj_center(lv_obj_get_child(manualButton,0));
     lv_obj_add_event_cb(manualButton,touchManualEvent,LV_EVENT_CLICKED,nullptr);
     lv_obj_t *autoButton = lv_button_create(footerPanel);
-    lv_obj_set_size(autoButton, 100, 42); lv_obj_set_pos(autoButton, 260, 11);
-    lv_label_set_text(lv_label_create(autoButton), "AUTOPILOT"); lv_obj_center(lv_obj_get_child(autoButton,0));
+    lv_obj_set_size(autoButton, 118, 44); lv_obj_set_pos(autoButton, 120, 47);
+    lv_label_set_text(lv_label_create(autoButton), "АВТОПИЛОТ"); lv_obj_center(lv_obj_get_child(autoButton,0));
     lv_obj_add_event_cb(autoButton,touchAutopilotEvent,LV_EVENT_CLICKED,nullptr);
     lv_obj_t *returnButton = lv_button_create(footerPanel);
-    lv_obj_set_size(returnButton, 90, 42); lv_obj_set_pos(returnButton, 365, 11);
-    lv_label_set_text(lv_label_create(returnButton), "RETURN"); lv_obj_center(lv_obj_get_child(returnButton,0));
+    lv_obj_set_size(returnButton, 110, 44); lv_obj_set_pos(returnButton, 248, 47);
+    lv_label_set_text(lv_label_create(returnButton), "КЪМ ДОМА"); lv_obj_center(lv_obj_get_child(returnButton,0));
     lv_obj_add_event_cb(returnButton,touchReturnEvent,LV_EVENT_CLICKED,nullptr);
     lv_obj_t *missionButton = lv_button_create(footerPanel);
-    lv_obj_set_size(missionButton, 90, 42); lv_obj_set_pos(missionButton, 460, 11);
-    lv_label_set_text(lv_label_create(missionButton), "MISSION"); lv_obj_center(lv_obj_get_child(missionButton,0));
+    lv_obj_set_size(missionButton, 100, 44); lv_obj_set_pos(missionButton, 365, 47);
+    lv_label_set_text(lv_label_create(missionButton), "МИСИЯ"); lv_obj_center(lv_obj_get_child(missionButton,0));
     lv_obj_add_event_cb(missionButton,openMissionEvent,LV_EVENT_CLICKED,nullptr);
 
     // Show live input validity and calibration status, not a generic reminder.
-    inputStatusLabel = createLabel(footerPanel, "STICKS: NOT CALIBRATED", 15, 8);
-    lv_obj_set_width(inputStatusLabel, 155);
+    inputStatusLabel = createLabel(footerPanel, "СТИКОВЕ: НЕСЪПРОВЕРЕНИ", 15, 4);
+    lv_obj_set_width(inputStatusLabel, 380);
     lv_label_set_long_mode(inputStatusLabel, LV_LABEL_LONG_DOT);
-    safetyStatusLabel = createLabel(footerPanel, "STOP: UNKNOWN", 15, 34);
-    lv_obj_set_width(safetyStatusLabel, 150);
+    safetyStatusLabel = createLabel(footerPanel, "STOP: НЕИЗВЕСТНО", 410, 4);
+    lv_obj_set_width(safetyStatusLabel, 380);
     lv_label_set_long_mode(safetyStatusLabel, LV_LABEL_LONG_DOT);
     // Create a button for joystick calibration.
 lv_obj_t *sticksButton = lv_button_create(footerPanel);
@@ -463,13 +452,13 @@ lv_obj_t *sticksButton = lv_button_create(footerPanel);
 lv_obj_set_size(sticksButton, 80, 42);
 
 // Position in the footer row, before STOP.
-lv_obj_set_pos(sticksButton, 555, 11);
+lv_obj_set_pos(sticksButton, 470, 47);
 
 // Create the button label.
 lv_obj_t *sticksLabel = lv_label_create(sticksButton);
 
 // Set its text.
-lv_label_set_text(sticksLabel, "STICKS");
+lv_label_set_text(sticksLabel, "КАЛИБР.");
 
 // Centre the text.
 lv_obj_center(sticksLabel);
@@ -572,7 +561,7 @@ void toggleMapPanel()
             385,
             345
         );
-        lv_obj_set_size(mapViewport, 369, 220);
+        lv_obj_set_size(mapViewport, 369, 190);
 
         // Show sonar again.
         lv_obj_remove_flag(
@@ -653,7 +642,7 @@ void updateBoatScreen(const BoatState &state)
         snprintf(
             coordinateText,
             sizeof(coordinateText),
-            "LAT: %.6f   LON: %.6f",
+            "ШИР: %.6f   ДЪЛ: %.6f",
             state.latitude,
             state.longitude
         );
@@ -670,7 +659,7 @@ void updateBoatScreen(const BoatState &state)
         snprintf(
             gpsDetailsText,
             sizeof(gpsDetailsText),
-            "SAT: %u   ACC: %.1f m   HDG: %.0f deg",
+            "SAT: %u   ACC: %.1f m   КУРС: %.0f°",
             static_cast<unsigned>(state.gpsSatellites),
             state.gpsAccuracyMeters,
             state.heading
@@ -684,33 +673,33 @@ void updateBoatScreen(const BoatState &state)
         const MapSourceMode sourceMode = mapSource_getMode();
         const char *sourceText = (sourceMode == MAP_SOURCE_ONLINE && !mapSource_onlineAvailable()) ? "ONLINE UNAVAILABLE - SD FALLBACK" : (sourceMode == MAP_SOURCE_AUTO ? "AUTO / SD" : "OFFLINE / SD");
         char mapStatusText[120];
-        snprintf(mapStatusText, sizeof(mapStatusText), "GPS: NO FIX  |  %s  |  %s", mapStorageText, sourceText);
+        snprintf(mapStatusText, sizeof(mapStatusText), "GPS: НЯМА FIX  |  %s  |  %s", mapStorageText, sourceText);
         lv_label_set_text(gpsMapStatusLabel, mapStatusText);
-        lv_label_set_text(gpsDetailsLabel, "SAT: --   ACC: -- m   HDG: -- deg");
+        lv_label_set_text(gpsDetailsLabel, "SAT: --   ACC: -- m   КУРС: --°");
     }
 
     missionUI_initStorage();
     updateMapMissionMarkers(state);
 
     // Show selected link and failover state.
-    const char *radioText = "LINK: NONE";
+    const char *radioText = "РАДИО: НЯМА";
     switch (state.radioLinkState)
     {
-        case RADIO_UI_PRIMARY: radioText = "LINK: NRF24 PRIMARY"; break;
-        case RADIO_UI_DEGRADED: radioText = "LINK: DEGRADED"; break;
-        case RADIO_UI_BACKUP: radioText = "LINK: LORA BACKUP"; break;
-        case RADIO_UI_NO_LINK: radioText = "LINK: NO LINK"; break;
-        case RADIO_UI_RECOVERY: radioText = "LINK: RECOVERING"; break;
-        default: radioText = "LINK: DISCONNECTED"; break;
+        case RADIO_UI_PRIMARY: radioText = "РАДИО: NRF24"; break;
+        case RADIO_UI_DEGRADED: radioText = "РАДИО: СЛАБА ВРЪЗКА"; break;
+        case RADIO_UI_BACKUP: radioText = "РАДИО: РЕЗЕРВНО LORA"; break;
+        case RADIO_UI_NO_LINK: radioText = "РАДИО: НЯМА ВРЪЗКА"; break;
+        case RADIO_UI_RECOVERY: radioText = "РАДИО: ВЪЗСТАНОВЯВА"; break;
+        default: radioText = "РАДИО: ИЗКЛЮЧЕНО"; break;
     }
     lv_label_set_text(connectionLabel, radioText);
 
     // Do not present a fabricated battery percentage before fresh telemetry.
     char batteryText[32];
     if (telemetry.batteryPercentValid && (uint32_t)(millis()-telemetry.batteryPercentReceivedAtMs) <= 1500U)
-        snprintf(batteryText, sizeof(batteryText), "BATTERY: %d%%", telemetry.batteryPercent);
+        snprintf(batteryText, sizeof(batteryText), "БАТЕРИЯ: %d%%", telemetry.batteryPercent);
     else
-        snprintf(batteryText, sizeof(batteryText), "BATTERY: --");
+        snprintf(batteryText, sizeof(batteryText), "БАТЕРИЯ: --");
 
     lv_label_set_text(
         batteryLabel,
@@ -730,14 +719,14 @@ void updateBoatScreen(const BoatState &state)
         case MODE_AUTOPILOT:
             lv_label_set_text(
                 modeLabel,
-                "MODE: AUTOPILOT"
+                "РЕЖИМ: АВТОПИЛОТ"
             );
             break;
 
         case MODE_RETURN_HOME:
             lv_label_set_text(
                 modeLabel,
-                "MODE: RETURN HOME"
+                "РЕЖИМ: КЪМ ДОМА"
             );
             break;
     }
@@ -745,13 +734,13 @@ void updateBoatScreen(const BoatState &state)
     // Refresh the live input and safety status footer.
     const JoystickSnapshot input = joystick_getSnapshot();
     char inputText[112];
-    if (!input.readingsValid) snprintf(inputText,sizeof(inputText),"STICKS: ADC ERROR / NO DATA");
-    else if (!input.calibrationValid) snprintf(inputText,sizeof(inputText),"STICKS: CALIBRATION REQUIRED  RAW %d/%d %d/%d",input.raw.leftX,input.raw.leftY,input.raw.rightX,input.raw.rightY);
-    else snprintf(inputText,sizeof(inputText),"STICKS L %d,%d  R %d,%d  %s",input.values.leftX,input.values.leftY,input.values.rightX,input.values.rightY,input.neutral?"NEUTRAL":"ACTIVE");
+    if (!input.readingsValid) snprintf(inputText,sizeof(inputText),"СТИКОВЕ: ADC ГРЕШКА / НЯМА ДАННИ");
+    else if (!input.calibrationValid) snprintf(inputText,sizeof(inputText),"СТИКОВЕ: КАЛИБРИРАЙ  RAW %d/%d %d/%d",input.raw.leftX,input.raw.leftY,input.raw.rightX,input.raw.rightY);
+    else snprintf(inputText,sizeof(inputText),"СТИКОВЕ L %d,%d  R %d,%d  %s",input.values.leftX,input.values.leftY,input.values.rightX,input.values.rightY,input.neutral?"НЕУТРАЛНИ":"АКТИВНИ");
     if (inputStatusLabel) lv_label_set_text(inputStatusLabel,inputText);
     char safetyText[128];
-    const char *stopText = state.emergencyStop ? (state.emergencyStopConfirmed ? "CONFIRM" : "LATCHED?") : (state.emergencyStopConfirmed ? "CLEAR" : "UNKNOWN");
-    const char *healthText = state.failsafeActive ? "FAILSAFE" : (state.lowBattery ? "LOWBAT" : (state.actuatorSafetyReady ? "READY" : "BLOCKED"));
+    const char *stopText = state.emergencyStop ? (state.emergencyStopConfirmed ? "ПОТВЪРДИ" : "ЗАКЛЮЧЕН?") : (state.emergencyStopConfirmed ? "ИЗЧИСТЕН" : "UNKNOWN");
+    const char *healthText = state.failsafeActive ? "АВАР. РЕЖИМ" : (state.lowBattery ? "НИСКА БАТ." : (state.actuatorSafetyReady ? "ГОТОВО" : "БЛОКИРАНО"));
     snprintf(safetyText,sizeof(safetyText),"STOP:%s %s ACK:%u",stopText,healthText,(unsigned)boatRadio_pendingCommandAcks());
     if (safetyStatusLabel) lv_label_set_text(safetyStatusLabel,safetyText);
 
@@ -760,7 +749,7 @@ void updateBoatScreen(const BoatState &state)
     {
         lv_label_set_text(
             lv_obj_get_child(stopButton, 0),
-            "STOP ACTIVE"
+            "СТОП АКТИВЕН"
         );
     }
     else
