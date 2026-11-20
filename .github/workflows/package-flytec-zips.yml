@@ -1,0 +1,65 @@
+name: Package Flytec project ZIPs
+
+on:
+  push:
+    branches:
+      - hardware-ready-dual-radio-r1
+    paths:
+      - 'Remote/**'
+      - 'Boat/**'
+      - '.github/workflows/package-flytec-zips.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch snapshot
+        uses: actions/checkout@v4
+      - name: Read archive versions
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          REMOTE_VERSION="$(tr -d '\r\n ' < Remote/releases/VERSION)"
+          BOAT_VERSION="$(tr -d '\r\n ' < Boat/releases/VERSION)"
+          [[ "$REMOTE_VERSION" =~ ^[0-9]{3}$ ]]
+          [[ "$BOAT_VERSION" =~ ^[0-9]{3}$ ]]
+          echo "remote=$REMOTE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "boat=$BOAT_VERSION" >> "$GITHUB_OUTPUT"
+      - name: Create versioned ZIP archives
+        shell: bash
+        run: |
+          set -euo pipefail
+          REMOTE_VERSION="$(tr -d '\r\n ' < Remote/releases/VERSION)"
+          BOAT_VERSION="$(tr -d '\r\n ' < Boat/releases/VERSION)"
+          mkdir -p out
+          zip -r -X "out/Flytec_Remote_ver${REMOTE_VERSION}.zip" Remote \
+            -x "Remote/releases/*.zip"
+          zip -r -X "out/Flytec_Boat_ver${BOAT_VERSION}.zip" Boat \
+            -x "Boat/releases/*.zip"
+          sha256sum out/*.zip | tee out/SHA256SUMS.txt
+      - name: Upload Remote archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: Flytec_Remote_ver${{ steps.version.outputs.remote }}
+          path: out/Flytec_Remote_ver*.zip
+          if-no-files-found: error
+          retention-days: 90
+      - name: Upload Boat archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: Flytec_Boat_ver${{ steps.version.outputs.boat }}
+          path: out/Flytec_Boat_ver*.zip
+          if-no-files-found: error
+          retention-days: 90
+      - name: Upload checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: Flytec_ver${{ steps.version.outputs.remote }}_${{ steps.version.outputs.boat }}_SHA256
+          path: out/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 90
