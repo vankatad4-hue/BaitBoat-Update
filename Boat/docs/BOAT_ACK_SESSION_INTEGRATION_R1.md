@@ -35,7 +35,7 @@
 
 ## Next gate
 1. Portable queue, payload, safety/dedupe, codec and sequence tests are now included in a GitHub Actions workflow. The workflow has not yet been confirmed passing. Queue tests cover FIFO/full/wrap/session-epoch pending lookup. Still add fake-radio tests for port/session flow, same command on both radios, queue-full ACK behavior and frame-envelope correlation.
-2. Add a boat application state model and telemetry source contract; keep outputs disabled.
+2. Portable command-policy state model now exists (STOP latch, link freshness, mode prerequisites, backup steering cap, release interlocks); it remains separate from the main application and all outputs are disabled. Add telemetry source contract.
 3. Integrate the queue into a fail-closed application loop with STOP and link-watchdog priority.
 4. Implement ACCEPTED→EXECUTED/REJECTED lifecycle only after command policy/interlocks are independently tested.
 5. Design secure session challenge/response and replay protection before key provisioning.
