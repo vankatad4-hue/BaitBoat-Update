@@ -12,8 +12,8 @@ ver005 archives are downloadable from the current ChatGPT response. Their PR art
 ## ver006 — pending
 After ver005 artifacts were generated, package status documentation and release version markers were updated. Both `Remote/releases/VERSION` and `Boat/releases/VERSION` now read `006`.
 
-The packaging workflow was updated to commit generated ZIPs and checksum manifest to the branch on push events, and upload artifacts on PR events. Latest PR workflow run #53 is in `action_required` status and has no artifacts yet:
-https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/44697037116
+The packaging workflow was updated to commit generated ZIPs and checksum manifest to the branch on push events, and upload artifacts on PR events. Latest PR workflow run **#66** is in `action_required` status and has no artifacts yet:
+https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/44697329347
 
 Approve the pending workflow run in GitHub Actions, then verify its ZIPs/checksums before treating ver006 as generated/released.
 
