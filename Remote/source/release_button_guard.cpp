@@ -2,7 +2,7 @@
 #include "boat_state.h"
 #include "boat_commands.h"
 static constexpr uint32_t KEY_HOLD=1200,OK_HOLD=800,WINDOW=4000;static ReleaseGuardState st=RELEASE_GUARD_IDLE;static ReleaseChannel ch=RELEASE_HOPPER_LEFT;static uint32_t keyAt=0,okAt=0,deadline=0;
-static bool ready(){return boatState.radioConnected&&boatState.radioActiveLink==RADIO_UI_NRF_PRIMARY&&boatState.emergencyStopConfirmed&&!boatState.emergencyStop&&boatState.actuatorSafetyReady;}
+static bool ready(){return boatState.mode==MODE_MANUAL&&!boatState.failsafeActive&&boatState.radioConnected&&boatState.radioActiveLink==RADIO_UI_NRF_PRIMARY&&boatState.emergencyStopConfirmed&&!boatState.emergencyStop&&boatState.actuatorSafetyReady;}
 static bool send(){if(!ready())return false;switch(ch){case RELEASE_HOPPER_LEFT:return boatCommands_releaseHopperLeft();case RELEASE_HOPPER_RIGHT:return boatCommands_releaseHopperRight();case RELEASE_HOOK_LEFT:return boatCommands_releaseHookLeft();case RELEASE_HOOK_RIGHT:return boatCommands_releaseHookRight();default:return false;}}
 void releaseGuard_beginKey(ReleaseChannel c,uint32_t n){if(st!=RELEASE_GUARD_IDLE||!ready()||c>RELEASE_HOOK_RIGHT){releaseGuard_cancel();return;}ch=c;keyAt=n;st=RELEASE_GUARD_HOLDING_KEY;}
 void releaseGuard_endKey(uint32_t n){if(st!=RELEASE_GUARD_HOLDING_KEY)return;if(n-keyAt<KEY_HOLD||!ready()){releaseGuard_cancel();return;}deadline=n+WINDOW;st=RELEASE_GUARD_WAIT_CONFIRM;}
