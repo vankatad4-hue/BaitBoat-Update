@@ -46,3 +46,7 @@ J_WAVE_BAT: 1 BAT_PROT; 2 GND; PH2.0 mating polarity must be physically checked.
 
 ## E22 supply correction R4
 The E22-900T22S-V2 accepts 2.7–5.5V, but the datasheet says ≥5V guarantees output power. For the prototype, feed E22 VCC from the Waveshare CS8501 5V rail, not BAT_PROT or RADIO_3V3. Keep UART/M0/M1/AUX logic at 3.3V. E22 is configured to 10dBm; peak current budget must still allow the module's worst-case TX demand (use 150mA until exact 10dBm current is measured). Test CS8501 with display/backlight + E22 TX. If 5V droops/overheats, add a separate BAT_PROT→5V buck/boost branch; never parallel converter outputs.
+
+
+## E22 5V rail redesign R5
+CS8501 5V is reserved for Waveshare controller/display load (manufacturer board load listed ~450mA). E22 adds up to a further 150mA TX peak reservation; do not overload that rail. Add dedicated TPS61023 1S→5V boost branch from BAT_PROT for E22 only (candidate 5V/2A class; verify exact IC/reference design, inductor, diode/switch, output caps and thermal). This is a separate converter/load, not paralleled with CS8501. E22 VCC=LORA_5V; UART/M0/M1/AUX=3.3V logic. Test at 10dBm and worst-case burst; measure input/output current and rail ripple.
