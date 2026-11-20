@@ -4,7 +4,7 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 
 ## Versioning
 - ZIP: `Flytec_Remote_verXXX.zip`.
-- Preserve older archives; the packaged baseline is ver028. Current development source is ver029.9; do not update `releases/VERSION` or create a release ZIP until packaging and verification are complete.
+- Preserve older archives; the packaged baseline is ver028. Current development source is ver029.10; do not update `releases/VERSION` or create a release ZIP until packaging and verification are complete.
 - Increment for every package change and follow `../../docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Controller/display baseline
@@ -123,3 +123,6 @@ Authenticated receive frames are dispatched to strict payload decoders. Remote A
 - `tools/mbtiles_area_export.py`: crops an MBTiles archive to the planned square/zoom tile set and writes RGB565 files plus source-attribution manifest and completeness report. This is offline conversion, not network downloading; it requires Pillow and a licensed source archive.
 
 - Offline pack validation now requires complete flag, attribution, licence URL and zoom metadata. Older packs must be regenerated; renderer shows the pack attribution label.
+
+## Archive workflow safeguard
+Development pushes no longer overwrite repository versioned ZIPs unless Remote or Boat `releases/VERSION` changes. Push/PR/manual runs may still upload a snapshot artifact for inspection. Release marker bump and package verification remain explicit release steps.
