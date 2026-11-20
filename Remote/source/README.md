@@ -4,7 +4,7 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 
 ## Versioning
 - ZIP: `Flytec_Remote_verXXX.zip`.
-- Preserve older archives; current marker `releases/VERSION` is `027`.
+- Preserve older archives; the packaged baseline is ver028. Current source changes are being prepared for ver029; do not update `releases/VERSION` or create a release ZIP until packaging and verification are complete.
 - Increment for every package change and follow `../../docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Controller/display baseline
@@ -33,7 +33,8 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 - `release_button_guard.*`: two-step release guard, primary-link and boat interlock gate; native host test available.
 - `joystick.*`, `joystick_calibration_ui.*`: calibration UI; hardware ADC reader currently fails closed.
 - `boat_ui.*`, `settings_ui.*`: UI scaffold; map and sonar displays are not operational data views.
-- `offline_map.*`, `map_projection.*`: tile validation/read and projection utilities, not a complete geographic map renderer.
+- `offline_map.*`, `map_projection.*`, `map_renderer.*`: SD XYZ RGB565 tile read, projection, bounded tile viewport and map overlays; source is not hardware-validated.
+- `map_source.*`: persisted AUTO / ONLINE / OFFLINE map source preference scaffold; online provider is deliberately unavailable and ONLINE selection falls back to SD.
 - `boat_telemetry.*`: partial telemetry state application with local group freshness, coordinate sample pairing and primary-link safety provenance; wired to Remote receive dispatch.
 - `radio_payload_codec.*`: strict eight-byte HEARTBEAT/ACK/TELEMETRY payload validators; integrated in authenticated receive dispatch.
 - `radio_payload_encoder.*`: portable payload encoders, host round-trip tests, mirrored on Boat.
@@ -104,3 +105,11 @@ Authenticated receive frames are dispatched to strict payload decoders. Remote A
 - Waypoint/Home data stored in `/missions/waypoints.bin` on SD with CRC and read-back validation; NVS backup/fallback and four-slot migration remain.
 - Offline MBTiles conversion helper: `tools/mbtiles_to_flytec.py` (Pillow dependency; attribution required).
 - Source remains uncompiled/unverified; map imagery is not bundled. North-up only; pan, layer switch, route planning and hardware tests remain pending.
+
+
+## Map source UI scaffold — ver029 development
+- Added a map-panel source button cycling AUTO → ONLINE → OFFLINE; preference is persisted in NVS.
+- Status text explicitly reports SD map readiness and indicates ONLINE is unavailable with SD fallback. No Google API calls, online imagery, or tile caching are present.
+- This is a source/UI scaffold only. Offline area download, licensed map-pack coverage metadata, Wi-Fi internet detection and authorized online-provider integration remain next tasks.
+- New files: `map_source.h/.cpp`. Include them in the Arduino sketch build by virtue of their folder placement; confirm Arduino IDE compiles all translation units.
+- No full firmware compile or display hardware test has been performed for this change.
