@@ -104,7 +104,7 @@ Each switch normally-open to GND. Internal pull-ups enabled. Debounce 10–20ms.
 
 ## Sheet 09 — Radio control expander
 U_RADIO_IO MCP23017 @0x21: A0=3V3, A1/A2=GND; reset 10k pull-up; local 100nF.
-GPA0 CE candidate, GPA1 nRF IRQ_N, GPA2 SC16IS750 IRQ, GPA3 LoRa power enable candidate. GPB reserved/test.
+GPA0 spare, GPA1 nRF IRQ_N, GPA2 SC16IS750 IRQ, GPA3 LoRa power enable candidate. GPB reserved/test.
 nRF CE via I2C expander is prototype-only and timing validation required. Production should route CE to direct GPIO if verified spare is available. CSN must be direct GPIO.
 
 ## Sheet 10 — External ports / test points
@@ -132,3 +132,10 @@ Grounded RF keepout around connector/feed. Do not run high-speed display/SD or s
 - SPI GPIO11/12/13 shared with TF card.
 - IRQ_N to MCP23017 U_RADIO_IO GPA1 for polling/diagnostics; interrupt latency test required.
 - U_RADIO_IO GPA0 is spare, not used for CE. Direct CE/CSN avoids I2C-expander timing.
+
+
+## R4 direct nRF pin allocation (supersedes earlier sheet notes)
+- CE=GPIO6 Sensor AD terminal repurposed; no sensor attached.
+- CSN=GPIO15 RS485 TX path repurposed; RS485 cable disconnected and transceiver disabled/inactive.
+- SPI=GPIO11/12/13 shared with TF; initialize explicit pin mapping, test SPI arbitration.
+- IRQ_N=U_RADIO_IO GPA1; poll initially.
