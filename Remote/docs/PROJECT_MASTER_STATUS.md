@@ -63,3 +63,11 @@ Power and interface documentation updated. Native KiCad schematics, ERC, PCB lay
 - EU868/Bulgaria channel, radiated power, duty cycle, airtime and antenna gain/cable loss compliance must be verified; module's 22dBm capability is not an approved setting.
 - Design record: Remote/docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R1.md. Capture/net/power/BOM documents have LoRa addenda. No firmware code has yet been merged or bench-tested, and no hardware purchased.
 
+
+## Dual-radio documentation and firmware scaffold files
+- Shared architecture/antenna/power/regulatory design: `Remote/docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R1.md`.
+- Protocol, packet safety, failover state machine, code architecture and pseudocode: `Remote/docs/DUAL_RADIO_PROTOCOL_FIRMWARE_SPEC_R1.md`.
+- Boat-side implementation requirements: `Boat/docs/DUAL_RADIO_BACKUP_LINK_R1.md`.
+- Remote radio API scaffold: `Remote/source/boat_radio.h/.cpp` (still returns disconnected; no actual drivers).
+- Command scaffold adds stable `commandId` and `createdAtMs` fields: `Remote/source/boat_commands.h/.cpp`; no packet-level duplicate handling or authentication yet.
+- No firmware was compiled in this update. No release ZIP ver006 was created; ver005 archives remain unchanged.
