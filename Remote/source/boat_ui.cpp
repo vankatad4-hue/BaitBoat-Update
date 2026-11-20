@@ -503,9 +503,9 @@ void createBoatScreen()
     contentPanel = createPanel(
         mainScreen,
         5,
-        HEADER_HEIGHT + 5,
+        HEADER_HEIGHT + 3,
         790,
-        355
+        325
     );
 
     // Create the map panel.
