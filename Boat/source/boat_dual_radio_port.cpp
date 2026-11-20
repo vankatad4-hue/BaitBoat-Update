@@ -11,12 +11,12 @@ BoatDualRadioPort::BoatDualRadioPort()
       [](void*){return BOAT_E22_AUX_PIN>=0 && digitalRead(BOAT_E22_AUX_PIN)==HIGH;},
       [](bool released,void*){if(BOAT_E22_RESET_PIN>=0)digitalWrite(BOAT_E22_RESET_PIN,released?HIGH:LOW);},nullptr),
    nrfReady_(false),e22Configured_(false),qWrite_(0),qRead_(0),qCount_(0),
-   lastNrfRxMs_(0),lastE22RxMs_(0),lastNrfHeartbeatTxMs_(0),lastE22HeartbeatTxMs_(0),lastE22HeartbeatAttemptMs_(0),txSequence_(0),authenticated_(false),sessionStarted_(false),sessionEpoch_((uint8_t)esp_random()) {
+   lastNrfRxMs_(0),lastE22RxMs_(0),lastNrfHeartbeatTxMs_(0),lastE22HeartbeatTxMs_(0),lastE22HeartbeatAttemptMs_(0),txSequence_(0),authenticated_(false),sessionStarted_(false),lastNrfRxValid_(false),lastE22RxValid_(false),sessionEpoch_((uint8_t)esp_random()),sessionStartSeenPrimary_(false),sessionStartSeenBackup_(false) {
  if(sessionEpoch_==0)sessionEpoch_=1;
  memset(key_,0,sizeof(key_));memset(queue_,0,sizeof(queue_));
 }
 bool BoatDualRadioPort::begin() {
- nrfReady_=false;e22Configured_=false;authenticated_=radioKey_get(key_);sessionStarted_=false;seqGuard_.reset();txSequence_=0;lastNrfHeartbeatTxMs_=0;lastE22HeartbeatTxMs_=0;lastE22HeartbeatAttemptMs_=0;
+ nrfReady_=false;e22Configured_=false;authenticated_=radioKey_get(key_);sessionStarted_=false;primarySeqGuard_.reset();backupSeqGuard_.reset();crossRadioSeqGuard_.reset();sessionStartSeenPrimary_=false;sessionStartSeenBackup_=false;lastNrfRxValid_=false;lastE22RxValid_=false;txSequence_=0;lastNrfHeartbeatTxMs_=0;lastE22HeartbeatTxMs_=0;lastE22HeartbeatAttemptMs_=0;
 #if BOAT_NRF_CE_PIN >= 0 && BOAT_NRF_CSN_PIN >= 0
  nrfReady_=nrf_.begin(false);
 #endif
@@ -28,7 +28,8 @@ bool BoatDualRadioPort::begin() {
  serial_.begin(9600,SERIAL_8N1,BOAT_E22_UART_RX_PIN,BOAT_E22_UART_TX_PIN);
  e22Configured_=e22_.configureEU868TestProfile();
 #endif
- if(authenticated_) { if(nrfReady_)sendSessionStart(LINK_NRF_PRIMARY,millis()); if(e22Configured_ && sendSessionStart(LINK_LORA_BACKUP,millis())){lastE22HeartbeatTxMs_=millis();lastE22HeartbeatAttemptMs_=millis();} }
+ // Wait for the remote's authenticated session-start marker. Its epoch is the
+ // session identifier used by both endpoints; do not invent a boat-local epoch.
  return nrfReady_||e22Configured_;
 }
 void BoatDualRadioPort::update() {
@@ -43,24 +44,59 @@ void BoatDualRadioPort::update() {
 void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  const uint32_t now=millis();
  if(!authenticated_ || !radio_frameVerify(f,key_) || f.sourceId!=REMOTE_ID || f.destinationId!=BOAT_ID) return;
+ RadioSequenceGuard &linkGuard=(link==LINK_NRF_PRIMARY)?primarySeqGuard_:backupSeqGuard_;
+ bool &linkSessionSeen=(link==LINK_NRF_PRIMARY)?sessionStartSeenPrimary_:sessionStartSeenBackup_;
+ bool &rxValid=(link==LINK_NRF_PRIMARY)?lastNrfRxValid_:lastE22RxValid_;
+ uint32_t &lastRx=(link==LINK_NRF_PRIMARY)?lastNrfRxMs_:lastE22RxMs_;
  if(f.type==RADIO_MSG_SESSION_START) {
-   if(f.sequence!=0 || f.payload[0]!=f.sessionEpoch || !seqGuard_.accept(f.sessionEpoch,f.sequence,true)) return;
-   sessionStarted_=true;
-   if(link==LINK_NRF_PRIMARY)lastNrfRxMs_=now;else lastE22RxMs_=now;
+   if(f.sequence!=0 || f.payload[0]!=f.sessionEpoch) return;
+   for(uint8_t i=1;i<8;i++) if(f.payload[i]!=0) return;
+   if(sessionStarted_ && f.sessionEpoch==sessionEpoch_) {
+     if(linkSessionSeen) return;
+     if(!linkGuard.accept(f.sessionEpoch,0,true)) return;
+     linkSessionSeen=true;lastRx=now;rxValid=true;
+     // Reply using the remote's session epoch so both radios agree on it.
+     sendSessionStart(link,now);
+     return;
+   }
+   // A new authenticated epoch starts a fresh receive session. Queue contents
+   // are discarded so commands from the previous session cannot execute.
+   sessionEpoch_=f.sessionEpoch;sessionStarted_=true;
+   primarySeqGuard_.reset();backupSeqGuard_.reset();crossRadioSeqGuard_.reset();
+   sessionStartSeenPrimary_=false;sessionStartSeenBackup_=false;
+   qRead_=qWrite_=qCount_=0;txSequence_=0;
+   if(!linkGuard.accept(f.sessionEpoch,0,true)) return;
+   linkSessionSeen=true;lastRx=now;rxValid=true;
+   sendSessionStart(LINK_NRF_PRIMARY,now);
+   if(e22Configured_) sendSessionStart(LINK_LORA_BACKUP,now);
    return;
  }
- if(!sessionStarted_ || !seqGuard_.accept(f.sessionEpoch,f.sequence,false)) return;
- if(link==LINK_NRF_PRIMARY)lastNrfRxMs_=now;else lastE22RxMs_=now;
- if(f.type==RADIO_MSG_HEARTBEAT || f.type==RADIO_MSG_TELEMETRY || f.type==RADIO_MSG_ACK || f.type==RADIO_MSG_LINK_PROBE)
-     return;
+ if(!sessionStarted_ || f.sessionEpoch!=sessionEpoch_ || !linkGuard.accept(f.sessionEpoch,f.sequence,false)) return;
+ lastRx=now;rxValid=true;
+ const bool isCommand=(f.type==RADIO_MSG_CONTROL || f.type==RADIO_MSG_ACTION);
+ if(!crossRadioSeqGuard_.accept(f.sessionEpoch,f.sequence,false) && !isCommand) return;
+ if(f.type==RADIO_MSG_HEARTBEAT || f.type==RADIO_MSG_TELEMETRY || f.type==RADIO_MSG_ACK || f.type==RADIO_MSG_LINK_PROBE) return;
  BoatCommand cmd;
  if(!radio_decodeCommand(f,REMOTE_ID,BOAT_ID,now,2500,link==LINK_LORA_BACKUP,cmd,key_)) return;
- const bool duplicate=dedupe_.hasExecuted(f.sourceId,f.sessionEpoch,f.commandId);
- enqueue(cmd,link,duplicate);
+ const uint16_t id=(uint16_t)cmd.commandId;
+ if(id==0) return;
+ if(dedupe_.hasExecuted(f.sourceId,f.sessionEpoch,id)) {
+   sendCommandAck(link,cmd,RADIO_ACK_DUPLICATE,0,0,now);return;
+ }
+ if(commandPending(f.sessionEpoch,id)) {
+   if(cmd.type!=CMD_MANUAL_MOTORS) sendCommandAck(link,cmd,RADIO_ACK_ACCEPTED,0,0,now);
+   return;
+ }
+ if(!enqueue(cmd,link,false)) {
+   if(cmd.type!=CMD_MANUAL_MOTORS) sendCommandAck(link,cmd,RADIO_ACK_BUSY,0,0,now);
+   return;
+ }
+ // ACCEPTED means only queued for application review. It is not EXECUTED.
+ if(cmd.type!=CMD_MANUAL_MOTORS) sendCommandAck(link,cmd,RADIO_ACK_ACCEPTED,0,0,now);
 }
 bool BoatDualRadioPort::enqueue(const BoatCommand &cmd,ManagedLink link,bool duplicate) {
  if(qCount_>=4)return false;
- queue_[qWrite_]={cmd,link,duplicate};
+ queue_[qWrite_]={cmd,link,duplicate,sessionEpoch_};
  qWrite_=(uint8_t)((qWrite_+1U)%4U);++qCount_;return true;
 }
 bool BoatDualRadioPort::takeCommand(BoatCommand &cmd,bool &duplicate,ManagedLink &link) {
@@ -85,8 +121,8 @@ bool BoatDualRadioPort::sendHeartbeat(ManagedLink link,uint32_t now) {
  if(!radio_frameSeal(f,key_))return false;
  return sendFrame(link,f);
 }
-bool BoatDualRadioPort::primaryFresh(uint32_t now)const{return nrfReady_ && lastNrfRxMs_ && (uint32_t)(now-lastNrfRxMs_)<=250;}
-bool BoatDualRadioPort::backupFresh(uint32_t now)const{return e22Configured_ && lastE22RxMs_ && (uint32_t)(now-lastE22RxMs_)<=6000;}
+bool BoatDualRadioPort::primaryFresh(uint32_t now)const{return nrfReady_ && lastNrfRxValid_ && (uint32_t)(now-lastNrfRxMs_)<=250;}
+bool BoatDualRadioPort::backupFresh(uint32_t now)const{return e22Configured_ && lastE22RxValid_ && (uint32_t)(now-lastE22RxMs_)<=6000;}
 BoatFailsafeDecision BoatDualRadioPort::evaluateFailsafe(uint32_t now,bool mission,bool gnss,bool heading,bool battery,bool geofence)const {
  BoatLinkSafetyInputs in={primaryFresh(now),backupFresh(now),mission,gnss,heading,battery,geofence};
  return boatEvaluateLinkFailsafe(in);
