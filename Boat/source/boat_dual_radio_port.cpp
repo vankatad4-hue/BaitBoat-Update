@@ -37,7 +37,7 @@ void BoatDualRadioPort::update() {
  if(e22Configured_){e22_.update();RadioFrame f;while(e22_.receiveFrame(f))receive(LINK_LORA_BACKUP,f);}
  if(authenticated_ && sessionStarted_) {
    if(nrfReady_ && (uint32_t)(now-lastNrfHeartbeatTxMs_)>=100U) {lastNrfHeartbeatTxMs_=now;sendHeartbeat(LINK_NRF_PRIMARY,now);}
-   if(e22Configured_ && (uint32_t)(now-lastE22HeartbeatTxMs_)>=3000U) {lastE22HeartbeatTxMs_=now;sendHeartbeat(LINK_LORA_BACKUP,now);}
+   if(e22Configured_ && (uint32_t)(now-lastE22HeartbeatTxMs_)>=3000U) {if(sendHeartbeat(LINK_LORA_BACKUP,now))lastE22HeartbeatTxMs_=now;}
  }
 }
 void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
