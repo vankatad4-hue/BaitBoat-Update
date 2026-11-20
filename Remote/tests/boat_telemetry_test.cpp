@@ -12,9 +12,9 @@ int main(){
  auto sonar=p(RADIO_PAYLOAD_SONAR_SUMMARY);sonar.sonarHealth=1;sonar.depthCm=540;assert(telemetryApplyRadioPayload(sonar,true,1300));
  telemetryApplyToBoatState(s,1400);assert(s.mode==MODE_AUTOPILOT&&s.emergencyStopConfirmed&&!s.emergencyStop&&s.actuatorSafetyReady);
  assert(s.gpsValid&&s.latitude==42.0f&&s.longitude==25.0f&&s.heading==90.0f&&s.speed==1.2f);
- assert(s.batteryVoltage==12.0f&&s.batteryPercent==82&&s.sonarActive);
+ assert(s.batteryVoltage==12.0f&&s.batteryPercent==82&&s.sonarActive&&s.headingValid&&!s.lowBattery&&!s.failsafeActive);
  assert(telemetryApplyRadioPayload(st,false,1500));telemetryApplyToBoatState(s,1600);assert(!s.emergencyStopConfirmed&&!s.actuatorSafetyReady);
  lat.coordinateSample=23;assert(telemetryApplyRadioPayload(lat,true,1700));telemetryApplyToBoatState(s,1800);assert(!s.gpsValid);
- telemetryApplyToBoatState(s,3201);assert(!s.emergencyStopConfirmed&&!s.actuatorSafetyReady&&!s.gpsValid);
+ telemetryApplyToBoatState(s,3201);assert(!s.emergencyStopConfirmed&&!s.actuatorSafetyReady&&!s.gpsValid&&!s.headingValid);
  return 0;
 }
