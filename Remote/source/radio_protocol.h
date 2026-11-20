@@ -40,10 +40,10 @@ struct RadioFrame {
     uint16_t commandId;
     uint16_t tick16;       // milliseconds modulo 65536; freshness uses wrap-safe delta
     uint8_t flags;
+    uint8_t sessionEpoch;
     uint8_t payload[8];
     uint16_t crc16;
     uint8_t authTag[8];    // truncated HMAC-SHA256; provision a unique key, never a shared default
-    uint8_t sessionEpoch;
 };
 #pragma pack(pop)
 
