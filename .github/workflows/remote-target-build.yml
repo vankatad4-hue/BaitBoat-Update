@@ -50,7 +50,8 @@ jobs:
 
       - name: Compile complete Remote sketch (16 MB flash, OPI PSRAM)
         run: |
-          arduino-cli compile --verbose --fqbn 'esp32:esp32:esp32s3:FlashSize=16M,PSRAM=opi' /tmp/FlytecRemoteBuild
+          set -o pipefail
+          arduino-cli compile --verbose --fqbn 'esp32:esp32:esp32s3:FlashSize=16M,PSRAM=opi' /tmp/FlytecRemoteBuild 2>&1 | tee /tmp/remote-target-build.log
 
       - name: Upload compiler log
         if: always()
