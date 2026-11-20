@@ -138,3 +138,5 @@ Native KiCad capture and ERC/DRC, exact physical PORT1 crosswalk, final footprin
 - Remote envelope target 300×210×70mm; test-fit required. Carrier PCB/schematic native CAD not created.
 - Boat motor-driver candidate Cytron MDD20A exceeds the 77×79mm measured carrier footprint; separate location or mechanical redesign. Current measurements, solenoid current, converter/fuse/cable sizes pending.
 - Full hardware schematic specs, block diagrams, pin connection CSVs, BOM candidates and test-build docs are committed on branch `hardware-ready-dual-radio-r1`. These are not KiCad-native or ERC/DRC verified.
+
+- Power correction R5: CS8501 5V reserved for Waveshare display/controller load; E22 VCC uses dedicated TPS61023 1S→5V boost from BAT_PROT. Separate outputs, no paralleling. TPS61023 design/thermal and load validation pending.
