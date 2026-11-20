@@ -16,7 +16,12 @@ int main() {
   d.clear();
   assert(!d.hasExecuted(1,4,131));
 
-  assert(boatClassifyCrossRadioCommand(true,false,false)==BOAT_CROSSRADIO_NEW_COMMAND);\n  assert(boatClassifyCrossRadioCommand(false,true,false)==BOAT_CROSSRADIO_DUPLICATE_EXECUTED);\n  assert(boatClassifyCrossRadioCommand(false,false,true)==BOAT_CROSSRADIO_DUPLICATE_PENDING);\n  assert(boatClassifyCrossRadioCommand(false,false,false)==BOAT_CROSSRADIO_DROP_STALE);\n\n  BoatLinkSafetyInputs in={false,false,false,false,false,false,false};
+  assert(boatClassifyCrossRadioCommand(true,false,false)==BOAT_CROSSRADIO_NEW_COMMAND);
+  assert(boatClassifyCrossRadioCommand(false,true,false)==BOAT_CROSSRADIO_DUPLICATE_EXECUTED);
+  assert(boatClassifyCrossRadioCommand(false,false,true)==BOAT_CROSSRADIO_DUPLICATE_PENDING);
+  assert(boatClassifyCrossRadioCommand(false,false,false)==BOAT_CROSSRADIO_DROP_STALE);
+
+  BoatLinkSafetyInputs in={false,false,false,false,false,false,false};
   assert(boatEvaluateLinkFailsafe(in)==BOAT_FS_STOP_PROPULSION);
   in.autonomousMissionActive=true; in.gnssValidFresh=true; in.headingValid=true;
   in.batteryHealthy=true; in.geofenceValid=true;
