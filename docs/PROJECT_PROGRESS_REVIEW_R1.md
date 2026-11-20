@@ -22,7 +22,7 @@
 
 ## Release/archive review
 - Current markers: Remote ver023 / Boat ver011 (Boat ver011 ZIP/manifest regeneration pending).
-- Generated ZIPs and manifest are present in the development branch.
+- Generated ZIPs and manifest are present for the previous ver010/023 snapshots; the Boat ver011 package workflow is pending.
 - Boat ver010 ZIP: independently SHA-256 verified against the manifest. Structure checked: 60 entries, sorted names, normalized timestamps, no nested ZIP; key encoder/test/session files present. Remote ZIP binary was not retrievable and remains unverified.
 - Remote ver023 ZIP: present, but the binary could not be retrieved through the available file fetch path; checksum is manifest-only and not independently verified.
 - Archives are source snapshots, not fabrication or operational approvals.
