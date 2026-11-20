@@ -78,7 +78,9 @@ bool offlineMap_getAttribution(char *buffer, size_t bufferSize)
     return true;
 }
 
-void offlineMap_getCoverageStats(uint16_t &planned,uint16_t &present,uint16_t &missing){mapCoverage_getStats(planned,present,missing);}\n\n// Read one raw RGB565 tile from the selected map style and zoom level.
+void offlineMap_getCoverageStats(uint16_t &planned,uint16_t &present,uint16_t &missing){mapCoverage_getStats(planned,present,missing);}
+
+// Read one raw RGB565 tile from the selected map style and zoom level.
 uint16_t *offlineMap_readTile(OfflineMapStyle style, uint8_t zoom, uint32_t tileX, uint32_t tileY)
 {
     if (!g_sd_available || !g_map_pack_available || !mapCoverage_tilePresent(zoom,tileX,tileY))   // Require pack/index and indexed tile presence.
