@@ -11,12 +11,12 @@ BoatDualRadioPort::BoatDualRadioPort()
       [](void*){return BOAT_E22_AUX_PIN>=0 && digitalRead(BOAT_E22_AUX_PIN)==HIGH;},
       [](bool released,void*){if(BOAT_E22_RESET_PIN>=0)digitalWrite(BOAT_E22_RESET_PIN,released?HIGH:LOW);},nullptr),
    nrfReady_(false),e22Configured_(false),qWrite_(0),qRead_(0),qCount_(0),
-   lastNrfRxMs_(0),lastE22RxMs_(0),lastNrfHeartbeatTxMs_(0),lastE22HeartbeatTxMs_(0),txSequence_(0),authenticated_(false),sessionStarted_(false),sessionEpoch_((uint8_t)esp_random()) {
+   lastNrfRxMs_(0),lastE22RxMs_(0),lastNrfHeartbeatTxMs_(0),lastE22HeartbeatTxMs_(0),lastE22HeartbeatAttemptMs_(0),txSequence_(0),authenticated_(false),sessionStarted_(false),sessionEpoch_((uint8_t)esp_random()) {
  if(sessionEpoch_==0)sessionEpoch_=1;
  memset(key_,0,sizeof(key_));memset(queue_,0,sizeof(queue_));
 }
 bool BoatDualRadioPort::begin() {
- nrfReady_=false;e22Configured_=false;authenticated_=radioKey_get(key_);sessionStarted_=false;seqGuard_.reset();txSequence_=0;lastNrfHeartbeatTxMs_=0;lastE22HeartbeatTxMs_=0;
+ nrfReady_=false;e22Configured_=false;authenticated_=radioKey_get(key_);sessionStarted_=false;seqGuard_.reset();txSequence_=0;lastNrfHeartbeatTxMs_=0;lastE22HeartbeatTxMs_=0;lastE22HeartbeatAttemptMs_=0;
 #if BOAT_NRF_CE_PIN >= 0 && BOAT_NRF_CSN_PIN >= 0
  nrfReady_=nrf_.begin(false);
 #endif
@@ -28,7 +28,7 @@ bool BoatDualRadioPort::begin() {
  serial_.begin(9600,SERIAL_8N1,BOAT_E22_UART_RX_PIN,BOAT_E22_UART_TX_PIN);
  e22Configured_=e22_.configureEU868TestProfile();
 #endif
- if(authenticated_) { if(nrfReady_)sendSessionStart(LINK_NRF_PRIMARY,millis()); if(e22Configured_ && sendSessionStart(LINK_LORA_BACKUP,millis()))lastE22HeartbeatTxMs_=millis(); }
+ if(authenticated_) { if(nrfReady_)sendSessionStart(LINK_NRF_PRIMARY,millis()); if(e22Configured_ && sendSessionStart(LINK_LORA_BACKUP,millis())){lastE22HeartbeatTxMs_=millis();lastE22HeartbeatAttemptMs_=millis();} }
  return nrfReady_||e22Configured_;
 }
 void BoatDualRadioPort::update() {
@@ -37,7 +37,7 @@ void BoatDualRadioPort::update() {
  if(e22Configured_){e22_.update();RadioFrame f;while(e22_.receiveFrame(f))receive(LINK_LORA_BACKUP,f);}
  if(authenticated_ && sessionStarted_) {
    if(nrfReady_ && (uint32_t)(now-lastNrfHeartbeatTxMs_)>=100U) {lastNrfHeartbeatTxMs_=now;sendHeartbeat(LINK_NRF_PRIMARY,now);}
-   if(e22Configured_ && (uint32_t)(now-lastE22HeartbeatTxMs_)>=3000U) {if(sendHeartbeat(LINK_LORA_BACKUP,now))lastE22HeartbeatTxMs_=now;}
+   if(e22Configured_ && (uint32_t)(now-lastE22HeartbeatTxMs_)>=3000U && (uint32_t)(now-lastE22HeartbeatAttemptMs_)>=250U) {lastE22HeartbeatAttemptMs_=now;if(sendHeartbeat(LINK_LORA_BACKUP,now))lastE22HeartbeatTxMs_=now;}
  }
 }
 void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
