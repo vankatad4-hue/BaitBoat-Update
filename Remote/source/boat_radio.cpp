@@ -81,7 +81,6 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame) {
     if(!radioKey_get(g_authKey)) {g_linkManager.reportFailure(link);return;}
     const bool valid=radio_frameVerify(frame,g_authKey) &&
         frame.sourceId==BOAT_DEVICE_ID && frame.destinationId==REMOTE_DEVICE_ID &&
-        radio_tickFresh(frame.tick16,(uint16_t)now,3000) &&
         (frame.type==RADIO_MSG_HEARTBEAT || frame.type==RADIO_MSG_TELEMETRY ||
          frame.type==RADIO_MSG_ACK || frame.type==RADIO_MSG_LINK_PROBE);
     if(valid) g_linkManager.reportValidRx(link,true,now);
