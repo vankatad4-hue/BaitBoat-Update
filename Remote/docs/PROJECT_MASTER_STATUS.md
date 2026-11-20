@@ -1,4 +1,4 @@
-# Flytec V080 Retrofit — Master Status R9
+# Flytec V080 Retrofit — Master Status R10
 
 Updated: 2026-11-20. Development branch; no firmware compile, hardware test, ERC/DRC, or operational release has been validated.
 
@@ -374,7 +374,7 @@ Boat:
 - Mission UI: 16 waypoint storage slots; selected waypoint coordinate and GPS-derived distance/bearing (fresh fix only).
 - Settings localization pass; Wi-Fi/map/sonar options indicate unavailable integration rather than implying it works.
 - SVG previews and test checklist committed. LVGL Pro and firmware validation are pending.
-- Master changelog: `Remote/releases/CHANGELOG_MASTER_VER020.md` (VER015 superseded).
+- Master changelog: `Remote/releases/CHANGELOG_MASTER_VER021.md` (VER015 superseded).
 - Current source remains unreleased ver028 baseline; no ver029 ZIP or SHA generated.
 
 
@@ -401,3 +401,10 @@ Boat:
 - Main UI source line-break cleanup and waypoint haversine clamp confirmed in repository source.
 - Changelog VER020.
 - Target build not run; use LVGL Pro before release.
+
+
+## Continuation checkpoint synchronization — 2026-11-20
+- New canonical restart document: `../../docs/CONTINUATION_CHECKPOINT_VER001.md`. It summarizes decisions, current status, safety restrictions and prioritized next work.
+- UI source is unreleased ver029 development (latest polish ver029.13); static echogram remains demo-only. UI checklist `UI_BUILD_VER029_9.md` and SVG previews are available.
+- Latest consolidated changelog VER021. Source markers remain Remote 028 / Boat 014; current branch archives are unverified snapshots.
+- Latest packaging workflow #880 succeeded; versioned archive preservation is only permitted on release marker changes. No target compile or LVGL test has occurred.
