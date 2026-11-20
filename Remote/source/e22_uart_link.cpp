@@ -56,7 +56,8 @@ bool E22UartLink::configureEU868TestProfile(){
 void E22UartLink::update(){
     auxReadyNow_=auxFn_?auxFn_(context_):false;
     if(txPending_ && auxReadyNow_ && (uint32_t)(millis()-txStartedMs_)>=EST_AIRTIME_MS) txPending_=false;
-    while(uart_.available()) parserByte((uint8_t)uart_.read());
+    uint8_t processed=0;
+    while(processed<32 && uart_.available()){parserByte((uint8_t)uart_.read());++processed;}
 }
 void E22UartLink::parserByte(uint8_t v){
     if(rxIndex_==0){if(v==RADIO_FRAME_MAGIC0) rxBuffer_[rxIndex_++]=v;return;}
