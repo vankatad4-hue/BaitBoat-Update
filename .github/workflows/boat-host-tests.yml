@@ -100,3 +100,7 @@ jobs:
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/source/mission_protocol.cpp Boat/tests/mission_link_loss_test.cpp -o /tmp/boat_link_loss
           /tmp/boat_link_loss
+      - name: Trusted hardware samples, motor lease and release executor
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/source/mission_protocol.cpp Boat/tests/boat_hardware_supervisor_test.cpp -o /tmp/boat_hardware_supervisor
+          /tmp/boat_hardware_supervisor

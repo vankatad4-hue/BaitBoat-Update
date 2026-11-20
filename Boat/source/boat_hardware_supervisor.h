@@ -1,0 +1,96 @@
+#pragma once
+#include "mission_execution.h"
+#include <cmath>
+// Hardware measurements must be acquired locally. Network messages cannot
+// supply these timestamps or override the physical STOP/interlock state.
+struct BoatHardwareSample {
+ MissionNavigationFix fix;
+ uint32_t safetyAt,gnssAt,headingAt;
+ bool safetyValid,physicalStopReleased,batteryHealthy,stationary,releaseInterlocks,releaseIdle,watchdogReady;
+};
+struct BoatActuatorConfig {
+ uint16_t pulseMs[4]; // actual coil characterization required
+ uint16_t maxNavMotor; // bench-tuned demand cap, not a PWM pin assignment
+ double yawGain;
+};
+struct BoatActuatorOutput{int16_t left,right;int8_t releaseChannel;};
+inline ExecInputs boatHardware_inputs(const BoatHardwareSample &s,uint32_t now,bool stopLatched){
+ const bool safe=s.safetyValid&&now-s.safetyAt<100U&&s.watchdogReady;
+ auto fix=s.fix;
+ fix.fresh=fix.fresh&&now-s.gnssAt<2000U;
+ fix.headingValid=fix.headingValid&&now-s.headingAt<300U;
+ fix.batteryHealthy=safe&&s.batteryHealthy&&fix.batteryHealthy;
+ return {fix,stopLatched||!safe||!s.physicalStopReleased,false,false,safe&&s.stationary,safe&&s.releaseInterlocks,safe&&s.releaseIdle};
+}
+inline bool boatHardware_configValid(const BoatActuatorConfig &c){
+ if(!c.maxNavMotor||c.maxNavMotor>1000||!std::isfinite(c.yawGain)||c.yawGain<=0||c.yawGain>1000)return false;
+ for(auto ms:c.pulseMs)if(!ms||ms>=4000)return false;
+ return true;
+}
+// Actuator-side software watchdog. A separate hardware watchdog/current
+// cutoff is mandatory; this class cannot deenergize a stuck MCU by itself.
+class BoatActuatorSupervisor{
+public:
+ bool configure(const BoatActuatorConfig &cfg){stop();cfg_=cfg;configured_=boatHardware_configValid(cfg);return configured_;}
+ void stop(){stopLatched_=true;manualValid_=false;pulseActive_=false;awaitIdle_=false;completion_={};}
+ bool clearStop(const BoatHardwareSample &s,uint32_t now,bool authenticatedPrimary,bool neutral){
+  const auto in=boatHardware_inputs(s,now,false);
+  if(!configured_||!authenticatedPrimary||!neutral||in.stopActive||!in.fix.batteryHealthy||!in.stationary||!in.releaseIdle||!in.releaseInterlocks)return false;
+  stopLatched_=false;return true;
+ }
+ bool stopped()const{return stopLatched_;}
+ void manual(int16_t left,int16_t right,uint32_t receivedAt,bool authenticatedPrimary){
+  manualValid_=authenticatedPrimary&&!stopLatched_&&left>=-1000&&left<=1000&&right>=-1000&&right<=1000;
+  manualLeft_=left;manualRight_=right;manualAt_=receivedAt;
+ }
+ void cancelManual(){manualValid_=false;}
+ // Mission release is a single tokenized edge, not a continuously repeated command.
+ bool beginRelease(uint16_t tx,uint16_t token,int8_t channel,const ExecInputs &in,uint32_t now){
+  if(!configured_||stopLatched_||!tx||!token||channel<0||channel>3||pulseActive_||awaitIdle_||
+    (tx==lastTx_&&token<=lastToken_)||in.stopActive||!in.primaryFresh||!in.stationary||
+    !in.releaseIdle||!in.releaseInterlocks||!in.fix.batteryHealthy)return false;
+  lastTx_=tx;lastToken_=token;channel_=channel;pulseAt_=now;pulseActive_=true;return true;
+ }
+ void newMissionIdentity(){if(!pulseActive_&&!awaitIdle_){lastTx_=lastToken_=0;}}
+ BoatActuatorOutput tick(const ExecInputs &in,uint32_t now,ExecOutput intent,const MissionNavigationResult &nav,bool missionActive,bool overrideActive,int16_t overrideLeft,int16_t overrideRight){
+  const BoatActuatorOutput off={0,0,-1};
+  if(!configured_||stopLatched_||in.stopActive||!in.fix.batteryHealthy){stop();return off;}
+  if(pulseActive_||awaitIdle_){
+   cancelManual();
+   if(!missionActive||!in.primaryFresh||!in.stationary||!in.releaseInterlocks){
+    completion_={lastTx_,lastToken_,false,true};pulseActive_=awaitIdle_=false;return off;
+   }
+   if(pulseActive_){
+    if(now-pulseAt_<cfg_.pulseMs[channel_])return {0,0,channel_};
+    pulseActive_=false;awaitIdle_=true;offAt_=now;return off;
+   }
+   // Require a separate post-deenergization idle sample, not same-tick confirmation.
+   if(now-offAt_>0U&&in.releaseIdle){completion_={lastTx_,lastToken_,true,true};awaitIdle_=false;}
+   else if(now-offAt_>=500U){completion_={lastTx_,lastToken_,false,true};awaitIdle_=false;stopLatched_=true;}
+   return off;
+  }
+  if(!in.releaseIdle)return off;
+  if(missionActive){
+   cancelManual();
+   if(overrideActive&&in.primaryFresh&&in.releaseInterlocks&&overrideLeft>=-1000&&overrideLeft<=1000&&overrideRight>=-1000&&overrideRight<=1000)
+    return {overrideLeft,overrideRight,-1};
+   if(intent.intent!=INTENT_NAV_TARGET&&intent.intent!=INTENT_NAV_HOME)return off;
+   if(!nav.valid||nav.arrived||!std::isfinite(nav.headingErrorDeg)||!std::isfinite(nav.distanceM)||!in.releaseInterlocks)return off;
+   // Provisional normalized differential mixer; physical direction, gain,
+   // speed and current limits must be commissioned before enabling a driver.
+   const double cap=cfg_.maxNavMotor;
+   const double turn=std::fmax(-cap,std::fmin(cap,nav.headingErrorDeg*cfg_.yawGain));
+   const double forward=std::fabs(nav.headingErrorDeg)>45.0?0.0:cap*(1.0-std::fabs(nav.headingErrorDeg)/90.0);
+   return {(int16_t)std::fmax(-cap,std::fmin(cap,forward+turn)),(int16_t)std::fmax(-cap,std::fmin(cap,forward-turn)),-1};
+  }
+  if(manualValid_&&in.primaryFresh&&now-manualAt_<200U&&in.releaseInterlocks)return {manualLeft_,manualRight_,-1};
+  cancelManual();return off;
+ }
+ struct Completion{uint16_t transaction,token;bool success,valid;};
+ Completion takeCompletion(){auto value=completion_;completion_={};return value;}
+private:
+ BoatActuatorConfig cfg_{};bool configured_=false,stopLatched_=true,manualValid_=false,pulseActive_=false,awaitIdle_=false;
+ int16_t manualLeft_=0,manualRight_=0;int8_t channel_=-1;
+ uint32_t manualAt_=0,pulseAt_=0,offAt_=0;
+ uint16_t lastTx_=0,lastToken_=0;Completion completion_{};
+};

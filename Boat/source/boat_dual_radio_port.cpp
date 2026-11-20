@@ -158,7 +158,7 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  if(id==0) return;
  // An authenticated STOP invalidates any prepared plan before queue handling.
  lastRx=lastSessionRx_=now;rxValid=true;
- if(cmd.type==CMD_EMERGENCY_STOP){detachedReturn_=false;abortMission();mission_.reset();commandQueue_.clear();enqueue(cmd,link,false);if(sessionReady())sendCommandAck(link,cmd,RADIO_ACK_ACCEPTED,0,0,now);return;}
+ if(cmd.type==CMD_EMERGENCY_STOP){const bool wasDetached=detachedReturn_;detachedReturn_=false;abortMission();if(wasDetached)controller_.resetSession();mission_.reset();commandQueue_.clear();enqueue(cmd,link,false);if(sessionReady())sendCommandAck(link,cmd,RADIO_ACK_ACCEPTED,0,0,now);return;}
  // A command frame rejected by the cross-radio sequence guard is accepted
  // only as an exact command-ID duplicate. This prevents replaying an old
  // sequence with a new command ID on the alternate radio.
