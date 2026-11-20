@@ -45,3 +45,19 @@ This library tracks the project hardware as selected, candidate, or unresolved. 
 2. Keep vendor manuals, schematic PDFs, IC datasheets, certifications, and application notes in separate filenames.
 3. No datasheet can substitute for measurements, design review, bench testing, or regulatory assessment.
 4. We will expand the catalog as the BOM is frozen and add PDFs in groups, avoiding guessed or mismatched documents.
+
+
+## Acquisition state (checked 2026-11-20)
+The initial automated download report is available at [DOWNLOAD_REPORT.md](DOWNLOAD_REPORT.md). Four PDFs were acquired and two direct-source downloads failed (Nordic nRF24L01P and NXP SC16IS750); treat the failed entries as outstanding, not as missing specifications.
+
+### Priority queue for next acquisition batch
+1. **Exact Waveshare Standard board documentation** — board revision, schematic, pin map and official user guide. The existing B-variant schematic is explicitly reference-only.
+2. **nRF24L01+ PA/LNA module** — IC datasheet plus exact module documentation and antenna/PA supply requirements. The IC datasheet does not cover the PA/LNA module.
+3. **SC16IS750** — official NXP datasheet and address/pin/package references; verify whether this bridge is actually needed after UART/pin audit.
+4. **Remote power parts** — TPS63070 and TPS61023 datasheets; CS8501 board documentation; battery cell model, pack wiring, fuse, protection and connector datasheets.
+5. **Boat controller** — exact Heltec Wireless Tracker revision; board schematic/pin map and UC6580 GNSS documentation. Confirm the integrated LoRa radio is not used in the selected architecture.
+6. **Boat motor and release drivers** — selected motor-driver datasheet and current limits; solenoid resistance/current/duty-cycle documentation for FW0630 009 and FW0630 001; MOSFET/driver, gate resistor, flyback clamp, fuse and thermal datasheets.
+7. **Navigation sensors and sonar** — MPU-9250 source/documentation and exact selected CHIRP sonar module/interface, once selected.
+8. **Power/BOM finalization** — regulators, TVS, reverse protection, battery/BMS, wiring, keyed connectors, fuse holders and antenna coax/connectors.
+
+Do not mark any unresolved item as approved based only on a datasheet download. Exact model/revision matching and engineering review are still required before schematics are frozen.
