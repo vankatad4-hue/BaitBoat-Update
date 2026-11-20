@@ -96,3 +96,11 @@ Authenticated receive frames are dispatched to strict payload decoders. Remote A
 - Save uses fresh GNSS (<2s) and reports NVS write success/failure. CRC validation retained. Marker array supports all 16, still on placeholder local grid.
 - Integrated TF/microSD designated as offline-map data storage. Existing manifest/tile reader uses `/maps/manifest.txt` and RGB565 XYZ tile files; tile rendering and map pack generation remain not implemented.
 - See `../docs/OFFLINE_MAP_SD_STORAGE_VER027.md` and test plan.
+
+
+## Remote ver028 — offline renderer and SD mission persistence
+- Integrated a Web-Mercator tile renderer reading SD XYZ RGB565 files, bounded 3×3 viewport cache, zoom buttons 5–19 and neutral missing-tile fallback.
+- Overlay all 16 waypoint markers, Home, BAIT/HOOK tags and a straight route to selected WP or Home in Return-Home mode.
+- Waypoint/Home data stored in `/missions/waypoints.bin` on SD with CRC and read-back validation; NVS backup/fallback and four-slot migration remain.
+- Offline MBTiles conversion helper: `tools/mbtiles_to_flytec.py` (Pillow dependency; attribution required).
+- Source remains uncompiled/unverified; map imagery is not bundled. North-up only; pan, layer switch, route planning and hardware tests remain pending.
