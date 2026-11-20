@@ -86,6 +86,8 @@ bool boatCommands_setMode(BoatMode mode)
         return false;
     }
 
+    // No autonomous mode request until authenticated mission upload/feedback is wired.
+    if (mode != MODE_MANUAL) return false;
     // Create the mode-change command.
     BoatCommand command = {};
 
