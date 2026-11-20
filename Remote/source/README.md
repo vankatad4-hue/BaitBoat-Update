@@ -29,6 +29,8 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 - `nrf24_link.*`, `e22_uart_link.*`, `sc16is750_bridge.*`: radio transport and UART bridge.
 - `radio_protocol.*`, `radio_command_codec.*`, `radio_key_store.*`: CRC/HMAC frame and command safety scaffolds.
 - `dual_radio_manager.*`: link state/failover/recovery policy.
+- `physical_button_scanner.*`: MCP23017 button scan/debounce; right-bank release keys and separate OK input feed the release-confirmation state machine. Board pin map is provisional.
+- `release_button_guard.*`: two-step release guard, primary-link and boat interlock gate; native host test available.
 - `joystick.*`, `joystick_calibration_ui.*`: calibration UI; hardware ADC reader currently fails closed.
 - `boat_ui.*`, `settings_ui.*`: UI scaffold; map and sonar displays are not operational data views.
 - `offline_map.*`, `map_projection.*`: tile validation/read and projection utilities, not a complete geographic map renderer.
@@ -43,7 +45,7 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 ## Safety / limitations
 - Key storage returns false by default; authenticated communication/control is disabled.
 - Session/replay protection, application ACK, state synchronization and boat-side command execution are incomplete.
-- No joystick hardware input, motor control, bait/hook release, boat GNSS/IMU/autopilot, return-home, sonar hardware integration or live telemetry is operational.
+- No joystick ADC input, boat-side actuator execution, waypoint/mission save/select, autopilot, return-home execution, sonar hardware integration or live telemetry is operational. Release GPIO scanning is coded but not physically verified; safety readiness remains false by default.
 - Remote STOP is not an independently validated safety system.
 - Do not connect actuator power or operate the boat.
 
