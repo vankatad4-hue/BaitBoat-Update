@@ -45,13 +45,13 @@ void BoatDualRadioPort::update() {
 }
 void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  const uint32_t now=millis();
- if(!authenticated_ || !radio_frameVerify(f,key_) || f.sourceId!=REMOTE_ID || f.destinationId!=BOAT_ID) return;
+ if(!authenticated_ || !radio_frameVerify(f,key_) || f.flags!=0 || f.sourceId!=REMOTE_ID || f.destinationId!=BOAT_ID) return;
  RadioSequenceGuard &linkGuard=(link==LINK_NRF_PRIMARY)?primarySeqGuard_:backupSeqGuard_;
  bool &linkSessionSeen=(link==LINK_NRF_PRIMARY)?sessionStartSeenPrimary_:sessionStartSeenBackup_;
  bool &rxValid=(link==LINK_NRF_PRIMARY)?lastNrfRxValid_:lastE22RxValid_;
  uint32_t &lastRx=(link==LINK_NRF_PRIMARY)?lastNrfRxMs_:lastE22RxMs_;
  if(f.type==RADIO_MSG_SESSION_START) {
-   if(f.sequence!=0 || f.payload[0]!=f.sessionEpoch) return;
+   if(f.sequence!=0 || f.commandId!=0 || f.payload[0]!=f.sessionEpoch) return;
    for(uint8_t i=1;i<8;i++) if(f.payload[i]!=0) return;
    if(sessionStarted_ && f.sessionEpoch==sessionEpoch_) {
      if(linkSessionSeen) return;
