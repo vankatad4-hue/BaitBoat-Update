@@ -7,3 +7,7 @@ Run from the repository root: `g++ -std=c++11 -Wall -Wextra -Werror -IRemote/sou
 
 ## ACK tracker tests
 Run: `g++ -std=c++11 -Wall -Wextra -Werror -IRemote/source Remote/source/radio_payload_codec.cpp Remote/source/radio_ack_tracker.cpp Remote/tests/radio_ack_tracker_test.cpp -o ack_tracker_test && ./ack_tracker_test`. Covers session/type matching, primary-only restrictions, ACCEPTED→EXECUTED, rejection, timeout and millis rollover. Tracker is not wired into live radio.
+
+
+## Telemetry freshness tests
+Run: `g++ -std=c++11 -Wall -Wextra -Werror -IRemote/tests/stubs -IRemote/source Remote/source/boat_telemetry.cpp Remote/source/radio_payload_codec.cpp Remote/tests/boat_telemetry_test.cpp -o telemetry_test && ./telemetry_test`. Tests primary provenance, STOP/interlock readiness, coordinate sample pairing, GPS freshness, heading validity, battery and sonar summary. It does not test the hardware radio path.
