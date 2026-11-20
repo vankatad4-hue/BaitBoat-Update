@@ -8,7 +8,7 @@
 - Two antenna exits, rear grip concept, USB-C service/charge opening on lower bridge.
 
 ## CAD source
-- [R6.3 CAD source](../CAD/Flytec_Remote_Enclosure_R6_3.scad)\n- [R6.3 front layout preview](../CONCEPT/RENDER_R6_3/Remote_Front_R6_3.svg)\n- [R6.2 source (superseded)](../CAD/Flytec_Remote_Enclosure_R6_2x4.scad)
+- [R6.3 CAD source](../CAD/Flytec_Remote_Enclosure_R6_3.scad)\n- [R6.3 front layout preview](../CONCEPT/RENDER_R6_3/Remote_Front_R6_3.svg)\n- [Preliminary internal component placement plan](./REMOTE_INTERNAL_LAYOUT_R6_3.md)\n- [R6.2 source (superseded)](../CAD/Flytec_Remote_Enclosure_R6_2x4.scad)
 - R6.3 CAD provides `front`, `rear`, and `assembly` modes. Front and rear STL exports were generated successfully; an OpenSCAD preview is available. This is CAD parsing/export verification only, not dimensional fit or manufacturing validation.
 
 ## Preview and package
