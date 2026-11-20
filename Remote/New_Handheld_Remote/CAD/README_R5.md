@@ -18,3 +18,5 @@ Latest R5 fit geometry: maximum shell width310.1mm, height209mm; overall depth69
 Automated GitHub export builds front/rear shells, the multi-cap plate and preview. Individual named release-cap STLs are included in the manual print package; the automated build intentionally avoids font/parser-dependent variants.
 
 Assembly preview now includes display-glass and joystick placeholders to visualize the assembled handheld; these are not printed shell components.
+
+CAD export retriggered after shared workflow concurrency fix; generated meshes and print ZIP will be versioned by the build workflow.
