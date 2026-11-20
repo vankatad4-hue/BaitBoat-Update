@@ -10,13 +10,13 @@ PR workflow run #32 produced Remote/Boat ver005 archives and checksums. ZIP inte
 - Boat ver012 SHA-256: `3519e130c724b65441c7ef651288080924d3340a1db87629aec83b0778166fdd` (matches manifest). Remote ver023 manifest SHA-256: `636a1801a4f7755d6754eebc899615964898e12c8a1aca90b2cb5f9044baa199`; binary unavailable for independent verification.
 
 ## Independent integrity review
-- Boat ver011 ZIP was retrieved and independently SHA-256 verified against the committed manifest. Archive structure parsed: 65 entries, sorted names, normalized DOS timestamps, no nested ZIPs; VERSION, ver011 release note and 4 host-test C++ files are present.
+- Boat ver011 archive was independently verified historically. ver012 supersedes it.
 - Remote ver023: archive and manifest are present, but the ZIP binary could not be retrieved through the connector. Its checksum is not independently verified.
 - Deterministic package workflow was updated and a local command smoke-test passed. GitHub workflow logs are not accessible in this session; archive/manifest outputs are present.
 
 ## Package scope
 Remote ver023 is status-document synchronization only.
-Boat ver012 contains cross-radio replay classification, portable command queue and host tests, and ACK sender. ZIP build pending. No Boat application/executor or telemetry source.
+Boat ver012 contains cross-radio replay classification, portable command queue and host tests, and ACK sender. Archive integrity is independently verified. No Boat application/executor or telemetry source.
 
 ## Validation boundary
 No full ESP32 build, native schematic/ERC/DRC, PCB, RF/antenna, power/thermal or hardware validation. Do not operate motors or solenoids.
