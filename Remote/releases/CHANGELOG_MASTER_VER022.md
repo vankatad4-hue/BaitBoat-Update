@@ -44,3 +44,8 @@
 - Added GitHub Actions Arduino CLI target compile workflow with candidate pins (ESP32 core 3.0.2, LVGL 9.6.0, Display Panel 1.0.0, IO Expander 1.0.1, esp-lib-utils 0.1.2). Build run is in progress; versions are not yet validated as a resolved set.
 - Inspected the first Remote host-test CI failure: release-guard fixture did not set required fail-closed safety fields. Corrected fixture; re-run pending.
 - Display-port assumptions needing compile confirmation: vendor `drawBitmap()` return type/copy completion; `Touch::readPoints()` signature; board begin/init API; LVGL flush/buffer/input signatures. Touch orientation and physical SD/backlight behavior remain hardware-test gates.
+
+### CI diagnostics and fixes
+- Target compile attempt #1 failed at Arduino sketch discovery (folder/main-INO naming mismatch), not C++ compilation. Workflow staging was corrected and log artifact capture added.
+- Host release-guard test initially had a mismatched reduced BoatState struct in its test fixture; corrected to link the real state source.
+- Payload codec test contained an invalid latitude vector that represented 50° rather than 91°. Test vector corrected; rerun pending.
