@@ -9,9 +9,9 @@ PR workflow run #32 produced Remote/Boat ver005 archives and checksums. ZIP inte
 - ZIPs: `Remote/releases/Flytec_Remote_ver023.zip`, `Boat/releases/Flytec_Boat_ver010.zip`.
 - Manifest: `releases/SHA256SUMS_ver023_010.txt`.
 - Current manifest values:
-  - Boat: `83991980e1286093126b67900f1ae02b8a614de0437483b79368454c95ca838e`
-  - Remote: `37d62e5c09510891340f53f6dba0f0fb14160532624286da64e61fe013737b0f`
-- Boat ver010 ZIP was fetched as binary, its ZIP directory parsed successfully (70 entries, no nested ZIPs), and its SHA-256 independently matches the manifest. Remote ver023 ZIP is present, but its binary content was not returned for local verification; its checksum remains manifest-only. Treat these as development snapshots, not operational releases.
+  - Boat: `28ed8365aa196ca419c9be0fda1e50582d397a70c3eb9e10b92e209c0e07ec94`
+  - Remote: `a93103de4f61d8bd50a64ecc162e8b1ba9151ef5cde181315f4c1a487da2f5b9`
+- Boat ver010 ZIP was fetched as binary; its ZIP directory parses (70 entries, no nested ZIPs), key encoder/test/session files are present, and SHA-256 independently matches the manifest. Remote ver023 ZIP is present, but binary content was not returned for local verification; its checksum remains manifest-only. Treat these as development snapshots, not operational releases.
 
 ## Package scope
 Remote ver023 synchronizes status documentation with the Boat's partial session echo/queue-level ACK work; no Remote firmware functional changes.
