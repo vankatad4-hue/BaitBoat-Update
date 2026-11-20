@@ -32,8 +32,11 @@ int main() {
   c=command(CMD_MANUAL_MOTORS);c.leftMotor=1200;c.rightMotor=-1200;
   assert(boatPolicyApply(c,false,i,s,o)==BOAT_POLICY_ACCEPTED);
   assert(o.leftMotor==1000 && o.rightMotor==-1000);
+  i.primaryLinkFresh=false;i.backupLinkFresh=true;
+  assert(boatPolicyApply(c,false,i,s,o)==BOAT_POLICY_REJECTED_SAFETY); // primary frame requires primary freshness
   assert(boatPolicyApply(c,true,i,s,o)==BOAT_POLICY_ACCEPTED);
   assert(o.leftMotor==250 && o.rightMotor==-250);
+  i=ready();
 
   c=command(CMD_SET_MODE);c.mode=MODE_AUTOPILOT;
   i.gnssFresh=false;
@@ -48,6 +51,8 @@ int main() {
   assert(boatPolicyApply(c,true,i,s,o)==BOAT_POLICY_REJECTED_SAFETY && o.releaseChannel==-1);
 
   c=command(CMD_SET_MODE);c.mode=MODE_RETURN_HOME;
+  i.primaryLinkFresh=false;i.backupLinkFresh=true;
+  assert(boatPolicyApply(c,false,i,s,o)==BOAT_POLICY_REJECTED_SAFETY); // link-specific freshness
   assert(boatPolicyApply(c,true,i,s,o)==BOAT_POLICY_ACCEPTED && o.requestReturnHome);
   assert(s.mode==MODE_RETURN_HOME);
   c=command(CMD_RELEASE_HOPPER_LEFT);
