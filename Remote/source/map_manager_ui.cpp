@@ -4,6 +4,7 @@
 #include "boat_state.h"
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 static lv_obj_t *page,*centreLabel,*estimateLabel,*packLabel,*coverageLabel,*progress;static lv_obj_t*zoomLabels[6];static float lat=43.0f,lon=25.0f;static bool chosen[6]={true,true,true,true,false,false};static uint8_t zlist[6]={14,15,16,17,18,19};static MapManagerReturnCallback onBack;
 static lv_obj_t*label(lv_obj_t*p,const char*t,int x,int y,int w=750){lv_obj_t*l=lv_label_create(p);lv_label_set_text(l,t);lv_obj_set_pos(l,x,y);lv_obj_set_width(l,w);lv_label_set_long_mode(l,LV_LABEL_LONG_WRAP);return l;}
 static void refresh(){char s[180];snprintf(s,sizeof(s),"Centre %.6f, %.6f | 1 km square",lat,lon);lv_label_set_text(centreLabel,s);uint8_t zs[6],n=0;uint32_t tiles=0;double dlat=500/111320.0,coslat=fabs(cos(lat*M_PI/180));if(coslat<1e-5)coslat=1e-5;double dlon=500/(111320.0*coslat);for(int i=0;i<6;i++){char z[12];snprintf(z,sizeof(z),"Z%u%s",zlist[i],chosen[i]?" *":"");lv_label_set_text(zoomLabels[i],z);if(chosen[i]){zs[n++]=zlist[i];double nn=1UL<<zlist[i];int x0=floor((lon-dlon+180)/360*nn),x1=floor((lon+dlon+180)/360*nn);double north=lat+dlat,south=lat-dlat;int y0=floor((1-asinh(tan(north*M_PI/180))/M_PI)/2*nn),y1=floor((1-asinh(tan(south*M_PI/180))/M_PI)/2*nn);tiles+=(x1-x0+1)*(abs(y1-y0)+1);}}
