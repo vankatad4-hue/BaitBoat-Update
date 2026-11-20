@@ -290,7 +290,7 @@ Boat:
 - Tests added for coverage-index export, not executed. Firmware compile and hardware tests pending. Remote version remains 028; ver029 development not packaged.
 
 
-- Consolidated Remote history is maintained at `Remote/releases/CHANGELOG_MASTER_VER007.md` (history document revision VER007; source marker still ver028).
+- Consolidated Remote history is maintained at `Remote/releases/CHANGELOG_MASTER_VER008.md` (history document revision VER008; source marker still ver028).
 
 - ver029.3 robustness follow-up: coverage index uses PSRAM/binary search, import validates tile byte lengths/count and cache refresh. Added map-tools test workflow; CI result not confirmed.
 
@@ -303,3 +303,9 @@ Boat:
 - Import file-copy operation now handles explicit SD read/write errors and stops rather than looping/retrying indefinitely.
 - Staged coverage-index CSV is validated for strict row format, only-present tiles, coordinate bounds, sorted unique keys and expected count before installation.
 - Failure remains fail-closed: active manifest is removed before replacement and only restored by the final copy stage. Firmware compile, SD import test and CI status remain unverified.
+
+
+## Google online renderer — phase 1 contract (2026-11-20)
+- Existing Wi-Fi profile/connect UI confirmed; no internet-health service, Google session/API client, credential provisioning, image decoder, or online renderer exists yet.
+- New contract document defines source modes, online layers, worker isolation, TLS, API session lifecycle, transient rendering buffers, attribution and fallback policy: `Remote/docs/GOOGLE_MAP_RENDERER_PHASE1_CONTRACT_VER029_7.md`.
+- Architecture only; no Google requests or imagery are enabled. Implementation gated on credentials, quota/billing setup, decoder selection and target validation.
