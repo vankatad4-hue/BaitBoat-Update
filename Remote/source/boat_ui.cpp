@@ -409,6 +409,10 @@ static void touchReturnEvent(lv_event_t *event)
 {
     if (lv_event_get_code(event)==LV_EVENT_CLICKED) boatCommands_setMode(MODE_RETURN_HOME);
 }
+static void openMissionEvent(lv_event_t *event)
+{
+    if (lv_event_get_code(event)==LV_EVENT_CLICKED) missionUI_open(mainScreen);
+}
 
 // Open the joystick calibration screen.
 static void openJoystickCalibrationEvent(lv_event_t *event)
@@ -479,17 +483,21 @@ static void createFooter()
 
     // Compact touchscreen mode controls. Boat-side command policy remains authoritative.
     lv_obj_t *manualButton = lv_button_create(footerPanel);
-    lv_obj_set_size(manualButton, 88, 42); lv_obj_set_pos(manualButton, 175, 11);
+    lv_obj_set_size(manualButton, 80, 42); lv_obj_set_pos(manualButton, 175, 11);
     lv_label_set_text(lv_label_create(manualButton), "MANUAL"); lv_obj_center(lv_obj_get_child(manualButton,0));
     lv_obj_add_event_cb(manualButton,touchManualEvent,LV_EVENT_CLICKED,nullptr);
     lv_obj_t *autoButton = lv_button_create(footerPanel);
-    lv_obj_set_size(autoButton, 105, 42); lv_obj_set_pos(autoButton, 270, 11);
+    lv_obj_set_size(autoButton, 100, 42); lv_obj_set_pos(autoButton, 260, 11);
     lv_label_set_text(lv_label_create(autoButton), "AUTOPILOT"); lv_obj_center(lv_obj_get_child(autoButton,0));
     lv_obj_add_event_cb(autoButton,touchAutopilotEvent,LV_EVENT_CLICKED,nullptr);
     lv_obj_t *returnButton = lv_button_create(footerPanel);
-    lv_obj_set_size(returnButton, 100, 42); lv_obj_set_pos(returnButton, 382, 11);
+    lv_obj_set_size(returnButton, 90, 42); lv_obj_set_pos(returnButton, 365, 11);
     lv_label_set_text(lv_label_create(returnButton), "RETURN"); lv_obj_center(lv_obj_get_child(returnButton,0));
     lv_obj_add_event_cb(returnButton,touchReturnEvent,LV_EVENT_CLICKED,nullptr);
+    lv_obj_t *missionButton = lv_button_create(footerPanel);
+    lv_obj_set_size(missionButton, 90, 42); lv_obj_set_pos(missionButton, 460, 11);
+    lv_label_set_text(lv_label_create(missionButton), "MISSION"); lv_obj_center(lv_obj_get_child(missionButton,0));
+    lv_obj_add_event_cb(missionButton,openMissionEvent,LV_EVENT_CLICKED,nullptr);
 
     // Show live input validity and calibration status, not a generic reminder.
     inputStatusLabel = createLabel(footerPanel, "STICKS: NOT CALIBRATED", 15, 8);
@@ -502,15 +510,10 @@ static void createFooter()
 lv_obj_t *sticksButton = lv_button_create(footerPanel);
 
 // Set its size.
-lv_obj_set_size(sticksButton, 125, 50);
+lv_obj_set_size(sticksButton, 80, 42);
 
-// Position it to the left of STOP.
-lv_obj_align(
-    sticksButton,
-    LV_ALIGN_RIGHT_MID,
-    -165,
-    0
-);
+// Position in the footer row, before STOP.
+lv_obj_set_pos(sticksButton, 555, 11);
 
 // Create the button label.
 lv_obj_t *sticksLabel = lv_label_create(sticksButton);
