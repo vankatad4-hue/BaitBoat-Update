@@ -290,7 +290,7 @@ Boat:
 - Tests added for coverage-index export, not executed. Firmware compile and hardware tests pending. Remote version remains 028; ver029 development not packaged.
 
 
-- Consolidated Remote history is maintained at `Remote/releases/CHANGELOG_MASTER_VER010.md` (history document revision VER008; source marker still ver028).
+- Consolidated Remote history is maintained at `Remote/releases/CHANGELOG_MASTER_VER011.md` (history document revision VER008; source marker still ver028).
 
 - ver029.3 robustness follow-up: coverage index uses PSRAM/binary search, import validates tile byte lengths/count and cache refresh. Added map-tools test workflow; CI result not confirmed.
 
@@ -325,3 +325,13 @@ Boat:
 - This is nonblocking status only; no DNS/HTTPS internet probe or provider integration exists.
 - Source: `Remote/source/settings_ui.cpp`; latest implementation commit `81fee88a162260c70fbff6c837e44822e10e071a`.
 - Not compiled/tested on target.
+
+
+## Operating screen UI redesign — 2026-11-20
+- Reworked the 800×480 main screen layout: compact status header, 50/50 map and sonar panels, and a two-row footer with live joystick/safety state above larger touch controls.
+- Added a consistent dark marine palette, blue panel outlines and button styling, red STOP styling, and Bulgarian labels for the main screen controls/status.
+- Rebalanced map viewport and zoom controls for the new panel height. Full-screen map/sonar expand states were adjusted to match the new content height.
+- Existing map manager, zoom, map-source cycle, mission planner, calibration, mode requests and STOP callback are retained.
+- Sonar is still a placeholder: no CHIRP data feed/echogram is implemented. This is a UI layout update only.
+- Source: `Remote/source/boat_ui.cpp`. Commits: `39006c91b759201b`, `5b5c95a76575f51f`, `0ddabd38f9d2d027`, `bbc257156d7f4117`.
+- **Not compiled or LVGL Pro-tested.** Layout preview is conceptual; all touch targets, Bulgarian font glyph coverage, clipping, panel expansion, and screen transitions must be checked in the LVGL Pro simulator before hardware.
