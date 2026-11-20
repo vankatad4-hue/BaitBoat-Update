@@ -54,8 +54,8 @@ void setup()
     boatState.sdCardReady = displayReady && displayPort_sdReady();
     boatState.offlineMapReady = offlineMap_begin(boatState.sdCardReady);
 
-    // Dual-radio transports remain offline until nRF24/LoRa pin, power, channel,
-    // packet protocol, authentication and failover implementation are complete.
+    // Dual-radio supervisor is initialised. Hardware transports remain disabled
+    // until pin/power design, drivers, and a provisioned authentication key exist.
     boatRadio_begin();
 
     // Initialise joystick processing once and register one reader.
@@ -95,6 +95,26 @@ void loop()
 
     // Apply the latest telemetry; GPS fixes automatically expire after 2 seconds.
     telemetryApplyToBoatState(boatState);
+
+    // Publish radio supervisor status to the UI.
+    boatState.radioConnected = boatRadio_isConnected();
+    boatState.radioPrimaryConnected = boatRadio_primaryConnected();
+    boatState.radioBackupConnected = boatRadio_backupConnected();
+    switch (boatRadio_getActiveLink())
+    {
+        case RADIO_LINK_NRF24_PRIMARY: boatState.radioActiveLink = RADIO_UI_NRF_PRIMARY; break;
+        case RADIO_LINK_LORA_BACKUP: boatState.radioActiveLink = RADIO_UI_LORA_BACKUP; break;
+        default: boatState.radioActiveLink = RADIO_UI_NONE; break;
+    }
+    switch (boatRadio_getState())
+    {
+        case RADIO_STATE_PRIMARY: boatState.radioLinkState = RADIO_UI_PRIMARY; break;
+        case RADIO_STATE_DEGRADED: boatState.radioLinkState = RADIO_UI_DEGRADED; break;
+        case RADIO_STATE_BACKUP: boatState.radioLinkState = RADIO_UI_BACKUP; break;
+        case RADIO_STATE_NO_LINK: boatState.radioLinkState = RADIO_UI_NO_LINK; break;
+        case RADIO_STATE_RECOVERY: boatState.radioLinkState = RADIO_UI_RECOVERY; break;
+        default: boatState.radioLinkState = RADIO_UI_DISCONNECTED; break;
+    }
 
     // Read sticks and process control only when every safety gate passes.
     joystick_update();
