@@ -88,4 +88,4 @@ Remote decodes authenticated telemetry/ACK and applies freshness/safety gates. B
 - Review: BOAT_ACK_SESSION_INTEGRATION_R1.md. Source is not compiled or tested on ESP32.
 
 ## Package revision status
-Current package markers: Remote ver023 / Boat ver010. Generated ZIPs and SHA256 manifest are committed; independent extraction/checksum verification is pending. Boat payload decoder/encoder are portable utilities. Session echo, queue-level ACK and duplicate handling are scaffolded, but no telemetry source, application command executor, EXECUTED ACK or actuator integration exists.
+Current package markers: Remote ver023 / Boat ver010. ZIPs and manifest are committed, but Boat ver010 archive SHA currently mismatches the manifest; a reproducible rebuild is pending. Remote ver023 binary is unverified. Boat payload decoder/encoder are portable utilities. Session echo, queue-level ACK and duplicate handling are scaffolded, but no telemetry source, application command executor, EXECUTED ACK or actuator integration exists.
