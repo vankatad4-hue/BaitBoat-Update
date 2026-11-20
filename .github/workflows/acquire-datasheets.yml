@@ -1,0 +1,67 @@
+name: Acquire Flytec Datasheets
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'docs/datasheets/DATASHEET_CATALOG.md'
+      - '.github/workflows/acquire-datasheets.yml'
+permissions:
+  contents: write
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: hardware-ready-dual-radio-r1
+      - name: Download known PDFs and verify file type
+        shell: bash
+        run: |
+          set +e
+          mkdir -p docs/datasheets/PDF
+          report=docs/datasheets/DOWNLOAD_REPORT.md
+          echo "# Datasheet Download Report" > "$report"
+          echo "" >> "$report"
+          echo "Run date: $(date -u +%Y-%m-%d)" >> "$report"
+          echo "" >> "$report"
+          declare -a names=(
+            "EBYTE_E22-900T22S-V2_Manual.pdf"
+            "Waveshare_ESP32-S3-Touch-LCD-4.3B_Schematic_REFERENCE.pdf"
+            "Cytron_MDD20A_Datasheet.pdf"
+          )
+          declare -a urls=(
+            "https://www.cdebyte.com/pdf-down.aspx?id=4217"
+            "https://files.waveshare.com/wiki/ESP32-S3-Touch-LCD-4.3B/ESP32-S3-Touch-LCD-4.3B-Sch.pdf"
+            "https://download.kamami.pl/p587223-MDD20A%20Datasheet.pdf"
+          )
+          for i in "${!names[@]}"; do
+            name="${names[$i]}"
+            url="${urls[$i]}"
+            dest="docs/datasheets/PDF/$name"
+            tmp="$dest.tmp"
+            if curl -L --retry 3 --retry-delay 2 --fail --silent --show-error "$url" -o "$tmp"; then
+              if file "$tmp" | grep -qi 'PDF document'; then
+                mv "$tmp" "$dest"
+                echo "- **SUCCESS**: [$name](PDF/$name) — source: $url" >> "$report"
+              else
+                rm -f "$tmp"
+                echo "- **FAILED (not a PDF)**: $name — $url" >> "$report"
+              fi
+            else
+              rm -f "$tmp"
+              echo "- **FAILED download**: $name — $url" >> "$report"
+            fi
+          done
+          echo "" >> "$report"
+          echo "This report records acquisition only. Match the exact hardware variant before using a document for design." >> "$report"
+      - name: Commit downloaded files and report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/datasheets
+          if git diff --cached --quiet; then
+            echo "No new files/report changes to commit."
+          else
+            git commit -m "Add acquired project datasheets"
+            git push origin hardware-ready-dual-radio-r1
+          fi
