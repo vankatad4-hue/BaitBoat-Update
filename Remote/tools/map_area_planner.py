@@ -65,6 +65,8 @@ def tiles_for_bounds(bounds, zoom):
 
 
 def build_plan(lat, lon, side_m, zooms, source_name, attribution, licence_url):
+    if not zooms:
+        raise ValueError("at least one zoom level is required")
     bounds = square_bounds(lat, lon, side_m)
     per_zoom = {}
     tile_set = set()
