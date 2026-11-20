@@ -123,3 +123,7 @@ jobs:
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/tracker_sensors_test.cpp -o /tmp/boat_tracker_sensors
           /tmp/boat_tracker_sensors
+      - name: Carrier motor output and one-hot release planning
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/carrier_output_plan_test.cpp -o /tmp/boat_carrier_output
+          /tmp/boat_carrier_output
