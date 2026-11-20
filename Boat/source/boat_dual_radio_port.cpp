@@ -126,6 +126,7 @@ bool BoatDualRadioPort::enqueue(const BoatCommand &cmd,ManagedLink link,bool dup
 bool BoatDualRadioPort::takeCommand(BoatCommand &cmd,bool &duplicate,ManagedLink &link) {
  uint8_t linkId=0,epoch=0;
  if(!commandQueue_.pop(cmd,duplicate,linkId,epoch))return false;
+ (void)epoch; // retained in the queue record for session-scoped diagnostics
  link=(ManagedLink)linkId;return true;
 }
 void BoatDualRadioPort::markActionExecuted(uint8_t sender,uint8_t epoch,uint16_t commandId) {
