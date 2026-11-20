@@ -22,7 +22,7 @@ This revision adds the R5 button/control layout. It is still a candidate BOM; do
 | Q_REV | 1 | Reverse-polarity protection | Battery input | Candidate only |
 | U_RADIO_PWR | 1 | TPS63070 | nRF 3.3V rail | Reference design/layout validation |
 | U_LORA_PWR | 1 | TPS61023 | E22 5V rail | Reference design/layout validation |
-| ENC | 1 | R5 front/rear 3D-printed enclosure | Handheld shell | 310×210×68mm prototype; fit unverified |
+| ENC | 1 | R5 front/rear 3D-printed enclosure | Handheld shell | 310×209×69.5mm prototype; fit unverified |
 
 ## R5 key assignment
 - Left bank L1–L8: STOP, manual/autopilot, return-home, waypoint-save placeholder, waypoint-select placeholder, map full-screen, sonar full-screen, settings placeholder.
