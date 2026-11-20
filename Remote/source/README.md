@@ -4,7 +4,7 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 
 ## Versioning
 - ZIP: `Flytec_Remote_verXXX.zip`.
-- Preserve older archives; the packaged baseline is ver028. Current source changes are being prepared for ver029; do not update `releases/VERSION` or create a release ZIP until packaging and verification are complete.
+- Preserve older archives; the packaged baseline is ver028. Current development source is ver029.9; do not update `releases/VERSION` or create a release ZIP until packaging and verification are complete.
 - Increment for every package change and follow `../../docs/ZIP_RELEASE_POLICY_R1.md`.
 
 ## Controller/display baseline
@@ -32,7 +32,7 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 - `physical_button_scanner.*`: MCP23017 button scan/debounce; right-bank release keys and separate OK input feed the release-confirmation state machine. Board pin map is provisional.
 - `release_button_guard.*`: two-step release guard, primary-link and boat interlock gate; native host test available.
 - `joystick.*`, `joystick_calibration_ui.*`: calibration UI; hardware ADC reader currently fails closed.
-- `boat_ui.*`, `settings_ui.*`: UI scaffold; map and sonar displays are not operational data views.
+- `boat_ui.*`, `settings_ui.*`, `mission_ui.*`, `joystick_calibration_ui.*`, `map_manager_ui.*`: UI implementation; sonar pane is an explicitly marked visual demo, not operational sonar.
 - `offline_map.*`, `map_projection.*`, `map_renderer.*`: SD XYZ RGB565 tile read, projection, bounded tile viewport, waypoint overlays and validated source-attribution overlay; source is not hardware-validated.
 - `map_source.*`: persisted AUTO / ONLINE / OFFLINE map source preference scaffold; online provider is deliberately unavailable and ONLINE selection falls back to SD.
 - `boat_telemetry.*`: partial telemetry state application with local group freshness, coordinate sample pairing and primary-link safety provenance; wired to Remote receive dispatch.
@@ -45,6 +45,12 @@ Updated 2026-11-20. The GitHub repository is canonical; this source is a develop
 - `hardware_test/E22_SC16IS750_Bench/E22_SC16IS750_Bench.ino`
 - Fixed diagnostic probes only, CRC checked, no authenticated commands or actuator payloads. See `hardware_test/README.md`.
 - Bench tests remain uncompiled/unverified.
+
+## UI milestone ver029.9
+- Main UI has Bulgarian labels and an equal map/echogram split; the sonar plot is a visual DEMO only, labelled as disconnected and not sourced from sensor data.
+- Mission planner has 16 slots and selected waypoint coordinates; distance/bearing is calculated only from a fresh (<2 s) GPS fix.
+- Settings content is partially localized into Bulgarian. LVGL Pro rendering, Cyrillic font coverage and touch behavior still require checking.
+- See `../docs/UI_BUILD_VER029_9.md` and SVG previews `UI_PREVIEW_MAIN_VER029_9.svg`, `UI_PREVIEW_MISSION_VER029_9.svg`.
 
 ## Safety / limitations
 - Key storage returns false by default; authenticated communication/control is disabled.
