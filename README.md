@@ -65,3 +65,5 @@ Flytec_Boat_verXXX.zip and Flytec_Remote_verXXX.zip. Never overwrite prior relea
 
 ## Hardware/software work branch
 A dedicated implementation branch `hardware-ready-dual-radio-r1` contains R2 test-build electrical specs, pin connections, revised enclosure envelope, packet codec and dual-link supervisor scaffold. Boat uses the integrated SX1262 candidate rather than a duplicate LoRa module by default. Hardware remains non-fabrication-ready until GPIO crosswalk, KiCad/ERC/DRC, motor current, solenoid current and RF compliance/interoperability gates pass.
+
+- Dual-radio R3 pairing: identical E22 UART modules on both endpoints for initial test; Tracker's integrated SX1262 is not used for this link unless interoperability is verified. See `Remote/docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R3.md`.
