@@ -8,19 +8,34 @@
 static bool g_sd_available = false;                 // SD filesystem was mounted by the display adapter.
 static bool g_map_pack_available = false;           // Map manifest was found and validated.
 
-// Check that the manifest begins with the expected version signature.
+// Require a valid pack header, complete coverage flag and source attribution/licence metadata.
 static bool offlineMap_checkManifest()
 {
-    File manifest = SD.open("/maps/manifest.txt", FILE_READ); // Open the map-pack descriptor.
-    if (!manifest)                                  // A missing manifest means no usable map pack.
-    {
-        return false;                               // Do not treat an arbitrary folder as installed maps.
+    File manifest = SD.open("/maps/manifest.txt", FILE_READ);
+    if (!manifest) return false;
+
+    char signature[12] = {0};
+    const size_t bytesRead = manifest.read(reinterpret_cast<uint8_t *>(signature), 11);
+    if (bytesRead != 11 || strncmp(signature, "FLYTEC_MAP1", 11) != 0) {
+        manifest.close();
+        return false;
     }
 
-    char signature[16] = {0};                       // Reserve enough bytes for the version signature.
-    const size_t bytesRead = manifest.read(reinterpret_cast<uint8_t *>(signature), 11); // Read signature only.
-    manifest.close();                               // Close the descriptor immediately.
-    return bytesRead == 11 && strncmp(signature, "FLYTEC_MAP1", 11) == 0; // Validate the pack format marker.
+    bool complete = false;
+    bool hasAttribution = false;
+    bool hasLicence = false;
+    bool hasZooms = false;
+    char line[256] = {0};
+    while (manifest.available()) {
+        const size_t count = manifest.readBytesUntil('\n', line, sizeof(line) - 1);
+        line[count] = '\0';
+        if (strncmp(line, "pack_complete=true", 18) == 0) complete = true;
+        if (strncmp(line, "attribution=", 11) == 0 && line[11] != '\0') hasAttribution = true;
+        if (strncmp(line, "licence_url=", 12) == 0 && line[12] != '\0') hasLicence = true;
+        if (strncmp(line, "zoom_levels=", 12) == 0 && line[12] != '\0') hasZooms = true;
+    }
+    manifest.close();
+    return complete && hasAttribution && hasLicence && hasZooms;
 }
 
 // Initialise offline-map storage and validate its map-pack manifest.
