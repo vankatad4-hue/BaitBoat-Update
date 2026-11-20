@@ -337,47 +337,51 @@ static void sonarLine(lv_obj_t *parent, const lv_point_t *pts, uint16_t n,
     lv_obj_set_style_line_rounded(line, true, LV_PART_MAIN);
 }
 
+static void drawSonarPlot(uint16_t width, uint16_t height)
+{
+    if (!sonarPlot) return;
+    while (lv_obj_get_child_count(sonarPlot) > 0)
+        lv_obj_delete(lv_obj_get_child(sonarPlot, 0));
+    const int w=(int)width-1, h=(int)height-1;
+    const lv_color_t grid=lv_color_hex(0x244258);
+    for(int i=0;i<=4;i++){
+        int y=(h*i)/4, x=(w*i)/4;
+        lv_point_t hp[2]={{0,(lv_coord_t)y},{(lv_coord_t)w,(lv_coord_t)y}};
+        lv_point_t vp[2]={{(lv_coord_t)x,0},{(lv_coord_t)x,(lv_coord_t)h}};
+        sonarLine(sonarPlot,hp,2,grid,1);sonarLine(sonarPlot,vp,2,grid,1);
+    }
+    // Illustrative arcs scaled to the current viewport; DEMO label remains visible.
+    lv_point_t archA[7],archB[7],bottom[7];
+    const int ax[]={10,18,28,38,48,58,68}, ay[]={68,58,46,40,46,58,70};
+    const int bx[]={50,58,66,74,82,90,96}, by[]={88,78,68,62,68,78,88};
+    const int fx[]={2,18,34,50,66,82,98}, fy[]={96,94,97,93,96,94,97};
+    for(int i=0;i<7;i++){
+        archA[i]={(lv_coord_t)(w*ax[i]/100),(lv_coord_t)(h*ay[i]/100)};
+        archB[i]={(lv_coord_t)(w*bx[i]/100),(lv_coord_t)(h*by[i]/100)};
+        bottom[i]={(lv_coord_t)(w*fx[i]/100),(lv_coord_t)(h*fy[i]/100)};
+    }
+    sonarLine(sonarPlot,archA,7,lv_color_hex(0x35E3B0),2);
+    sonarLine(sonarPlot,archB,7,lv_color_hex(0xF5C84C),2);
+    sonarLine(sonarPlot,bottom,7,lv_color_hex(0xE67E45),2);
+}
+
 static void createSonarPanel()
 {
     sonarPanel = createPanel(contentPanel, 400, 5, 385, 315);
     sonarTitle = createLabel(sonarPanel, "СОНАР • CHIRP", 12, 8);
     createLabel(sonarPanel, "ДЪЛБОЧИНА  --.- m", 12, 30);
-
     sonarPlot = lv_obj_create(sonarPanel);
-    lv_obj_set_pos(sonarPlot, 42, 52);
-    lv_obj_set_size(sonarPlot, 330, 210);
+    lv_obj_set_pos(sonarPlot, 42, 52); lv_obj_set_size(sonarPlot, 330, 210);
     lv_obj_set_style_bg_color(sonarPlot, lv_color_hex(0x06101B), LV_PART_MAIN);
     lv_obj_set_style_border_width(sonarPlot, 1, LV_PART_MAIN);
     lv_obj_set_style_border_color(sonarPlot, lv_color_hex(0x28618A), LV_PART_MAIN);
     lv_obj_set_style_pad_all(sonarPlot, 0, LV_PART_MAIN);
     lv_obj_clear_flag(sonarPlot, LV_OBJ_FLAG_SCROLLABLE);
-
-    // Horizontal depth guides.
-    static const lv_point_t h0[]={{0,0},{329,0}}, h1[]={{0,52},{329,52}},
-      h2[]={{0,104},{329,104}}, h3[]={{0,156},{329,156}}, h4[]={{0,208},{329,208}};
-    const lv_color_t grid=lv_color_hex(0x244258);
-    sonarLine(sonarPlot,h0,2,grid,1); sonarLine(sonarPlot,h1,2,grid,1);
-    sonarLine(sonarPlot,h2,2,grid,1); sonarLine(sonarPlot,h3,2,grid,1);
-    sonarLine(sonarPlot,h4,2,grid,1);
-    static const lv_point_t v0[]={{0,0},{0,208}},v1[]={{82,0},{82,208}},
-      v2[]={{164,0},{164,208}},v3[]={{246,0},{246,208}},v4[]={{329,0},{329,208}};
-    sonarLine(sonarPlot,v0,2,grid,1);sonarLine(sonarPlot,v1,2,grid,1);
-    sonarLine(sonarPlot,v2,2,grid,1);sonarLine(sonarPlot,v3,2,grid,1);
-    sonarLine(sonarPlot,v4,2,grid,1);
-
-    // Example fish-arch traces, deliberately illustrative only.
-    static const lv_point_t archA[]={{34,144},{62,120},{92,94},{124,82},{153,94},{184,120},{212,145}};
-    static const lv_point_t archB[]={{168,188},{189,165},{212,142},{236,128},{258,142},{279,165},{298,188}};
-    static const lv_point_t bottom[]={{8,198},{60,195},{110,200},{160,194},{210,199},{260,196},{320,201}};
-    sonarLine(sonarPlot,archA,7,lv_color_hex(0x35E3B0),2);
-    sonarLine(sonarPlot,archB,7,lv_color_hex(0xF5C84C),2);
-    sonarLine(sonarPlot,bottom,7,lv_color_hex(0xE67E45),2);
-
+    drawSonarPlot(330,210);
     createLabel(sonarPanel,"0",8,52); createLabel(sonarPanel,"5",8,103);
     createLabel(sonarPanel,"10",4,155); createLabel(sonarPanel,"15",4,207);
     createLabel(sonarPanel,"DEMO • НЕ Е РЕАЛЕН СОНАР",12,270);
     sonarStatus=createLabel(sonarPanel,"МОДУЛ / ДАННИ: НЕ Е СВЪРЗАН",12,289);
-
     lv_obj_add_flag(sonarPanel, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(sonarPanel, sonarTouchEvent, LV_EVENT_CLICKED, nullptr);
 }
@@ -634,14 +638,14 @@ void toggleSonarPanel()
         // Expand sonar to fill the content area.
         lv_obj_set_pos(sonarPanel, 5, 5);
 
-        lv_obj_set_size(sonarPanel, 780, 315);
+        lv_obj_set_size(sonarPanel, 780, 315);\n        lv_obj_set_size(sonarPlot, 720, 220);\n        drawSonarPlot(720,220);
     }
     else
     {
         // Restore the original sonar dimensions.
         lv_obj_set_pos(sonarPanel, 400, 5);
 
-        lv_obj_set_size(sonarPanel, 385, 315);
+        lv_obj_set_size(sonarPanel, 385, 315);\n        lv_obj_set_size(sonarPlot, 330, 210);\n        drawSonarPlot(330,210);
 
         // Show map again.
         lv_obj_remove_flag(
