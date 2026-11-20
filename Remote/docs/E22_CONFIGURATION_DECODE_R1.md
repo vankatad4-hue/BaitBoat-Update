@@ -33,8 +33,7 @@ Both E22 bench sketches send only fixed `LINK_PROBE` diagnostic frames, CRC chec
 6. Do not operate in the field until Bulgaria/EU regulatory parameters, antenna gain/EIRP, duty cycle and LBT/AFA requirements are reviewed.
 
 ## Manufacturer references
-- EBYTE E22-xxxT22S user manual: https://resource.heltec.cn/download/Wireless_Tracker/Wireless%20Tracker%201.1.pdf (Heltec hardware manual link; verify actual EBYTE manual from exact product vendor)
-- EBYTE product page: https://www.ebyte.com/product/1587.html
-- EBYTE E22-xxxT22S manual PDF: https://www.ebyte.com/Uploadfiles/Files/2024-1-5/2024151430332094.pdf
+- EBYTE E22-xxxT22S product page: https://www.ebyte.com/product/1587.html
+- EBYTE E22-xxxT22S user manual PDF: https://www.ebyte.com/Uploadfiles/Files/2024-1-5/2024151430332094.pdf
 
 This note is an engineering decode, not a compliance approval.
