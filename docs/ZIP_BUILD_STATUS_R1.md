@@ -12,7 +12,7 @@ The previous GitHub Actions workflow repeatedly regenerated archives under uncha
 - Workflow: `.github/workflows/package-flytec-zips.yml`
 - Development pushes build ZIP/checksum artifacts and upload them (90-day retention).
 - Versioned archive copies are committed only when a push changes Remote/Boat VERSION marker(s).
-- Latest observed run at checkpoint: **#880 success**, head `9f7b0344`. The guard was exercised with no version-marker change and the preservation step was skipped.
+- Previous guard validation: run **#880 success**, head `9f7b0344`, with preserve step skipped because no VERSION changed. Current docs-only push triggered run **#888 pending** at head `c11f9048c1`; check it before claiming latest workflow success.
 - Run: https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/44748284171
 
 ## How to issue a new snapshot/release safely
