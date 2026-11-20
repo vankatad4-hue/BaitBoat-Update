@@ -87,5 +87,10 @@ Remote decodes authenticated telemetry/ACK and applies freshness/safety gates. B
 - ACCEPTED does not imply execution. No command application, interlocks, telemetry sender or actuator path.
 - Review: BOAT_ACK_SESSION_INTEGRATION_R1.md. Source is not compiled or tested on ESP32.
 
+## Boat ver011 protocol test milestone (2026-11-20)
+- Cross-radio command replay classification is now explicit and unit-testable. A stale sequence/new command ID is dropped; only exact pending/executed ID duplicates can receive duplicate/pending acknowledgements.
+- Added host tests for cross-radio classification, deduplication cache scope and eviction, failsafe decision logic, sequence wrap/stale handling, and backup command policy/throttle limit.
+- Test source and host stubs are committed, but tests were **not run** because network checkout was unavailable. No compile claim is made.
+
 ## Package revision status
-Current package markers: Remote ver023 / Boat ver010. Boat ver010 archive SHA independently matches the manifest and archive structure was checked. Remote ver023 binary remains unverified. The deterministic packaging workflow is now in place. Boat payload decoder/encoder are portable utilities. Session echo, queue-level ACK and duplicate handling are scaffolded, but no telemetry source, application command executor, EXECUTED ACK or actuator integration exists.
+Current package markers: Remote ver023 / Boat ver011. ver011 ZIP/manifest regeneration is pending. Boat ver010 archive SHA independently matches the manifest and archive structure was checked. Remote ver023 binary remains unverified. The deterministic packaging workflow is now in place. Boat payload decoder/encoder are portable utilities. Session echo, queue-level ACK and duplicate handling are scaffolded, but no telemetry source, application command executor, EXECUTED ACK or actuator integration exists.
