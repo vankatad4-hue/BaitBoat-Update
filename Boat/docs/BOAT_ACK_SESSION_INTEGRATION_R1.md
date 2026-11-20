@@ -10,8 +10,9 @@
 
 ## Sequence/failover behavior
 - Primary and backup links have independent sequence guards.
-- A cross-radio guard suppresses duplicate non-command frames from being applied twice.
-- CONTROL/ACTION frames are allowed through the cross-link guard because command-ID deduplication, not radio sequence alone, determines duplicate command handling.
+- Cross-radio sequence guard suppresses duplicates/stale non-command frames.
+- A command rejected by the cross-radio sequence guard is now classified: exact executed command ID → DUPLICATE ACK; exact pending ID → ACCEPTED ACK; stale sequence with a new ID → dropped. This closes the prior bypass where any sequence-rejected CONTROL/ACTION frame could continue into command handling.
+- Pending queue entries remain keyed by session epoch and 16-bit command ID.
 - Pending queue entries are keyed by session epoch and 16-bit command ID. A duplicate pending command is not enqueued a second time. Executed duplicates use the existing action cache.
 
 ## ACK behavior
