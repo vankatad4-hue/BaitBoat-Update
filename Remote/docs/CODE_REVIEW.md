@@ -68,3 +68,5 @@ This remains a development baseline and must not be used to operate the boat. Ke
 - Target compile attempt #4 reached C++ preprocessing and identified `RF24.h` as an uninstalled dependency. Added RF24 1.4.11 to the pinned workflow; next compile run pending.
 
 - Added a defensive null-display check to the LVGL flush callback; no API signature changes were made pending the actual target compiler.
+
+- Target compile exposed two source issues in `boat_ui.cpp`: LVGL 9.6 line points changed to `lv_point_precise_t`, and footer live-input/safety labels lacked global declarations. Both were fixed; retry pending.
