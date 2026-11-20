@@ -104,6 +104,11 @@ bool boatCommands_setMode(BoatMode mode)
 
 bool boatCommands_setManualMotors(int16_t left, int16_t right)
 {
+    // Defense in depth: reject movement requests outside confirmed manual operation.
+    if(boatState.mode!=MODE_MANUAL || !boatState.radioConnected ||
+       !boatState.emergencyStopConfirmed || boatState.emergencyStop ||
+       boatState.failsafeActive || !boatState.actuatorSafetyReady)return false;
+
     // Restrict left motor command to the allowed range.
     left = constrain(left, -1000, 1000);
 
