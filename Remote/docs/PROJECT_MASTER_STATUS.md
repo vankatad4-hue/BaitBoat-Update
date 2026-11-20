@@ -115,3 +115,13 @@ Native KiCad capture and ERC/DRC, exact physical PORT1 crosswalk, final footprin
 - Initial hardware prototype will use **identical EBYTE E22-900T22S UART modules on both remote and boat**. This avoids assuming transparent E22 ↔ raw native SX1262 interoperability. Heltec Tracker's integrated SX1262 remains unused for this link unless later compatibility testing supports it.
 - Boat UART must be allocated on a verified spare pair from exact Tracker board schematic; GNSS, integrated LoRa, USB, strapping and other board functions remain reserved. If no direct UART is safe, bridge or controller change.
 - Reference: `Remote/docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R3.md`, `Boat/docs/BOAT_LORA_HARDWARE_DECISION_R3.md`.
+
+
+## R4 development branch implementation details
+- Remote nRF24 source class now uses shared SPI and fixed 32-byte frames; pin defaults CE=GPIO6, CSN=GPIO15, SPI GPIO11/12/13, channel76. CSN GPIO15 is the RS485 TX path: RS485 bus must be disconnected/disabled. CE GPIO6 repurposes Sensor AD. Exact connector crosswalk/continuity and bus setup remain gates.
+- Remote E22 uses SC16IS750 I2C UART bridge @0x48, 1.8432MHz crystal, 9600 8N1; M0/M1/AUX/reset through bridge GPIO. The E22 configuration write/readback is in source and bench sketch.
+- E22 config: channel18=868.125MHz, 62.5kbps air, 32-byte subpacket, 10dBm output, transparent mode. 868.125MHz is 1% duty band. 25ms estimate; manager interval3s (0.83%) and hourly airtime guard36s. Duty counter is RAM-only, so no field use until persistent accounting/actual airtime measured.
+- Added dedicated remote SC16/E22 test sketch and boat direct-UART E22 test sketch; neither sends actuator commands.
+- Boat source now contains nRF driver, E22 port, dual-radio receive queue and failsafe/dedupe helpers; all boat GPIO defaults unset. No operational boat application or actuator integration.
+- Remote and boat HMAC key store returns false by default; all authenticated link/command paths fail closed. Secure provisioning/rotation and session negotiation are still needed.
+- Native KiCad schematic, ERC/DRC and PCB still not generated. Files are detailed electrical capture/test specs, not native fabrication data.
