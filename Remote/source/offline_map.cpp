@@ -1,4 +1,5 @@
 #include "offline_map.h"
+#include "map_pack_manifest.h"
 #include "lake_storage.h"
 #include "offline_map_coverage.h"
 
@@ -14,43 +15,20 @@ static bool g_map_pack_available = false;           // Map manifest was found an
 static char g_map_attribution[256] = {0};            // Validated map-pack source attribution.
 
 // Require a valid pack header, complete coverage flag and source attribution/licence metadata.
-static bool offlineMap_checkManifest(const char *root)
-{
-    if (!root || !*root) return false;
-    File manifest = SD.open((String(root)+"/manifest.txt").c_str(), FILE_READ);
-    if (!manifest) return false;
-
-    char signature[12] = {0};
-    const size_t bytesRead = manifest.read(reinterpret_cast<uint8_t *>(signature), 11);
-    if (bytesRead != 11 || strncmp(signature, "FLYTEC_MAP1", 11) != 0) {
-        manifest.close();
-        return false;
-    }
-
-    bool complete = false;
-    bool hasAttribution = false;
-    bool hasLicence = false;
-    bool hasZooms = false;
-    bool hasStyle = false;
-    g_map_attribution[0] = '\0';
-    char line[256] = {0};
-    while (manifest.available()) {
-        const size_t count = manifest.readBytesUntil('\n', line, sizeof(line) - 1);
-        line[count] = '\0';
-        if(count && line[count-1]=='\r')line[count-1]='\0';
-        if(strcmp(line,"style=street")==0){g_style=OFFLINE_MAP_STREET;hasStyle=true;}
-        if(strcmp(line,"style=satellite")==0){g_style=OFFLINE_MAP_SATELLITE;hasStyle=true;}
-        if (strcmp(line, "pack_complete=true") == 0) complete = true;
-        if (strncmp(line, "attribution=", 12) == 0 && line[12] != '\0') {
-            hasAttribution = true;
-            strncpy(g_map_attribution, line + 12, sizeof(g_map_attribution) - 1);
-            g_map_attribution[sizeof(g_map_attribution) - 1] = '\0';
-        }
-        if (strncmp(line, "licence_url=", 12) == 0 && line[12] != '\0') hasLicence = true;
-        if (strncmp(line, "zoom_levels=", 12) == 0 && line[12] != '\0') hasZooms = true;
-    }
-    manifest.close();
-    return complete && hasAttribution && hasLicence && hasZooms && hasStyle;
+static bool offlineMap_checkManifest(const char *root){
+    if(!root||!*root)return false;
+    File file=SD.open((String(root)+"/manifest.txt").c_str(),FILE_READ);
+    if(!file)return false;
+    char data[MAP_MANIFEST_LIMIT];size_t n=file.size();
+    bool readOk=n<sizeof(data)&&file.read(reinterpret_cast<uint8_t*>(data),n)==n;
+    file.close();
+    MapPackManifest parsed={};
+    if(!readOk||!mapPack_parseManifest(data,n,parsed))return false;
+    if(!mapCoverage_begin(root))return false;
+    uint16_t planned,present,missing;mapCoverage_getStats(planned,present,missing);
+    if(planned!=parsed.tileCount||present!=planned||missing){mapCoverage_begin(nullptr);return false;}
+    g_style=parsed.style?OFFLINE_MAP_SATELLITE:OFFLINE_MAP_STREET;
+    memcpy(g_map_attribution,parsed.attribution,sizeof(g_map_attribution));return true;
 }
 
 // Initialise offline-map storage and validate its map-pack manifest.
@@ -70,7 +48,7 @@ bool offlineMap_begin(bool sdCardReady)
     g_map_root=lakeStorage_mapRoot();
     // Legacy root pack belongs exclusively to Lake 01, until a local pack is installed.
     if(lakeStorage_active()==0 && g_map_root==lakeStorage_path("/maps") && !SD.exists((g_map_root+"/manifest.txt").c_str()) && !SD.exists(lakeStorage_path("/map_slot.bin").c_str()) && !SD.exists(lakeStorage_path("/map_slot.bak").c_str())) g_map_root="/maps";
-    g_map_pack_available = offlineMap_checkManifest(g_map_root.c_str()) && mapCoverage_begin(g_map_root.c_str()); // Verify the map-pack format marker.
+    g_map_pack_available = offlineMap_checkManifest(g_map_root.c_str()); // Verify the map-pack format marker.
     Serial.println(g_map_pack_available ? "MAP: Offline map pack found." : "MAP: No offline map pack installed."); // Log status.
     return g_map_pack_available;                    // Return true only when a compatible map pack is present.
 }
@@ -84,7 +62,7 @@ bool offlineMap_hasMapData()
 // Copy the validated attribution string to a caller-owned buffer.
 bool offlineMap_getAttribution(char *buffer, size_t bufferSize)
 {
-    if (buffer == nullptr || bufferSize == 0 || !g_map_pack_available || g_map_attribution[0] == '\0')
+    if (buffer == nullptr || bufferSize == 0 || !offlineMap_hasMapData() || g_map_attribution[0] == '\0')
         return false;
     strncpy(buffer, g_map_attribution, bufferSize - 1);
     buffer[bufferSize - 1] = '\0';
@@ -155,6 +133,6 @@ void offlineMap_freeTile(uint16_t *pixels)
 }
 
 bool offlineMap_validateStaged(const char *root){
-    return lakeStorage_ready() && offlineMap_checkManifest(root) && mapCoverage_begin(root);
+    return lakeStorage_ready() && offlineMap_checkManifest(root);
 }
 OfflineMapStyle offlineMap_getStyle(){return g_style;}

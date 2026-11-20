@@ -57,7 +57,7 @@ bool mapCoverage_begin(const char *root)
     {
         size_t n = f.readBytesUntil('\n', line, sizeof(line) - 1);
         line[n] = '\0';
-        if (n == sizeof(line) - 1 && f.available())
+        if (n == sizeof(line) - 1 || memchr(line, '\0', n))
         {
             f.close(); rowCount = 0; heap_caps_free(rows); rows = nullptr;
             return false; // Reject a line too long for the parser rather than accepting a truncated record.
@@ -127,7 +127,7 @@ bool mapCoverage_tilePresent(uint8_t z, uint32_t x, uint32_t y)
 }
 void mapCoverage_getStats(uint16_t &planned, uint16_t &ok, uint16_t &missing)
 {
-    planned = rowCount; ok = presentCount; missing = missingCount;
+    planned = valid ? rowCount : 0; ok = valid ? presentCount : 0; missing = valid ? missingCount : 0;
 }
 
 static constexpr double MERCATOR_LIMIT = 85.05112878;
@@ -171,8 +171,8 @@ void mapCoverage_checkSquare(double lat, double lon, uint16_t sideM, const uint8
         const int x0 = tileX(west, z), x1 = tileX(east, z);
         int y0 = tileY(north, z), y1 = tileY(south, z);
         if (y0 > y1) { const int t = y0; y0 = y1; y1 = t; }
-        y0 = (y0 < 0) ? 0 : y0;
-        y1 = (y1 >= n) ? n - 1 : y1;
+        y0 = (y0 < 0) ? 0 : (y0 >= n ? n-1 : y0);
+        y1 = (y1 < 0) ? 0 : (y1 >= n ? n-1 : y1);
         const uint32_t xSpan = (east - west >= 360.0) ? (uint32_t)n : (uint32_t)((x1 - x0 + n) % n + 1);
         const uint32_t ySpan = y1 >= y0 ? (uint32_t)(y1 - y0 + 1) : 0U;
         const uint64_t levelCount = (uint64_t)xSpan * ySpan;

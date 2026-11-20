@@ -1,4 +1,5 @@
 #include "map_manager_ui.h"
+#include "map_pack_manifest.h"
 #include "lake_storage.h"
 #include "offline_map_coverage.h"
 #include "offline_map.h"
@@ -72,60 +73,6 @@ static void refresh()
 }
 static void nLat(int d){lat=fmax(-85.0f,fmin(85.0f,lat+d*.001f));refresh();}static void nLon(int d){lon+=d*.001f;if(lon>180)lon-=360;if(lon< -180)lon+=360;refresh();}
 static void zoomToggle(lv_event_t*e){int i=(intptr_t)lv_event_get_user_data(e);chosen[i]=!chosen[i];refresh();}
-static bool parseManifestValue(const char *manifest, const char *key, char *out, size_t outSize)
-{
-    if (!manifest || !key || !out || outSize < 2) return false;
-    const size_t keyLen = strlen(key);
-    bool found = false;
-    out[0] = '\0';
-    const char *line = manifest;
-    while (*line)
-    {
-        const char *end = strchr(line, '\n');
-        size_t len = end ? (size_t)(end - line) : strlen(line);
-        if (len && line[len - 1] == '\r') --len;
-        if (len > keyLen && memcmp(line, key, keyLen) == 0 && line[keyLen] == '=')
-        {
-            if (found || len - keyLen - 1 >= outSize) return false;
-            memcpy(out, line + keyLen + 1, len - keyLen - 1);
-            out[len - keyLen - 1] = '\0';
-            found = true;
-        }
-        if (!end) break;
-        line = end + 1;
-    }
-    return found && out[0] != '\0';
-}
-static bool parseStrictUnsigned(const char *text, unsigned long max, unsigned long &value)
-{
-    if (!text || !*text) return false;
-    for (const char *p = text; *p; ++p) if (*p < '0' || *p > '9') return false;
-    char *end = nullptr;
-    const unsigned long parsed = strtoul(text, &end, 10);
-    if (end == text || *end || parsed > max) return false;
-    value = parsed;
-    return true;
-}
-static bool manifestHasLine(const char *manifest, const char *required)
-{
-    if (!manifest || !required) return false;
-    const size_t reqLen = strlen(required);
-    const char *line = manifest;
-    while (*line)
-    {
-        const char *end = strchr(line, '\n');
-        const size_t len = end ? (size_t)(end - line) : strlen(line);
-        if (len && line[len - 1] == '\r')
-        {
-            if (len - 1 == reqLen && memcmp(line, required, reqLen) == 0) return true;
-        }
-        else if (len == reqLen && memcmp(line, required, reqLen) == 0) return true;
-        if (!end) break;
-        line = end + 1;
-    }
-    return false;
-}
-
 static bool copyStart(const char *src, const char *dst)
 {
     inFile = SD.open(src, FILE_READ);
@@ -194,13 +141,13 @@ static void importStart(lv_event_t *event)
         return;
     }
     File manifestFile = SD.open("/map-import/manifest.txt", FILE_READ);
-    if (!manifestFile || manifestFile.size() >= 512)
+    if (!manifestFile || manifestFile.size() >= MAP_MANIFEST_LIMIT)
     {
         if (manifestFile) manifestFile.close();
-        lv_label_set_text(importLabel, "Manifest missing or exceeds 511-byte validation limit.");
+        lv_label_set_text(importLabel, "Manifest missing or exceeds manifest validation limit.");
         return;
     }
-    char manifest[512] = {};
+    char manifest[MAP_MANIFEST_LIMIT] = {};
     const size_t manifestSize = manifestFile.size();
     const size_t manifestRead = manifestFile.readBytes(manifest, manifestSize);
     manifestFile.close();
@@ -210,31 +157,12 @@ static void importStart(lv_event_t *event)
         return;
     }
 
-    char value[128];
-    unsigned long expected = 0;
-    if (strncmp(manifest, "FLYTEC_MAP1", 11) != 0 || !manifestHasLine(manifest, "pack_complete=true") ||
-        !parseManifestValue(manifest, "attribution", value, sizeof(value)) ||
-        !parseManifestValue(manifest, "licence_url", value, sizeof(value)) ||
-        !parseManifestValue(manifest, "zoom_levels", value, sizeof(value)) ||
-        !parseManifestValue(manifest, "exported_tile_count", value, sizeof(value)) ||
-        !parseStrictUnsigned(value, LIMIT, expected) || expected == 0)
-    {
-        lv_label_set_text(importLabel, "Staged manifest invalid, incomplete, or missing metadata.");
-        return;
+    MapPackManifest parsed={};
+    if(!mapPack_parseManifest(manifest,manifestSize,parsed)){
+        lv_label_set_text(importLabel,"НЕВАЛИДЕН MAP MANIFEST");return;
     }
-    char styleValue[32];
-    if (!parseManifestValue(manifest, "style", styleValue, sizeof(styleValue)))
-    {
-        lv_label_set_text(importLabel, "Manifest style is missing or duplicated.");
-        return;
-    }
-    if (strcmp(styleValue, "street") == 0) importStyle = 0;
-    else if (strcmp(styleValue, "satellite") == 0) importStyle = 1;
-    else
-    {
-        lv_label_set_text(importLabel, "Staged pack must declare style=street or satellite.");
-        return;
-    }
+    const unsigned long expected=parsed.tileCount;
+    importStyle=parsed.style;
 
     if (importRows) { heap_caps_free(importRows); importRows = nullptr; }
     importRows = (ImportRow *)heap_caps_malloc(sizeof(ImportRow) * LIMIT, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
@@ -260,7 +188,7 @@ static void importStart(lv_event_t *event)
     {
         size_t n = indexFile.readBytesUntil('\n', line, sizeof(line) - 1);
         line[n] = '\0';
-        if (n == sizeof(line) - 1 && indexFile.available()) { indexBad = true; break; }
+        if (n == sizeof(line) - 1 || memchr(line, '\0', n)) { indexBad = true; break; }
         if (n && line[n - 1] == '\r') line[--n] = '\0';
         if (!n) continue;
         if (!header)
@@ -286,10 +214,10 @@ static void importStart(lv_event_t *event)
         }
         if (indexBad) break;
         unsigned long z, x, y, present;
-        if (!parseStrictUnsigned(fields[0], 22, z) ||
-            !parseStrictUnsigned(fields[1], UINT32_MAX, x) ||
-            !parseStrictUnsigned(fields[2], UINT32_MAX, y) ||
-            !parseStrictUnsigned(fields[3], 1, present) || present != 1 ||
+        if (!mapPack_parseUnsigned(fields[0], 22, z) ||
+            !mapPack_parseUnsigned(fields[1], UINT32_MAX, x) ||
+            !mapPack_parseUnsigned(fields[2], UINT32_MAX, y) ||
+            !mapPack_parseUnsigned(fields[3], 1, present) || present != 1 ||
             x >= (1UL << z) || y >= (1UL << z))
         {
             indexBad = true; break;

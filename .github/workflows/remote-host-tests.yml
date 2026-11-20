@@ -59,3 +59,8 @@ jobs:
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/lake_stubs -IRemote/source \
             Remote/source/lake_storage.cpp Remote/source/mission_storage.cpp Remote/tests/mission_storage_test.cpp -o /tmp/remote_mission_storage
           /tmp/remote_mission_storage
+      - name: Map manifest and coverage parser
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/lake_stubs -IRemote/source \
+            Remote/source/map_pack_manifest.cpp Remote/source/offline_map_coverage.cpp Remote/tests/map_pack_test.cpp -o /tmp/remote_map_pack
+          /tmp/remote_map_pack
