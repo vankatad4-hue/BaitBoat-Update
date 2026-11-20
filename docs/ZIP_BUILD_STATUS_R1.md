@@ -3,18 +3,18 @@
 ## Historical ver005 artifacts — verified
 PR workflow run #32 produced Remote/Boat ver005 archives and checksums. ZIP integrity and SHA-256 were previously verified. Older archives are preserved.
 
-## Current version markers — Remote ver023 / Boat ver010
+## Current development snapshots — Remote ver023 / Boat ver010
 - Markers: Remote `023`, Boat `010`.
-- ZIP paths are present: `Remote/releases/Flytec_Remote_ver023.zip`, `Boat/releases/Flytec_Boat_ver010.zip`.
+- ZIPs: `Remote/releases/Flytec_Remote_ver023.zip`, `Boat/releases/Flytec_Boat_ver010.zip`.
 - Manifest: `releases/SHA256SUMS_ver023_010.txt`.
-- Manifest currently claims:
-  - Boat: `de2332e6daa150ad237a4337cacdfd742afe6292eeaf61eb0b4e1e7fa25db89c`
-  - Remote: `789cc1e270e5fb6bb7f652bde09943e7cf941352d2f75f24e29ef3a93677955c`
+- Current manifest values:
+  - Boat: `9c3736c411bab99436665908375460fb283eac2625c4511e864c335f53e721d2`
+  - Remote: `f890e77c64704e7f8902b53ae4253433d53bca9ebfa2f7dbe2f11e8fb1514716`
 
-## Integrity findings
-- Boat ZIP latest retrieved size: 74,747 bytes. Its SHA-256 was calculated independently as `ef657219758d1ee00c6b9198c94cc7d6ef04dfe472f760818371a864fa7afa1f`, which **does not match the committed manifest**. Archive central-directory/local-header structure was parsed; it contains 70 entries, no nested ZIPs, and includes encoder, test, session/ACK documentation, release note and current version marker. It is not currently integrity-verified.
-- Remote ZIP is present, but the connector did not return its binary content; its checksum remains unverified.
-- A reproducible-build workflow change was committed: sorted file lists, normalized timestamps, ZIP integrity test and copy/checksum verification. A fresh workflow package run is still needed to regenerate both archives and manifest consistently.
+## Independent integrity review
+- Boat ver010 ZIP: retrieved and independently SHA-256 verified against the manifest. ZIP central directory and local headers parse; 60 entries; sorted names; normalized DOS timestamps (1980-01-01); no nested ZIPs; encoder, host test, session/ACK doc, source, release note and VERSION are present.
+- Remote ver023: archive and manifest are present, but the ZIP binary could not be retrieved through the connector. Its checksum is not independently verified.
+- Deterministic package workflow was updated and a local command smoke-test passed. GitHub workflow logs are not accessible in this session; archive/manifest outputs are present.
 
 ## Package scope
 Remote ver023 is status-document synchronization only.
