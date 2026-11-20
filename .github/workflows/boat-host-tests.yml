@@ -85,3 +85,8 @@ jobs:
           cmp Remote/source/mission_control_wire.h Boat/source/mission_control_wire.h
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/source/mission_protocol.cpp Boat/tests/mission_controller_test.cpp -o /tmp/boat_mission_controller
           /tmp/boat_mission_controller
+      - name: Mission stick receive lease
+        run: |
+          cmp Remote/source/mission_stick.h Boat/source/mission_stick.h
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/mission_stick_test.cpp -o /tmp/boat_mission_stick
+          /tmp/boat_mission_stick

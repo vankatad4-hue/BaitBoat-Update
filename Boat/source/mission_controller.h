@@ -13,6 +13,7 @@ public:
      (plan_.transaction&&p.transaction<=plan_.transaction))return false;
   plan_=p;phase_=MC_PREPARED;stagedAt_=now;lastRequest_=0;lastOp_=0;lastResult_=MC_STATUS;return true;
  }
+ void emergencyAbort(){if(plan_.transaction){engine_.abort();phase_=MC_ABORTED;}}
  MissionControlFeedback status()const{return {plan_.transaction,phase_,0,0,MC_STATUS};}
  bool request(const MissionControlRequest &r,const ExecInputs &in,uint32_t now,bool authenticated,bool appReady,bool sticksNeutral,MissionControlFeedback &ack){
   if(!authenticated||!plan_.transaction||r.transaction!=plan_.transaction||!r.request||r.op<MCTRL_START||r.op>MCTRL_SWITCH_MANUAL)return false;

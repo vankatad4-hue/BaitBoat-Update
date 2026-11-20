@@ -10,6 +10,8 @@
 #include "radio_payload_encoder.h"
 #include "boat_command_queue.h"
 #include "mission_wire.h"
+#include "mission_controller.h"
+#include "mission_stick.h"
 #include "radio_session_platform.h"
 
 // Link values match the Remote manager and queue records.
@@ -49,6 +51,10 @@ public:
     // Application-owned verification of physical STOP/stationary state.
     void setMissionPreparationGate(bool (*gate)()) { missionGate_=gate; mission_.reset(); }
     bool preparedMission(MissionPlan &out,uint32_t now) const { return missionGate_ && missionGate_() && primaryFresh(now) && mission_.getPrepared(out,now); }
+    // Null provider denies execution; diagnostic sketch never registers one.
+    void setMissionInputs(bool (*input)(ExecInputs &)){missionInput_=input;controller_.emergencyAbort();stickLease_.reset();}
+    ExecOutput missionIntent()const{return missionIntent_;}
+    bool missionOverrideOutput(int16_t &left,int16_t &right)const;
     void update();
     bool takeCommand(BoatCommand &cmd,bool &duplicateAction,ManagedLink &receivedOn);
     void markActionExecuted(uint8_t sender,uint8_t epoch,uint16_t commandId);
@@ -74,6 +80,14 @@ private:
     BoatCommandDeduplicator dedupe_;
     BoatCommandQueue commandQueue_;
     MissionAssembler mission_;
+    BoatMissionController controller_;
+    MissionStickLease stickLease_;
+    bool (*missionInput_)(ExecInputs &)=nullptr;
+    ExecOutput missionIntent_={INTENT_STOP,-1,0};
+    uint32_t lastMissionStatusMs_=0;
+    bool missionInputs(ExecInputs &in,uint32_t now)const;
+    bool sendMissionFeedback(const MissionControlFeedback &f,uint32_t now);
+    void abortMission();
     bool (*missionGate_)()=nullptr;
     uint32_t lastNrfRxMs_,lastE22RxMs_;
     uint32_t lastNrfHeartbeatTxMs_,lastE22HeartbeatTxMs_,lastE22HeartbeatAttemptMs_;
