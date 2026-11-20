@@ -3,6 +3,7 @@
 
 #include "boat_commands.h"
 #include "boat_radio.h"
+#include <Preferences.h>
 
 // --------------------------------------------------
 // ADC CONFIGURATION
@@ -340,7 +341,7 @@ void joystick_setAutopilotOverride(
         return;
     }
 
-    selectedOverride = behaviour;
+    selectedOverride = behaviour;\n    saveCalibrationNvs();
 }
 
 // --------------------------------------------------
