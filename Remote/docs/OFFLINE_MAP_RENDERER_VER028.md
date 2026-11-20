@@ -26,3 +26,9 @@ Each is exactly 256×256 little-endian RGB565 pixels (131072 bytes). Tile number
 
 ## SD mission file
 /missions/waypoints.bin: fixed-size record for 16 slots, independent Home, selected slot and flags, with CRC. The writer uses a temporary file, validates read-back, then renames to the destination; NVS remains a backup/migration source. A FAT power-loss test is still required.
+
+
+## Online/offline source architecture (accepted 2026-11-20)
+- Google Maps may be displayed online through an authorized Maps Platform API, with required attribution and usage controls; Google tiles must not be persisted or downloaded for offline use.
+- SD offline map packs must come from sources licensed for offline storage and conversion. A 1 km × 1 km area-download manager is planned; tile coverage expands to XYZ tile boundaries at each selected zoom.
+- Online/offline auto fallback and map source controls are not implemented in this milestone. See `docs/ONLINE_OFFLINE_MAP_POLICY_VER029.md` for requirements.
