@@ -62,3 +62,7 @@ Board not purchased/available at the time of this checkpoint. Keep all boat actu
 ## Latest CI status
 - Target compile attempt #11 failed with three diagnostics documented in the LVGL adapter audit. Source fixes are now on branch head `7213f04e4d18f3bc4a546f4c4febfe0bbedffc59`.
 - Target compile workflow run #14 (ID 44776348680) is in progress; host tests run #14 on the same head passed. The candidate pins are installed and confirmed but compatibility remains unvalidated until target build success.
+
+
+## Target compile #14 error correction
+Compile #14 (`44776348680`) reached source compilation but failed because `Remote/source/offline_map.cpp` referenced undeclared `g_map_attribution`. Added `static char g_map_attribution[256] = {0};` at file scope (commit `9aa20b0d987f94ea5b49e46509ae0ba10cc9d36b`). Compile #15 is pending verification.
