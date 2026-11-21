@@ -37,6 +37,8 @@ int main(){
     assert(sendCalls==2);
     assert(mgr.send(steering,sendMock,6001)); // 3 seconds have elapsed
     assert(sendCalls==3);
+    assert(!mgr.send(steering,sendMock,6201)); // no fresh authenticated backup RX
+    assert(sendCalls==3);
     BoatCommand release{};
     release.type=CMD_RELEASE_HOOK_LEFT;release.activate=true;
     assert(!mgr.send(release,sendMock,6002)); // no releases on backup
