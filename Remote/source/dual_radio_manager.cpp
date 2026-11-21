@@ -23,6 +23,7 @@ void DualRadioManager::begin(uint32_t now) {
 }
 
 void DualRadioManager::reportValidRx(ManagedLink link, bool authenticated, uint32_t now) {
+    if (link != LINK_NRF_PRIMARY && link != LINK_LORA_BACKUP) return;
     LinkHealth &h = (link == LINK_NRF_PRIMARY) ? primary_ : backup_;
     h.lastValidMs = now;
     h.authenticated = authenticated;
@@ -31,12 +32,14 @@ void DualRadioManager::reportValidRx(ManagedLink link, bool authenticated, uint3
 }
 
 void DualRadioManager::reportFailure(ManagedLink link) {
+    if (link != LINK_NRF_PRIMARY && link != LINK_LORA_BACKUP) return;
     LinkHealth &h = (link == LINK_NRF_PRIMARY) ? primary_ : backup_;
     h.authenticated = false;
     h.goodStreak = 0;
     if (h.failureStreak < 255) ++h.failureStreak;
 }
 void DualRadioManager::setTransportReady(ManagedLink link, bool ready) {
+    if (link != LINK_NRF_PRIMARY && link != LINK_LORA_BACKUP) return;
     (link == LINK_NRF_PRIMARY ? primary_ : backup_).transportReady = ready;
 }
 bool DualRadioManager::primaryHealthy(uint32_t now) const {
@@ -110,7 +113,10 @@ bool DualRadioManager::send(const BoatCommand &cmd, RadioSendFn sendFn, uint32_t
             if (lastBackupControlMs_ != UINT32_MAX && (uint32_t)(now-lastBackupControlMs_) < BACKUP_CONTROL_INTERVAL_MS)
                 return false;
             limitBackupMotorCommand(safe);
-            lastBackupControlMs_ = now;
+            // Failed transport attempts do not consume the motor send slot.
+            const bool sent=sendFn(LINK_LORA_BACKUP, safe);
+            if(sent)lastBackupControlMs_=now;
+            return sent;
         }
         return sendFn(LINK_LORA_BACKUP, safe);
     }
