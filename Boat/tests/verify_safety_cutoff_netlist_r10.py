@@ -86,6 +86,16 @@ def check_xml(path):
       assert name not in actual, name
       actual[name] = {(x.get("ref"),x.get("pin")) for x in el.findall("node")}
     want=expected()
+    # KiCad emits synthetic nets for explicitly no-connected unused outputs.
+    # Audit precisely those pins, not arbitrary floating/unconnected inputs.
+    allowed_nc = {("U3","8"),("U3","11"),("U4","6"),("U4","8"),("U4","9")}
+    nc_nets = {name: nodes for name,nodes in actual.items()
+               if name.startswith("unconnected-")}
+    assert len(nc_nets)==len(allowed_nc)
+    seen=set().union(*(nodes for nodes in nc_nets.values()))
+    assert seen==allowed_nc, (seen,allowed_nc)
+    assert all(len(nodes)==1 for nodes in nc_nets.values())
+    actual={name:nodes for name,nodes in actual.items() if name not in nc_nets}
     assert set(actual)==set(want), "Unexpected/missing nets: "+str(sorted(set(actual)^set(want)))
     for name in sorted(want):
       assert actual[name]==want[name], f"{name}: got {sorted(actual[name])}; expected {sorted(want[name])}"
