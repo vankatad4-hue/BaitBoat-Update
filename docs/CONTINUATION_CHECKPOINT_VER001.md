@@ -593,3 +593,7 @@ Added [Boat R21 evidence and radio test plan](../Boat/docs/BOAT_R21_REVISION_EVI
 
 ## R22 — executable fail-closed GPIO and LoRa gates (2026-11-21)
 Added [host-side Python gate](../Boat/tools/r22_interface_gate.py) with seven unit tests and [R22 instructions](../Boat/docs/BOAT_R22_EXECUTABLE_INTERFACE_GATES.md). Enforces evidence for v1.2 pin allocation, detects pin conflicts and rejects unproven SX1262/E22 radio configurations until bidirectional authenticated hardware tests. No CI or physical tests claimed; actuator enable remains prohibited, safety modules unselected, Remote VER028 / Boat VER014 unchanged. Next: integrate tests in CI, obtain exact v1.2 board schematic, complete COTS safety procurement and harness qualification.
+
+
+## R23 — host test execution and GitHub Actions (2026-11-21)
+R22 seven Python unittest cases were executed in a local isolated environment and passed (7/7; no physical hardware). Added [GitHub Actions R23 interface gate](../.github/workflows/r23-interface-gates.yml), running Python 3.11 syntax validation and all R22 tests on relevant pushes, PRs and manual dispatch. **GitHub Actions run status is not yet confirmed**; do not equate workflow file commit with successful CI. GPIO v1.2, LoRa RF compatibility, COTS safety hardware and physical acceptance remain blocked. Remote VER028 / Boat VER014 held; sonar deferred.
