@@ -91,3 +91,5 @@ jobs:
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/boat_physical_driver_adapter_test.cpp -o /tmp/r50_driver && /tmp/r50_driver
       - name: R51 ESP32-S3 reserved GPIO and output audit regression
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/esp32s3_gpio_audit_test.cpp -o /tmp/r51_gpio && /tmp/r51_gpio
+      - name: R52 figure-eight calibration record integrity regression
+        run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/figure8_calibration_record_test.cpp -o /tmp/r52_cal && /tmp/r52_cal
