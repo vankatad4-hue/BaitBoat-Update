@@ -33,3 +33,6 @@ Date: 2026-11-21 | Candidate engineering BOM **not** purchasing or PCB authoriza
 **Safety:** Keep 3S pack off the Tracker's onboard 1S battery charge connector. Carrier remains a separate low-voltage modular PCB; MDD20A mounts separately. Current, thermal, electrical STOP and watchdog cutoff acceptance are blocked until real measurements and tests. Remote E22/SC16IS750 are unchanged and not PHY-validated against onboard SX1262.
 
 References: BOAT_INTEGRATED_SX1262_R8.md, BOAT_HARDWARE_PIN_CONNECTIONS_R8.csv, BOAT_MDD20A_ELECTRICAL_GATE_R7.md. Official releases remain held.
+
+### R9 schematic parts are **not** an approved purchasing BOM
+The new `Boat/hardware/Coil_Drivers_R9/BOAT_COIL_DRIVER_BOM_R9.csv` maps native schematic references F1–F4, Q1–Q4, D1–D4, R1–R8 and J1–J6. Labels use generic custom symbols, all PCB footprints remain blank and device ratings TBD. Neither this schematic nor zero ERC on its **standalone partial sheet** authorizes purchasing power components or fabrication. Actual motor current, coil current, fuse, MOSFET VGS/SOA, clamp energy and release dynamics are still unmeasured. Power cutoff and one-hot pulse limiter are NOT physically implemented.
