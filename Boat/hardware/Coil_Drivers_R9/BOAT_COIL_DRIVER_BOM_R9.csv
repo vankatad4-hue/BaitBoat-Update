@@ -1,0 +1,9 @@
+Ref,Count,Function,Part status
+J1,1,Protected coil supply from external hardware latch,TBD upstream actuator cutoff
+J2,1,Hardware one-hot and pulse time input,TBD external hardware limiter
+J3-J6,4,Keyed separate coils,TBD current connector sealing
+F1-F4,4,Individual coil fuses,TBD current peak and fuse selectivity
+Q1-Q4,4,Low side MOSFETs,TBD VGS 3V3 current SOA and footprint
+D1-D4,4,Clamps cathode plus anode switched minus,TBD diode TVS energy and release
+R1 R3 R5 R7,4,Gate series 100 ohm provisional,TBD validated gate resistance
+R2 R4 R6 R8,4,Gate pulldown 100 kohm provisional,TBD validated startup leakage
