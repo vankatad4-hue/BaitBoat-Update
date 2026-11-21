@@ -15,6 +15,7 @@ static HardwareSerial gnssUart(2);
 static TrackerSensorPort sensors(gnssUart,Wire);
 static bool sensorsReady=false;
 static uint32_t lastReport=0,lastWeatherTx=0;
+static Figure8AutoState lastFigure8State=Figure8AutoState::IDLE;
 #endif
 static BoatDualRadioPort radio;
 static BoatApplicationPort application(radio);
@@ -38,15 +39,18 @@ void loop(){
   // Bench-only serial diagnostics. No actuator commissioning.
   while(Serial.available()){
    const int command=Serial.read();
-   if(command=='c')Serial.println(sensors.startFigure8Calibration()?"FIGURE8: drive gentle figure eights in both directions; send f to finish.":"FIGURE8: GY-91 or M100 compass unavailable; calibration denied.");
-   if(command=='f'){
-    Figure8Candidate gy91{},m100{};
-    if(sensors.finishFigure8Calibration(gy91,m100)){
-     Serial.printf("FIGURE8 CANDIDATES ONLY (NOT COMMISSIONED): GY91 offsets=(%.2f,%.2f), scale=(%.3f,%.3f); M100 offsets=(%.2f,%.2f), scale=(%.3f,%.3f)\\n",gy91.offsetX,gy91.offsetY,gy91.scaleX,gy91.scaleY,m100.offsetX,m100.offsetY,m100.scaleX,m100.scaleY);
-    }else Serial.println("FIGURE8: insufficient horizontal coverage on one or both compasses; no calibration applied.");
-   }
+   if(command=='c')Serial.println(sensors.startAutomaticFigure8(millis())?"FIGURE8: started; manually steer repeated eights; automatic finish when BOTH compasses pass coverage.":"FIGURE8: denied; both compasses must be detected.");
+   if(command=='x'){sensors.abortAutomaticFigure8();Serial.println("FIGURE8: aborted; no calibration applied.");}
   }
   const uint32_t now=millis();sensors.poll(now);
+  const auto calState=sensors.automaticFigure8State();
+  if(calState!=lastFigure8State){
+   lastFigure8State=calState;
+   if(calState==Figure8AutoState::CANDIDATE_READY){
+    Figure8Candidate gy{},m{};
+    if(sensors.automaticFigure8Candidates(gy,m))Serial.printf("FIGURE8 AUTO CANDIDATES (NOT APPLIED): GY91 xy=(%.2f,%.2f) scales=(%.3f,%.3f), M100 xy=(%.2f,%.2f) scales=(%.3f,%.3f)\\n",gy.offsetX,gy.offsetY,gy.scaleX,gy.scaleY,m.offsetX,m.offsetY,m.scaleX,m.scaleY);
+   }else if(calState==Figure8AutoState::TIMED_OUT)Serial.println("FIGURE8: timeout or sensor loss; rejected.");
+  }
   if(now-lastReport>=1000U){lastReport=now;BoatHardwareSample s{};sensors.copySensors(s,now);
    Serial.printf("GNSS valid=%d latE7=%ld lonE7=%ld accuracy=%.2f headingValid=%d heading=%.2f voltageValid=%d mV=%u\\n",(int)s.fix.fresh,(long)s.fix.latE7,(long)s.fix.lonE7,s.fix.accuracyM,(int)s.fix.headingValid,s.fix.headingDeg,(int)s.voltageValid,(unsigned)s.batteryMillivolts);
    int32_t t=0;uint32_t p=0;
