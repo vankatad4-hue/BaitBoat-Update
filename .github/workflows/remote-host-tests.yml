@@ -97,3 +97,8 @@ jobs:
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror Remote/tests/mission_control_client_test.cpp -o /tmp/remote_mission_control
           /tmp/remote_mission_control
+      - name: R62 backup radio pacing and invalid-link fail closed
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/stubs -IRemote/source \
+            Remote/source/dual_radio_manager.cpp Remote/tests/dual_radio_manager_r62_test.cpp -o /tmp/remote_dual_radio_r62
+          /tmp/remote_dual_radio_r62
