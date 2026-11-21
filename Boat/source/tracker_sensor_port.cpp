@@ -53,6 +53,7 @@ void TrackerSensorPort::pollImu(uint32_t now){
  SensorVector a={big(accel)/16384.0,big(accel+2)/16384.0,big(accel+4)/16384.0};
  SensorVector m={little(mag)*0.15*adjust_[0],little(mag+2)*0.15*adjust_[1],little(mag+4)*0.15*adjust_[2]};
  rawAccel_=a;rawMag_=m;rawAt_=now;rawValid_=true;
+ if(compassCal_.active())compassCal_.add(m);
  headingValid_=carrierHeading(a,m,cfg_.heading,heading_);
  if(headingValid_)headingAt_=now;
 }
