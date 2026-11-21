@@ -65,6 +65,13 @@ bool radio_decodeTelemetryPayload(const uint8_t p[8], RadioDecodedPayload &out) 
         out.sonarHealth=p[5]; out.sonarAlarmFlags=p[6]; out.sonarSample=p[7];
         if(out.sonarHealth>3 || (out.sonarAlarmFlags&0xF0U)!=0) { resetOut(out); return false; }
         return true;
+    case 7:
+        if(p[7]!=0){resetOut(out);return false;}
+        out.kind=RADIO_PAYLOAD_WEATHER;
+        out.temperatureCentiC=(int16_t)readU16LE(p+1);
+        out.pressurePa=(uint32_t)p[3]|((uint32_t)p[4]<<8)|((uint32_t)p[5]<<16)|((uint32_t)p[6]<<24);
+        if(out.temperatureCentiC < -4000 || out.temperatureCentiC > 8500 || out.pressurePa < 30000 || out.pressurePa > 120000){resetOut(out);return false;}
+        return true;
     default: resetOut(out); return false;
     }
 }
