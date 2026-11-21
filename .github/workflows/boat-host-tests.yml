@@ -152,6 +152,9 @@ jobs:
       - name: Independent physical-fault latch and one-hot monostable behavior (simulated)
         run: |
           python3 -m unittest discover -s Boat/tests -p test_safety_gate_latch_r9.py -v
+      - name: Ten-input R10 physical STOP latch and default-off gate truth table (simulation)
+        run: |
+          python3 -m unittest discover -s Boat/tests -p test_safety_cutoff_r10.py -v
       - name: Pack power budget and independent gate failure truth table
         run: |
           python3 -m unittest discover -s Boat/tests -p test_power_and_gate_r7.py -v
