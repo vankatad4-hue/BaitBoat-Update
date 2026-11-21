@@ -55,6 +55,7 @@ void TrackerSensorPort::pollImu(uint32_t now){
  rawAccel_=a;rawMag_=m;rawAt_=now;rawValid_=true;
  if(compassCal_.active())compassCal_.add(m);
  if(gy91Figure8_.active())gy91Figure8_.add(m);
+ autoFigure8_.addGy(m,now);
  headingValid_=carrierHeading(a,m,cfg_.heading,heading_);
  if(headingValid_)headingAt_=now;
 }
@@ -74,6 +75,7 @@ void TrackerSensorPort::poll(uint32_t now){
  // Bounded RX work; at 115200 baud service frequently enough to prevent backlog.
  for(unsigned i=0;i<256&&serial_.available();++i){const int c=serial_.read();if(c>=0)gnss_.feed((char)c,now);}
  pollImu(now);pollAdc(now);pollBmp(now);pollM100Compass(now);
+ autoFigure8_.update(now);
 }
 void TrackerSensorPort::copySensors(BoatHardwareSample &s,uint32_t now)const{
  auto g=gnss_.snapshot(now);
@@ -119,5 +121,6 @@ void TrackerSensorPort::pollM100Compass(uint32_t now){
  uint8_t data[7]={};SensorVector m{};
  if(readRegs(0x0d,0x00,data,7)&&m100Qmc5883lDecode(data,m)){
   if(m100Figure8_.active())m100Figure8_.add(m);
+  autoFigure8_.addM100(m,now);
  }
 }
