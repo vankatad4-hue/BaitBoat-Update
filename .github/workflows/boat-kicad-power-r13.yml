@@ -1,0 +1,41 @@
+name: R13 RECOM premade safety-3V3 module native KiCad
+on:
+  push:
+    branches: [hardware-ready-dual-radio-r1]
+    paths:
+      - 'Boat/hardware/Safety_Power_R13/**'
+      - 'Boat/tests/verify_recom_3v3_r13.py'
+      - '.github/workflows/boat-kicad-power-r13.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regulator-pinout-and-erc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify preassembled RECOM module 1=VIN 2=GND 3=VOUT and scope
+        run: python3 Boat/tests/verify_recom_3v3_r13.py
+      - name: Install native KiCad CLI
+        run: sudo apt-get update -qq && sudo apt-get install -y kicad
+      - name: Export actual regulator KiCad XML schematic netlist
+        run: |
+          mkdir -p /tmp/boat-r13
+          kicad-cli sch export netlist --format kicadxml --output /tmp/boat-r13/safety-power.xml Boat/hardware/Safety_Power_R13/Boat_Safety_Power_R13.kicad_sch
+      - name: Assert pin-level native KiCad netlist
+        run: python3 Boat/tests/verify_recom_3v3_r13.py --xml /tmp/boat-r13/safety-power.xml
+      - name: Native KiCad ERC, no false source or production approval
+        run: |
+          kicad-cli sch erc --output /tmp/boat-r13/erc.txt Boat/hardware/Safety_Power_R13/Boat_Safety_Power_R13.kicad_sch || true
+          test -s /tmp/boat-r13/erc.txt
+          python3 Boat/tests/verify_recom_3v3_r13.py --erc /tmp/boat-r13/erc.txt
+          echo "### R13 RECOM 3.3 V module pin topology valid, power input unqualified" >> "$GITHUB_STEP_SUMMARY"
+          echo "Two external power-source ERC violations remain. No supervisor/POR, fuse, 3S transient budget, EMI or physical acceptance; do not energize actuators." >> "$GITHUB_STEP_SUMMARY"
+      - name: Preserve actual exported XML and ERC
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: boat-r13-recom-safety-power-evidence
+          path: /tmp/boat-r13/
+          if-no-files-found: ignore
