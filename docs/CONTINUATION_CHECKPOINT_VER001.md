@@ -649,3 +649,7 @@ Added [MCP23017 direction adapter](../Boat/source/mcp23017_direction_adapter.h) 
 
 ## R37 — E22 board adapter scaffold and remaining work (2026-11-21)
 Added [external E22 UART board adapter](../Boat/source/e22_uart_board_port.h), with explicit audited pin and RF/voltage verification gates, and [R37 execution gate list](../Boat/docs/BOAT_R37_MIGRATION_EXECUTION_GATES.md). It is **NOT integrated into BoatDualRadioPort**, which still uses HeltecSx1262Link; existing E22 UART framing requires physical peer verification and airtime measurement. GNSS M100, exact ESP32-S3 pinout, safety stack, complete compile and hardware acceptance are pending. No actuator enable or release.
+
+
+## R38–R39 — E22 migration and GNSS gates (2026-11-21)
+R38 replaced BoatDualRadioPort's onboard HeltecSX1262Link with external E22UartBoardPort using existing E22UartLink and retained authenticated cross-radio command policy. Added fail-disabled audited E22 UART and nRF SPI pin gates in boat_radio_hw_config.h; no pins are enabled. R39 added [HGLRC M100 PRO profile gate](../Boat/source/hglrc_m100_pro_profile.h) and [host tests](../Boat/tests/hglrc_m100_pro_profile_test.cpp), registered in CI. [Wiring and safety acceptance](../Boat/docs/BOAT_R39_WIRING_AND_PHYSICAL_ACCEPTANCE.md) identifies missing exact board/SKU and factory-built independent safety stack. Host tests for earlier R38 change succeeded; R39 and target compilation were still running at last check. GPS real NMEA, E22 RF, pin freeze, actuator and safety physical testing NOT performed. No release.
