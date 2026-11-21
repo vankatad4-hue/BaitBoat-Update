@@ -31,6 +31,9 @@ jobs:
           test -s /tmp/boat-kicad/erc.txt
           echo '==== ERC report (first 100 lines) ===='
           head -n 80 /tmp/boat-kicad/erc.txt
+          COUNT=$(grep -c '^\[' /tmp/boat-kicad/erc.txt || true)
+          echo "Preliminary KiCad report: $COUNT unresolved ERC violations; NOT ACCEPTED for fabrication"
+          echo "### R7 preliminary KiCad: $COUNT unresolved ERC violations — fabrication blocked" >> "$GITHUB_STEP_SUMMARY"
           if grep -q '^\[endpoint_off_grid\]' /tmp/boat-kicad/erc.txt; then echo 'Off-grid geometry is not allowed'; exit 1; fi
           if grep -q '^\[lib_symbol_issues\]' /tmp/boat-kicad/erc.txt; then echo 'Project local symbols are not resolved'; exit 1; fi
       - uses: actions/upload-artifact@v4
