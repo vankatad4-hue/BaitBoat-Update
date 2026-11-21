@@ -32,6 +32,11 @@ on:
       - 'Boat/source/ekm014_pulse_guard.h'
       - 'Boat/source/boat_physical_driver_adapter.h'
       - 'Boat/tests/boat_physical_driver_safety_r61_test.cpp'
+      - 'Boat/tests/test_r61_e22_pair_contract.py'
+      - 'Boat/source/e22_uart_link.cpp'
+      - 'Remote/source/e22_uart_link.cpp'
+      - 'Boat/source/radio_protocol.h'
+      - 'Remote/source/radio_protocol.h'
       - '.github/workflows/r23-interface-gates.yml'
   pull_request:
     paths:
@@ -100,3 +105,5 @@ jobs:
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/figure8_calibration_store_test.cpp -o /tmp/r53_store && /tmp/r53_store
       - name: R61 physical output fail-closed current and STOP regressions
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/boat_physical_driver_safety_r61_test.cpp -o /tmp/r61_driver && /tmp/r61_driver
+      - name: R61 cross-endpoint E22 UART and 32-byte wire contract
+        run: python -m unittest Boat/tests/test_r61_e22_pair_contract.py -v
