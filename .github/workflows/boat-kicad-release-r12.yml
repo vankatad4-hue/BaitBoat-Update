@@ -1,13 +1,5 @@
-name: R12 physical consumed release token native KiCad checks
+name: ARCHIVED R15 - R12 physical consumed release token native KiCad checks
 on:
-  push:
-    branches: [hardware-ready-dual-radio-r1]
-    paths:
-      - 'Boat/hardware/Release_Token_R12/**'
-      - 'Boat/tests/verify_release_token_netlist_r12.py'
-      - 'Boat/tests/test_release_token_r12.py'
-      - 'Boat/tools/consumed_release_token_r12.py'
-      - '.github/workflows/boat-kicad-release-r12.yml'
   workflow_dispatch:
 permissions:
   contents: read

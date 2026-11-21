@@ -1,11 +1,5 @@
-name: R9 preliminary four-coil KiCad netlist and ERC
+name: ARCHIVED R15 - R9 preliminary four-coil KiCad netlist and ERC
 on:
-  push:
-    branches: [hardware-ready-dual-radio-r1]
-    paths:
-      - 'Boat/hardware/Coil_Drivers_R9/**'
-      - 'Boat/tests/verify_coil_netlist_r9.py'
-      - '.github/workflows/boat-kicad-coils-r9.yml'
   workflow_dispatch:
 permissions:
   contents: read

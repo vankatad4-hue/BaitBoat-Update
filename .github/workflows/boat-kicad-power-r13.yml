@@ -1,11 +1,5 @@
-name: R13 RECOM premade safety-3V3 module native KiCad
+name: ARCHIVED R15 - R13 RECOM premade safety-3V3 module native KiCad
 on:
-  push:
-    branches: [hardware-ready-dual-radio-r1]
-    paths:
-      - 'Boat/hardware/Safety_Power_R13/**'
-      - 'Boat/tests/verify_recom_3v3_r13.py'
-      - '.github/workflows/boat-kicad-power-r13.yml'
   workflow_dispatch:
 permissions:
   contents: read

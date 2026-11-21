@@ -1,11 +1,5 @@
-name: R10 physical STOP and high-side candidate KiCad
+name: ARCHIVED R15 - R10 physical STOP and high-side candidate KiCad
 on:
-  push:
-    branches: [hardware-ready-dual-radio-r1]
-    paths:
-      - 'Boat/hardware/Safety_Cutoff_R10/**'
-      - 'Boat/tests/verify_safety_cutoff_netlist_r10.py'
-      - '.github/workflows/boat-kicad-safety-r10.yml'
   workflow_dispatch:
 permissions:
   contents: read

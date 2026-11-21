@@ -1,11 +1,5 @@
-name: Preliminary MDD20A KiCad schematic check
+name: ARCHIVED R15 - Preliminary MDD20A KiCad schematic check
 on:
-  push:
-    branches: [hardware-ready-dual-radio-r1]
-    paths:
-      - 'Boat/hardware/Direct_MDD20A_R7/**'
-      - 'Boat/tests/check_mdd20a_kicad_r7.py'
-      - '.github/workflows/boat-kicad-r7.yml'
   workflow_dispatch:
 permissions:
   contents: read
