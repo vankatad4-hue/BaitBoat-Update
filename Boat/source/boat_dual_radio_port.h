@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include "nrf24_link.h"
-#include "heltec_sx1262_link.h"
+#include "e22_uart_board_port.h"
 #include "boat_radio_hw_config.h"
 #include "radio_command_codec.h"
 #include "radio_key_store.h"
@@ -17,7 +17,7 @@
 // Link values match the Remote manager and queue records.
 enum ManagedLink : uint8_t { LINK_NONE=0, LINK_NRF_PRIMARY=1, LINK_LORA_BACKUP=2 };
 
-// All physical GPIO values must be audited/frozen for the exact Tracker SKU.
+// All physical GPIO values must be audited/frozen for the exact ESP32-S3 SKU.
 // Default -1 macros intentionally keep radio hardware disabled.
 #ifndef BOAT_NRF_CE_PIN
 #define BOAT_NRF_CE_PIN (-1)
@@ -61,7 +61,8 @@ public:
                                            bool headingOK,bool batteryOK,bool geofenceOK) const;
 private:
     NRF24Link nrf_;
-    HeltecSx1262Link sx1262_;
+    HardwareSerial e22Serial_{1};
+    E22UartBoardPort e22_;
     bool nrfReady_,sx1262Ready_;
     uint8_t key_[32],rootKey_[32];
     SessionHandshake handshake_;
