@@ -589,3 +589,7 @@ New [Boat R20 GPIO/LoRa integration gate](../Boat/docs/BOAT_R20_GPIO_AND_RADIO_I
 
 ## R21 — verified revision-source boundary and radio interoperability test (2026-11-21)
 Added [Boat R21 evidence and radio test plan](../Boat/docs/BOAT_R21_REVISION_EVIDENCE_AND_RADIO_TESTS.md). Official publicly located Heltec/Zephyr pin documents describe v1.1, **not authenticated v1.2**. Numeric GPIO freeze is therefore BLOCKED until exact v1.2 schematic and hardware evidence. EBYTE E22-900T22S is SX1262-based but includes UART modem firmware; raw SX1262↔E22 RF compatibility remains UNVERIFIED, backup link DISABLED. No firmware enable, bench acceptance or purchase. R15–R18 safety architecture remains canonical. Remote VER028 / Boat VER014 held.
+
+
+## R22 — executable fail-closed GPIO and LoRa gates (2026-11-21)
+Added [host-side Python gate](../Boat/tools/r22_interface_gate.py) with seven unit tests and [R22 instructions](../Boat/docs/BOAT_R22_EXECUTABLE_INTERFACE_GATES.md). Enforces evidence for v1.2 pin allocation, detects pin conflicts and rejects unproven SX1262/E22 radio configurations until bidirectional authenticated hardware tests. No CI or physical tests claimed; actuator enable remains prohibited, safety modules unselected, Remote VER028 / Boat VER014 unchanged. Next: integrate tests in CI, obtain exact v1.2 board schematic, complete COTS safety procurement and harness qualification.
