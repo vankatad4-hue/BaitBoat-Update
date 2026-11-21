@@ -20,7 +20,7 @@ static BoatDualRadioPort radio;
 static BoatApplicationPort application(radio);
 void setup(){
  Serial.begin(115200);
- Serial.println("Flytec Boat: Heltec-only MDD20A diagnostic firmware; actuator output disabled.");
+ Serial.println("Flytec Boat: onboard SX1262 design; uncommissioned radio and actuator GPIO disabled.");
  const auto motorProfile=mdd20aUnassignedProfile();
  if(!mdd20aDirectProfileValid(motorProfile,0))Serial.println("MDD20A direct GPIO profile unassigned; no motor outputs configured.");
  const bool ready=radio.begin();

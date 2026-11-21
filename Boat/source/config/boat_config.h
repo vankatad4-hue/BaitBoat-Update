@@ -3,8 +3,9 @@
 
   Selected controller: Heltec Wireless Tracker V1.2 (ESP32-S3FN8 + UC6580 GNSS).
   Selected motion/heading sensor: GY-91-style MPU-9250 + BMP280.
-  Selected command radio remains external nRF24L01+ PA/LNA; Tracker SX1262
-  LoRa is not used for this link.
+  Primary command radio remains external nRF24L01+ PA/LNA.
+  Backup is Tracker onboard SX1262 over SPI, not external UART E22.
+  Backup unavailable until Remote E22 RF compatibility proven.
 
   Do not assign pins until the exact V1.2 schematic/pin map, GY-91 breakout
   revision and all peripheral conflicts have been checked.

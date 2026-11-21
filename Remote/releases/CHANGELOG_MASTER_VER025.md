@@ -1,3 +1,5 @@
+> SUPERSEDED by CHANGELOG_MASTER_VER026.md for developments after 2026-11-21. Historical content preserved.
+
 # Development changelog VER024 — eight-lake storage and map stabilization
 
 

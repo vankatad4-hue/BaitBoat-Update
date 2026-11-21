@@ -1,3 +1,5 @@
+> **SUPERSEDED for Boat LoRa by R8 (2026-11-21).** The original E22, I2C-UART, and 12-pin count below are historical. Active Boat uses integrated SX1262 with 10 external native signals. See Boat/docs/BOAT_INTEGRATED_SX1262_R8.md; Remote E22 remains incompatible until tested.
+
 # R7 — Heltec-only MDD20A feasibility and preliminary native schematic
 
 **Architecture decision:** retain one Heltec Wireless Tracker ESP32-S3, nRF24 primary, external E22 backup, 4.3" Waveshare Remote, Cytron MDD20A dual independent 550 motors, four independently wired hoppers/hooks. **Do not reintroduce RP2040.** Sonar model remains undecided; absolutely no sonar GPIO, firmware, power or protocol integrated.

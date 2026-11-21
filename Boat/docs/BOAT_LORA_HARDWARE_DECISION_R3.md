@@ -1,3 +1,5 @@
+> **SUPERSEDED for Boat LoRa by R8 (2026-11-21).** The original E22, I2C-UART, and 12-pin count below are historical. Active Boat uses integrated SX1262 with 10 external native signals. See Boat/docs/BOAT_INTEGRATED_SX1262_R8.md; Remote E22 remains incompatible until tested.
+
 # Boat LoRa architecture R3 — paired E22 modules
 
 Supersedes the R2 suggestion to use the Tracker's integrated SX1262 as the default boat backup. The integrated SX1262 on the Heltec Wireless Tracker remains available but is not used in the initial test pair.
