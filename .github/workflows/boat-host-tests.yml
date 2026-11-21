@@ -143,6 +143,10 @@ jobs:
         run: |
           python3 Boat/tools/boat_gpio_candidate_r8.py
           python3 -m unittest discover -s Boat/tests -p test_boat_gpio_candidate_r8.py -v
+      - name: MDD20A native KiCad carrier harness net crossover contract
+        run: |
+          python3 Boat/tools/mdd20a_harness_r8.py
+          python3 -m unittest discover -s Boat/tests -p test_mdd20a_harness_r8.py -v
       - name: Pack power budget and independent gate failure truth table
         run: |
           python3 -m unittest discover -s Boat/tests -p test_power_and_gate_r7.py -v

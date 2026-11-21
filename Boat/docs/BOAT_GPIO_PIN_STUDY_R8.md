@@ -65,3 +65,6 @@ its own lease and reversal deadtime.
 3. Prove WDI startup, power-off hardware watchdog latch, mechanical STOP, undervoltage and overcurrent independent of firmware.
 4. Characterize both motors, coil current and 3S protection; freeze connector orientation and fuse ratings.
 5. Achieve native KiCad ERC/PCB DRC and safe dummy-load commissioning; only then assign GPIO and consider active firmware. Current R7 schematic still has 15 ERC violations; no assertions of zero-ERC here.
+
+### Automated harness crossover checks
+`Boat/tools/mdd20a_harness_r8.py` plus host unit test now reads the R7 KiCad J2 connector's five **actual net labels** and enforces `PWM_L,DIR_L,PWM_R,DIR_R,GND`. It rejects same-order/incorrect Cytron vendor-label mating in favor of the explicit `PWM1,DIR1,PWM2,DIR2,GND` crossmap in `Boat/docs/MDD20A_CARRIER_CROSSOVER_R8.csv`. This validates only logical signal mapping; the vendor's physical socket order and motor winding polarity are unverified, and no coil/motor power is authorized.

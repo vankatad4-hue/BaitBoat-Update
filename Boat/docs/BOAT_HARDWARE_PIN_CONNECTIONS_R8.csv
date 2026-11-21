@@ -19,7 +19,7 @@ Carrier,Four solenoid select outputs,4 channel one-hot logic,UNASSIGNED_NON_PROG
 Carrier,Physical STOP / feedback,Physically independent input and cutoff,UNASSIGNED,Fresh actual physical feedback and electrical latch
 J_MDD20A_CARRIER,1 PWM_L / 2 DIR_L / 3 PWM_R / 4 DIR_R / 5 SIGNAL_GND,Carrier-side logical pin order,LOGICAL_ORDER_ONLY,Connector is NOT pin-for-pin with MDD20A vendor diagram; crossover harness required
 MDD20A_BOARD,DIR1 / PWM1 / DIR2 / PWM2 / GND,Vendor control-signal labels,MANUFACTURER_REFERENCE,Actual physical numbering/orientation must be verified on purchased board; never mate carrier header straight through
-MDD20A_HARNESS,PWM_L->PWM1 / DIR_L->DIR1 / PWM_R->PWM2 / DIR_R->DIR2 / SIGNAL_GND->GND,Cross-over net mapping,CANDIDATE_NOT_ASSEMBLED,Verify M1 left M2 right by safe polarity commissioning; keep actuator supply disconnected during continuity checks
+MDD20A_HARNESS,PWM_L->PWM1 / DIR_L->DIR1 / PWM_R->PWM2 / DIR_R->DIR2 / SIGNAL_GND->GND,See MDD20A_CARRIER_CROSSOVER_R8.csv,CANDIDATE_NOT_ASSEMBLED,Verify M1 left M2 right by safe polarity commissioning; keep actuator supply disconnected during continuity checks
 J_SOL_LH,1 SOL+ / 2 SWITCHED-,Left hopper,LOGICAL_ONLY,Rated keyed two-wire independent channel
 J_SOL_RH,1 SOL+ / 2 SWITCHED-,Right hopper,LOGICAL_ONLY,Rated keyed two-wire independent channel
 J_SOL_LK,1 SOL+ / 2 SWITCHED-,Left hook,LOGICAL_ONLY,Rated keyed two-wire independent channel

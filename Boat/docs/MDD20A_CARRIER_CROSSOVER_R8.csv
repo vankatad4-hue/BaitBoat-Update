@@ -1,0 +1,6 @@
+Carrier_J2_pin,Carrier_net,MDD20A_vendor_signal_label,Assembly_verification
+1,PWM_L,PWM1,Physical socket pad mapping TBD on purchased Cytron board
+2,DIR_L,DIR1,Physical socket pad mapping TBD on purchased Cytron board
+3,PWM_R,PWM2,Physical socket pad mapping TBD on purchased Cytron board
+4,DIR_R,DIR2,Physical socket pad mapping TBD on purchased Cytron board
+5,GND,GND,Single verified common signal reference only; never power motor return via small signal connector
