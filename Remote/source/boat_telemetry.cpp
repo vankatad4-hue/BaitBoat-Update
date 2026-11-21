@@ -36,6 +36,9 @@ bool telemetryApplyRadioPayload(const RadioDecodedPayload &p,bool primary,uint32
   telemetry.navigationValid=true;telemetry.heading=(p.headingCentidegrees==0xFFFFU)?-1.0f:(float)p.headingCentidegrees/100.0f;
   telemetry.speed=(p.speedCmPerSecond==0xFFFFU)?0.0f:(float)p.speedCmPerSecond/100.0f;telemetry.navigationStatus=p.navigationStatus;
   telemetry.waypointIndex=p.waypointIndex;telemetry.navigationSample=p.navigationSample;telemetry.navigationReceivedAtMs=now;telemetry.receivedAtMs=now;return true;
+ case RADIO_PAYLOAD_WEATHER:
+  telemetry.weatherValid=true;telemetry.temperatureCentiC=p.temperatureCentiC;telemetry.pressurePa=p.pressurePa;
+  telemetry.weatherReceivedAtMs=now;telemetry.receivedAtMs=now;return true;
  case RADIO_PAYLOAD_SONAR_SUMMARY:
   telemetry.sonarSummaryValid=true;telemetry.sonarDepthCm=p.depthCm;telemetry.sonarRangeCm=p.sonarRangeCm;telemetry.sonarHealth=p.sonarHealth;
   telemetry.sonarAlarmFlags=p.sonarAlarmFlags;telemetry.sonarSample=p.sonarSample;telemetry.sonarReceivedAtMs=now;telemetry.receivedAtMs=now;return true;
@@ -55,6 +58,9 @@ void telemetryApplyToBoatState(BoatState &s,uint32_t now){
  s.speed=voltageFresh||navFresh?telemetry.speed:0.0f;s.gpsFixType=telemetry.gpsFixType;s.gpsSatellites=telemetry.gpsSatellites;
  s.gpsAccuracyMeters=telemetry.gpsAccuracyMeters;s.gpsLastUpdateMs=telemetry.coordinatePairReceivedAtMs;
  s.gpsValid=statusFresh&&gpsFresh&&telemetry.gpsConnected&&telemetry.gpsFixType>=3&&telemetry.latitude>=-90.0f&&telemetry.latitude<=90.0f&&telemetry.longitude>=-180.0f&&telemetry.longitude<=180.0f;
+ s.weatherValid=telemetry.weatherValid&&fresh(now,telemetry.weatherReceivedAtMs,10000U);
+ s.temperatureCentiC=s.weatherValid?telemetry.temperatureCentiC:0;
+ s.pressurePa=s.weatherValid?telemetry.pressurePa:0;
  s.sonarActive=sonarFresh&&(telemetry.sonarHealth==1||telemetry.sonarHealth==2);
  s.motorLeftActive=statusFresh&&(telemetry.safetyFlags&(1U<<1))!=0;s.motorRightActive=statusFresh&&(telemetry.safetyFlags&(1U<<2))!=0;
  s.lowBattery=statusFresh&&(telemetry.safetyFlags&(1U<<5))!=0;
