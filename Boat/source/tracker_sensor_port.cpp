@@ -41,7 +41,7 @@ bool TrackerSensorPort::begin(const TrackerSensorConfig &cfg){
  serial_.begin(cfg.gnssBaud,SERIAL_8N1,cfg.gnssRx,cfg.gnssTx);
  if(!wire_.begin(cfg.sda,cfg.scl,100000))return false;
  wire_.setTimeOut(10);
- imuReady_=initializeImu();configured_=true;
+ imuReady_=initializeImu();bmpReady_=initializeBmp();configured_=true;
  return true; // GNSS and ADC diagnostics remain possible if IMU not identified
 }
 void TrackerSensorPort::pollImu(uint32_t now){
@@ -71,7 +71,7 @@ void TrackerSensorPort::poll(uint32_t now){
  if(!configured_)return;
  // Bounded RX work; at 115200 baud service frequently enough to prevent backlog.
  for(unsigned i=0;i<256&&serial_.available();++i){const int c=serial_.read();if(c>=0)gnss_.feed((char)c,now);}
- pollImu(now);pollAdc(now);
+ pollImu(now);pollAdc(now);pollBmp(now);
 }
 void TrackerSensorPort::copySensors(BoatHardwareSample &s,uint32_t now)const{
  auto g=gnss_.snapshot(now);
@@ -81,4 +81,25 @@ void TrackerSensorPort::copySensors(BoatHardwareSample &s,uint32_t now)const{
  s.batteryMillivolts=voltage_;s.batteryAt=voltageAt_;s.voltageValid=voltageValid_&&now-voltageAt_<1000U;
  // No guessed state-of-charge or battery/geofence safety authorization.
  s.batteryPercent=255;
+}
+
+bool TrackerSensorPort::initializeBmp(){
+ uint8_t id=0,cal[24]={};
+ for(uint8_t address: {0x76,0x77}){
+  if(!readRegs(address,0xD0,&id,1)||id!=0x58)continue;
+  if(!readRegs(address,0x88,cal,24)||!bmp280DecodeCalibration(cal,bmpCal_))continue;
+  // Config: standby 1000ms, IIR filter x4; ctrl_meas normal mode, x1 temp/x1 pressure.
+  if(!writeReg(address,0xF5,0xA8)||!writeReg(address,0xF4,0x27))continue;
+  bmpAddress_=address;return true;
+ }
+ return false;
+}
+void TrackerSensorPort::pollBmp(uint32_t now){
+ if(!bmpReady_||(uint32_t)(now-bmpPollAt_)<1000U)return;
+ bmpPollAt_=now;uint8_t b[6]={};
+ if(!readRegs(bmpAddress_,0xF7,b,6)){bmpValid_=false;return;}
+ const uint32_t p=((uint32_t)b[0]<<12)|((uint32_t)b[1]<<4)|(b[2]>>4);
+ const uint32_t t=((uint32_t)b[3]<<12)|((uint32_t)b[4]<<4)|(b[5]>>4);
+ bmpValid_=bmp280Compensate(bmpCal_,t,p,bmpTemp_,bmpPressure_);
+ if(bmpValid_)bmpAt_=now;
 }
