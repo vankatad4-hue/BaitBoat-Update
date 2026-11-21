@@ -1,0 +1,45 @@
+name: R12 physical consumed release token native KiCad checks
+on:
+  push:
+    branches: [hardware-ready-dual-radio-r1]
+    paths:
+      - 'Boat/hardware/Release_Token_R12/**'
+      - 'Boat/tests/verify_release_token_netlist_r12.py'
+      - 'Boat/tests/test_release_token_r12.py'
+      - 'Boat/tools/consumed_release_token_r12.py'
+      - '.github/workflows/boat-kicad-release-r12.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  token-netlist:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Source checks and 256 one-hot/qualification combinations
+        run: python3 Boat/tests/verify_release_token_netlist_r12.py
+      - name: Temporal host simulation with held request and consumed arming
+        run: python3 -m unittest discover -s Boat/tests -p test_release_token_r12.py -v
+      - name: Install KiCad CLI
+        run: sudo apt-get update -qq && sudo apt-get install -y kicad
+      - name: Export actual KiCad XML netlist
+        run: |
+          mkdir -p /tmp/boat-r12
+          kicad-cli sch export netlist --format kicadxml --output /tmp/boat-r12/release.xml Boat/hardware/Release_Token_R12/Boat_Release_Token_R12.kicad_sch
+      - name: Verify 53 exported nets and exact digital IC pins
+        run: python3 Boat/tests/verify_release_token_netlist_r12.py --xml /tmp/boat-r12/release.xml
+      - name: Electrical rule check must preserve power-source blockers and reject new errors
+        run: |
+          kicad-cli sch erc --output /tmp/boat-r12/erc.txt Boat/hardware/Release_Token_R12/Boat_Release_Token_R12.kicad_sch || true
+          test -s /tmp/boat-r12/erc.txt
+          python3 Boat/tests/verify_release_token_netlist_r12.py --erc /tmp/boat-r12/erc.txt
+          echo "### R12 draft logical topology only — NOT POWER OR FABRICATION READY" >> "$GITHUB_STEP_SUMMARY"
+          echo "Two unresolved external 3V3/return ERC errors are expected; POR, R/C bounds, current sensing, high-side gate and system integration are missing." >> "$GITHUB_STEP_SUMMARY"
+      - name: Preserve real KiCad evidence as workflow artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: boat-r12-release-token-kicad-evidence
+          path: /tmp/boat-r12/
+          if-no-files-found: ignore
