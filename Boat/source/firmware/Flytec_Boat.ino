@@ -1,6 +1,6 @@
 /*
  * Flytec Boat non-actuating target application.
- * GPIO assignments are deliberately disabled until the precise Tracker revision,
+ * GPIO assignments are deliberately disabled until the precise ESP32-S3 board revision,
  * board wiring and external hardware interlocks are verified.
  * No motor/solenoid pins are configured. Do not connect actuator power.
  */
@@ -14,13 +14,13 @@
 static HardwareSerial gnssUart(2);
 static TrackerSensorPort sensors(gnssUart,Wire);
 static bool sensorsReady=false;
-static uint32_t lastReport=0;
+static uint32_t lastReport=0,lastWeatherTx=0;
 #endif
 static BoatDualRadioPort radio;
 static BoatApplicationPort application(radio);
 void setup(){
  Serial.begin(115200);
- Serial.println("Flytec Boat: onboard SX1262 design; uncommissioned radio and actuator GPIO disabled.");
+ Serial.println("Flytec Boat: external E22 UART backup design; uncommissioned radio and actuator GPIO disabled.");
  const auto motorProfile=mdd20aUnassignedProfile();
  if(!mdd20aDirectProfileValid(motorProfile,0))Serial.println("MDD20A direct GPIO profile unassigned; no motor outputs configured.");
  const bool ready=radio.begin();
@@ -38,7 +38,17 @@ void loop(){
   const uint32_t now=millis();sensors.poll(now);
   if(now-lastReport>=1000U){lastReport=now;BoatHardwareSample s{};sensors.copySensors(s,now);
    Serial.printf("GNSS valid=%d latE7=%ld lonE7=%ld accuracy=%.2f headingValid=%d heading=%.2f voltageValid=%d mV=%u\\n",(int)s.fix.fresh,(long)s.fix.latE7,(long)s.fix.lonE7,s.fix.accuracyM,(int)s.fix.headingValid,s.fix.headingDeg,(int)s.voltageValid,(unsigned)s.batteryMillivolts);
+   int32_t t=0;uint32_t p=0;
+   if(sensors.weather(t,p,now))Serial.printf("BMP280 temp=%.2f C pressure=%.2f hPa\\n",t/100.0f,p/100.0f);
    SensorVector a{},m{};if(sensors.rawMotion(a,m,now))Serial.printf("RAW accel_g %.4f %.4f %.4f mag_uT %.4f %.4f %.4f\\n",a.x,a.y,a.z,m.x,m.y,m.z);
+  }
+  if(now-lastWeatherTx>=5000U){
+   lastWeatherTx=now;int32_t t=0;uint32_t p=0;
+   if(sensors.weather(t,p,now)){
+    RadioDecodedPayload weather{};weather.kind=RADIO_PAYLOAD_WEATHER;
+    weather.temperatureCentiC=(int16_t)t;weather.pressurePa=p;
+    radio.sendHardwareTelemetry(weather);
+   }
   }
  }
  #endif
