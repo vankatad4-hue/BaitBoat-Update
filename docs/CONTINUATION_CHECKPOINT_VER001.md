@@ -745,3 +745,8 @@ User explicitly requires **NO manual driving** for compass calibration. Added po
 - User confirmed **no Boat electronics modules purchased yet**. Continue with verified modular BOM, Bulgarian/Farnell availability and electrical compatibility before physical wiring. No custom PCB, no Boat SD, sonar deferred.
 - Verified Electrokit EKM014 manufacturer product: SKU 41024394, 5–50V load rail, 4.5–12V logic rail, specified 3–12V logic levels, advertised 10A/channel; manufacturer-listed 169 SEK with stock at check. Terminal/header soldering required. Bulgarian delivery not yet verified. See `Boat/docs/BOAT_R57_PROCUREMENT_VERIFICATION.md`.
 - Exact remaining module listings, current limits, independent STOP/watchdog/DC-rated cutoff, safe startup, E22 model and complete purchase basket remain unresolved. **No working hardware prototype or official release**. Boat VER014 unchanged.
+
+
+## R58 — verified core purchasing shortlist (2026-11-22)
+- Added `Boat/docs/BOAT_R58_VERIFIED_PROCUREMENT_BOM.md`. Exact Espressif ESP32-S3-DevKitC-1-N32R16V listed at Mouser Bulgaria €13.67; exact dual Cytron MDD20A at Partco €42.11; EKM014 Electrokit 169 SEK, manufacturer manual confirms separate VL/VH and 3.3V-compatible control inputs. Prices/stock subject to cart check, tax and shipping.
+- Remaining RF/GNSS/safety power parts **not yet verified**. Do not order an incomplete safety system as a working kit. No modules bought or physical tests completed; official Boat VER014 unchanged. Remote SD only, sonar deferred.
