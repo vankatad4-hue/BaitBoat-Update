@@ -696,3 +696,9 @@ User explicitly requires **NO manual driving** for compass calibration. Added po
 ## R49 — EKM014 software pulse guard (2026-11-21)
 - Added `Boat/source/ekm014_pulse_guard.h` and `Boat/tests/ekm014_pulse_guard_test.cpp`, registered in host CI. Single-coil, max 500ms configurable pulse, fresh power/current/independent limiter feedback and post-pulse current-zero before retrigger. **Uncommissioned and not wired to GPIO expander**; physical hardware limiter mandatory.
 - `Boat/docs/BOAT_R49_EKM014_IMPLEMENTATION.md` details limitations and integration dependencies. CI latest run 44947273124 was in progress at last check. Boat/Remote full target integration, RF, independent hardware safety and water tests remain pending. Official Boat VER014 unchanged.
+
+
+## R50 — physical driver adapter and regression repair (2026-11-21)
+- Added `Boat/source/boat_physical_driver_adapter.h`, transport-neutral callback adapter with real-sample-only safety feedback, MDD20A motor and EKM014 single-pulse output contract, no default GPIO. Added `Boat/tests/boat_physical_driver_adapter_test.cpp` to CI.
+- R49 CI run 44947273124 failed its EKM014 test; corrected stale timestamp test at commit 9c216df049eee2e30edbc85636c955e8b3f0845c. R50 CI run 44948760293 was in progress when checked; no pass claim.
+- See `Boat/docs/BOAT_R50_PHYSICAL_DRIVER_ADAPTER.md`. No physical driver attached to running firmware, no independent safety hardware verified, no full Boat/Remote integration or physical acceptance. Boat VER014 remains official.
