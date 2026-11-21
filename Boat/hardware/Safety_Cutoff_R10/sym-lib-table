@@ -1,0 +1,1 @@
+(sym_lib_table (lib (name "FlytecR10")(type "KiCad")(uri "${KIPRJMOD}/FlytecR10.kicad_sym")(options "")(descr "R10 candidate gate logic symbols")))

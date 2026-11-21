@@ -1,0 +1,19 @@
+Reference,Function,Selection,Qualification_status
+J1,3S switched input,Keyed pack input,No actual connector or BMS rating accepted
+J2,Regulated logic supply,Externally qualified 3V3,5V regulator and POR unresolved
+J3,10 safety condition inputs,STOP WDO UVLO OCP TEMP RAIL IDLE POR,Signal conditioning and feedback unimplemented
+J4,MCU permit and physical ARM conditioned edge,External rearm conditioner needed,NOT safe to wire raw ARM button
+U1 U2 U3,AND gate safety chain,SN74HC08 3x candidates,Tie unused inputs low; pinout checked TI; real filtering needed
+U4,Async clear physical fault latch,SN74HC74 candidate,D flip flop CLK and async clear; second half tied off
+R1,Open drain watchdog WDO pullup,10k provisional,Requires actual TPS3431 wiring
+F1,Main pack fuse,TBD,Motor stall and BMS curve missing
+Q1,High-side disconnect,PMOS TBD at 3S 9..12.6V,RDS SOA VGS thermal transient and body diode unqualified
+Q2,Low-side P MOS gate driver,NMOS TBD,3V3 VGS and gate transient unqualified
+S1,Physical NC STOP in gate driver return,NC contact rated/qualified TBD,Independent from MCU
+R2,High-side PMOS gate-source pullup,47k provisional,Leakage and off-state measurement required
+R3,Gate driver gate pull down,100k provisional,Startup/off transient test required
+R4,Actuator bus bleed,100k provisional,NOT a guaranteed fast discharge circuit
+F2,Motor branch fuse,TBD,Two 550 stall measurements missing
+F3,Coil branch fuse,TBD,Four coil peak current missing
+J5,MDD20A separate motor power,TBD,Separate motor mount and harness
+J6,R9 four coil supply,TBD,Maps to R9 J1; no pulse limiter supplied here
