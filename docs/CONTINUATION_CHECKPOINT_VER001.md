@@ -750,3 +750,8 @@ User explicitly requires **NO manual driving** for compass calibration. Added po
 ## R58 — verified core purchasing shortlist (2026-11-22)
 - Added `Boat/docs/BOAT_R58_VERIFIED_PROCUREMENT_BOM.md`. Exact Espressif ESP32-S3-DevKitC-1-N32R16V listed at Mouser Bulgaria €13.67; exact dual Cytron MDD20A at Partco €42.11; EKM014 Electrokit 169 SEK, manufacturer manual confirms separate VL/VH and 3.3V-compatible control inputs. Prices/stock subject to cart check, tax and shipping.
 - Remaining RF/GNSS/safety power parts **not yet verified**. Do not order an incomplete safety system as a working kit. No modules bought or physical tests completed; official Boat VER014 unchanged. Remote SD only, sonar deferred.
+
+
+## R59 — M100 PRO GNSS purchase verification (2026-11-22)
+- Added `Boat/docs/BOAT_R59_GNSS_PROCUREMENT_AND_INTEGRATION.md`. Official HGLRC M100 PRO $19.99 **out of stock** at check; Baltic Drones exact SKU 6565 €24.22 **listed in stock**, Bulgaria shipping unverified; Bulgarian Drones.bg listing identified without verified live stock/price. GNSS 115200 UBX/10Hz, 3.6–5.5V; QMC5883L compass I2C must be independently wired and verified.
+- No modules purchased. E22 PHY, nRF24 PA supply, independent safety hardware and current ratings remain purchase blockers. No physical prototype, sonar deferred, Boat VER014 unchanged.
