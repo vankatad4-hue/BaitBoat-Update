@@ -4,7 +4,9 @@ static Figure8StoredCalibration slots[2]{};
 static bool failWrites=false;
 static bool read(uint8_t i,Figure8StoredCalibration &r){if(i>1)return false;r=slots[i];return true;}
 static bool write(uint8_t i,const Figure8StoredCalibration &r){
- if(i>1||failWrites)return false;slots[i]=r;return true;
+ if(i>1||failWrites)return false;
+ slots[i]=r;
+ return true;
 }
 int main(){
  Figure8CalibrationStore s({read,write});
