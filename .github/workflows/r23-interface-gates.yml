@@ -14,6 +14,8 @@ on:
       - 'Boat/tests/mcp23017_direction_adapter_test.cpp'
       - 'Boat/source/hglrc_m100_pro_profile.h'
       - 'Boat/tests/hglrc_m100_pro_profile_test.cpp'
+      - 'Boat/source/bmp280_compensation.h'
+      - 'Boat/tests/bmp280_compensation_test.cpp'
       - '.github/workflows/r23-interface-gates.yml'
   pull_request:
     paths:
@@ -48,3 +50,5 @@ jobs:
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/mcp23017_direction_adapter_test.cpp -o /tmp/r35_mcp_test && /tmp/r35_mcp_test
       - name: R39 HGLRC GNSS profile tests
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/hglrc_m100_pro_profile_test.cpp -o /tmp/r39_gps_test && /tmp/r39_gps_test
+      - name: R40 Bosch BMP280 compensation tests
+        run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/bmp280_compensation_test.cpp -o /tmp/r40_bmp280_test && /tmp/r40_bmp280_test
