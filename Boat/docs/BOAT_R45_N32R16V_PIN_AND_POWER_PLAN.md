@@ -26,13 +26,13 @@ Sources: [Espressif DevKitC-1 v1.1 user guide](https://documentation.espressif.c
 | 40 | MDD20A PWM right | J3-8 | Hardware output DISABLED pending safety |
 | 41 | MDD20A DIR left | J3-7 | External safe default required |
 | 42 | MDD20A DIR right | J3-6 | External safe default required |
-| 47 | Watchdog heartbeat REQUEST | J3-17 | **Not** a replacement for independent watchdog |
+| 2 | Watchdog heartbeat REQUEST | J3-5 | **Not** a replacement for independent watchdog |
 | 21 | Motor permit REQUEST | J3-18 | **Not** a replacement for physical STOP |
 | 6 | Physical STOP monitor INPUT | J1-6 | Independent STOP contactor still required |
 | 1 | DC contactor auxiliary feedback INPUT | J3-4 | Must read actual contacts |
-| 2 | Solenoid power feedback INPUT | J3-5 | External sensor needed |
+| I2C expander input | Solenoid power feedback INPUT | external module | External isolated feedback sensor and independent cutoff required |
 
-GPIO0, GPIO3, GPIO45, GPIO46: reserve for boot/strapping and avoid safety outputs. GPIO19/20: reserve USB. GPIO43/44: reserve UART0 programming/diagnostics. GPIO35/36/37: avoid because octal memory variants may reserve them. GPIO38/48: reserve for board-revision-dependent RGB LED. Pins not listed remain unassigned.
+GPIO0, GPIO3, GPIO45, GPIO46: reserve for boot/strapping and avoid safety outputs. GPIO19/20: reserve USB. GPIO43/44: reserve UART0 programming/diagnostics. GPIO35/36/37: unavailable because octal memory uses them. GPIO38: reserve for board-revision-dependent RGB LED. **GPIO47 AND GPIO48 ARE 1.8 V GPIOs ON WROOM-2 N32R16V; NEVER CONNECT THEM DIRECTLY TO 3.3 V PERIPHERALS OR SAFETY OUTPUTS.** Pins not listed remain unassigned.
 
 Four EKM014 coil commands: **not assigned to bare GPIO**. Provisional factory-built MCP23017 I2C expander channels with hardware one-hot/pulse/no-repeat protection are required. This is NOT an approved direct connection: external independent safety gate is unresolved.
 
