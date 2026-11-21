@@ -1,0 +1,1 @@
+(sym_lib_table (lib (name "FlytecR12")(type "KiCad")(uri "${KIPRJMOD}/FlytecR12.kicad_sym")(options "")(descr "R12 release token candidate logic")))
