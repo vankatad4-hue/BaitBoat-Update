@@ -702,3 +702,8 @@ User explicitly requires **NO manual driving** for compass calibration. Added po
 - Added `Boat/source/boat_physical_driver_adapter.h`, transport-neutral callback adapter with real-sample-only safety feedback, MDD20A motor and EKM014 single-pulse output contract, no default GPIO. Added `Boat/tests/boat_physical_driver_adapter_test.cpp` to CI.
 - R49 CI run 44947273124 failed its EKM014 test; corrected stale timestamp test at commit 9c216df049eee2e30edbc85636c955e8b3f0845c. R50 CI run 44948760293 was in progress when checked; no pass claim.
 - See `Boat/docs/BOAT_R50_PHYSICAL_DRIVER_ADAPTER.md`. No physical driver attached to running firmware, no independent safety hardware verified, no full Boat/Remote integration or physical acceptance. Boat VER014 remains official.
+
+
+## R51 — ESP32-S3 GPIO validation (2026-11-21)
+- Added `Boat/source/esp32s3_gpio_audit.h` and `Boat/tests/esp32s3_gpio_audit_test.cpp`, registered host CI. Blocks reserved octal flash/PSRAM, strapping, native USB, UART0 and 1.8V GPIO47/48, requires audited non-overlapping motor pins. See `Boat/docs/BOAT_R51_GPIO_AUDIT.md`.
+- R50 diagnostic target compile 44948745058 PASS; host 44948760293 FAIL at R49 EKM014 regression. The timestamp regression correction was committed subsequently; no fresh host PASS observed at checkpoint update. No physical pinout approval, actuator enabling, or verified release.
