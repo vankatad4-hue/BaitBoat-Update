@@ -707,3 +707,10 @@ User explicitly requires **NO manual driving** for compass calibration. Added po
 ## R51 — ESP32-S3 GPIO validation (2026-11-21)
 - Added `Boat/source/esp32s3_gpio_audit.h` and `Boat/tests/esp32s3_gpio_audit_test.cpp`, registered host CI. Blocks reserved octal flash/PSRAM, strapping, native USB, UART0 and 1.8V GPIO47/48, requires audited non-overlapping motor pins. See `Boat/docs/BOAT_R51_GPIO_AUDIT.md`.
 - R50 diagnostic target compile 44948745058 PASS; host 44948760293 FAIL at R49 EKM014 regression. The timestamp regression correction was committed subsequently; no fresh host PASS observed at checkpoint update. No physical pinout approval, actuator enabling, or verified release.
+
+
+## R52 — safety feedback and calibration record (2026-11-21)
+- Corrected `Boat/tests/ekm014_pulse_guard_test.cpp` to refresh sample timestamp during the simulated active pulse; corrected physical adapter motor restart condition after coil pulse in `Boat/source/boat_physical_driver_adapter.h`.
+- Added `Boat/source/figure8_calibration_record.h` with versioned CRC32, finite/range validation and valid-record dual-slot selection; `Boat/tests/figure8_calibration_record_test.cpp` added to host CI. **No NVS/SD storage backend yet**, no live calibration activation.
+- Last confirmed pre-R52 CI: host 44951517101 PASS; ESP32-S3 diagnostic target 44951495536 PASS. R52 runs not yet verified. Details: `Boat/docs/BOAT_R52_CALIBRATION_AND_DRIVER.md`.
+- Next: physically verified EKM014 and safety module wiring, commissioned BoatPhysicalDriver HAL, actual dual-slot NVS persistence, GPS-guided figure-eight and authenticated Remote Start/Abort, full target builds and hardware acceptance. Boat VER014 frozen; sonar deferred.
