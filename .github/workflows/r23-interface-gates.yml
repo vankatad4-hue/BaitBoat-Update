@@ -1,19 +1,21 @@
-name: R23 Boat interface gates
+name: Boat R24 host safety and interface gates
 on:
   push:
     branches: [hardware-ready-dual-radio-r1]
     paths:
       - 'Boat/tools/r22_interface_gate.py'
+      - 'Boat/tools/r24_safety_gate.py'
       - '.github/workflows/r23-interface-gates.yml'
   pull_request:
     paths:
       - 'Boat/tools/r22_interface_gate.py'
+      - 'Boat/tools/r24_safety_gate.py'
       - '.github/workflows/r23-interface-gates.yml'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  host-interface-gates:
+  host-interface-and-safety-gates:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -22,6 +24,6 @@ jobs:
         with:
           python-version: '3.11'
       - name: Syntax check
-        run: python -m py_compile Boat/tools/r22_interface_gate.py
-      - name: Fail-closed GPIO and LoRa tests
-        run: python -m unittest discover -s Boat/tools -p 'r22_interface_gate.py' -v
+        run: python -m compileall -q Boat/tools/r22_interface_gate.py Boat/tools/r24_safety_gate.py
+      - name: Fail-closed GPIO, LoRa and commissioning tests
+        run: python -m unittest discover -s Boat/tools -p 'r*_gate.py' -v
