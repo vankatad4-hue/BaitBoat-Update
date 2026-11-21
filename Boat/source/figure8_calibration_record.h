@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <cmath>
-#include "figure8_compass_calibration.h"
+#include <string.h>
 // Portable, versioned calibration record. Storage backend MUST provide
 // atomic dual-slot write/read and only activate after successful validation.
 struct Figure8StoredCalibration{
@@ -20,8 +20,31 @@ inline uint32_t figure8Crc32(const uint8_t *p,uint32_t n){
  }
  return ~c;
 }
-inline uint32_t figure8RecordCrc(Figure8StoredCalibration r){
- r.crc=0;return figure8Crc32(reinterpret_cast<const uint8_t*>(&r),sizeof(r));
+// Version 1 on-disk record is exactly 48 bytes, little-endian IEEE-754.
+// Build the CRC input field by field rather than hashing compiler padding,
+// object representation or a transient nonzero CRC member.
+static_assert(sizeof(float)==4,"Figure-eight record needs binary32 floats");
+static_assert(sizeof(Figure8StoredCalibration)==48,"Figure-eight record layout changed; bump the format version");
+inline void figure8PutLe16(uint8_t *out,uint16_t value){
+ out[0]=(uint8_t)value;out[1]=(uint8_t)(value>>8);
+}
+inline void figure8PutLe32(uint8_t *out,uint32_t value){
+ for(unsigned i=0;i<4;++i)out[i]=(uint8_t)(value>>(8U*i));
+}
+inline uint32_t figure8RecordCrc(const Figure8StoredCalibration &r){
+ uint8_t b[48]={};
+ figure8PutLe32(b,r.magic);
+ figure8PutLe16(b+4,r.version);
+ figure8PutLe16(b+6,r.bytes);
+ const float v[8]={r.gyOffsetX,r.gyOffsetY,r.gyScaleX,r.gyScaleY,
+                   r.m100OffsetX,r.m100OffsetY,r.m100ScaleX,r.m100ScaleY};
+ for(unsigned i=0;i<8;++i){
+  uint32_t bits=0;memcpy(&bits,&v[i],sizeof(bits));
+  figure8PutLe32(b+8+4*i,bits);
+ }
+ figure8PutLe32(b+40,r.sequence);
+ // b[44..47] stays zero so CRC never includes its stored checksum.
+ return figure8Crc32(b,sizeof(b));
 }
 inline bool figure8CalibrationValid(const Figure8StoredCalibration &r){
  if(r.magic!=0x46384341U||r.version!=1||r.bytes!=sizeof(r)||
