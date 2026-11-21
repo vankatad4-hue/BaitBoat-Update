@@ -22,6 +22,8 @@ on:
       - 'Boat/source/figure8_compass_calibration.h'
       - 'Boat/source/m100_compass_qmc5883l.h'
       - 'Boat/tests/figure8_compass_calibration_test.cpp'
+      - 'Boat/source/figure8_auto_session.h'
+      - 'Boat/tests/figure8_auto_session_test.cpp'
       - 'Remote/tests/weather_payload_test.cpp'
       - '.github/workflows/r23-interface-gates.yml'
   pull_request:
@@ -67,3 +69,5 @@ jobs:
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/compass_calibration_session_test.cpp -o /tmp/r41_compass_test && /tmp/r41_compass_test
       - name: R42 dual compass figure-eight regression
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/figure8_compass_calibration_test.cpp -o /tmp/r42_fig8 && /tmp/r42_fig8
+      - name: R43 automatic dual compass figure-eight completion
+        run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/figure8_auto_session_test.cpp -o /tmp/r43_auto && /tmp/r43_auto
