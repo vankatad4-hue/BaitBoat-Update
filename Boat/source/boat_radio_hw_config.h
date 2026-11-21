@@ -1,6 +1,6 @@
 #pragma once
-// R8: Boat LoRa is the internal SPI SX1262; not an external E22 UART.
-// These defaults deliberately prohibit radio hardware initialization.
+// R36 architecture migration: external nRF24 primary + E22 UART backup.
+// This is an uncommissioned configuration. DO NOT initialize a Tracker SX1262.
 #define BOAT_NRF_CE_PIN (-1)
 #define BOAT_NRF_CSN_PIN (-1)
 #define BOAT_NRF_CHANNEL 76
@@ -14,5 +14,10 @@
 #define BOAT_SX1262_RST (-1)
 #define BOAT_SX1262_BUSY (-1)
 #define BOAT_SX1262_DIO1 (-1)
-// V1.1 reference ONLY (not audited on V1.2): NSS8 SCK9 MOSI10
-// MISO11 RST12 BUSY13 DIO1=14. Never copy as final pin assignments.
+#define BOAT_E22_UART_SELECTED 1
+#define BOAT_E22_UART_PIN_TX (-1)
+#define BOAT_E22_UART_PIN_RX (-1)
+#define BOAT_E22_UART_PIN_M0 (-1)
+#define BOAT_E22_UART_PIN_M1 (-1)
+#define BOAT_E22_UART_PIN_AUX (-1)
+#define BOAT_E22_UART_RF_INTEROPERABILITY_VERIFIED 0
