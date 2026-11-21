@@ -1,0 +1,15 @@
+Stage,Signal,From,To,Supply_or_interface,Status,Critical_qualification
+Coil_supply,VH,Independent fault-latched high-side coil output,EKM014 supply VH screw terminal,~9-12.6V 3S under rated cutoff,NOT_WIRED,Verify rail range and shared 10A board fuse
+Gate_driver,VL,Separate regulated 5V power module,EKM014 header VL,4.5-12V absolute supplier range,NOT_WIRED,Do not connect raw 12.6V 3S or RECOM safety 3.3V
+Common_reference,GND,Control/driver reference star,EKM014 logic GND and VH return,non-isolated,NOT_WIRED,No high-current return in Heltec/safety ground path
+One_hot_LH,IN1,Independent physical channel-output LH,EKM014 IN1,3.3V active-high,NOT_WIRED,Requires validated pulse timer latch reset and zero current
+One_hot_RH,IN2,Independent physical channel-output RH,EKM014 IN2,3.3V active-high,NOT_WIRED,Requires validated pulse timer latch reset and zero current
+One_hot_LK,IN3,Independent physical channel-output LK,EKM014 IN3,3.3V active-high,NOT_WIRED,Requires validated pulse timer latch reset and zero current
+One_hot_RK,IN4,Independent physical channel-output RK,EKM014 IN4,3.3V active-high,NOT_WIRED,Requires validated pulse timer latch reset and zero current
+Solenoid_LH,+1_-1,EKM014 channel1 output,Fw0630-009 left hopper coil,12V class / actual measured envelope TBD,NOT_WIRED,Wire and per-coil protection qualified
+Solenoid_RH,+2_-2,EKM014 channel2 output,Fw0630-009 right hopper coil,12V class / actual measured envelope TBD,NOT_WIRED,Wire and per-coil protection qualified
+Solenoid_LK,+3_-3,EKM014 channel3 output,Fw0630-001 left hook coil,12V class / actual measured envelope TBD,NOT_WIRED,Wire and per-coil protection qualified
+Solenoid_RK,+4_-4,EKM014 channel4 output,Fw0630-001 right hook coil,12V class / actual measured envelope TBD,NOT_WIRED,Wire and per-coil protection qualified
+High_side_disable,ACTUATOR_CUTOFF,Standalone independent STOP watchdog brownout fault latch,Both MDD20A motor branch and EKM014 VH branch,high-current hardware,NOT_DESIGNED,Rated failure-safe cutoff and response timing
+POR_supervisor,POWER_GOOD,Independent supervisor module,Hardware fault latch and pulse state reset,low-voltage safety,NOT_SELECTED,Must stay OFF during regulator restart
+Current_feedback,COIL_CURRENT_ZERO,Independent current sensing per active coil,Independent pulse-rearm AND executed ACK,hardware comparator,NOT_SELECTED,Shorted driver must fault until manual rearm
