@@ -147,3 +147,14 @@ Read `../../docs/CONTINUATION_CHECKPOINT_VER001.md` for the complete current sta
 
 ## Latest CI compile evidence (2026-11-20)
 Remote target compile #19 passed (run 44781879101) on commit 3f189cb1ac65a764aec678893f1df857d113c815. Firmware compiled/linked and artifact upload succeeded with ESP32-S3 16MB/OPI PSRAM huge_app partition. Size: 1,430,957 bytes (45%); global RAM 178,136 bytes (54%, 149,544 remaining). No compiler errors or C++ warnings reported. CI does not validate physical display, touch, SD, radio, Wi-Fi, inputs or safety. Next audit: settings timer lifecycle, map pack import validation and renderer/cache memory safety.
+
+## R15 electronics: ONLY PREMADE MODULES (2026-11-21)
+Owner decision replaces ALL historical custom electronic PCB designs (Boat and Remote). Source APIs and legacy class names referencing `Carrier` are **software logical interfaces only**, not fabrication instructions. The new host-only adapter `Boat/source/premade_module_output_r15.h` is deliberately **NOT attached to real Heltec pins** and requires 10 physically-verified acceptance flags, fresh independent STOP/rail/current feedback, a separate empty-request rearm interval and no held-repeat coil output. CI compiles `Boat/tests/module_only_output_r15_test.cpp`; it is not the actual hardware pulse limiter and cannot prove independent safety.
+
+- [R15 project-wide rule](../../docs/HARDWARE_MODULE_ONLY_POLICY_R15.md)
+- [Boat current module plan](../docs/BOAT_MODULE_ONLY_IMPLEMENTATION_R15.md)
+- [Remote current module plan](../../Remote/docs/REMOTE_MODULE_ONLY_IMPLEMENTATION_R15.md)
+- [Ready-module safety research](../../docs/MODULE_ONLY_SAFETY_SHORTLIST_R15.md)
+- [Bench acceptance](../../docs/MODULE_ONLY_ACCEPTANCE_R15.md)
+
+The physically separate Cytron MDD20A drives two motors; manufactured Electrokit EKM014 is the **candidate** 4-coil driver, no custom FET PCB. Hardware STOP, 3S DC-rated cutoff, POR/onehot/timer, current-zero and final GPIO are unselected and not wired. No actuator power, sonar still unselected. Remote VER028/Boat VER014 held.

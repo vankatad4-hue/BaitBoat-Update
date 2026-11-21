@@ -75,3 +75,14 @@ GPIO demand drops from historical R7 12 to **10 external native controls**; 11 o
 Remaining R7 KiCad ERC: **15 violations**, not production-ready. High-current latch, four MOSFET/coil drivers, rails, footprints, PCB and physical testing still outstanding. Current release markers Remote 028 / Boat 014 retained; 029/015 withheld. See Boat/docs/BOAT_INTEGRATED_SX1262_R8.md and Boat/docs/BOAT_LORA_HARDWARE_DECISION_R4.md.
 
 Commit evidence: source 975088133dbd8c4e9cb81d3760a5b65292f7426f; GPIO/CI/documentation 557d601b1a561fd0a908e90d24839e12b3ab3072.
+
+## R15 electronics: ONLY PREMADE MODULES (2026-11-21)
+Owner decision replaces ALL historical custom electronic PCB designs (Boat and Remote). Source APIs and legacy class names referencing `Carrier` are **software logical interfaces only**, not fabrication instructions. The new host-only adapter `Boat/source/premade_module_output_r15.h` is deliberately **NOT attached to real Heltec pins** and requires 10 physically-verified acceptance flags, fresh independent STOP/rail/current feedback, a separate empty-request rearm interval and no held-repeat coil output. CI compiles `Boat/tests/module_only_output_r15_test.cpp`; it is not the actual hardware pulse limiter and cannot prove independent safety.
+
+- [R15 project-wide rule](../../docs/HARDWARE_MODULE_ONLY_POLICY_R15.md)
+- [Boat current module plan](../docs/BOAT_MODULE_ONLY_IMPLEMENTATION_R15.md)
+- [Remote current module plan](../../Remote/docs/REMOTE_MODULE_ONLY_IMPLEMENTATION_R15.md)
+- [Ready-module safety research](../../docs/MODULE_ONLY_SAFETY_SHORTLIST_R15.md)
+- [Bench acceptance](../../docs/MODULE_ONLY_ACCEPTANCE_R15.md)
+
+The physically separate Cytron MDD20A drives two motors; manufactured Electrokit EKM014 is the **candidate** 4-coil driver, no custom FET PCB. Hardware STOP, 3S DC-rated cutoff, POR/onehot/timer, current-zero and final GPIO are unselected and not wired. No actuator power, sonar still unselected. Remote VER028/Boat VER014 held.

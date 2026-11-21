@@ -47,3 +47,11 @@ g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I Boat/tests/stubs Boat/source/
 ```
 
 This is a portable decision model only; it does not actuate hardware.
+
+## R15 module-only checks
+```sh
+python3 Boat/tools/module_only_policy_r15.py
+g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/module_only_output_r15_test.cpp -o /tmp/module_only_r15
+/tmp/module_only_r15
+```
+The new `module-only-hardware-r15.yml` workflow runs these tests, separately from archived custom KiCad workflows. This checks manifest/wiring safety conditions and a software-only blocked-by-default module output gate; no physical module was connected.

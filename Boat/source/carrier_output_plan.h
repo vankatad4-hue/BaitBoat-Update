@@ -1,7 +1,9 @@
 #pragma once
 #include "boat_hardware_supervisor.h"
 // Cytron MDD20A: PWM low brakes; DIR low/high controls polarity.
-// Independent carrier gate must isolate ALL actuator power on a fault.
+// R15: NO carrier PCB. Independent, commercially premade external hardware
+// cutoff/interlock MUST isolate ALL actuator power on fault. This class is
+// a legacy-named software planner only; it does not drive module GPIOs.
 struct CarrierOutputWords{uint16_t pwmLeft,pwmRight;bool dirLeft,dirRight;uint8_t solenoidMask;};
 class CarrierOutputPlan{
 public:

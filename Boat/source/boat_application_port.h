@@ -1,7 +1,10 @@
 #pragma once
 #include "boat_hardware_supervisor.h"
 #include "boat_dual_radio_port.h"
-// Driver contract: the board-specific implementation must obtain real local
+// R15: hardware port uses ONLY ready-made Heltec, MDD20A, EKM014 and
+// independently reviewed commercial safety modules with removable harnesses.
+// No custom carrier PCB or live output pins exist in the default build.
+// Driver contract: the installed module-specific port must obtain real local
 // samples and enforce an independent electrical watchdog. apply() must reject
 // output if its hardware interlocks/lease have failed, including when the MCU
 // cannot service the loop. There is deliberately no default working driver.
