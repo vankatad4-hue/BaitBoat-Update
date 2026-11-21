@@ -272,7 +272,7 @@ static void createHeader()
         17
     );
 
-    weatherLabel=createLabel(headerPanel,"ВРЕМЕ: --.-°C  ---- hPa",510,36);
+    weatherLabel=createLabel(headerPanel,"ВРЕМЕ: --.-°C  ---- hPa",470,29);
     lv_obj_set_style_text_font(weatherLabel,LV_FONT_DEFAULT,LV_PART_MAIN);
     // Add a gear button to open remote settings.
     lv_obj_t *settingsButton = lv_button_create(headerPanel);
