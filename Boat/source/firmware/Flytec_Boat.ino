@@ -39,7 +39,7 @@ void loop(){
   // Bench-only serial diagnostics. No actuator commissioning.
   while(Serial.available()){
    const int command=Serial.read();
-   if(command=='c')Serial.println(sensors.startAutomaticFigure8(millis())?"FIGURE8: started; manually steer repeated eights; automatic finish when BOTH compasses pass coverage.":"FIGURE8: denied; both compasses must be detected.");
+   if(command=='c')Serial.println(sensors.startAutomaticFigure8(millis())?"FIGURE8: sensor capture started in bench diagnostics only; autonomous propulsion unavailable until safety commissioning.":"FIGURE8: denied; both compasses must be detected.");
    if(command=='x'){sensors.abortAutomaticFigure8();Serial.println("FIGURE8: aborted; no calibration applied.");}
   }
   const uint32_t now=millis();sensors.poll(now);
