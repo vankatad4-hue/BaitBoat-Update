@@ -177,3 +177,7 @@ jobs:
           /tmp/r61_driver_safety
       - name: R61 matching Remote and Boat E22 UART wire contract
         run: python3 -m unittest Boat/tests/test_r61_e22_pair_contract.py -v
+      - name: R62 selected Boat endpoint memory contract
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/boat_endpoint_memory_gate_r62_test.cpp -o /tmp/r62_memory_gate
+          /tmp/r62_memory_gate
