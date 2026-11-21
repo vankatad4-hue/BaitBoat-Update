@@ -605,3 +605,7 @@ Added [R24 fail-closed commissioning checklist tests](../Boat/tools/r24_safety_g
 
 ## R26 — GPIO budget feasibility blocker (2026-11-21)
 Added [R26 pin-budget engineering finding](../Boat/docs/BOAT_R26_PIN_BUDGET_BLOCKER.md) and [four arithmetic unit tests](../Boat/tools/r26_pin_budget.py); GitHub Actions workflow expanded to run them. On provisional 6 externally usable GPIO candidates, the minimal separate-SPI nRF24 + I2C + dual PWM interface requires 9 pins (shortfall 3), excluding DIR/feedback. Heltec v1.1 documented header does not expose onboard SX1262 SPI pins; v1.2 physical access is unverified, so shared SPI is **NOT** an approved solution. No firmware, harness, or actuator enable. Next engineering gate: verified v1.2 manufacturer schematic and a commercially premade interface option with proven timing. Remote VER028 / Boat VER014 remain held.
+
+
+## R27 — premade module GPIO recovery feasibility (2026-11-21)
+Added [Boat R27 pin recovery option matrix](../Boat/docs/BOAT_R27_PIN_RECOVERY_OPTIONS.md). Candidate A is commercial NXP SC18IS602B I2C-to-SPI bridge, potentially reducing external native GPIO demand to five by handling nRF SPI/CSN via bridge; nRF CE and two motor PWM outputs remain native, while DIR/requests need qualified expansion. No module purchase, bridge driver, hardware bench proof, v1.2 schematic verification, or safety hardware qualification has occurred. Alternative PCA9685 and manufacturer-confirmed additional header pins assessed. Remote VER028 / Boat VER014 held, sonar deferred.
