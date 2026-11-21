@@ -1,0 +1,27 @@
+name: R23 Boat interface gates
+on:
+  push:
+    branches: [hardware-ready-dual-radio-r1]
+    paths:
+      - 'Boat/tools/r22_interface_gate.py'
+      - '.github/workflows/r23-interface-gates.yml'
+  pull_request:
+    paths:
+      - 'Boat/tools/r22_interface_gate.py'
+      - '.github/workflows/r23-interface-gates.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  host-interface-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Syntax check
+        run: python -m py_compile Boat/tools/r22_interface_gate.py
+      - name: Fail-closed GPIO and LoRa tests
+        run: python -m unittest discover -s Boat/tools -p 'r22_interface_gate.py' -v
