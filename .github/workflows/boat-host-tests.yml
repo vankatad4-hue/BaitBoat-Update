@@ -165,3 +165,15 @@ jobs:
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/heltec_sx1262_airtime_test.cpp -o /tmp/boat_sx1262_airtime
           /tmp/boat_sx1262_airtime
+      - name: R61 guarded physical driver and calibration storage
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/figure8_calibration_store_test.cpp -o /tmp/r61_cal_store
+          /tmp/r61_cal_store
+          g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/ekm014_pulse_guard_test.cpp -o /tmp/r61_coil
+          /tmp/r61_coil
+          g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/boat_physical_driver_adapter_test.cpp -o /tmp/r61_driver_legacy
+          /tmp/r61_driver_legacy
+          g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/boat_physical_driver_safety_r61_test.cpp -o /tmp/r61_driver_safety
+          /tmp/r61_driver_safety
+      - name: R61 matching Remote and Boat E22 UART wire contract
+        run: python3 -m unittest Boat/tests/test_r61_e22_pair_contract.py -v
