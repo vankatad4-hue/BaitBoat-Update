@@ -38,8 +38,9 @@ public:
    if(leg_==0){leg_=1;signedTurn_=0;}
    else {motion_.abort();return {};}// End of two complete opposing loops.
   }
-  // Forward-only differential thrust; feedback modulates curvature based on
-  // measured turn progress, not elapsed time. Actual PWM/current limits remain
+  // Forward-only differential thrust; heading feedback switches turn direction
+  // only after measured angular progress. This is NOT radius/track control.
+  // Actual PWM/current limits remain
   // with the physical driver. No unsafe zero-radius pivot.
   const bool clockwise=leg_==0;
   return clockwise?Figure8MotorIntent{180,100,true}:Figure8MotorIntent{100,180,true};
