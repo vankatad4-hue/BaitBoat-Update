@@ -56,12 +56,11 @@ public:
    guardActive_=false;channel_=-1;
   }
   if(guard_.awaitingZero()){
-   if(!guard_.tick(now,coil_) || guard_.awaitingZero()){
-    // tick() returns -1 on normal idle; no motor drive while settling
-    if(request.left||request.right)return fail();
-   }
+   guard_.tick(now,coil_);
+   if(guard_.awaitingZero()&&(request.left||request.right))return fail();
   }
-  return hal_.motorWrite(request.left,request.right,leaseMs)||fail();
+  if(!hal_.motorWrite(request.left,request.right,leaseMs))return fail();
+  return true;
  }
  void fault(){if(hal_.cutOutputs)hal_.cutOutputs();guard_.reset();faulted_=true;guardActive_=false;channel_=-1;}
  bool faulted()const{return faulted_;}
