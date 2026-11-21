@@ -5,6 +5,7 @@ on:
     paths:
       - 'Boat/tools/r22_interface_gate.py'
       - 'Boat/tools/r24_safety_gate.py'
+      - 'Boat/tools/r26_pin_budget.py'
       - '.github/workflows/r23-interface-gates.yml'
   pull_request:
     paths:
@@ -24,6 +25,8 @@ jobs:
         with:
           python-version: '3.11'
       - name: Syntax check
-        run: python -m compileall -q Boat/tools/r22_interface_gate.py Boat/tools/r24_safety_gate.py
+        run: python -m compileall -q Boat/tools/r22_interface_gate.py Boat/tools/r24_safety_gate.py Boat/tools/r26_pin_budget.py
       - name: Fail-closed GPIO, LoRa and commissioning tests
         run: python -m unittest discover -s Boat/tools -p 'r*_gate.py' -v
+      - name: R26 GPIO budget tests
+        run: python Boat/tools/r26_pin_budget.py -v
