@@ -5,16 +5,16 @@ Motor_left,Heltec,Provisional GPIO PWM_L/DIR_L,3.3V_logic,MDD20A,PWM1/DIR1,NOT_M
 Motor_right,Heltec,Provisional GPIO PWM_R/DIR_R,3.3V_logic,MDD20A,PWM2/DIR2,NOT_MAPPED,Board pin audit neutral and timeout
 Motor_output_left,MDD20A,Motor1 output,3S switched motor,Brushed 550 left,Motor terminals,NOT_WIRED,Direction reversal and peak current
 Motor_output_right,MDD20A,Motor2 output,3S switched motor,Brushed 550 right,Motor terminals,NOT_WIRED,Direction reversal and peak current
-Coil_power,Fused distribution,Actuator branch after FAIL_OFF contactor,3S_COIL,EKM014,VH,UNSELECTED,Shared 10A VH board fuse and individual wiring protection
-Driver_supply_5V,Pololu S13V20F5 dedicated,VOUT,5V_GATE_DRIVER,EKM014,VL,NOT_WIRED,No raw full 3S and independent reset
-Coil_LH,Prebuilt safety interlock,Onehot permit 1,3V3_DIGITAL,EKM014,IN1,NOT_SELECTED,Must be nonretriggerable and never direct MCU pin
-Coil_RH,Prebuilt safety interlock,Onehot permit 2,3V3_DIGITAL,EKM014,IN2,NOT_SELECTED,Must be nonretriggerable and never direct MCU pin
-Coil_LK,Prebuilt safety interlock,Onehot permit 3,3V3_DIGITAL,EKM014,IN3,NOT_SELECTED,Must be nonretriggerable and never direct MCU pin
-Coil_RK,Prebuilt safety interlock,Onehot permit 4,3V3_DIGITAL,EKM014,IN4,NOT_SELECTED,Must be nonretriggerable and never direct MCU pin
-Coil_LH_output,EKM014,CH1 plus/minus,12Vclass_Coil,LH bait hopper,FW0630-009,NOT_WIRED,Current thermal flyback deenergize
-Coil_RH_output,EKM014,CH2 plus/minus,12Vclass_Coil,RH bait hopper,FW0630-009,NOT_WIRED,Current thermal flyback deenergize
-Coil_LK_output,EKM014,CH3 plus/minus,12Vclass_Coil,LH hook,FW0630-001,NOT_WIRED,Current thermal flyback deenergize
-Coil_RK_output,EKM014,CH4 plus/minus,12Vclass_Coil,RH hook,FW0630-001,NOT_WIRED,Current thermal flyback deenergize
+Coil_power,Fused distribution,Actuator branch after FAIL_OFF contactor,3S_COIL,EKM014,VH,SELECTED_NOT_WIRED,Shared 10A VH board fuse and individual wiring protection
+Driver_supply_5V,Pololu S13V20F5 dedicated,VOUT,5V_GATE_DRIVER,EKM014,VL,SELECTED_NOT_WIRED,No raw full 3S and independent reset
+Coil_LH,Prebuilt safety interlock,Onehot permit 1,3V3_DIGITAL,EKM014,IN1,SELECTED_NOT_WIRED,Must be nonretriggerable and never direct MCU pin
+Coil_RH,Prebuilt safety interlock,Onehot permit 2,3V3_DIGITAL,EKM014,IN2,SELECTED_NOT_WIRED,Must be nonretriggerable and never direct MCU pin
+Coil_LK,Prebuilt safety interlock,Onehot permit 3,3V3_DIGITAL,EKM014,IN3,SELECTED_NOT_WIRED,Must be nonretriggerable and never direct MCU pin
+Coil_RK,Prebuilt safety interlock,Onehot permit 4,3V3_DIGITAL,EKM014,IN4,SELECTED_NOT_WIRED,Must be nonretriggerable and never direct MCU pin
+Coil_LH_output,EKM014,CH1 plus/minus,12Vclass_Coil,LH bait hopper,FW0630-009,SELECTED_NOT_WIRED,Current thermal flyback deenergize
+Coil_RH_output,EKM014,CH2 plus/minus,12Vclass_Coil,RH bait hopper,FW0630-009,SELECTED_NOT_WIRED,Current thermal flyback deenergize
+Coil_LK_output,EKM014,CH3 plus/minus,12Vclass_Coil,LH hook,FW0630-001,SELECTED_NOT_WIRED,Current thermal flyback deenergize
+Coil_RK_output,EKM014,CH4 plus/minus,12Vclass_Coil,RH hook,FW0630-001,SELECTED_NOT_WIRED,Current thermal flyback deenergize
 Safety_3V3,RECOM R-78E3.3-0.5,VOUT,3V3_SAFETY,POR supervisor premade,Input,NOT_WIRED,Independent supervisor under brownout
 Control_5V,Pololu S13V20F5 clean,VOUT,5V_HELTEC,Heltec,Verified manufacturer 5V input,NOT_MAPPED,No 3S at Heltec 1S charger connector
 Radio_3V3,Pololu D24V22F3,VOUT,3V3_RF,nRF24L01 PA/LNA,VCC,NOT_WIRED,PA pulse current/decoupling and low EMI

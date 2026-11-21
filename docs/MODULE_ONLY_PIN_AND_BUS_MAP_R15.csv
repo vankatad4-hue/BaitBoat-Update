@@ -11,10 +11,10 @@ Remote,POWER,Backup E22,Pololu S13V20F5,5V_E22,independent,DISABLED,No 5V tying 
 Boat,SPI,Primary radio nRF24,Manufactured nRF24L01+ PA/LNA,CE_CSN_SCK_MOSI_MISO,GPIO_TBD,DISABLED,Heltec Tracker v1.2 internal SX1262 and SD resource reservation
 Boat,CONTROL,MDD20A left motor,Cytron MDD20A,PWM1_DIR1,GPIO_TBD,DISABLED,Exact header/polarity disabled until board audit
 Boat,CONTROL,MDD20A right motor,Cytron MDD20A,PWM2_DIR2,GPIO_TBD,DISABLED,Exact header/polarity disabled until board audit
-Boat,CONTROL,Hopper LH,Prebuilt independent safety interlock and EKM014,IN1,GPIO_TBD,DISABLED,No direct output allowed without validated hardware pulse
-Boat,CONTROL,Hopper RH,Prebuilt independent safety interlock and EKM014,IN2,GPIO_TBD,DISABLED,No direct output allowed without validated hardware pulse
-Boat,CONTROL,Hook LK,Prebuilt independent safety interlock and EKM014,IN3,GPIO_TBD,DISABLED,No direct output allowed without validated hardware pulse
-Boat,CONTROL,Hook RK,Prebuilt independent safety interlock and EKM014,IN4,GPIO_TBD,DISABLED,No direct output allowed without validated hardware pulse
+Boat,CONTROL,Hopper LH,Selected EKM014 via independent premade safety interlock,IN1,GPIO_TBD,DISABLED,No direct output allowed without validated hardware pulse
+Boat,CONTROL,Hopper RH,Selected EKM014 via independent premade safety interlock,IN2,GPIO_TBD,DISABLED,No direct output allowed without validated hardware pulse
+Boat,CONTROL,Hook LK,Selected EKM014 via independent premade safety interlock,IN3,GPIO_TBD,DISABLED,No direct output allowed without validated hardware pulse
+Boat,CONTROL,Hook RK,Selected EKM014 via independent premade safety interlock,IN4,GPIO_TBD,DISABLED,No direct output allowed without validated hardware pulse
 Boat,I2C,Current monitor candidate per-coil,Electrokit EKM025 INA260,0x40_0x41_0x44_0x45,4_UNIQUE_ADDRS_TBD,DISABLED,Telemetry only not independent fault cutoff
 Boat,POWER,Safety logic,RECOM R-78E3.3-0.5,3V3_SAFETY,NON_RF,DISABLED,Independent POR must cut motor+coil power
 Boat,POWER,Heltec clean 5V,Pololu S13V20F5,5V_HELTEC,NO_BAT_CHARGER_INPUT,DISABLED,Actual Heltec V1.2 power entry to be audited

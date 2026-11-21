@@ -1,7 +1,7 @@
 Side,Function,Vendor,Part_Number,Input_or_Supply,Output_or_Load,Quantity,State,Manufacturer_Reference,Qualification_Blocker
 Boat,Controller/GNSS/LoRa,Heltec,Wireless Tracker v1.2,Approved 5V interface TBD,3.3V GPIO,1,RETAINED_NOT_COMMISSIONED,https://heltec.org/project/Wireless-Tracker/,Physical board revision pinout and RF backup compatibility
 Boat,Brushed dual motor driver,Cytron,MDD20A,6-30V,2 brushed 550 motors,1,RETAINED_NOT_COMMISSIONED,https://www.cytron.io/c-industry/p-20amp-6v-30v-dc-motor-driver-2-channels,Motor stall and external mounting
-Boat,Four solenoid low-side power,Electrokit,EKM014,VH 5-50V and VL 4.5-12V,4 coil channels 10A each supplier claim,1,PREFERRED_CANDIDATE_NOT_QUALIFIED,https://docs.electrokit.com/en/modules/EKM014/,Measure 6A-class coil peak and common 10A fuse and module size
+Boat,Four solenoid low-side power,Electrokit,EKM014,VH 5-50V and VL 4.5-12V,4 coil channels 10A each supplier claim,1,OWNER_SELECTED_NOT_INSTALLED_NOT_QUALIFIED,https://docs.electrokit.com/en/modules/EKM014/,Measure 6A-class coil peak and common 10A fuse and module size
 Boat,Safety logic supply 3.3V,RECOM,R-78E3.3-0.5,6-28V input,3.3V 0.5A output,1,SELECTED_CANDIDATE_NOT_INSTALLED,https://recom-power.com/pdf/Innoline/R-78E-0.5.pdf,Use premade terminal adapter and independent POR
 Boat,Heltec 5V power,Pololu,S13V20F5,2.8-22V input,5V 2A,1,CANDIDATE,https://www.pololu.com/product/4085,Real 5V injection point unknown
 Boat,EKM014 VL 5V power,Pololu,S13V20F5,2.8-22V input,5V 2A,1,CANDIDATE,https://www.pololu.com/product/4085,Separate gate-driver rail and power-off fail-safe

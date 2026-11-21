@@ -1,0 +1,14 @@
+Area,EKM014 terminal or pin,Signal,From or destination,Supply limit,Logical channel,Module status,Gate
+Power,VH supply screw terminal,+3S_ACT_SOL_AFTER_FAIL_OFF,Protected 3S fuse + independent E-STOP cutoff,VH 5-50V (3S <=12.6V nominal),all,SELECTED_NOT_WIRED,Measured battery/FET/coil and 10A shared fuse coordination
+Power,GND supply screw terminal,POWER_RETURN_STAR,3S BMS return via rated harness,High-current return separate from logic signal,all,SELECTED_NOT_WIRED,No load current through Heltec logic ground
+Power,VL 2.54mm header,REGULATED_5V_DRIVER,Premade separate 5V supply (Pololu S13V20F5 candidate),4.5-12V absolute; no raw charged 3S,all,SELECTED_NOT_WIRED,VH >= VL including transient
+Power,Logic GND header,LOGIC_GND_REF,Common measured reference to EKM014 power return,3.3V logic reference,all,SELECTED_NOT_WIRED,Vendor pin positioning not yet audited
+Control,IN1,ONEHOT_TIMED_LH,Independent commercial one-hot pulse interlock NOT SELECTED,3.3V active-HIGH,0 LH,SELECTED_NOT_WIRED,No direct ESP32 GPIO without independent limiter
+Control,IN2,ONEHOT_TIMED_RH,Independent commercial one-hot pulse interlock NOT SELECTED,3.3V active-HIGH,1 RH,SELECTED_NOT_WIRED,No direct ESP32 GPIO without independent limiter
+Control,IN3,ONEHOT_TIMED_LK,Independent commercial one-hot pulse interlock NOT SELECTED,3.3V active-HIGH,2 LK,SELECTED_NOT_WIRED,No direct ESP32 GPIO without independent limiter
+Control,IN4,ONEHOT_TIMED_RK,Independent commercial one-hot pulse interlock NOT SELECTED,3.3V active-HIGH,3 RK,SELECTED_NOT_WIRED,No direct ESP32 GPIO without independent limiter
+Output,CH1 + and -,COIL_LH_PLUS_MINUS,Left bait hopper FW0630-009 (12V class),Up to 6A design allowance not verified,0 LH,SELECTED_NOT_WIRED,Coil polarity/flyback and current/timing/thermal measured
+Output,CH2 + and -,COIL_RH_PLUS_MINUS,Right bait hopper FW0630-009 (12V class),Up to 6A design allowance not verified,1 RH,SELECTED_NOT_WIRED,Coil polarity/flyback and current/timing/thermal measured
+Output,CH3 + and -,COIL_LK_PLUS_MINUS,Left hook release FW0630-001 (12V class),Up to 6A design allowance not verified,2 LK,SELECTED_NOT_WIRED,Coil polarity/flyback and current/timing/thermal measured
+Output,CH4 + and -,COIL_RK_PLUS_MINUS,Right hook release FW0630-001 (12V class),Up to 6A design allowance not verified,3 RK,SELECTED_NOT_WIRED,Coil polarity/flyback and current/timing/thermal measured
+Mechanical,4 mounting holes,MECHANICAL_FIT,Premade module inside V080 hull,32x30mm outline; 2.5mm holes; hole-pitch discrepancy,all,UNVERIFIED,Manual 27x25 vs product listing 41x25 must be resolved before brackets

@@ -1,4 +1,6 @@
-# R14 module-first alternative — replace R9 custom four-coil PCB (CANDIDATE)
+# R14 historical comparison — R16 EKM014 chosen by owner (2026-11-21)
+
+> **R16 owner decision:** EKM014 model is SELECTED for all four Boat solenoids, not merely a preferred candidate. No purchase, fit or safety approval claimed. Read [R16 module specification](BOAT_EKM014_SELECTED_R16.md). Earlier comparison text is historical.
 
 > **R15 decision:** This analysis now supports the MANDATORY premade-modules-only project. All PCB manufacture has been removed from the active plan. See [R15 policy](../../docs/HARDWARE_MODULE_ONLY_POLICY_R15.md).
 

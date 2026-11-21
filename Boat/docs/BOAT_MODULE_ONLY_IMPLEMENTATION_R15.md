@@ -6,7 +6,7 @@
 |--|--|--|--|
 | B01 | GNSS, boat application, telemetry | Heltec Wireless Tracker v1.2 ESP32-S3 | retained; physical pin mapping TBD |
 | B02 | Two independent 550 brushed motors | Cytron MDD20A | retained; separate mounting, not 77x79 carrier |
-| B03 | LH RH LK RK 12V coil power switching | Electrokit EKM014 (4x10A published) | preferred candidate pending 6A coil current + supply/fit validation |
+| B03 | LH RH LK RK 12V coil power switching | Electrokit EKM014 (4x10A published) | **OWNER SELECTED (R16)**; not physically installed, coil current and safety qualification pending |
 | B04 | Safety logic 3.3V | RECOM R-78E3.3-0.5 preassembled SIP3 with commercial screw-terminal adapter | selected candidate; independently supervised |
 | B05 | Heltec supply 5V | Pololu S13V20F5 5V/2A | candidate separate from VL, source/injection pins TBD |
 | B06 | EKM014 VL supply 5V | separate Pololu S13V20F5 5V/2A | candidate, not paralleled with Heltec supply |
@@ -48,3 +48,10 @@ Archived: `Boat/hardware/Direct_MDD20A_R7`, `Coil_Drivers_R9`, `Safety_Cutoff_R1
 - If the modular components cannot fit and remain serviceable in the V080 hull, use a different modular enclosure/placement design or reconsider scope; do not covertly reintroduce a custom PCB.
 
 See the R15 [commercial safety candidate matrix](../../docs/MODULE_ONLY_SAFETY_SHORTLIST_R15.md), [premade-only acceptance checklist](../../docs/MODULE_ONLY_ACCEPTANCE_R15.md) and [module-only pin map](../../docs/MODULE_ONLY_PIN_AND_BUS_MAP_R15.csv). These are procurement/bench documents, not permission to energize loads.
+
+
+## R16 owner-confirmed four-channel module (2026-11-21)
+
+**HARDWARE SELECTION FROZEN:** Electrokit **EKM014**, manufacturer/article **41024394**, is the final *model choice* for Boat LH/RH bait and LK/RK hook solenoid **low-side** switching. Exactly **ONE** four-channel preassembled module. It **replaces R9 custom-FET PCB permanently** in the active module-only project. This choice does **NOT** mean purchased, electrically verified, qualified, or safe to energize. No substitution to NCD or other coil driver without owner approval.
+
+Read the dedicated [EKM014 R16 hardware and wiring contract](BOAT_EKM014_SELECTED_R16.md), [R16 channel/wiring CSV](BOAT_EKM014_PIN_WIRING_R16.csv) and [R16 commissioning test plan](BOAT_EKM014_ACCEPTANCE_R16.md) (relative paths from repository root). R15 module-only policy remains mandatory for both sides. A dedicated *commercial* hardware one-hot and no-repeat maximum pulse path, independent DC power cutoff/STOP, rail/brownout supervision and independent current-zero verification are still required before connecting coils. Sonar still planned only; no RP2040/rudder/custom PCB. Remote VER028 / Boat VER014 remain held.

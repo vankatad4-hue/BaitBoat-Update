@@ -1,4 +1,6 @@
 # R15 bench acceptance — zero custom PCBs
+
+> **R16:** EKM014 41024394 is now the OWNER-SELECTED four-coil module. See [EKM014-specific acceptance tests](../Boat/docs/BOAT_EKM014_ACCEPTANCE_R16.md). All electrical testing remains NOT PERFORMED.
 **Scope:** Boat and Remote. No wet tests until independently reviewed dry bench pass.
 
 ## Stage 0 — source and architecture
