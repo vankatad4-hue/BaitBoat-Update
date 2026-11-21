@@ -48,3 +48,5 @@ resolve 15 open ERC violations in preliminary KiCad R7; then PCB/DRC,
 dummy-load commissioning, and physical acceptance. No power/coil values
 are final without motor stall, pack and coil measurements. Remote version
 028 / Boat version 014 remain unchanged; prospective 029/015 withheld.
+
+Native safety/coil schematic capture contract: [BOAT_SAFETY_SOLENOID_CAPTURE_R8.md](BOAT_SAFETY_SOLENOID_CAPTURE_R8.md). This is a drafting specification and has not reduced the existing ERC violations.
