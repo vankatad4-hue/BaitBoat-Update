@@ -678,3 +678,10 @@ User explicitly requires **NO manual driving** for compass calibration. Added po
 - HGLRC M100 PRO manufacturer says **UBX at 115200**. Added checksum-validated NAV-PVT parser `Boat/source/m100_ubx_nav_pvt.h`, wired into sensor telemetry for 115200 profile, regression `Boat/tests/m100_ubx_nav_pvt_test.cpp`, CI workflow. GNSS hardware output and real 3D fix remain untested.
 - Added `docs/datasheets/R45_MANUFACTURER_PDF_REGISTER.md` with three verified direct Espressif PDF URLs and remaining manufacturer documentation. **Binary PDFs not uploaded** (GitHub connector supports UTF-8 text; container network fetch failed).
 - CI portable R45 regression passed on observed run 44945861528; most recent target compile still running on observed run 44945819892. Physical hardware interlocks, complete actuator wiring, automatic closed-loop figure-eight, remote command/status, radio RF interoperability, water tests, final BOM purchase prices, official Boat release/ZIP **remain open**. Do not publish verified Boat release prematurely.
+
+
+## R47 — Boat Wi-Fi OTA maintenance scaffold (2026-11-21)
+- Owner requests boat firmware OTA by Wi-Fi or Bluetooth. Implemented optional **Wi-Fi HTTPS OTA** module `Boat/source/boat_wifi_ota.h` with physical maintenance/power-isolation/STOP, Secure Boot V2 and flash-encryption gates; disabled by default and not wired to active boat application. Portable regression `Boat/tests/boat_wifi_ota_preflight_test.cpp` and CI added.
+- ESP32-S3 has Bluetooth LE but not Classic; BLE firmware transfer deferred. No unsecured ArduinoOTA upload endpoint enabled.
+- OTA cannot be considered operational until secure boot/OTA partitions/rollback, local maintenance controls, credential provisioning, exact target compile and physical update/recovery tests. See `Boat/docs/BOAT_R47_WIFI_OTA.md`.
+- R46 hardware driver, independent safety modules, remote calibration, autonomous GPS track and physical acceptance remain pending. Official releases held.
