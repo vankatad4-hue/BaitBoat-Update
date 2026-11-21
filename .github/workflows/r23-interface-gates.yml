@@ -58,7 +58,7 @@ jobs:
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/bmp280_compensation_test.cpp -o /tmp/r40_bmp280_test && /tmp/r40_bmp280_test
       - name: R40 Boat and Remote weather wire compatibility
         run: |
-          g++ -std=c++17 -Wall -Wextra -Werror Boat/source/radio_payload_codec.cpp Boat/tests/weather_payload_test.cpp -o /tmp/r40_weather_boat && /tmp/r40_weather_boat
+          g++ -std=c++17 -Wall -Wextra -Werror Boat/source/radio_payload_codec.cpp Boat/source/radio_payload_encoder.cpp Boat/tests/weather_payload_test.cpp -o /tmp/r40_weather_boat && /tmp/r40_weather_boat
           g++ -std=c++17 -Wall -Wextra -Werror Remote/source/radio_payload_codec.cpp Remote/tests/weather_payload_test.cpp -o /tmp/r40_weather_remote && /tmp/r40_weather_remote
       - name: R41 GY-91 compass calibration candidate tests
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/compass_calibration_session_test.cpp -o /tmp/r41_compass_test && /tmp/r41_compass_test
