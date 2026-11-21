@@ -662,3 +662,7 @@ R38 replaced BoatDualRadioPort's onboard HeltecSX1262Link with external E22UartB
 - Added regression gates for BMP280 Bosch example, weather packet roundtrip and compass candidate. CI status must be checked on latest head; earlier R41 compile warning corrected. Prior portable suites passed, final target build and physical acceptance still pending.
 - Relevant documents: Boat/docs/BOAT_R40_BMP280_REMOTE_WEATHER.md and Boat/docs/BOAT_R41_GY91_COMPASS_CALIBRATION.md.
 - Continue with target compile, correct any errors, confirm real ESP32-S3/M100/E22/GY-91 GPIO wiring and independent physical STOP/coil safety. Actuator power remains disconnected until hardware commissioning.
+
+
+## R42 — Figure-eight-only dual compass calibration (2026-11-21)
+User-approved on-water figure-eight only, superseding R41 three-axis on-land operator procedure. HGLRC M100 PRO manufacturer confirms onboard QMC5883L magnetometer (I2C), but 2026 production reports some QMC5883P substitutions; R42 driver supports QMC5883L only, rejects unrecognized chip. Added separate GY-91 AK8963 and M100 compass horizontal sweep candidate collection, coverage tests and CI gate. No automatic apply/persistence, remote calibration screen or actual on-water verification. See [R42 figure-eight specification](../Boat/docs/BOAT_R42_FIGURE8_DUAL_COMPASS.md). Important separate blocker: M100 PRO GNSS uses UBX 115200, and existing GNSS parser must be checked/adapted; do not claim GPS fix works yet.
