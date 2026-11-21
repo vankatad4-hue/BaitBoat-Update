@@ -733,3 +733,9 @@ User explicitly requires **NO manual driving** for compass calibration. Added po
 - Remote SD remains responsible for 8 lake map packs, offline map index, 16 waypoints and Home. Boat calibration remains local to Boat internal flash NVS.
 - Added `Boat/source/figure8_calibration_nvs.h/.cpp` Arduino Preferences backend for R53 CRC-validated dual-slot storage; **not yet attached to Boat runtime or target verified**. Details `Boat/docs/BOAT_R55_STORAGE_ARCHITECTURE.md`.
 - Next: audit existing Remote SD map/waypoint implementation and tests; integrate Boat NVS in diagnostic boot/read path, target compile, authenticated figure-eight Start/Abort and GPS control, independently verified physical safety hardware. Boat VER014 unchanged.
+
+
+## R56 — prototype readiness review (2026-11-22)
+- User requested completed working Boat prototype. Audited active `Boat/source/firmware/Flytec_Boat.ino` and `Boat/source/boat_application_port.cpp`: no commissioned `BoatPhysicalDriver` is attached, so current Boat target is **non-actuating diagnostic firmware**, not a functioning physical prototype.
+- Added `Boat/docs/BOAT_R56_PROTOTYPE_READINESS_GATE.md` with explicit remaining integration, independent STOP/watchdog/DC cutoff, GPIO and module verification, GPS/radio/solenoid tests, target compilation and on-water acceptance gates. No custom PCB; Remote SD only, Boat internal NVS; sonar deferred.
+- **No physical prototype, hardware acceptance, or new release is claimed.** Official Boat VER014 unchanged. Next: verify actual module SKUs and physical safety hardware, implement commissioned HAL, finish NVS and authenticated GPS calibration, then HIL/water tests and release.
