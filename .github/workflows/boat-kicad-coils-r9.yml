@@ -1,0 +1,40 @@
+name: R9 preliminary four-coil KiCad netlist and ERC
+on:
+  push:
+    branches: [hardware-ready-dual-radio-r1]
+    paths:
+      - 'Boat/hardware/Coil_Drivers_R9/**'
+      - 'Boat/tests/verify_coil_netlist_r9.py'
+      - '.github/workflows/boat-kicad-coils-r9.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  schematic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail-closed source and no-footprint guard
+        run: python3 Boat/tests/verify_coil_netlist_r9.py
+      - name: Install KiCad CLI
+        run: sudo apt-get update -qq && sudo apt-get install -y kicad
+      - name: Native KiCad XML netlist export
+        run: |
+          mkdir -p /tmp/boat-r9
+          kicad-cli sch export netlist --format kicadxml --output /tmp/boat-r9/coil.xml Boat/hardware/Coil_Drivers_R9/Boat_Four_Coil_Drivers_R9.kicad_sch
+      - name: Validate 18 native electrical nets and exact pin connections
+        run: python3 Boat/tests/verify_coil_netlist_r9.py --xml /tmp/boat-r9/coil.xml
+      - name: Standalone partial-coil sheet ERC (not full boat ERC)
+        run: |
+          kicad-cli sch erc --output /tmp/boat-r9/erc.txt Boat/hardware/Coil_Drivers_R9/Boat_Four_Coil_Drivers_R9.kicad_sch
+          test -s /tmp/boat-r9/erc.txt
+          echo "### R9 standalone low-side coils: ERC completed; NO power gate or pulse limiter designed" >> "$GITHUB_STEP_SUMMARY"
+          echo "**NOT FABRICATION READY**: no footprints, unqualified coil ratings, external safety cutoff and one-hot/timer absent; older R7 ERC still has 15 errors." >> "$GITHUB_STEP_SUMMARY"
+      - name: Collect report and actual KiCad-exported netlist
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: boat-r9-coils-netlist-erc
+          path: /tmp/boat-r9/
+          if-no-files-found: ignore

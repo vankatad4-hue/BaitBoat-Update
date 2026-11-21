@@ -42,3 +42,6 @@ Remote E22/SC16IS750 remains **unmatched** to raw Heltec SX1262. Backup link OFF
 
 ## Gates to complete after this capture plan
 Exact V1.2 pin audit, real motor/coil current and battery output data, high-side cutoff and fault latch component ratings, native four-coil symbols/footprints/net wiring, verification of load power disappearance after watchdog/STOP, zero ERC and PCB DRC, secure RF pairing and full physical commissioning. Official versions Remote 028 / Boat 014 retained.
+
+## R9 continuation — native four-channel low-side stage capture
+A separate, editable KiCad prototype is now committed under `Boat/hardware/Coil_Drivers_R9/` with 26 physical-symbol instances, four fused MOSFET coil channels, four clamps, gate resistors and pulldowns, and distinct actuator and gated-pulse input interfaces. `Boat/tests/verify_coil_netlist_r9.py` plus workflow `boat-kicad-coils-r9.yml` perform actual exported KiCad XML net checks and standalone ERC. **Do not conflate this with a completed power-cutoff circuit or full-boat ERC acceptance.** Hardware one-hot/max-pulse limiter, default-OFF fault latch with STOP/WDO/UVLO/overcurrent/thermal, physical isolation of both motor and coil rails, measured current-zero feedback, MOSFET/clamp and fuse selections, footprints and production PCB are not implemented. See the R9 folder README before ordering anything.
