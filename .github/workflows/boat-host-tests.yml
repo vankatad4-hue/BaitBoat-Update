@@ -135,3 +135,7 @@ jobs:
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/mdd20a_direct_safety_test.cpp -o /tmp/mdd20a_direct_safety
           /tmp/mdd20a_direct_safety
+      - name: Hardware GPIO feasibility and conflict budget
+        run: |
+          python3 Boat/tools/gpio_feasibility_r7.py
+          python3 -m unittest discover -s Boat/tests -p test_gpio_feasibility_r7.py -v
