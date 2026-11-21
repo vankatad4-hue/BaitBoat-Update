@@ -1,0 +1,36 @@
+name: R15 module-only BOM, harness, and fail-closed software gate
+on:
+  push:
+    branches: [hardware-ready-dual-radio-r1]
+    paths:
+      - 'docs/HARDWARE_MODULE_ONLY_POLICY_R15.md'
+      - 'docs/MODULE_ONLY_BOM_R15.csv'
+      - 'Boat/docs/BOAT_MODULE_ONLY_*'
+      - 'Remote/docs/REMOTE_MODULE_ONLY_*'
+      - 'Boat/source/premade_module_output_r15.h'
+      - 'Boat/tests/module_only_output_r15_test.cpp'
+      - 'Boat/tools/module_only_policy_r15.py'
+      - 'README.md'
+      - 'Boat/README.md'
+      - 'Remote/README.md'
+      - '.github/workflows/boat-kicad-*.yml'
+      - '.github/workflows/module-only-hardware-r15.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-module-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure no custom PCB workflows are active and all modules are uncommissioned
+        run: python3 Boat/tools/module_only_policy_r15.py
+      - name: Compile fail-closed off-the-shelf module request guard
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/module_only_output_r15_test.cpp -o /tmp/module_only_r15
+          /tmp/module_only_r15
+      - name: Record scope
+        run: |
+          echo "### R15 module-only contract and host-only request model passed" >> "$GITHUB_STEP_SUMMARY"
+          echo "No GPIO activated, physical STOP/timer/POR/current-sense modules unselected; no live operation allowed." >> "$GITHUB_STEP_SUMMARY"
