@@ -6,7 +6,7 @@
 static constexpr uint8_t REMOTE_ID=0x01,BOAT_ID=0x02;
 
 BoatDualRadioPort::BoatDualRadioPort()
- : nrf_(BOAT_NRF_CE_PIN,BOAT_NRF_CSN_PIN,&SPI,BOAT_NRF_CHANNEL),
+ : nrf_(BOAT_NRF_CE_PIN,BOAT_NRF_CSN_PIN,&SPI,BOAT_NRF_CHANNEL,BOAT_NRF_SCK_PIN,BOAT_NRF_MISO_PIN,BOAT_NRF_MOSI_PIN),
    e22_(e22Serial_),nrfReady_(false),sx1262Ready_(false),sessionEpoch_(1),
    lastNrfRxMs_(0),lastBackupRxMs_(0),lastNrfHeartbeatTxMs_(0),
    lastBackupHeartbeatTxMs_(0),lastBackupHeartbeatAttemptMs_(0),txSequence_(0),authenticated_(false),
@@ -55,10 +55,10 @@ bool BoatDualRadioPort::begin() {
  lastNrfHeartbeatTxMs_=lastBackupHeartbeatTxMs_=lastBackupHeartbeatAttemptMs_=0;
 // The external E22 UART and nRF SPI use separate peripherals.
 // Every pin remains -1 until an audited hardware profile is supplied.
-#if BOAT_NRF_CE_PIN >= 0 && BOAT_NRF_CSN_PIN >= 0
+#if BOAT_NRF_PIN_AUDIT_SIGNED && BOAT_NRF_CE_PIN >= 0 && BOAT_NRF_CSN_PIN >= 0 && BOAT_NRF_SCK_PIN >= 0 && BOAT_NRF_MISO_PIN >= 0 && BOAT_NRF_MOSI_PIN >= 0
  nrfReady_=nrf_.begin(false);
 #endif
-#if BOAT_E22_UART_PIN_TX >= 0 && BOAT_E22_UART_PIN_RX >= 0 && BOAT_E22_UART_PIN_M0 >= 0 && BOAT_E22_UART_PIN_M1 >= 0 && BOAT_E22_UART_PIN_AUX >= 0 && BOAT_E22_UART_RF_INTEROPERABILITY_VERIFIED
+#if BOAT_E22_UART_PIN_TX >= 0 && BOAT_E22_UART_PIN_RX >= 0 && BOAT_E22_UART_PIN_M0 >= 0 && BOAT_E22_UART_PIN_M1 >= 0 && BOAT_E22_UART_PIN_AUX >= 0 && BOAT_E22_UART_RF_INTEROPERABILITY_VERIFIED && BOAT_E22_UART_LOGIC_LEVELS_VERIFIED && BOAT_E22_UART_PIN_AUDIT_SIGNED
  const E22BoardPins pins={(int8_t)BOAT_E22_UART_PIN_TX,(int8_t)BOAT_E22_UART_PIN_RX,
   (int8_t)BOAT_E22_UART_PIN_M0,(int8_t)BOAT_E22_UART_PIN_M1,(int8_t)BOAT_E22_UART_PIN_AUX,
   true,true,true};
