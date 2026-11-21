@@ -27,6 +27,8 @@ jobs:
         run: |
           kicad-cli sch erc --output /tmp/boat-kicad/erc.txt Boat/hardware/Direct_MDD20A_R7/Boat_MDD20A_Control_R7.kicad_sch || true
           test -s /tmp/boat-kicad/erc.txt
+          echo '==== ERC report (first 100 lines) ===='
+          head -n 100 /tmp/boat-kicad/erc.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
