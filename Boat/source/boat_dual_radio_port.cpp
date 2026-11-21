@@ -7,7 +7,7 @@ static constexpr uint8_t REMOTE_ID=0x01,BOAT_ID=0x02;
 
 BoatDualRadioPort::BoatDualRadioPort()
  : nrf_(BOAT_NRF_CE_PIN,BOAT_NRF_CSN_PIN,&SPI,BOAT_NRF_CHANNEL),
-   sx1262_(),nrfReady_(false),sx1262Ready_(false),sessionEpoch_(1),
+   e22_(e22Serial_),nrfReady_(false),sx1262Ready_(false),sessionEpoch_(1),
    lastNrfRxMs_(0),lastBackupRxMs_(0),lastNrfHeartbeatTxMs_(0),
    lastBackupHeartbeatTxMs_(0),lastBackupHeartbeatAttemptMs_(0),txSequence_(0),authenticated_(false),
    sessionStarted_(false),lastNrfRxValid_(false),lastBackupRxValid_(false) {
@@ -53,20 +53,16 @@ void BoatDualRadioPort::resetSession(bool preserveReturn){
 bool BoatDualRadioPort::begin() {
  resetSession();nrfReady_=false;sx1262Ready_=false;authenticated_=radioKey_get(rootKey_);
  lastNrfHeartbeatTxMs_=lastBackupHeartbeatTxMs_=lastBackupHeartbeatAttemptMs_=0;
-// Both chip selects must be inactive before sharing the Tracker SPI bus.
-#if BOAT_SX1262_BOARD_AUDIT_SIGNED && BOAT_SX1262_PEER_PHY_VERIFIED && BOAT_SX1262_EU868_APPROVED
- if(BOAT_NRF_CSN_PIN>=0 && BOAT_SX1262_NSS>=0 && BOAT_SX1262_SCK>=0 &&
-    BOAT_SX1262_MISO>=0 && BOAT_SX1262_MOSI>=0){
-  pinMode(BOAT_NRF_CSN_PIN,OUTPUT);digitalWrite(BOAT_NRF_CSN_PIN,HIGH);
-  pinMode(BOAT_SX1262_NSS,OUTPUT);digitalWrite(BOAT_SX1262_NSS,HIGH);
-  SPI.begin(BOAT_SX1262_SCK,BOAT_SX1262_MISO,BOAT_SX1262_MOSI,BOAT_SX1262_NSS);
- }
-#endif
+// The external E22 UART and nRF SPI use separate peripherals.
+// Every pin remains -1 until an audited hardware profile is supplied.
 #if BOAT_NRF_CE_PIN >= 0 && BOAT_NRF_CSN_PIN >= 0
  nrfReady_=nrf_.begin(false);
 #endif
-#if BOAT_SX1262_BOARD_AUDIT_SIGNED && BOAT_SX1262_PEER_PHY_VERIFIED && BOAT_SX1262_EU868_APPROVED
- if(BOAT_NRF_CSN_PIN>=0 && BOAT_SX1262_NSS>=0) sx1262Ready_=sx1262_.begin();
+#if BOAT_E22_UART_PIN_TX >= 0 && BOAT_E22_UART_PIN_RX >= 0 && BOAT_E22_UART_PIN_M0 >= 0 && BOAT_E22_UART_PIN_M1 >= 0 && BOAT_E22_UART_PIN_AUX >= 0 && BOAT_E22_UART_RF_INTEROPERABILITY_VERIFIED
+ const E22BoardPins pins={(int8_t)BOAT_E22_UART_PIN_TX,(int8_t)BOAT_E22_UART_PIN_RX,
+  (int8_t)BOAT_E22_UART_PIN_M0,(int8_t)BOAT_E22_UART_PIN_M1,(int8_t)BOAT_E22_UART_PIN_AUX,
+  true,true,true};
+ sx1262Ready_=e22_.begin(pins);
 #endif
 
  // Wait for the remote's authenticated session-start marker. Its epoch is the
@@ -79,7 +75,7 @@ void BoatDualRadioPort::update() {
  if(handshake_.timeout(now))resetSession(detachedReturn_);
  if(!missionGate_||!missionGate_()||!primaryFresh(now))mission_.reset();
  if(nrfReady_){nrf_.update();RadioFrame f;while(nrf_.receiveFrame(f))receive(LINK_NRF_PRIMARY,f);}
- if(sx1262Ready_){sx1262_.update();RadioFrame f;while(sx1262_.receiveFrame(f))receive(LINK_LORA_BACKUP,f);}
+ if(sx1262Ready_){e22_.update();RadioFrame f;while(e22_.receiveFrame(f))receive(LINK_LORA_BACKUP,f);}
  const auto progress=controller_.status();
  if(progress.transaction){
    ExecInputs in{};const bool ready=missionInputs(in,now);
@@ -232,7 +228,7 @@ void BoatDualRadioPort::markActionExecuted(uint8_t sender,uint8_t epoch,uint16_t
 bool BoatDualRadioPort::sendFrame(ManagedLink link,const RadioFrame &f) {
  if(!sessionStarted_||!radio_frameVerify(f,key_)||!f.sequence||f.sequence>=RadioSessionCounter::REKEY_AT)return false;
  if(link==LINK_NRF_PRIMARY && nrfReady_)return nrf_.sendFrame(f);
- if(link==LINK_LORA_BACKUP && sx1262Ready_){RadioFrame backup=f;backup.flags=RADIO_FLAG_BACKUP_LINK;if(!radio_frameSeal(backup,key_))return false;return sx1262_.sendFrame(backup,millis());}
+ if(link==LINK_LORA_BACKUP && sx1262Ready_){RadioFrame backup=f;backup.flags=RADIO_FLAG_BACKUP_LINK;if(!radio_frameSeal(backup,key_))return false;return e22_.sendFrame(backup,millis());}
  return false;
 }
 bool BoatDualRadioPort::sendHeartbeat(ManagedLink link,uint32_t now) {
