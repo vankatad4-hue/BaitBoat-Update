@@ -40,6 +40,7 @@ static lv_obj_t *sonarPanel;       // Sonar display panel.
 
 static lv_obj_t *connectionLabel;  // Radio status.
 static lv_obj_t *batteryLabel;     // Battery information.
+static lv_obj_t *weatherLabel;
 static lv_obj_t *modeLabel;        // Operating mode.
 
 static lv_obj_t *mapTitle;         // Map panel title.
@@ -271,6 +272,8 @@ static void createHeader()
         17
     );
 
+    weatherLabel=createLabel(headerPanel,"ВРЕМЕ: --.-°C  ---- hPa",510,36);
+    lv_obj_set_style_text_font(weatherLabel,LV_FONT_DEFAULT,LV_PART_MAIN);
     // Add a gear button to open remote settings.
     lv_obj_t *settingsButton = lv_button_create(headerPanel);
     styleTouchButton(settingsButton, lv_color_hex(0x174F92));
@@ -687,6 +690,12 @@ static void updateMapMissionMarkers(const BoatState &state)
 
 void updateBoatScreen(const BoatState &state)
 {
+    if(weatherLabel){
+      char w[80];
+      if(state.weatherValid)snprintf(w,sizeof(w),"ВРЕМЕ: %.1f°C  %.1f hPa",state.temperatureCentiC/100.0f,state.pressurePa/100.0f);
+      else snprintf(w,sizeof(w),"ВРЕМЕ: --.-°C  ---- hPa");
+      lv_label_set_text(weatherLabel,w);
+    }
     // Update the GPS coordinate display only when telemetry reports a valid fix.
     if (state.gpsValid)
     {
