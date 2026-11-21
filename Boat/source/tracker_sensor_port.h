@@ -6,6 +6,7 @@
 #include "bmp280_compensation.h"
 #include "compass_calibration_session.h"
 #include "figure8_compass_calibration.h"
+#include "figure8_auto_session.h"
 #include "m100_compass_qmc5883l.h"
 #include "carrier_sensor_math.h"
 #include "boat_hardware_supervisor.h"
@@ -27,6 +28,10 @@ public:
  void copySensors(BoatHardwareSample &sample,uint32_t now)const;
  bool imuReady()const{return imuReady_;}
  bool m100CompassReady()const{return m100CompassReady_;}
+ bool startAutomaticFigure8(uint32_t now){return autoFigure8_.start(now,imuReady_,m100CompassReady_);}
+ void abortAutomaticFigure8(){autoFigure8_.abort();}
+ Figure8AutoState automaticFigure8State()const{return autoFigure8_.state();}
+ bool automaticFigure8Candidates(Figure8Candidate &gy,Figure8Candidate &m100)const{return autoFigure8_.candidates(gy,m100);}
  bool startFigure8Calibration(){if(!imuReady_||!m100CompassReady_)return false;gy91Figure8_.start();m100Figure8_.start();return true;}
  bool finishFigure8Calibration(Figure8Candidate &gy91,Figure8Candidate &m100){
   const bool a=gy91Figure8_.finish(gy91),b=m100Figure8_.finish(m100);return a&&b;
@@ -44,6 +49,7 @@ private:
  TrackerSensorConfig cfg_{};
  TrackerGnss gnss_;
  CompassCalibrationSession compassCal_;
+ Figure8AutoSession autoFigure8_;
  Figure8CompassCalibration gy91Figure8_,m100Figure8_;
  bool m100CompassReady_=false;uint32_t m100CompassPollAt_=0;
  bool bmpReady_=false,bmpValid_=false;uint8_t bmpAddress_=0;
