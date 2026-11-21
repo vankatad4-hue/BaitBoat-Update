@@ -26,20 +26,28 @@ public:
   BoatSafetyContacts contacts{};Ekm014Feedback coil{};
   if(!hal_.sample(sample,contacts,coil)){fault();return false;}
   boatPhysicalSafetyToSample(contacts,now,sample);
-  if(!boatPhysicalOutputsPermitted(contacts,now)){fault();return false;}
+  const bool common=contacts.isolationTestSigned&&contacts.stopLoopClosed&&
+    contacts.watchdogContactClosed&&contacts.motorContactorFeedbackClosed&&
+    contacts.coilContactorFeedbackClosed&&contacts.batteryHealthy&&
+    (uint32_t)(now-contacts.sampledAt)<100U;
+  if(!common||(!guardActive_&&!contacts.coilCurrentZero)){fault();return false;}
   contacts_=contacts;coil_=coil;lastRead_=now;
   return true;
  }
  bool apply(const BoatActuatorOutput &request,uint16_t leaseMs,uint32_t now){
   if(!initialized_||faulted_||leaseMs==0||leaseMs>100||
      (uint32_t)(now-lastRead_)>=50U||
-     !boatPhysicalOutputsPermitted(contacts_,now))return fail();
+     !contacts_.isolationTestSigned||!contacts_.stopLoopClosed||
+     !contacts_.watchdogContactClosed||!contacts_.motorContactorFeedbackClosed||
+     !contacts_.coilContactorFeedbackClosed||!contacts_.batteryHealthy||
+     (uint32_t)(now-contacts_.sampledAt)>=100U)return fail();
   if(request.left< -1000||request.left>1000||request.right< -1000||
      request.right>1000||request.releaseChannel< -1||request.releaseChannel>3)return fail();
   if(request.releaseChannel>=0){
    if(request.left||request.right||!contacts_.motorCurrentZero)return fail();
    if(!guardActive_){
-    if(!guard_.request(request.releaseChannel,now,coil_))return fail();
+    if(!contacts_.coilCurrentZero||
+      !guard_.request(request.releaseChannel,now,coil_))return fail();
     guardActive_=true;channel_=request.releaseChannel;
    }else if(channel_!=request.releaseChannel)return fail();
    if(!hal_.motorWrite(0,0,leaseMs))return fail();
