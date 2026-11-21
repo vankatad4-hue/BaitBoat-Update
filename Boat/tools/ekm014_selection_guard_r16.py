@@ -23,7 +23,7 @@ def verify():
     assert "not" in contract.lower() and "no custom" in contract.lower()
     assert "independent" in contract.lower()
     wiring=table("Boat/docs/BOAT_EKM014_PIN_WIRING_R16.csv")
-    assert len(wiring)==12,len(wiring)
+    assert len(wiring)==13,len(wiring)  # includes mounting-layout verification row
     inputs={r["EKM014 terminal or pin"]:r for r in wiring if r["Area"]=="Control"}
     outputs={r["EKM014 terminal or pin"]:r for r in wiring if r["Area"]=="Output"}
     assert set(inputs)=={"IN1","IN2","IN3","IN4"}
