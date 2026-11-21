@@ -1,0 +1,22 @@
+ID,Test_or_requirement,Status,Current_blocker,Test_method,Acceptance_authority
+R17-G01,3S minimum to 12.6V battery ripple and BMS measured,NOT_VERIFIED,No physical pack data,Lab supply/battery/oscilloscope tests,HUMAN_MEASUREMENT
+R17-G02,MDD20A left right motor starting and stall current measured,NOT_VERIFIED,No motors mounted/tested,Current-limited dynamometer and controlled start/H-bridge,HUMAN_MEASUREMENT
+R17-G03,Four solenoid peak and hold currents at 3S voltage measured,NOT_VERIFIED,No coil measurements,Current limited bench and coil temperature,HUMAN_MEASUREMENT
+R17-G04,Actual safe maximum coil pulse duration established,NOT_VERIFIED,No solenoid thermal/release envelope,Oscilloscope+load and release measurements,HUMAN_MEASUREMENT
+R17-G05,Duelco 42042237 real 3S voltage and load interface qualified,NOT_VERIFIED,No module obtained,Vendor data plus brownout behavior and manual reset,HUMAN_MEASUREMENT
+R17-G06,Duelco manual reset CANNOT auto-rearm when X1-X2 bridged,NOT_VERIFIED,Monitored reset topology not designed,Vendor monitored reset circuit and bench tests,HUMAN_MEASUREMENT
+R17-G07,Albright SW60C exact 12V continuous coil SKU with NC monitored auxiliary selected,NOT_VERIFIED,Exact full manufacturer SKU missing,Vendor part quote and supplemental contact logic diagram,MANUFACTURER
+R17-G08,Albright contactor current rating proves inductive MDD20A+EKM014 cutoff,NOT_VERIFIED,No loads and fuse tables measured,Manufacturer DC inductive rating and contact endurance,HUMAN_MEASUREMENT
+R17-G09,Albright coil start and drop-out verified at loaded 3S extremes,NOT_VERIFIED,Coil supply and snubber unselected,Power supply sag temperature suppression test,HUMAN_MEASUREMENT
+R17-G10,Contactor optional auxiliary meets independent feedback for welded main contacts,NOT_VERIFIED,No manufacturer confirmation,Force-guided contact proof or external validated solution,MANUFACTURER
+R17-G11,Physical safety hardware fits actual V080 hull outside 30mm electronics slot,NOT_VERIFIED,No hull clearance survey,Caliper and 3D envelope with mounting and wiring,HUMAN_MEASUREMENT
+R17-G12,Commercial timer maximum pulse time < coil safe limit including faults,NOT_VERIFIED,Selected timer not certified and physical safe pulse unknown,Independent fault injection and max/min timing across conditions,HUMAN_MEASUREMENT
+R17-G13,Commercial onehot logic rejects simultaneous all masks and timing skew,NOT_VERIFIED,No complete onehot module chosen,All16 masks and skew timing tests with independent tool,HUMAN_MEASUREMENT
+R17-G14,Commercial no-repeat token consumed until all requests released and current zero,NOT_VERIFIED,No verified no-repeat ready-made controller,Stuck-high request >10x pulse period and no-repeat tests,HUMAN_MEASUREMENT
+R17-G15,Power-on/BMS reset/brownout keeps all actuators OFF until manual ARM,NOT_VERIFIED,Supervisor and reset source unselected,Voltage sag/full recovery physical test,HUMAN_MEASUREMENT
+R17-G16,Independent real coil and motor current-zero verified without MCU,NOT_VERIFIED,Only telemetry sensor research,Real current threshold relay and fault injection,HUMAN_MEASUREMENT
+R17-G17,Physical STOP fully isolates MDD20A and EKM014 VH when input stuck HIGH,NOT_VERIFIED,No hardware cutoff physically wired,Live safe current-limited dummy-load fault injection,HUMAN_MEASUREMENT
+R17-G18,EKM014 VH and VL supply levels and onehot IN1-4 physical pinouts proven,NOT_VERIFIED,Selected EKM014 not yet received,Measured vendor board pins and deliberate unpowered continuity,HUMAN_MEASUREMENT
+R17-G19,Harness fuses and connector ratings/corrosion/waterproofing qualified,NOT_VERIFIED,All cabling unselected,Fuse short circuit DC and environmental tests,HUMAN_MEASUREMENT
+R17-G20,Sonar remains unselected and not implemented,NOT_APPLICABLE,Out of scope by owner decision,No sonar hardware or software changes,REQUIREMENT
+R17-G21,Zero custom electronics PCB is required or fabricated,NOT_VERIFIED,Factory modules and harness have not been built,Procurement and physical design audit,HUMAN_MEASUREMENT
