@@ -30,7 +30,7 @@ public:
     contacts.watchdogContactClosed&&contacts.motorContactorFeedbackClosed&&
     contacts.coilContactorFeedbackClosed&&contacts.batteryHealthy&&
     (uint32_t)(now-contacts.sampledAt)<100U;
-  if(!common||(!guardActive_&&!contacts.coilCurrentZero)){fault();return false;}
+  if(!common||(!guardActive_&&!guard_.awaitingZero()&&!contacts.coilCurrentZero)){fault();return false;}
   contacts_=contacts;coil_=coil;lastRead_=now;
   return true;
  }
@@ -67,6 +67,7 @@ public:
    guard_.tick(now,coil_);
    if(guard_.awaitingZero()&&(request.left||request.right))return fail();
   }
+  if((request.left||request.right)&&(!contacts_.coilCurrentZero||guard_.awaitingZero()))return fail();
   if(!hal_.motorWrite(request.left,request.right,leaseMs))return fail();
   return true;
  }
