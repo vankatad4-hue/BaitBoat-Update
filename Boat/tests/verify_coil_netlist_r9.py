@@ -35,7 +35,8 @@ def exported_netlist(path):
     doc = ET.parse(path)
     circuits = {}
     for net in doc.findall("./nets/net"):
-        netname = net.get("name")
+        # KiCad 9 XML uses root-sheet-qualified local labels, e.g. /ACT_RETURN.
+        netname = net.get("name", "").removeprefix("/")
         assert netname not in circuits, netname
         circuits[netname] = {(p.get("ref"), p.get("pin")) for p in net.findall("node")}
     return circuits
