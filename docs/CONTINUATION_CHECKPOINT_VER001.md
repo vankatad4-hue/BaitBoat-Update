@@ -597,3 +597,7 @@ Added [host-side Python gate](../Boat/tools/r22_interface_gate.py) with seven un
 
 ## R23 — host test execution and GitHub Actions (2026-11-21)
 R22 seven Python unittest cases were executed in a local isolated environment and passed (7/7; no physical hardware). Added [GitHub Actions R23 interface gate](../.github/workflows/r23-interface-gates.yml), running Python 3.11 syntax validation and all R22 tests on relevant pushes, PRs and manual dispatch. **GitHub Actions run status is not yet confirmed**; do not equate workflow file commit with successful CI. GPIO v1.2, LoRa RF compatibility, COTS safety hardware and physical acceptance remain blocked. Remote VER028 / Boat VER014 held; sonar deferred.
+
+
+## R24 — host-only physical commissioning safety gates (2026-11-21)
+Added [R24 fail-closed commissioning checklist tests](../Boat/tools/r24_safety_gate.py), six unit tests covering 18 mandatory physical acceptance fields, absence of assembled hardware and human review, onehot/no-repeat, and deferred sonar scope. Expanded [GitHub Actions interface gate](../.github/workflows/r23-interface-gates.yml) to run both R22 and R24 host tests (13 cases total). No GitHub Actions success asserted; the commit-linked PR-only run lookup returned no runs for the earlier R23 workflow. No real safety hardware selected or certified. No GPIO or LoRa physical validation. Remote VER028 / Boat VER014 held.
