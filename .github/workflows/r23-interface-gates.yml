@@ -95,3 +95,5 @@ jobs:
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/figure8_calibration_record_test.cpp -o /tmp/r52_cal && /tmp/r52_cal
       - name: R53 dual-slot compass calibration storage recovery
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/figure8_calibration_store_test.cpp -o /tmp/r53_store && /tmp/r53_store
+      - name: R54 external microSD pin and SPI CS safety regression
+        run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/boat_sd_module_profile_test.cpp -o /tmp/r54_sd && /tmp/r54_sd
