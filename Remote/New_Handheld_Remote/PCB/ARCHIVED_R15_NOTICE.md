@@ -11,6 +11,6 @@ The **new active physical design** is prefabricated:
 - genuine protected 1S4P battery pack, factory-made fuse/charger/terminal/cable assemblies,
 - only the **plastic outer shell, grips, switch brackets** may be 3D printed.
 
-Use [R15 active Remote plan](../../../docs/REMOTE_MODULE_ONLY_IMPLEMENTATION_R15.md), [Remote harness](../../../docs/REMOTE_MODULE_ONLY_WIRING_R15.csv), and [R15 master policy](../../../../docs/HARDWARE_MODULE_ONLY_POLICY_R15.md).
+Use [R15 active Remote plan](../../docs/REMOTE_MODULE_ONLY_IMPLEMENTATION_R15.md), [Remote harness](../../docs/REMOTE_MODULE_ONLY_WIRING_R15.csv), and [R15 master policy](../../../docs/HARDWARE_MODULE_ONLY_POLICY_R15.md).
 
 All pin mappings, module boot defaults, charging and RF compatibility require actual bench verification. Official releases remain withheld.

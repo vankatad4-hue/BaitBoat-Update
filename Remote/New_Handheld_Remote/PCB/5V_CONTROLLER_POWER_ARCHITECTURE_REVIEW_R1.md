@@ -1,4 +1,4 @@
-> **R15 ARCHIVED, NOT ACTIVE:** Custom Remote PCB design (TPS63070/TPS61023, joystick/button/radio power carrier or traces) is canceled. Only premade electronic boards and removable harnesses are permitted. See [R15 Remote modules](../../../docs/REMOTE_MODULE_ONLY_IMPLEMENTATION_R15.md) and [project-wide policy](../../../docs/HARDWARE_MODULE_ONLY_POLICY_R15.md). No PCB manufacturing.
+> **R15 ARCHIVED, NOT ACTIVE:** Custom Remote PCB design (TPS63070/TPS61023, joystick/button/radio power carrier or traces) is canceled. Only premade electronic boards and removable harnesses are permitted. See [R15 Remote modules](../../docs/REMOTE_MODULE_ONLY_IMPLEMENTATION_R15.md) and [project-wide policy](../../../docs/HARDWARE_MODULE_ONLY_POLICY_R15.md). No PCB manufacturing.
 
 # 5 V Controller Power Architecture Review R1
 
