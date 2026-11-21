@@ -1,5 +1,7 @@
 # Boat Hardware and Firmware
 
+> **R17 commercial safety research (not commissioned):** [Safety monitor/contactor/timer candidates](docs/BOAT_PREMADE_SAFETY_STACK_R17.md), [18 interface handoffs](docs/BOAT_R17_MODULE_SAFETY_HANDOFF.csv), [21 physical acceptance gates](docs/BOAT_R17_RELEASE_GATES.csv). EKM014 selection unchanged. NO custom PCB and NO actuator power.
+
 > **R16 owner-confirmed selection:** **Electrokit EKM014 41024394** for all four Boat solenoids; [selected module data](docs/BOAT_EKM014_SELECTED_R16.md), [channel wiring](docs/BOAT_EKM014_PIN_WIRING_R16.csv), [commissioning checklist](docs/BOAT_EKM014_ACCEPTANCE_R16.md). No custom driver PCB; no powered actuators until separate premade safety functions are proven.
 
 > **R15 ACTIVE:** No custom carrier or power/safety PCB. Build only with premanufactured modules and cable harnesses. R7–R13 KiCad sheets archived; don't fabricate. [New module plan](docs/BOAT_MODULE_ONLY_IMPLEMENTATION_R15.md) · [Wiring](docs/BOAT_MODULE_ONLY_WIRING_R15.csv). Hardware fails CLOSED until real independent safety/coil-current/power cutoff accepted. Old content below describes historical work.

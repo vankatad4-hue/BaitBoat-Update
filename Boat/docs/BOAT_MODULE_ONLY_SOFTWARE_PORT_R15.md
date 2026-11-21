@@ -5,3 +5,6 @@
 
 ## R16 selected EKM014 fixed mapping
 The owner has now selected **Electrokit EKM014 41024394**. New `Boat/source/ekm014_logical_interface_r16.h` and corresponding host C++ test fix `0→IN1/CH1 LH`, `1→IN2/CH2 RH`, `2→IN3/CH3 LK`, `3→IN4/CH4 RK` and reject all non-one-hot masks as valid single-channel requests. The interface is **purely logical**, does not define ESP32 pins or emit real gate signals; published supply-envelope validation is mathematical only. Physical output remains disabled until commercial independent hardware timing, STOP cutoff and current sensing are selected/qualified. `Boat/tools/ekm014_selection_guard_r16.py` checks repo BOM and wire mapping in CI.
+
+## R17 no changed physical GPIO
+The R17 stack candidate/bench gate does not change the live Heltec output port, ESP32 pins, Cytron MDD20A safety request code or EKM014 logical masks. The new `Boat/tools/verify_premade_safety_stack_r17.py` guard is build-time documentation safety verification only; it does not commission a hardware watchdog, contactor or pulse limiter. It prohibits interpreting 3A/24VDC supervisor contacts as current-rated motor power and requires all 20 hardware acceptance gates remain unverified until physical tests are completed.

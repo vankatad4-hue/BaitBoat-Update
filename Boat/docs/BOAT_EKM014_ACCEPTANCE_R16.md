@@ -16,3 +16,6 @@
 - [ ] Only after independent safety review connect actual solenoids; no physical tests can be claimed by ChatGPT without actual hardware and measurements.
 
 Test result: **NOT PERFORMED.** No live actuator authorization. Boat VER014 and Remote VER028 unchanged. Sonar not selected.
+
+## R17 additional acceptance gates
+See [R17 combined safety-stack candidate design](BOAT_PREMADE_SAFETY_STACK_R17.md) and [all 21 actual physical release gates](BOAT_R17_RELEASE_GATES.csv). Duelco NST-3.2 must only enable a separate DC-rated contactor coil, not motor/solenoid current. The SW60P sealed contactor **cannot** provide optional feedback per manufacturer; SW60A/C contactor with auxiliary remains candidate. No actual pulse timer or one-hot safety circuit accepted. **Everything in this checklist remains physically NOT PERFORMED.**

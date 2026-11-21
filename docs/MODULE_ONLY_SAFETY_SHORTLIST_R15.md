@@ -1,4 +1,6 @@
-# R15 premade safety modules: candidate qualification (NOT approved)
+# R15 historical premade safety shortlist (UPDATED BY R17)
+
+> **R17 supersedes this initial candidate study.** See [manufacturer-checked R17 safety stack](../Boat/docs/BOAT_PREMADE_SAFETY_STACK_R17.md), including SW60C/SW60A optional monitoring feedback, **SW60P no available auxiliary**, and the exact Duelco reset warnings. Still no independent actuator power approval.
 **2026-11-21. No custom electronic PCB is allowed.** This is a procurement/compatibility investigation, not a working independent safety circuit. All parts here require measurement and matched-system wiring verification before selection.
 
 ## S1 — Premade STOP/supervisory logic: Duelco NST-3.2 8–36V DC

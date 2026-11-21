@@ -1,5 +1,7 @@
 # Flytec V080 Bait Boat Retrofit
 
+> **R17 safety-module evaluation:** EKM014 is selected. Duelco NST-3.2 and Albright SW60C/A with contact feedback are research candidates only; **all physical safety release gates remain open**. [Current module-only safety design](Boat/docs/BOAT_PREMADE_SAFETY_STACK_R17.md) · [21 release gates](Boat/docs/BOAT_R17_RELEASE_GATES.csv).
+
 > **R16 selection (2026-11-21):** Owner confirmed **Electrokit EKM014 (41024394)** as the one 4-channel solenoid MOSFET module. [Selected module, safe wiring, outstanding tests](Boat/docs/BOAT_EKM014_SELECTED_R16.md). No custom PCB fabrication. Not yet installed or electrically approved.
 
 > **ACTIVE HARDWARE RULE — R15 MODULE-ONLY (2026-11-21):** Custom electronic PCB/board fabrication has been canceled for BOTH Boat and Remote. Use ready-made manufactured modules, keyed/removable harnesses, premade fuses/terminal adapters; keep custom 3D printed non-electronic enclosures only. Previous KiCad and Remote PCB drafts are **archived engineering reference**, not active manufacturing plans. Exact module choices and safety parts remain subject to physical qualification. Read [R15 module-only policy](docs/HARDWARE_MODULE_ONLY_POLICY_R15.md), [Boat implementation](Boat/docs/BOAT_MODULE_ONLY_IMPLEMENTATION_R15.md), and [Remote implementation](Remote/docs/REMOTE_MODULE_ONLY_IMPLEMENTATION_R15.md). **No power to motors/solenoids.**
