@@ -87,3 +87,5 @@ jobs:
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/physical_driver_commissioning_gate_test.cpp -o /tmp/r48_gate && /tmp/r48_gate
       - name: R49 EKM014 single-coil pulse and current-zero regression
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/ekm014_pulse_guard_test.cpp -o /tmp/r49_ekm014 && /tmp/r49_ekm014
+      - name: R50 physical driver adapter regression
+        run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/boat_physical_driver_adapter_test.cpp -o /tmp/r50_driver && /tmp/r50_driver
