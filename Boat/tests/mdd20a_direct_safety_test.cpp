@@ -27,7 +27,7 @@ int main(){
  assert(s.prepare({0,0,0},good(70),70,o)&&!o.pwmLeft&&!o.pwmRight);
  assert(s.prepare({0,0,-1},good(71),71,o));
  assert(s.prepare({400,0,-1},good(100),100,o)&&!o.pwmLeft);
- assert(s.prepare({400,0,-1},good(102),102,o)&&!o.pwmLeft);
+ assert(s.prepare({400,0,-1},good(102),102,o)&&o.pwmLeft==320);
  assert(s.prepare({400,0,-1},good(131),131,o)&&o.pwmLeft==320);
  assert(s.configure(p,mask,false,true,800,30));
  auto unsafe=good(141);unsafe.motorsIdle=false;
