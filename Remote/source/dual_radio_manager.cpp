@@ -1,4 +1,5 @@
 #include "dual_radio_manager.h"
+#include <cstring>
 
 static constexpr uint32_t PRIMARY_STALE_MS = 250;
 static constexpr uint32_t BACKUP_STALE_MS = 6000;
