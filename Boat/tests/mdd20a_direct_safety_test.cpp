@@ -27,8 +27,13 @@ int main(){
  assert(s.prepare({0,0,0},good(70),70,o)&&!o.pwmLeft&&!o.pwmRight);
  assert(s.prepare({0,0,-1},good(71),71,o));
  assert(s.prepare({400,0,-1},good(100),100,o)&&!o.pwmLeft);
- assert(s.prepare({400,0,-1},good(102),102,o)&&o.pwmLeft==320);
+ assert(s.prepare({400,0,-1},good(102),102,o)&&!o.pwmLeft);
+ assert(s.prepare({400,0,-1},good(131),131,o)&&o.pwmLeft==320);
  assert(s.configure(p,mask,false,true,800,30));
- assert(!s.prepare({100,0,1},good(101),101,o)&&s.failed());
+ auto unsafe=good(141);unsafe.motorsIdle=false;
+ assert(!s.prepare({0,0,1},unsafe,141,o)&&s.failed());
+ assert(s.configure(p,mask,false,true,800,30));
+ assert(s.prepare({400,0,-1},good(141),141,o)&&o.pwmLeft==320);
+ assert(!s.prepare({0,0,1},good(142),142,o)&&s.failed());
  std::cout<<"Direct MDD20A local safety gate and fault latch passed\n";
 }

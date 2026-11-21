@@ -31,11 +31,9 @@ public:
   out={};
   if(fault_||!mdd20aDirectFeedbackReady(fb,now)) {fault();return false;}
   // Four solenoids require their own hardware one-hot/time-limited driver.
-  if(request.releaseChannel!=-1) {
-   // PWM must remain zero while releasing; caller handles release separately.
-   if(request.left||request.right)fault();
-   return !fault_;
-  }
+  if(request.releaseChannel!=-1&&!fb.motorsIdle){fault();return false;}
+  // The shared output planner enforces no switching from a moving motor to
+  // a coil, and no direct restart of propulsion after a coil pulse.
   if(!planner_.convert(request,now,fb.interlocksHealthy,out)) {fault();out={};return false;}
   return true;
  }
