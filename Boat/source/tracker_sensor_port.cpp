@@ -41,7 +41,7 @@ bool TrackerSensorPort::begin(const TrackerSensorConfig &cfg){
  serial_.begin(cfg.gnssBaud,SERIAL_8N1,cfg.gnssRx,cfg.gnssTx);
  if(!wire_.begin(cfg.sda,cfg.scl,100000))return false;
  wire_.setTimeOut(10);
- imuReady_=initializeImu();bmpReady_=initializeBmp();configured_=true;
+ imuReady_=initializeImu();bmpReady_=initializeBmp();m100CompassReady_=initializeM100Compass();configured_=true;
  return true; // GNSS and ADC diagnostics remain possible if IMU not identified
 }
 void TrackerSensorPort::pollImu(uint32_t now){
@@ -54,6 +54,7 @@ void TrackerSensorPort::pollImu(uint32_t now){
  SensorVector m={little(mag)*0.15*adjust_[0],little(mag+2)*0.15*adjust_[1],little(mag+4)*0.15*adjust_[2]};
  rawAccel_=a;rawMag_=m;rawAt_=now;rawValid_=true;
  if(compassCal_.active())compassCal_.add(m);
+ if(gy91Figure8_.active())gy91Figure8_.add(m);
  headingValid_=carrierHeading(a,m,cfg_.heading,heading_);
  if(headingValid_)headingAt_=now;
 }
@@ -72,7 +73,7 @@ void TrackerSensorPort::poll(uint32_t now){
  if(!configured_)return;
  // Bounded RX work; at 115200 baud service frequently enough to prevent backlog.
  for(unsigned i=0;i<256&&serial_.available();++i){const int c=serial_.read();if(c>=0)gnss_.feed((char)c,now);}
- pollImu(now);pollAdc(now);pollBmp(now);
+ pollImu(now);pollAdc(now);pollBmp(now);pollM100Compass(now);
 }
 void TrackerSensorPort::copySensors(BoatHardwareSample &s,uint32_t now)const{
  auto g=gnss_.snapshot(now);
@@ -103,4 +104,20 @@ void TrackerSensorPort::pollBmp(uint32_t now){
  const uint32_t t=((uint32_t)b[3]<<12)|((uint32_t)b[4]<<4)|(b[5]>>4);
  bmpValid_=bmp280Compensate(bmpCal_,t,p,bmpTemp_,bmpPressure_);
  if(bmpValid_)bmpAt_=now;
+}
+
+bool TrackerSensorPort::initializeM100Compass(){
+ uint8_t id=0;
+ // QMC5883L identity is 0xFF at register 0x0D. No blind fallback for
+ // QMC5883P replacement silicon: its register map differs.
+ if(!readRegs(0x0d,0x0d,&id,1)||!m100Qmc5883lIdentity(id))return false;
+ return writeReg(0x0d,0x0b,0x01)&&writeReg(0x0d,0x09,0x1d);
+}
+void TrackerSensorPort::pollM100Compass(uint32_t now){
+ if(!m100CompassReady_||(uint32_t)(now-m100CompassPollAt_)<100U)return;
+ m100CompassPollAt_=now;
+ uint8_t data[7]={};SensorVector m{};
+ if(readRegs(0x0d,0x00,data,7)&&m100Qmc5883lDecode(data,m)){
+  if(m100Figure8_.active())m100Figure8_.add(m);
+ }
 }
