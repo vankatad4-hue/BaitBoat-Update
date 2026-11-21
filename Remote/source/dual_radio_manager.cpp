@@ -106,6 +106,10 @@ void DualRadioManager::limitBackupMotorCommand(BoatCommand &cmd) {
 }
 bool DualRadioManager::send(const BoatCommand &cmd, RadioSendFn sendFn, uint32_t now) {
     if (!sendFn || active_ == LINK_NONE) return false;
+    // Polling may lag a failed physical link. Never use a cached active_
+    // selection as permission to send after authenticated RX has expired.
+    if (active_ == LINK_NRF_PRIMARY && !primaryHealthy(now)) return false;
+    if (active_ == LINK_LORA_BACKUP && !backupHealthy(now)) return false;
     if (active_ == LINK_LORA_BACKUP && state_ == LINK_BACKUP) {
         if (!backupCommandAllowed(cmd)) return false;
         BoatCommand safe = cmd;
