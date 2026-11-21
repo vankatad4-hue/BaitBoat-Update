@@ -1,0 +1,128 @@
+{
+  "project": "Boat_Safety_Power_R13",
+  "revision": "R13-UNQUALIFIED",
+  "manufacturer": "RECOM",
+  "part_number": "R-78E3.3-0.5",
+  "datasheet": "https://recom-power.com/pdf/Innoline/R-78E-0.5.pdf",
+  "published_datasheet_revision": "9/2025",
+  "source_specs": {
+    "input_min_v": 6,
+    "input_max_v": 28,
+    "output_v": 3.3,
+    "max_output_ma": 500,
+    "dim_mm": [
+      11.6,
+      8.5,
+      10.4
+    ],
+    "min_recommended_load_percent_for_spec_ripple": 2,
+    "maximum_capacitive_load_uF": 220
+  },
+  "parts": [
+    "J1",
+    "F1",
+    "U1",
+    "J2",
+    "J3",
+    "C1",
+    "C2",
+    "C3",
+    "R1"
+  ],
+  "nets": {
+    "PACK_SWITCHED_3S_TBD": [
+      [
+        "J1",
+        "1"
+      ],
+      [
+        "F1",
+        "1"
+      ]
+    ],
+    "LOGIC_RETURN_STAR": [
+      [
+        "J1",
+        "2"
+      ],
+      [
+        "U1",
+        "2"
+      ],
+      [
+        "J2",
+        "2"
+      ],
+      [
+        "J3",
+        "2"
+      ],
+      [
+        "C1",
+        "2"
+      ],
+      [
+        "C2",
+        "2"
+      ],
+      [
+        "C3",
+        "2"
+      ],
+      [
+        "R1",
+        "2"
+      ]
+    ],
+    "PACK_SWITCHED_LOGIC_FUSED": [
+      [
+        "F1",
+        "2"
+      ],
+      [
+        "U1",
+        "1"
+      ],
+      [
+        "C1",
+        "1"
+      ]
+    ],
+    "VLOGIC_3V3": [
+      [
+        "U1",
+        "3"
+      ],
+      [
+        "J2",
+        "1"
+      ],
+      [
+        "J3",
+        "1"
+      ],
+      [
+        "C2",
+        "1"
+      ],
+      [
+        "C3",
+        "1"
+      ],
+      [
+        "R1",
+        "1"
+      ]
+    ]
+  },
+  "blockers": [
+    "Upstream 3S switched pack and BMS measured transient absent",
+    "Input branch fuse and wire ampacity unselected",
+    "Unapproved physical PCB footprint and keyed adapter",
+    "No independent power-on reset/supervisor output included",
+    "No RF supply from this safety rail; separate radio supply to choose",
+    "Actual load budget for U1 and combined R10-R12 logic unverified",
+    "Optional capacitor and bleed resistor placement/thermal/ripple to bench",
+    "Cannot claim R10-R12/ERC pass by simply naming external 3.3V net"
+  ]
+}

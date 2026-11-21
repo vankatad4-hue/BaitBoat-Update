@@ -1,0 +1,13 @@
+Ref,Part,Description,Value,Status,ManufacturerSource
+U1,RECOM R-78E3.3-0.5,Preassembled SIP3 switching regulator VIN pin1 GND pin2 VOUT pin3,3.3V / 500mA,SELECTED_CANDIDATE_NOT_VALIDATED,https://recom-power.com/pdf/Innoline/R-78E-0.5.pdf
+F1,Branch fuse,Input 3S supply fuse and verified holder,TBD_BMS_AND_WIRING,NOT_SELECTED,
+C1,Input local MLCC,Optional input decoupling,10uF 35V C0-? actual DC-bias verify,CANDIDATE,
+C2,Output local MLCC,Optional output decoupling,10uF 10V actual DC-bias verify,CANDIDATE,
+C3,Output 100nF,High frequency test bypass,100nF 10V,CANDIDATE,
+R1,Ripple minimum load,Optional 300ohm 1% 0.125W load at 3.3V approx 11mA,300ohm,OPTIONAL_DNP_PENDING_RIPPLE_TEST,
+J1,Supply input,Keyed 3S switched 2-pin input and logic return,2-pin,CONNECTOR_TBD,
+J2,Safety logic output,3.3V and low-current return to R10-R12,2-pin,CONNECTOR_TBD,
+J3,Test connector,3.3V and low-current return test point,2-pin,CONNECTOR_TBD,
+EXT_SUPERVISOR,Independent hardware POR,Missing PG from selected 3-pin regulator,TBD,REQUIRED_NOT_IMPLEMENTED,
+EXT_RF,Independent nRF PA/LNA supply,Separate RF regulator and decoupling,TBD,REQUIRED_NOT_IMPLEMENTED,
+EXT_5V,Heltec 5V converter,Separate 3S-to-approved 5V converter,TBD,REQUIRED_NOT_IMPLEMENTED,
