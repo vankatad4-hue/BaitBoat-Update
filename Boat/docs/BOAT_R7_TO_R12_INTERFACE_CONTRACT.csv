@@ -1,0 +1,22 @@
+Stage,Source,SourceSignal,Destination,DestinationSignal,Status,RequiredVerification
+Release_Raw,R7_SOL_REQ_LH,R7_SOL_REQ_LH,R12_J1_PIN1,SOL_REQ_LH,NOT_PHYSICALLY_CONNECTED,3V3 input conditioning and default LOW at boot
+Release_Raw,R7_SOL_REQ_RH,R7_SOL_REQ_RH,R12_J1_PIN2,SOL_REQ_RH,NOT_PHYSICALLY_CONNECTED,3V3 input conditioning and default LOW at boot
+Release_Raw,R7_SOL_REQ_LK,R7_SOL_REQ_LK,R12_J1_PIN3,SOL_REQ_LK,NOT_PHYSICALLY_CONNECTED,3V3 input conditioning and default LOW at boot
+Release_Raw,R7_SOL_REQ_RK,R7_SOL_REQ_RK,R12_J1_PIN4,SOL_REQ_RK,NOT_PHYSICALLY_CONNECTED,3V3 input conditioning and default LOW at boot
+Safety,Unqualified_Logic_3V3,VLOGIC_3V3,R12_J2_PIN1,VLOGIC_3V3,REGULATOR_NOT_SELECTED,3S isolated protected 3V3 rail and POR sequencing
+Safety,Unqualified_GND,LOGIC_RETURN,R12_J2_PIN2,GND,RETURN_UNVERIFIED,No actuator current in logic return
+Safety,R10_U4_1Q,LATCH_Q,R12_J2_PIN3,HW_LATCH_OK_R10,NOT_BROUGHT_OUT,Independent physical STOP latch requires connector and measured feedback
+Safety,External_POR,POR_OK_TBD,R12_J2_PIN4,POR_OK_TBD,NOT_DESIGNED,Reset held until all RC nodes and logic inputs settled
+Safety,External_Motor_Current_Zero,MOTOR_CURRENT_ZERO_TBD,R12_J2_PIN5,MOTOR_CURRENT_ZERO_TBD,NOT_DESIGNED,Independent analog current-zero comparator and measured off
+Safety,External_Coil_Current_Zero,COIL_CURRENT_ZERO_TBD,R12_J2_PIN6,COIL_CURRENT_ZERO_TBD,NOT_DESIGNED,Measured coil current-zero before rearming
+Safety,External_Rail_Good,RAIL_VALID_OK_TBD,R12_J2_PIN7,RAIL_VALID_OK_TBD,NOT_DESIGNED,Independent rail supervisor and supply tolerance
+Release_Token,R12_J3_PIN1,RELEASE_EDGE_TOKEN_TBD,R11_J2_PIN6,RELEASE_EDGE_TOKEN_TBD,NOT_PHYSICALLY_CONNECTED,One-shot token Tmax plus margin less than R11 main pulse Tmin
+Release_Token,R12_J3_PIN2,GND,R11_LOGIC_GND,GND,NOT_PHYSICALLY_CONNECTED,Return and signal-level continuity
+Release_LH,R11_J3_PIN1,PULSE_LH_LIMITED_TBD,R9_J2_PIN1,PULSE_LH_LIMITED_TBD,NOT_PHYSICALLY_CONNECTED,Hardware pulse limiter and gate short-circuit review
+Release_RH,R11_J3_PIN2,PULSE_RH_LIMITED_TBD,R9_J2_PIN2,PULSE_RH_LIMITED_TBD,NOT_PHYSICALLY_CONNECTED,Hardware pulse limiter and gate short-circuit review
+Release_LK,R11_J3_PIN3,PULSE_LK_LIMITED_TBD,R9_J2_PIN3,PULSE_LK_LIMITED_TBD,NOT_PHYSICALLY_CONNECTED,Hardware pulse limiter and gate short-circuit review
+Release_RK,R11_J3_PIN4,PULSE_RK_LIMITED_TBD,R9_J2_PIN4,PULSE_RK_LIMITED_TBD,NOT_PHYSICALLY_CONNECTED,Hardware pulse limiter and gate short-circuit review
+Solenoid_Power,R10_J6_PIN1,ACT_SOL_POS_AFTER_LATCH_TBD,R9_J1_PIN1,ACT_SOL_POS_AFTER_LATCH_TBD,UNQUALIFIED_POWER_HARNESS,High-side MOSFET SOA FET shorts fuse coordination actual coil current
+Solenoid_Return,R10_J6_PIN2,PACK_RETURN,R9_J1_PIN2,ACT_RETURN,UNQUALIFIED_POWER_HARNESS,Keyed high-current return independent of sensor ground
+Motor_Power,R10_J5_PIN1,MOTOR_POS_FUSED,MDD20A_POWER_IN,MOTOR_POS_FUSED,UNQUALIFIED_POWER_HARNESS,Motor stall thermal fuse and stop-coast tests
+Whole_System,R7_R9_R10_R11_R12_SEPARATE_KICAD,NO_HIERARCHY,Boat_PCB,RATED_INTERCONNECT_AND_POWER,NOT_DESIGNED,Zero combined ERC PCB DRC physical acceptance and no-safety-bypass proof
