@@ -11,6 +11,7 @@ struct BoatTelemetry {
  bool latitudeRecordValid,longitudeRecordValid,coordinatePairValid;uint8_t latitudeSample,longitudeSample;
  uint32_t latitudeReceivedAtMs,longitudeReceivedAtMs,coordinatePairReceivedAtMs;
  bool navigationValid;uint8_t navigationStatus,waypointIndex,navigationSample;uint32_t navigationReceivedAtMs;
+ bool weatherValid=false;int16_t temperatureCentiC=0;uint32_t pressurePa=0,weatherReceivedAtMs=0;
  bool sonarSummaryValid;uint16_t sonarDepthCm,sonarRangeCm;uint8_t sonarHealth,sonarAlarmFlags,sonarSample;uint32_t sonarReceivedAtMs;
 };
 extern BoatTelemetry telemetry;
