@@ -1,0 +1,32 @@
+Side,Item,Qty,Selected_or_candidate,Exact_part,Preferred_source,Shop_URL,Alternative_source,Alternative_URL,Availability_evidence,Purchase_gate
+Boat,Controller GNSS LoRa,1,SELECTED,Heltec Wireless Tracker v1.2,Ardboard Bulgaria,https://www.ardboard.com/index.php?product_id=589&route=product%2Fproduct,Heltec,https://heltec.org/project/Wireless-Tracker/,EXACT_BG_LISTING_STOCK_UNVERIFIED,Revision-specific pin crosswalk
+Boat,Motor driver,1,SELECTED,Cytron MDD20A,Lemona EU,https://www.lemona-electronics.eu/en/search.html?query=Cytron+MDD20A,Cytron,https://www.cytron.io/c-industry/p-20amp-6v-30v-dc-motor-driver-2-channels,EXACT_EU_LISTING_SHIPPING_UNVERIFIED,Stall current and BMS budget
+Boat,Solenoid driver,1,OWNER_FROZEN,Electrokit EKM014 41024394,Electrokit,https://www.electrokit.com/en/mosfet-drivkort-4-kan-50v-10a,Electrokit docs,https://docs.electrokit.com/en/modules/EKM014/,EXACT_EU_LISTING_SHIPPING_UNVERIFIED,Independent safety chain
+Boat,5V power,1,CANDIDATE,Olimex DCDC6-16-TO5,Olimex Bulgaria,https://www.olimex.com/Products/Power-Supply/Modules/DCDC6-16-TO5/,Comet Bulgaria,https://store.comet.bg/en/Catalogue/Product/18365/,R18_OLIMEX_IN_STOCK_CHECKED_2026-11-21,5V entry pin harness thermal
+Boat,Separate 5V islands,2,CANDIDATE,Pololu S13V20F5,Pololu,https://www.pololu.com/product/4085,,,MANUFACTURER_PAGE_ONLY,Regulator fit and supply budget
+Boat,Safety 3V3,1,CANDIDATE,RECOM R-78E3.3-0.5,Farnell Bulgaria,https://bg.farnell.com/c/power-supplies/dc-dc-converters/linear-regulator-replacements?brand=recom-power,Comet Bulgaria,https://store.comet.bg/en/CatalogueRS/Product/10923552/,EXACT_BG_LISTED_NO_CONFIRMED_STOCK,Independent POR and 0.5A budget
+Boat,nRF 3V3,1,CANDIDATE,Pololu D24V22F3,Pololu,https://www.pololu.com/product/2857,,,MANUFACTURER_PAGE_ONLY,RF load and noise
+Boat,Primary radio,1,UNSELECTED_EXACT_SKU,nRF24L01+ PA/LNA,No approved exact shop,,,,NO_VERIFIED_LISTING,Vendor authenticity and radio test
+Boat,IMU compass barometer,1,CANDIDATE,MPU9250 + BMP280 breakout,Farnell Bulgaria,https://bg.farnell.com/,,,NO_EXACT_LISTING,Real chip and I2C voltage
+Boat,Emergency stop monitor,1,CANDIDATE,Duelco NST-3.2 42042237,Duelco,https://duelco.com/products/emergency-stop-relays/emergency-stop-relay-nst-32,,,NO_VERIFIED_SHOP,Manual reset and supply test
+Boat,DC contactor,1,CANDIDATE,Albright SW60C/A 12V continuous with monitored auxiliary,Albright,https://www.albrightinternational.com/products/sw60/,,,FULL_SKU_UNRESOLVED,Feedback DC inductive and coil sag
+Boat,Independent onehot nonretrigger pulse POR current zero,1,UNSELECTED,COTS safety stack,No approved exact shop,,,,UNRESOLVED,Independent fault acceptance
+Remote,Touchscreen MCU,1,SELECTED,Waveshare ESP32-S3-Touch-LCD-4.3 Standard,Waveshare,https://www.waveshare.com/esp32-s3-touch-lcd-4.3.htm,,,MANUFACTURER_PAGE_ONLY,Revision and power pinout
+Remote,Primary radio,1,UNSELECTED_EXACT_SKU,nRF24L01+ PA/LNA,No approved exact shop,,,,NO_VERIFIED_LISTING,RF authenticity and 3V3
+Remote,Backup radio,1,CANDIDATE,EBYTE E22-900T22S,EBYTE,https://www.ebyte.com/,,,MANUFACTURER_CATALOG_ONLY,Interoperability with SX1262
+Remote,UART I2C bridge,1,CANDIDATE,SC16IS750 breakout,No approved exact shop,,,,NO_VERIFIED_LISTING,Address 0x48 and IRQ
+Remote,Buttons I2C expander,1,CANDIDATE,Adafruit MCP23017 5346,Adafruit,https://www.adafruit.com/product/5346,,,MANUFACTURER_PAGE_ONLY,Address 0x20 and bus conflict
+Remote,Joystick ADC,2,CANDIDATE,Adafruit ADS1115 1085,Adafruit,https://www.adafruit.com/product/1085,,,MANUFACTURER_PAGE_ONLY,0x49 and 0x4A straps
+Remote,Joysticks,2,CANDIDATE,Analog 2-axis modules,Farnell Bulgaria,https://bg.farnell.com/,,,NO_EXACT_LISTING,Enclosure fit and output range
+Remote,Buttons,16,CANDIDATE,Momentary switches,Farnell Bulgaria,https://bg.farnell.com/,,,NO_EXACT_LISTING,Mechanical fit
+Remote,1S4P battery and protection,1,UNSELECTED,18650 protected 1S4P,Farnell Bulgaria,https://bg.farnell.com/,,,NO_EXACT_LISTING,Pack charger and physical fit
+Remote,Radio 3V3,1,CANDIDATE,Pololu S9V11F3S5,Pololu,https://www.pololu.com/product/2872,,,MANUFACTURER_PAGE_ONLY,Peak load and battery runtime
+Remote,E22 5V,1,CANDIDATE,Pololu S13V20F5,Pololu,https://www.pololu.com/product/4085,,,MANUFACTURER_PAGE_ONLY,Power and isolation
+Remote,MicroSD offline maps,1,CANDIDATE,Compatible microSD,Farnell Bulgaria,https://bg.farnell.com/,,,NO_EXACT_LISTING,Card endurance and interface
+Both,Fuses terminals waterproof connectors harness,1,UNSELECTED,DC rated assembled accessories,Farnell Bulgaria,https://bg.farnell.com/,,,NO_EXACT_LISTING,Current wire gauge ingress testing
+Boat,Existing 550 motors,2,RETAINED,Original motors,Existing asset,,,,USER_ASSET,Stall current
+Boat,Existing bait solenoids,2,RETAINED,FW0630-009,Existing asset,,,,USER_ASSET,Coil current pulse limit
+Boat,Existing hook solenoids,2,RETAINED,FW0630-001,Existing asset,,,,USER_ASSET,Coil current pulse limit
+Boat,Existing 3S4P pack,1,RETAINED,3S4P 20A BMS reported,Existing asset,,,,USER_ASSET,BMS and cell condition
+Remote,Enclosure and printed mounts,1,DESIGN,3D printed shell,Project CAD,,,,NOT_PHYSICALLY_VALIDATED,Fit and water resistance
+Boat,Sonar,1,DEFERRED,CHIRP model TBD,No sourcing,,,,NOT_SELECTED,Owner decision
