@@ -131,3 +131,7 @@ jobs:
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/mdd20a_direct_profile_test.cpp -o /tmp/boat_mdd20a_profile
           /tmp/boat_mdd20a_profile
+      - name: Direct MDD20A output gating and fault latching
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/mdd20a_direct_safety_test.cpp -o /tmp/mdd20a_direct_safety
+          /tmp/mdd20a_direct_safety
