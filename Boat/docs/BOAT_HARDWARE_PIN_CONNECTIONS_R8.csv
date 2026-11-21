@@ -1,0 +1,24 @@
+Module,Signal,Candidate GPIO or connector,Status,Constraint
+Heltec,Internal SX1262 NSS / SCK / MOSI / MISO / RESET / BUSY / DIO1,8 / 9 / 10 / 11 / 12 / 13 / 14,INTERNAL_V1_1_REFERENCE_ONLY,Verify exact V1.2 silicon/PCB/radio control
+Heltec,GNSS UC6580 RX / TX,33 / 34,UNVERIFIED_V1_2,Read-only diagnosis until revision proven
+Heltec,GNSS power/reset/PPS,3 / 35 / 36,RESERVED_UNVERIFIED,Do not repurpose
+Heltec,nRF primary SPI SCK/MOSI/MISO,9 / 10 / 11,CONDITIONAL_SHARED_SPI,Must prove accessible header routing and independent CS
+Heltec,nRF CE/CSN,4 / 5,CANDIDATE_NOT_APPROVED,Physical accessible pins and safe boot levels
+Heltec,Shared I2C SDA/SCL,6 / 7,CANDIDATE_NOT_APPROVED,Check 3.3 V pullups and fitted peripherals
+Heltec,MDD20A left PWM / DIR,-1 / -1,UNASSIGNED_NATIVE,Native output only no expander and default LOW
+Heltec,MDD20A right PWM / DIR,-1 / -1,UNASSIGNED_NATIVE,Native output only no expander and default LOW
+Heltec,External watchdog WDI,-1,UNASSIGNED_NATIVE,Hardware WDO fault latch must be independent
+Heltec,Actuator gate permit,-1,UNASSIGNED_NATIVE,Independent hardware latch OFF on boot and fault
+Heltec,GPIO17/18,17 / 18,CANDIDATE_RECLAIMED_NOT_APPROVED,No Boat E22 UART; LED and board conflicts still need verification
+Heltec,GPIO15/16,15 / 16,CONTESTED,Verify XTAL and functional remap before assigning
+Heltec,GPIO37,37,CONTESTED,Verify flash/ADC/power use
+Heltec,GPIO43/44,43 / 44,CONTESTED_DEBUG,USB CDC vs UART0 console audit required
+Heltec,USB and all flash/straps,19/20 and board-specific,RESERVED,No repurposing
+Heltec,Board LoRa antenna,Native SX1262 RF connector,SELECTED_BUT_UNVERIFIED,Use approved EU868 native antenna path
+Carrier,Four solenoid select outputs,4 channel one-hot logic,UNASSIGNED_NON_PROGRAMMABLE_OPTION,No direct actuator GPIO until independent safety proof
+Carrier,Physical STOP / feedback,Physically independent input and cutoff,UNASSIGNED,Fresh actual physical feedback and electrical latch
+J_MDD20A,1 PWM_L / 2 DIR_L / 3 PWM_R / 4 DIR_R / 5 GND,External motor driver,LOGICAL_CARRIER_ORDER_ONLY,Verify actual Cytron labeled terminals before wiring
+J_SOL_LH,1 SOL+ / 2 SWITCHED-,Left hopper,LOGICAL_ONLY,Rated keyed two-wire independent channel
+J_SOL_RH,1 SOL+ / 2 SWITCHED-,Right hopper,LOGICAL_ONLY,Rated keyed two-wire independent channel
+J_SOL_LK,1 SOL+ / 2 SWITCHED-,Left hook,LOGICAL_ONLY,Rated keyed two-wire independent channel
+J_SOL_RK,1 SOL+ / 2 SWITCHED-,Right hook,LOGICAL_ONLY,Rated keyed two-wire independent channel

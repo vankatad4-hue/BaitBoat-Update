@@ -1,3 +1,5 @@
+> **HISTORICAL R5 — superseded by R8 integrated-SX1262 decision.** Do not purchase the Boat E22 or wire its UART/M0/M1/AUX. Current BOM: BOAT_BOM_CANDIDATES_R8.md; current pin schedule: BOAT_HARDWARE_PIN_CONNECTIONS_R8.csv. The remaining historical notes below are retained for traceability.
+
 # Active Boat BOM — R5 single-controller revision
 This is an engineering candidate BOM, not a purchasing or fabrication authorization. No companion MCU, companion supply or companion antenna. Retain existing hull, motors, battery indicator, master switch.
 

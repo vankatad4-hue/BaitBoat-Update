@@ -1,3 +1,5 @@
+> **HISTORICAL R5 — superseded by R8 integrated-SX1262 decision.** Do not purchase the Boat E22 or wire its UART/M0/M1/AUX. Current BOM: BOAT_BOM_CANDIDATES_R8.md; current pin schedule: BOAT_HARDWARE_PIN_CONNECTIONS_R8.csv. The remaining historical notes below are retained for traceability.
+
 # Boat board integration R5 — Heltec-only MDD20A design (active; no wiring freeze)
 
 Selected architecture remains Heltec Wireless Tracker V1.2 + UC6580, GY-91 MPU-9250/AK8963, MDD20A, external nRF24 and E22, modular carrier. No hardware has been purchased or inspected for this step.
