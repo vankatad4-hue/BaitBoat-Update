@@ -1,3 +1,5 @@
+> **R15 ARCHIVED, NOT FOR FABRICATION:** This bespoke KiCad board is retired from the active build. Owner chose factory-made modules/harnesses only. [R15 active Boat implementation](../../docs/BOAT_MODULE_ONLY_IMPLEMENTATION_R15.md), [project policy](../../../docs/HARDWARE_MODULE_ONLY_POLICY_R15.md). The EKM014 premade board replaces R9's custom FET stage provisionally; separate premade power/STOP/timer/current-sense still unqualified.
+
 # R12 physical consumed-release token — KiCad candidate, NOT fabrication ready
 
 The native KiCad file `Boat_Release_Token_R12.kicad_sch` is a **wiring candidate** to prevent an automatically repeated solenoid release when an R7 command remains HIGH after the R11 main monostable times out. No circuit has been powered or tested on the boat.

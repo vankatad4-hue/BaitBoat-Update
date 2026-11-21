@@ -1,3 +1,5 @@
+> **R15 ARCHIVED, NOT FOR FABRICATION:** This bespoke KiCad board is retired from the active build. Owner chose factory-made modules/harnesses only. [R15 active Boat implementation](../../docs/BOAT_MODULE_ONLY_IMPLEMENTATION_R15.md), [project policy](../../../docs/HARDWARE_MODULE_ONLY_POLICY_R15.md). The EKM014 premade board replaces R9's custom FET stage provisionally; separate premade power/STOP/timer/current-sense still unqualified.
+
 # R10 hardware safety cutoff — native KiCad candidate, NOT FABRICATION READY
 
 Created 2026-11-21. The standalone editable schematic `Boat_Safety_Cutoff_R10.kicad_sch` introduces a concrete **logic-network** candidate and a load-high-side PMOS topology, but does **not** establish a qualified independent safety system. **Do not energize either motor or solenoids based on this drawing.**

@@ -1,3 +1,5 @@
+> **R15 HISTORICAL ONLY:** Previous custom Boat carrier PCB plan canceled. Use ready-made Heltec/MDD20A/EKM014/RECOM/Pololu modules and harnesses. See [new Boat module plan](BOAT_MODULE_ONLY_IMPLEMENTATION_R15.md). No board fabrication permitted.
+
 # Flytec V080 Boat — Carrier PCB Connection Plan (ver004)
 
 **Status:** approved modular architecture; logical connector plan, not a released PCB pinout.

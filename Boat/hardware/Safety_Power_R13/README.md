@@ -1,3 +1,5 @@
+> **R15 ARCHIVED, NOT FOR FABRICATION:** This bespoke KiCad board is retired from the active build. Owner chose factory-made modules/harnesses only. [R15 active Boat implementation](../../docs/BOAT_MODULE_ONLY_IMPLEMENTATION_R15.md), [project policy](../../../docs/HARDWARE_MODULE_ONLY_POLICY_R15.md). The EKM014 premade board replaces R9's custom FET stage provisionally; separate premade power/STOP/timer/current-sense still unqualified.
+
 # R13 Boat safety 3.3 V — ready-made RECOM switching regulator
 
 **Chosen component:** RECOM **R-78E3.3-0.5** SIP3 preassembled switching DC/DC module, not a custom regulator-IC feedback/inductor design.

@@ -1,3 +1,5 @@
+> **R15 ARCHIVED, NOT ACTIVE:** Custom Remote PCB design (TPS63070/TPS61023, joystick/button/radio power carrier or traces) is canceled. Only premade electronic boards and removable harnesses are permitted. See [R15 Remote modules](../../../docs/REMOTE_MODULE_ONLY_IMPLEMENTATION_R15.md) and [project-wide policy](../../../docs/HARDWARE_MODULE_ONLY_POLICY_R15.md). No PCB manufacturing.
+
 # 5 V Controller Power Architecture Review R1
 
 **Recommendation:** Use the Waveshare ESP32-S3-Touch-LCD-4.3 Standard board's onboard CS8501 single-cell battery boost as the primary 5 V supply; do not populate the external TPS61023 in the baseline unless bench testing shows the onboard supply is inadequate.

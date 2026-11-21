@@ -1,3 +1,5 @@
+> **R15 ARCHIVED, NOT FOR FABRICATION:** This bespoke KiCad board is retired from the active build. Owner chose factory-made modules/harnesses only. [R15 active Boat implementation](../../docs/BOAT_MODULE_ONLY_IMPLEMENTATION_R15.md), [project policy](../../../docs/HARDWARE_MODULE_ONLY_POLICY_R15.md). The EKM014 premade board replaces R9's custom FET stage provisionally; separate premade power/STOP/timer/current-sense still unqualified.
+
 # R11 KiCad hardware pulse window + hardwired one-hot logic — NOT FABRICATION READY
 
 This is a native, manufacturer-pin-number-based **partial hardware implementation** that connects the logical R7 solenoid request names to R9's limited gate names through an independent non-retriggerable pulse window and registered 4-bit selection. **All electrical power and coil loading remain prohibited.**

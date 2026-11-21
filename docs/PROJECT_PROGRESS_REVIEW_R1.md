@@ -1,3 +1,5 @@
+> **R15 UPDATE:** Historical custom electronic PCB plan superseded by the owner's **premade modules only** decision. Active hardware policy: [R15](HARDWARE_MODULE_ONLY_POLICY_R15.md); Boat and Remote module wiring plans take precedence over this prior R1 review.
+
 # Flytec V080 Project Progress Review R1
 
 **Review date:** 2026-11-20 (updated after cross-radio replay-policy milestone)  

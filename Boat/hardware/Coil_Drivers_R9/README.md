@@ -1,3 +1,5 @@
+> **R15 ARCHIVED, NOT FOR FABRICATION:** This bespoke KiCad board is retired from the active build. Owner chose factory-made modules/harnesses only. [R15 active Boat implementation](../../docs/BOAT_MODULE_ONLY_IMPLEMENTATION_R15.md), [project policy](../../../docs/HARDWARE_MODULE_ONLY_POLICY_R15.md). The EKM014 premade board replaces R9's custom FET stage provisionally; separate premade power/STOP/timer/current-sense still unqualified.
+
 # R9 native KiCad: four independent low-side solenoid drivers (2026-11-21)
 
 **DRAFT / NO FABRICATION OR ENERGIZATION**. This is a standalone, editable native KiCad schematic and local symbol library, **not** a completed power-and-safety design.
