@@ -46,3 +46,5 @@ Archived: `Boat/hardware/Direct_MDD20A_R7`, `Coil_Drivers_R9`, `Safety_Cutoff_R1
 - An INA226 generic breakout over I²C is useful for logging, but software readout is NOT independent fast current-zero/short protection. Don't convert telemetry to safety evidence without actual hardware thresholds.
 - A generic Cebek I-33 non-retriggerable dual-timer 12V relay is a **research candidate** only; the spec starts at ~0.1s, has optional power-up mode and relay contacts; it does not natively prove four-way one-hot+release consumed, and actual coil energization time is unmeasured.
 - If the modular components cannot fit and remain serviceable in the V080 hull, use a different modular enclosure/placement design or reconsider scope; do not covertly reintroduce a custom PCB.
+
+See the R15 [commercial safety candidate matrix](../../docs/MODULE_ONLY_SAFETY_SHORTLIST_R15.md), [premade-only acceptance checklist](../../docs/MODULE_ONLY_ACCEPTANCE_R15.md) and [module-only pin map](../../docs/MODULE_ONLY_PIN_AND_BUS_MAP_R15.csv). These are procurement/bench documents, not permission to energize loads.

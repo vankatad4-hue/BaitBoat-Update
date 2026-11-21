@@ -1,0 +1,22 @@
+Side,Bus,Role,Module,Logical_address_or_signal,Proposed_setting,Status,Blocker
+Remote,I2C,GPIO 16 keys,Adafruit MCP23017,0x20,ADDRESS_STRAPS_TBD,UNCOMMISSIONED,Conflict with Waveshare onboard CH422G and wiring
+Remote,I2C,Joystick four axis ADC,Adafruit ADS1115 #1,0x49,ADDR_VDD_TBD,UNCOMMISSIONED,Do not collide with SC16IS750
+Remote,I2C,Diagnostics ADC four channels,Adafruit ADS1115 #2,0x4A,ADDR_SDA_TBD,UNCOMMISSIONED,Verify Qwiic breakout address pin wiring
+Remote,I2C,LoRa SC16 serial bridge,SC16IS750,0x48,RESERVED,UNCOMMISSIONED,Confirm actual external board address and interrupt
+Remote,SPI,Primary radio nRF24,Manufactured nRF24L01+ PA/LNA,CE_CSN_SCK_MOSI_MISO,GPIO_TBD,DISABLED,Shared SD SPI plus Waveshare board header audit
+Remote,UART,Backup 868MHz,EBYTE E22-900T22S,via_SC16_UART,CONNECTION_TBD,DISABLED,Boat SX1262 link framing unproven
+Remote,ANALOG,Joystick left X/Y + right X/Y,Prebuilt joystick modules,ADS1115_0x49_AIN0_AIN1_AIN2_AIN3,0-3.3V,DISABLED,Verify analog reference pull-up stuck disconnection
+Remote,POWER,Primary RF,Pololu S9V11F3S5,3V3_RF,nRF_only,DISABLED,Pololu startup >=3V and separate CS8501 charger
+Remote,POWER,Backup E22,Pololu S13V20F5,5V_E22,independent,DISABLED,No 5V tying to Waveshare internal boost
+Boat,SPI,Primary radio nRF24,Manufactured nRF24L01+ PA/LNA,CE_CSN_SCK_MOSI_MISO,GPIO_TBD,DISABLED,Heltec Tracker v1.2 internal SX1262 and SD resource reservation
+Boat,CONTROL,MDD20A left motor,Cytron MDD20A,PWM1_DIR1,GPIO_TBD,DISABLED,Exact header/polarity disabled until board audit
+Boat,CONTROL,MDD20A right motor,Cytron MDD20A,PWM2_DIR2,GPIO_TBD,DISABLED,Exact header/polarity disabled until board audit
+Boat,CONTROL,Hopper LH,Prebuilt independent safety interlock and EKM014,IN1,GPIO_TBD,DISABLED,No direct output allowed without validated hardware pulse
+Boat,CONTROL,Hopper RH,Prebuilt independent safety interlock and EKM014,IN2,GPIO_TBD,DISABLED,No direct output allowed without validated hardware pulse
+Boat,CONTROL,Hook LK,Prebuilt independent safety interlock and EKM014,IN3,GPIO_TBD,DISABLED,No direct output allowed without validated hardware pulse
+Boat,CONTROL,Hook RK,Prebuilt independent safety interlock and EKM014,IN4,GPIO_TBD,DISABLED,No direct output allowed without validated hardware pulse
+Boat,I2C,Current monitor candidate per-coil,Electrokit EKM025 INA260,0x40_0x41_0x44_0x45,4_UNIQUE_ADDRS_TBD,DISABLED,Telemetry only not independent fault cutoff
+Boat,POWER,Safety logic,RECOM R-78E3.3-0.5,3V3_SAFETY,NON_RF,DISABLED,Independent POR must cut motor+coil power
+Boat,POWER,Heltec clean 5V,Pololu S13V20F5,5V_HELTEC,NO_BAT_CHARGER_INPUT,DISABLED,Actual Heltec V1.2 power entry to be audited
+Boat,POWER,EKM014 gate supply,Pololu S13V20F5,5V_GATE_DRIVER,VL_NOT_3S,DISABLED,Input rail 4.5-12V and manual STOP
+Boat,POWER,nRF radio,Pololu D24V22F3,3V3_RF,NON_SAFETY,DISABLED,RF peak and close decoupling
