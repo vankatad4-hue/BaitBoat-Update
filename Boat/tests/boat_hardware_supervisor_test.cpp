@@ -29,6 +29,24 @@ int main(){
  assert(s.stopped());hw=sample(404);assert(s.clearStop(hw,404,true,true));
  MissionNavigationResult home={true,false,15,90,0};
  assert(s.tick(in,405,{INTENT_NAV_HOME,-1,0},home,true,false,0,0,405).left==400);
+ // Autopilot turns with unequal forward thrust, without any rudder or
+ // unapproved negative motor demand / counter-rotating pivot.
+ auto rightTurn=home;rightTurn.headingErrorDeg=85;
+ const auto rt=s.tick(in,405,{INTENT_NAV_HOME,-1,0},rightTurn,true,false,0,0,405);
+ assert(rt.left>rt.right&&rt.left>=0&&rt.right>=0&&rt.left<=400&&rt.right<=400&&rt.releaseChannel==-1);
+ auto leftTurn=home;leftTurn.headingErrorDeg=-85;
+ const auto lt=s.tick(in,405,{INTENT_NAV_HOME,-1,0},leftTurn,true,false,0,0,405);
+ assert(lt.right>lt.left&&lt.left>=0&&lt.right>=0&&lt.left<=400&&lt.right<=400);
+ for(double error : {-179.0,-90.0,-45.0,0.0,45.0,90.0,179.0}){
+  auto n=home;n.headingErrorDeg=error;
+  const auto drive=s.tick(in,405,{INTENT_NAV_HOME,-1,0},n,true,false,0,0,405);
+  assert(drive.left>=0&&drive.right>=0&&drive.left<=400&&drive.right<=400);
+  if(error>0)assert(drive.left>=drive.right);
+  if(error<0)assert(drive.right>=drive.left);
+ }
+ auto arrived=home;arrived.arrived=true;
+ const auto halted=s.tick(in,405,{INTENT_NAV_HOME,-1,0},arrived,true,false,0,0,405);
+ assert(halted.left==0&&halted.right==0&&halted.releaseChannel==-1);
  in.stopActive=true;assert(s.tick(in,406,{INTENT_NAV_HOME,-1,0},home,true,false,0,0,406).left==0&&s.stopped());
  hw=sample(500);assert(s.clearStop(hw,500,true,true));
  assert(boatHardware_inputs(hw,600,false).stopActive);

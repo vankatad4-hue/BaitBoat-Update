@@ -26,3 +26,7 @@ The original two brushed 550 motors are the only directional actuators. The Cytr
 5. Maintain sonar hold: no model, board, or driver in this release. No physical test has been completed by this documentation update.
 
 See `Boat/docs/BOAT_INTEGRATED_SX1262_R8.md`, `Boat/docs/BOAT_SAFETY_SOLENOID_CAPTURE_R8.md`, and `docs/CONTINUATION_CHECKPOINT_VER001.md`. Release markers remain Remote 028 / Boat 014.
+
+## R8 implementation correction — autonomous forward-only turning
+Code and host regression on 2026-11-21: `Boat/source/boat_hardware_supervisor.h` clamps autonomous navigation propulsion commands to [0, configured `maxNavMotor`] individually after heading-error differential mixing. **No negative per-motor autonomous commands** are issued, even for large heading error; positive bearing error accelerates left/port over right/starboard (right turn), negative error the reverse. Sharp-course changes can turn by propelling only the outside motor while the inside motor is stopped. This is safer than the previous automatic counter-rotating/pivot behavior until measured hull turn dynamics and reverse allowance have been signed.
+Manual TANK/reverse and explicit joystick override remain independent signed-command paths, still protected by command lease, STOP and hardware safety requirements. Ground/water effectiveness, pinouts, polarity and cutoff are unverified. Automated regression is `Boat/tests/boat_hardware_supervisor_test.cpp`; real target and physical checks remain outstanding.

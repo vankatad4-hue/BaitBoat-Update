@@ -88,12 +88,16 @@ public:
     return {overrideLeft,overrideRight,-1};
    if(intent.intent!=INTENT_NAV_TARGET&&intent.intent!=INTENT_NAV_HOME)return off;
    if(!nav.valid||nav.arrived||!std::isfinite(nav.headingErrorDeg)||!std::isfinite(nav.distanceM)||!in.releaseInterlocks)return off;
-   // Provisional normalized differential mixer; physical direction, gain,
-   // speed and current limits must be commissioned before enabling a driver.
+   // Differential thrust ONLY: positive bearing error means clockwise/right,
+   // hence the port/left propeller gets more forward thrust than starboard.
+   // IMPORTANT: uncommissioned autonomous pivot/reverse is disallowed.
+   // Manual TANK mode retains signed reverse commands under its own safety lease.
    const double cap=cfg_.maxNavMotor;
    const double turn=std::fmax(-cap,std::fmin(cap,nav.headingErrorDeg*cfg_.yawGain));
    const double forward=std::fabs(nav.headingErrorDeg)>45.0?0.0:cap*(1.0-std::fabs(nav.headingErrorDeg)/90.0);
-   return {(int16_t)std::fmax(-cap,std::fmin(cap,forward+turn)),(int16_t)std::fmax(-cap,std::fmin(cap,forward-turn)),-1};
+   const double left=std::fmax(0.0,std::fmin(cap,forward+turn));
+   const double right=std::fmax(0.0,std::fmin(cap,forward-turn));
+   return {(int16_t)left,(int16_t)right,-1};
   }
   if(manualValid_&&in.primaryFresh&&now-manualAt_<200U&&in.releaseInterlocks)return {manualLeft_,manualRight_,-1};
   cancelManual();return off;
