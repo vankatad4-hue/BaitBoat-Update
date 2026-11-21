@@ -18,7 +18,7 @@ inline bool bmp280Compensate(const Bmp280Calibration &c,uint32_t adcT,uint32_t a
  if(adcT==0x80000||adcP==0x80000||adcT>0xfffff||adcP>0xfffff||!c.p1)return false;
  int32_t v1=((int32_t)(adcT>>3)-((int32_t)c.t1<<1))*c.t2>>11;
  int32_t d=((int32_t)(adcT>>4)-(int32_t)c.t1);
- int32_t v2=(((d*d)>>12)*(int32_t)c.t3)>>14;
+ int32_t v2=(int32_t)(((((int64_t)d*d)>>12)*(int64_t)c.t3)>>14);
  int32_t fine=v1+v2;temperatureCentiC=(fine*5+128)>>8;
  int64_t x=(int64_t)fine-128000;
  int64_t y=x*x*(int64_t)c.p6;
