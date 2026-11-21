@@ -13,6 +13,10 @@ on:
       - 'Boat/tests/ekm014_logical_interface_r16_test.cpp'
       - 'Boat/tools/ekm014_selection_guard_r16.py'
       - 'Boat/docs/BOAT_EKM014_*'
+      - 'Boat/docs/BOAT_PREMADE_SAFETY_STACK_R17.md'
+      - 'Boat/docs/BOAT_R17_*'
+      - 'docs/MODULE_ONLY_CANDIDATES_R17.csv'
+      - 'Boat/tools/verify_premade_safety_stack_r17.py'
       - 'Boat/tools/module_only_policy_r15.py'
       - 'README.md'
       - 'Boat/README.md'
@@ -39,7 +43,9 @@ jobs:
           python3 Boat/tools/ekm014_selection_guard_r16.py
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/ekm014_logical_interface_r16_test.cpp -o /tmp/ekm014_r16
           /tmp/ekm014_r16
+      - name: R17 verify fail-closed COTS safety shortlist and 21 physical gates
+        run: python3 Boat/tools/verify_premade_safety_stack_r17.py
       - name: Record scope
         run: |
-          echo "### R15 module-only policy and R16 EKM014 owner-selection/channel model passed" >> "$GITHUB_STEP_SUMMARY"
+          echo "### R15 module-only, R16 EKM014, R17 uncommissioned safety-chain candidate guards PASS" >> "$GITHUB_STEP_SUMMARY"
           echo "No GPIO activated, physical STOP/timer/POR/current-sense modules unselected; no live operation allowed." >> "$GITHUB_STEP_SUMMARY"
