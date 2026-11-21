@@ -16,7 +16,8 @@ public:
   const double v[3]={m.x,m.y,m.z};
   if(std::hypot(std::hypot(v[0],v[1]),v[2])<10||std::hypot(std::hypot(v[0],v[1]),v[2])>150)return false;
   for(int i=0;i<3;++i){if(v[i]<lo_[i])lo_[i]=v[i];if(v[i]>hi_[i])hi_[i]=v[i];}
-  if(count_<UINT32_MAX)++count_;return true;
+  if(count_<UINT32_MAX)++count_;
+  return true;
  }
  bool finish(CompassCalibrationCandidate &out){
   active_=false;out={};
