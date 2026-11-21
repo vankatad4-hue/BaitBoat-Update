@@ -581,3 +581,7 @@ Vendor review: Duelco **NST-3.2 42042237 8–36VDC** stop **supervisor** CANDIDA
 
 ## R19 — status reconciliation (2026-11-21)
 Read [`docs/R19_STATUS_RECONCILIATION_AND_NEXT_GATES.md`](R19_STATUS_RECONCILIATION_AND_NEXT_GATES.md) before using the later R1/R2 modular draft documents. R15–R18 remain canonical: distributed prefabricated modules, EKM014 frozen, independent hardware STOP/one-hot/no-repeat/POR/current-zero required and not yet selected. R2 is NOT a final wiring authorization and direct driver battery feeds or MCU-only solenoid gating are unsafe/incomplete. Exact Heltec v1.2 GPIO crosswalk, SX1262-to-E22 interoperability, complete purchase-ready BOM and independent safety-module procurement remain next blockers. Remote VER028 / Boat VER014 held; no physical actuator enable.
+
+
+## R20 — GPIO/radio integration and purchasing register (2026-11-21)
+New [Boat R20 GPIO/LoRa integration gate](../Boat/docs/BOAT_R20_GPIO_AND_RADIO_INTEGRATION_GATE.md) records signal budget and precise SX1262/E22 interoperability qualification steps; numeric v1.2 GPIOs remain UNASSIGNED and backup LoRa disabled pending proof. New [R20 project purchasing register](PROJECT_PURCHASE_REGISTER_R20.csv) consolidates Boat/Remote modules, known exact supplier links, alternatives, evidence status and purchase blockers; no live-stock guarantees. R15–R18 canonical module-only safety requirements still apply. No firmware output enable, purchase, hardware commissioning or release version bump. Remote VER028 / Boat VER014 held.
