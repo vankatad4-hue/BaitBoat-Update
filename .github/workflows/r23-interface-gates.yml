@@ -7,6 +7,7 @@ on:
       - 'Boat/tools/r24_safety_gate.py'
       - 'Boat/tools/r26_pin_budget.py'
       - 'Boat/tools/r30_v2_pin_conflict_gate.py'
+      - 'Boat/tools/r32_v2_assignment_solver.py'
       - '.github/workflows/r23-interface-gates.yml'
   pull_request:
     paths:
@@ -26,10 +27,12 @@ jobs:
         with:
           python-version: '3.11'
       - name: Syntax check
-        run: python -m compileall -q Boat/tools/r22_interface_gate.py Boat/tools/r24_safety_gate.py Boat/tools/r26_pin_budget.py Boat/tools/r30_v2_pin_conflict_gate.py
+        run: python -m compileall -q Boat/tools/r22_interface_gate.py Boat/tools/r24_safety_gate.py Boat/tools/r26_pin_budget.py Boat/tools/r30_v2_pin_conflict_gate.py Boat/tools/r32_v2_assignment_solver.py
       - name: Fail-closed GPIO, LoRa and commissioning tests
         run: python -m unittest discover -s Boat/tools -p 'r*_gate.py' -v
       - name: R26 GPIO budget tests
         run: python Boat/tools/r26_pin_budget.py -v
       - name: R30 V2 pin conflict tests
         run: python Boat/tools/r30_v2_pin_conflict_gate.py -v
+      - name: R32 V2 allocation budget tests
+        run: python Boat/tools/r32_v2_assignment_solver.py -v
