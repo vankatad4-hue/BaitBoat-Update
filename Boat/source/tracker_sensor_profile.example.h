@@ -6,7 +6,7 @@ inline TrackerSensorConfig trackerLocalProfile(){
  TrackerSensorConfig c{};
  c.pinAuditSigned=false;
  c.gnssRx=c.gnssTx=c.sda=c.scl=-1;
- c.gnssBaud=9600; // verify actual receiver output before changing
+ c.gnssBaud=115200; // HGLRC M100 PRO manufacturer default UBX NAV-PVT; verify physical output
  c.imuAddress=0x68;c.adcAddress=0x48;
  c.heading.commissioned=false;c.battery.commissioned=false;
  return c;
