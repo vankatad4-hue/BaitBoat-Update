@@ -685,3 +685,9 @@ User explicitly requires **NO manual driving** for compass calibration. Added po
 - ESP32-S3 has Bluetooth LE but not Classic; BLE firmware transfer deferred. No unsecured ArduinoOTA upload endpoint enabled.
 - OTA cannot be considered operational until secure boot/OTA partitions/rollback, local maintenance controls, credential provisioning, exact target compile and physical update/recovery tests. See `Boat/docs/BOAT_R47_WIFI_OTA.md`.
 - R46 hardware driver, independent safety modules, remote calibration, autonomous GPS track and physical acceptance remain pending. Official releases held.
+
+
+## R48 — five-stage integration gates (2026-11-21)
+- Added `Boat/source/physical_driver_commissioning_gate.h`: local independent STOP/watchdog/motor+coil contactor feedback and current-zero safety preflight, with 100ms sample freshness and fail-closed single-coil pulse cap. This is an adapter prerequisite, not a commissioned `BoatPhysicalDriver` or independent electrical safety hardware.
+- Added `Boat/tests/physical_driver_commissioning_gate_test.cpp` to host CI. Observed host run 44947095178 PASS; diagnostic target run 44947079254 still in progress when checked.
+- Added `Boat/docs/BOAT_R48_INTEGRATION_ACCEPTANCE_MATRIX.md`: five-stage source status, hardware selection criteria, safety wiring and physical acceptance checklist. No exact independent safety parts selected or physical tests done. R45 pin schedule remains provisional. GPS-guided figure-eight, persistent calibration, Remote Start/Abort, integrated Boat+Remote target build and RF tests remain open. Boat VER014 remains official.
