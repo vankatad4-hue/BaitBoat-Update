@@ -1,7 +1,7 @@
 #include "heltec_sx1262_link.h"
 HeltecSx1262Link::HeltecSx1262Link()
  :module_(BOAT_SX1262_NSS,BOAT_SX1262_DIO1,BOAT_SX1262_RST,
-          BOAT_SX1262_BUSY,&SPI,SPISettings(2000000,MSBFIRST,SPI_MODE0)),
+          BOAT_SX1262_BUSY,SPI,SPISettings(2000000,MSBFIRST,SPI_MODE0)),
   radio_(&module_){}
 bool HeltecSx1262Link::begin(){
  ready_=false;txPending_=false;head_=tail_=count_=0;
