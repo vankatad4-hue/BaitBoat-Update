@@ -29,6 +29,9 @@ on:
       - 'Boat/source/m100_ubx_nav_pvt.h'
       - 'Boat/tests/m100_ubx_nav_pvt_test.cpp'
       - 'Remote/tests/weather_payload_test.cpp'
+      - 'Boat/source/ekm014_pulse_guard.h'
+      - 'Boat/source/boat_physical_driver_adapter.h'
+      - 'Boat/tests/boat_physical_driver_safety_r61_test.cpp'
       - '.github/workflows/r23-interface-gates.yml'
   pull_request:
     paths:
@@ -95,3 +98,5 @@ jobs:
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/figure8_calibration_record_test.cpp -o /tmp/r52_cal && /tmp/r52_cal
       - name: R53 dual-slot compass calibration storage recovery
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/figure8_calibration_store_test.cpp -o /tmp/r53_store && /tmp/r53_store
+      - name: R61 physical output fail-closed current and STOP regressions
+        run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/boat_physical_driver_safety_r61_test.cpp -o /tmp/r61_driver && /tmp/r61_driver
