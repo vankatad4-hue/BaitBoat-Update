@@ -12,7 +12,8 @@ enum RadioPayloadKind : uint8_t {
     RADIO_PAYLOAD_GNSS_LATITUDE,
     RADIO_PAYLOAD_GNSS_LONGITUDE,
     RADIO_PAYLOAD_NAVIGATION,
-    RADIO_PAYLOAD_SONAR_SUMMARY
+    RADIO_PAYLOAD_SONAR_SUMMARY,
+    RADIO_PAYLOAD_WEATHER
 };
 
 enum RadioAckResult : uint8_t {
@@ -50,6 +51,8 @@ struct RadioDecodedPayload {
     uint8_t navigationStatus;
     uint8_t waypointIndex;
     uint8_t navigationSample;
+    int16_t temperatureCentiC;
+    uint32_t pressurePa;
     uint16_t depthCm;
     uint16_t sonarRangeCm;
     uint8_t sonarHealth;
