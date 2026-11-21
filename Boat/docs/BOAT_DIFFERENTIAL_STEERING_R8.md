@@ -1,0 +1,28 @@
+# R8 steering requirement: twin-motor differential thrust — no rudder
+Confirmed by owner 2026-11-21. This is the authoritative steering model for Flytec V080.
+
+## Propulsion hardware
+The original two brushed 550 motors are the only directional actuators. The Cytron MDD20A has independent PWM_L/DIR_L and PWM_R/DIR_R control. No rudder, no steering servo, no servo PWM channel, and no additional steering motor is present or required. The physical port/starboard wiring and motor polarity must be verified at commissioning. Both motor windings must have safe power-off states; the separate independent power cutoff and MCU watchdog requirements are unchanged.
+
+## Requested behavior
+- Equal forward demand to port and starboard: approximately straight. Tune trims/drag/propeller characteristics on water.
+- For left heading change: starboard forward thrust greater than port forward thrust (or safe reverse differential when approved).
+- For right heading change: port forward thrust greater than starboard forward thrust (or safe reverse differential when approved).
+- Zero demand: both PWM disabled and hardware gate remains safety controlled, following verified MDD20A braking behavior.
+- Pivot-in-place with opposite motor signs is a *possible mode*, not yet authorized. Require explicit limits for reversed motors, loads, hull stability and cable/propeller safety.
+
+## Existing firmware paths (inspection only; no change required)
+- Remote TANK: `Remote/source/joystick.cpp` maps left Y and right Y into independent motor demands.
+- Remote STEERING: the same module computes `left=throttle+steering`, `right=throttle-steering`, bounded to signed [-1000,1000]. Here `steering` is a **differential thrust mixing term**, never a rudder angle.
+- Boat autopilot: `Boat/source/boat_hardware_supervisor.h` converts GPS/heading error into left and right signed propulsion commands using a provisional yaw gain and current cap.
+- Motor output stage: `Boat/source/carrier_output_plan.h` maps those commands to two duty/direction outputs with reversal deadtime; `Boat/source/mdd20a_arduino_stage.cpp` is currently an uninstantiated, fail-closed stage.
+- Two motor channels share the one independent external actuator power cutoff; no physical steering servo power or signal network is needed.
+
+## Commissioning/acceptance
+1. Confirm left/right motor identity and correct forward direction with props disconnected or under a safe dummy-load test.
+2. Validate signed turning direction at low power; explicitly check that positive heading error results in the intended physical rotation.
+3. Confirm each motor reverses only after safe deadtime and output shutdown.
+4. Tune straight-drive trim, yaw gain, safe pivot permission, motor current limits and return-home tracking on actual water only after independent cutoff/STOP passes.
+5. Maintain sonar hold: no model, board, or driver in this release. No physical test has been completed by this documentation update.
+
+See `Boat/docs/BOAT_INTEGRATED_SX1262_R8.md`, `Boat/docs/BOAT_SAFETY_SOLENOID_CAPTURE_R8.md`, and `docs/CONTINUATION_CHECKPOINT_VER001.md`. Release markers remain Remote 028 / Boat 014.
