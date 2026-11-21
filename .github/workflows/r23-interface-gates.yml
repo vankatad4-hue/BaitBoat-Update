@@ -24,6 +24,8 @@ on:
       - 'Boat/tests/figure8_compass_calibration_test.cpp'
       - 'Boat/source/figure8_auto_session.h'
       - 'Boat/tests/figure8_auto_session_test.cpp'
+      - 'Boat/source/figure8_autonomous_motion.h'
+      - 'Boat/tests/figure8_autonomous_motion_test.cpp'
       - 'Remote/tests/weather_payload_test.cpp'
       - '.github/workflows/r23-interface-gates.yml'
   pull_request:
@@ -71,3 +73,5 @@ jobs:
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/figure8_compass_calibration_test.cpp -o /tmp/r42_fig8 && /tmp/r42_fig8
       - name: R43 automatic dual compass figure-eight completion
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/figure8_auto_session_test.cpp -o /tmp/r43_auto && /tmp/r43_auto
+      - name: R44 autonomous figure-eight intent fail-safe regression
+        run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/figure8_autonomous_motion_test.cpp -o /tmp/r44_motion && /tmp/r44_motion
