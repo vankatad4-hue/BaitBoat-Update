@@ -38,12 +38,12 @@ void loop(){
   // Bench-only serial diagnostics. No actuator commissioning.
   while(Serial.available()){
    const int command=Serial.read();
-   if(command=='c')Serial.println(sensors.beginCompassCalibration()?"COMPASS: rotate slowly through 3D orientations; send f to finish.":"COMPASS: IMU unavailable.");
+   if(command=='c')Serial.println(sensors.startFigure8Calibration()?"FIGURE8: drive gentle figure eights in both directions; send f to finish.":"FIGURE8: GY-91 or M100 compass unavailable; calibration denied.");
    if(command=='f'){
-    CompassCalibrationCandidate candidate{};
-    if(sensors.finishCompassCalibration(candidate)){
-     Serial.printf("COMPASS CANDIDATE (NOT COMMISSIONED): samples=%lu offsets=(%.3f,%.3f,%.3f) scales=(%.5f,%.5f,%.5f)\\n",(unsigned long)candidate.samples,candidate.offsetUt[0],candidate.offsetUt[1],candidate.offsetUt[2],candidate.scale[0],candidate.scale[1],candidate.scale[2]);
-    }else Serial.println("COMPASS: insufficient coverage; no calibration applied.");
+    Figure8Candidate gy91{},m100{};
+    if(sensors.finishFigure8Calibration(gy91,m100)){
+     Serial.printf("FIGURE8 CANDIDATES ONLY (NOT COMMISSIONED): GY91 offsets=(%.2f,%.2f), scale=(%.3f,%.3f); M100 offsets=(%.2f,%.2f), scale=(%.3f,%.3f)\\n",gy91.offsetX,gy91.offsetY,gy91.scaleX,gy91.scaleY,m100.offsetX,m100.offsetY,m100.scaleX,m100.scaleY);
+    }else Serial.println("FIGURE8: insufficient horizontal coverage on one or both compasses; no calibration applied.");
    }
   }
   const uint32_t now=millis();sensors.poll(now);
