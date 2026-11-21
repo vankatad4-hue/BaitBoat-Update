@@ -24,3 +24,6 @@ STOP, RETURN_HOME, restricted manual steering, heartbeat/low-rate telemetry only
 
 ## Test
 Identical modules/settings, antennas attached, close-range first. Verify config readback, UART logic, packet CRC/auth, latency/packet loss, failover, power rail droop and antenna isolation. No field operation until legal airtime accounting and authenticated session/key are completed.
+
+## R61 purchasing and assembly gate (2026-11-22)
+The specified **E22-900T22S is a bare SMD radio module (26×16mm)**, not a connectorized plug-in board. No custom PCB is permitted: purchase only with a verified ready-made SMD-to-header carrier or professionally assembled off-the-shelf breakout that preserves RF grounding, regulated power, AUX, M0, M1, UART and antenna connection. Neither an adapter SKU nor pair RF interoperation has been verified. **Do not order an E22-900T22D-V2 as an undocumented substitute.** If necessary, formally revise both endpoints to matching DIP variants with configuration/readback and RF bench tests first. EU868 field use remains blocked on regulatory airtime and authenticated radio sessions.
