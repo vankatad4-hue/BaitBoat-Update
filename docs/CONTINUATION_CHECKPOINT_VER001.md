@@ -755,3 +755,9 @@ User explicitly requires **NO manual driving** for compass calibration. Added po
 ## R59 — M100 PRO GNSS purchase verification (2026-11-22)
 - Added `Boat/docs/BOAT_R59_GNSS_PROCUREMENT_AND_INTEGRATION.md`. Official HGLRC M100 PRO $19.99 **out of stock** at check; Baltic Drones exact SKU 6565 €24.22 **listed in stock**, Bulgaria shipping unverified; Bulgarian Drones.bg listing identified without verified live stock/price. GNSS 115200 UBX/10Hz, 3.6–5.5V; QMC5883L compass I2C must be independently wired and verified.
 - No modules purchased. E22 PHY, nRF24 PA supply, independent safety hardware and current ratings remain purchase blockers. No physical prototype, sonar deferred, Boat VER014 unchanged.
+
+
+## R60 — LoRa compatibility and MDD20A power review (2026-11-22)
+- Added `Boat/docs/BOAT_R60_LORA_COMPATIBILITY_AND_POWER_HOLD.md`. E22-900T22D-V2.0 SX1262 UART LoRa is a candidate only; 3.3V UART IO, 2.3–5.5V supply, advertised ~110mA TX. **Do not purchase until Remote LoRa exact model and air protocol match**. E22 vs E220 and V2 variants are not interchangeable without verification; EU 868MHz duty/power constraints apply.
+- Cytron official MDD20A confirms dual 6–30V 20A/channel, 3.3V PWM/DIR, no reverse polarity protection and full-speed onboard test buttons. Existing 20A BMS is not automatically adequate for two motors; measure starting/stall current and select independently rated DC cutoff, watchdog and fuse.
+- No purchases made, no independent safety module verified, no working prototype, sonar deferred, Boat VER014 unchanged.
