@@ -19,6 +19,9 @@ on:
       - 'Boat/tests/weather_payload_test.cpp'
       - 'Boat/source/compass_calibration_session.h'
       - 'Boat/tests/compass_calibration_session_test.cpp'
+      - 'Boat/source/figure8_compass_calibration.h'
+      - 'Boat/source/m100_compass_qmc5883l.h'
+      - 'Boat/tests/figure8_compass_calibration_test.cpp'
       - 'Remote/tests/weather_payload_test.cpp'
       - '.github/workflows/r23-interface-gates.yml'
   pull_request:
@@ -62,3 +65,5 @@ jobs:
           g++ -std=c++17 -Wall -Wextra -Werror Remote/source/radio_payload_codec.cpp Remote/tests/weather_payload_test.cpp -o /tmp/r40_weather_remote && /tmp/r40_weather_remote
       - name: R41 GY-91 compass calibration candidate tests
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/compass_calibration_session_test.cpp -o /tmp/r41_compass_test && /tmp/r41_compass_test
+      - name: R42 dual compass figure-eight regression
+        run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/figure8_compass_calibration_test.cpp -o /tmp/r42_fig8 && /tmp/r42_fig8
