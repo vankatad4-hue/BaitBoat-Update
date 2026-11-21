@@ -3,6 +3,7 @@
 #include <Wire.h>
 #include <HardwareSerial.h>
 #include "tracker_gnss.h"
+#include "m100_ubx_nav_pvt.h"
 #include "bmp280_compensation.h"
 #include "compass_calibration_session.h"
 #include "figure8_compass_calibration.h"
@@ -48,6 +49,7 @@ private:
  HardwareSerial &serial_;TwoWire &wire_;
  TrackerSensorConfig cfg_{};
  TrackerGnss gnss_;
+ M100UbxNavPvt m100Ubx_;
  CompassCalibrationSession compassCal_;
  Figure8AutoSession autoFigure8_;
  Figure8CompassCalibration gy91Figure8_,m100Figure8_;
