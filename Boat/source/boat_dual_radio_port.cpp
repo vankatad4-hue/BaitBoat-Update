@@ -6,15 +6,11 @@
 static constexpr uint8_t REMOTE_ID=0x01,BOAT_ID=0x02;
 
 BoatDualRadioPort::BoatDualRadioPort()
- : serial_(1),nrf_(BOAT_NRF_CE_PIN,BOAT_NRF_CSN_PIN,&SPI,76),
-   e22_(serial_,
-      [](bool m0,bool m1,void*){if(BOAT_E22_M0_PIN>=0)digitalWrite(BOAT_E22_M0_PIN,m0?HIGH:LOW);if(BOAT_E22_M1_PIN>=0)digitalWrite(BOAT_E22_M1_PIN,m1?HIGH:LOW);},
-      [](void*){return BOAT_E22_AUX_PIN>=0 && digitalRead(BOAT_E22_AUX_PIN)==HIGH;},
-      [](bool released,void*){if(BOAT_E22_RESET_PIN>=0)digitalWrite(BOAT_E22_RESET_PIN,released?HIGH:LOW);},nullptr),
-   nrfReady_(false),e22Configured_(false),sessionEpoch_(1),
-   lastNrfRxMs_(0),lastE22RxMs_(0),lastNrfHeartbeatTxMs_(0),
-   lastE22HeartbeatTxMs_(0),lastE22HeartbeatAttemptMs_(0),txSequence_(0),authenticated_(false),
-   sessionStarted_(false),lastNrfRxValid_(false),lastE22RxValid_(false) {
+ : nrf_(BOAT_NRF_CE_PIN,BOAT_NRF_CSN_PIN,&SPI,BOAT_NRF_CHANNEL),
+   sx1262_(),nrfReady_(false),sx1262Ready_(false),sessionEpoch_(1),
+   lastNrfRxMs_(0),lastBackupRxMs_(0),lastNrfHeartbeatTxMs_(0),
+   lastBackupHeartbeatTxMs_(0),lastBackupHeartbeatAttemptMs_(0),txSequence_(0),authenticated_(false),
+   sessionStarted_(false),lastNrfRxValid_(false),lastBackupRxValid_(false) {
 
  memset(key_,0,sizeof(key_));memset(rootKey_,0,sizeof(rootKey_));
 }
@@ -52,25 +48,28 @@ void BoatDualRadioPort::resetSession(bool preserveReturn){
  if(!detachedReturn_){abortMission();controller_.resetSession();}
  handshake_.reset();radioSession_wipe(key_,32);sessionStarted_=false;
  primarySeqGuard_.resetAfterHandshake();backupSeqGuard_.resetAfterHandshake();crossRadioSeqGuard_.resetAfterHandshake();
- lastNrfRxValid_=lastE22RxValid_=false;commandQueue_.clear();mission_.reset();dedupe_.clear();txSequence_=0;
+ lastNrfRxValid_=lastBackupRxValid_=false;commandQueue_.clear();mission_.reset();dedupe_.clear();txSequence_=0;
 }
 bool BoatDualRadioPort::begin() {
- resetSession();nrfReady_=false;e22Configured_=false;authenticated_=radioKey_get(rootKey_);
- lastNrfHeartbeatTxMs_=lastE22HeartbeatTxMs_=lastE22HeartbeatAttemptMs_=0;
+ resetSession();nrfReady_=false;sx1262Ready_=false;authenticated_=radioKey_get(rootKey_);
+ lastNrfHeartbeatTxMs_=lastBackupHeartbeatTxMs_=lastBackupHeartbeatAttemptMs_=0;
 #if BOAT_NRF_CE_PIN >= 0 && BOAT_NRF_CSN_PIN >= 0
  nrfReady_=nrf_.begin(false);
 #endif
-#if BOAT_E22_UART_RX_PIN >= 0 && BOAT_E22_UART_TX_PIN >= 0 && BOAT_E22_M0_PIN >= 0 && BOAT_E22_M1_PIN >= 0 && BOAT_E22_AUX_PIN >= 0
- pinMode(BOAT_E22_M0_PIN,OUTPUT);pinMode(BOAT_E22_M1_PIN,OUTPUT);pinMode(BOAT_E22_AUX_PIN,INPUT);
- #if BOAT_E22_RESET_PIN >= 0
- pinMode(BOAT_E22_RESET_PIN,OUTPUT);digitalWrite(BOAT_E22_RESET_PIN,HIGH);
- #endif
- serial_.begin(9600,SERIAL_8N1,BOAT_E22_UART_RX_PIN,BOAT_E22_UART_TX_PIN);
- e22Configured_=e22_.configureEU868TestProfile();
+// Both chip selects must be inactive before sharing the Tracker SPI bus.
+#if BOAT_SX1262_BOARD_AUDIT_SIGNED && BOAT_SX1262_PEER_PHY_VERIFIED && BOAT_SX1262_EU868_APPROVED
+ if(BOAT_NRF_CSN_PIN>=0 && BOAT_SX1262_NSS>=0 && BOAT_SX1262_SCK>=0 &&
+    BOAT_SX1262_MISO>=0 && BOAT_SX1262_MOSI>=0){
+  pinMode(BOAT_NRF_CSN_PIN,OUTPUT);digitalWrite(BOAT_NRF_CSN_PIN,HIGH);
+  pinMode(BOAT_SX1262_NSS,OUTPUT);digitalWrite(BOAT_SX1262_NSS,HIGH);
+  SPI.begin(BOAT_SX1262_SCK,BOAT_SX1262_MISO,BOAT_SX1262_MOSI,BOAT_SX1262_NSS);
+  sx1262Ready_=sx1262_.begin();
+ }
 #endif
+
  // Wait for the remote's authenticated session-start marker. Its epoch is the
  // session identifier used by both endpoints; do not invent a boat-local epoch.
- return nrfReady_||e22Configured_;
+ return nrfReady_||sx1262Ready_;
 }
 void BoatDualRadioPort::update() {
  const uint32_t now=millis();
@@ -78,7 +77,7 @@ void BoatDualRadioPort::update() {
  if(handshake_.timeout(now))resetSession(detachedReturn_);
  if(!missionGate_||!missionGate_()||!primaryFresh(now))mission_.reset();
  if(nrfReady_){nrf_.update();RadioFrame f;while(nrf_.receiveFrame(f))receive(LINK_NRF_PRIMARY,f);}
- if(e22Configured_){e22_.update();RadioFrame f;while(e22_.receiveFrame(f))receive(LINK_LORA_BACKUP,f);}
+ if(sx1262Ready_){sx1262_.update();RadioFrame f;while(sx1262_.receiveFrame(f))receive(LINK_LORA_BACKUP,f);}
  const auto progress=controller_.status();
  if(progress.transaction){
    ExecInputs in{};const bool ready=missionInputs(in,now);
@@ -90,7 +89,7 @@ void BoatDualRadioPort::update() {
  }
  if(sessionReady()) {
    if(nrfReady_ && (uint32_t)(now-lastNrfHeartbeatTxMs_)>=100U) {lastNrfHeartbeatTxMs_=now;sendHeartbeat(LINK_NRF_PRIMARY,now);}
-   if(e22Configured_ && (uint32_t)(now-lastE22HeartbeatTxMs_)>=3000U && (uint32_t)(now-lastE22HeartbeatAttemptMs_)>=250U) {lastE22HeartbeatAttemptMs_=now;if(sendHeartbeat(LINK_LORA_BACKUP,now))lastE22HeartbeatTxMs_=now;}
+   if(sx1262Ready_ && (uint32_t)(now-lastBackupHeartbeatTxMs_)>=3000U && (uint32_t)(now-lastBackupHeartbeatAttemptMs_)>=250U) {lastBackupHeartbeatAttemptMs_=now;if(sendHeartbeat(LINK_LORA_BACKUP,now))lastBackupHeartbeatTxMs_=now;}
  }
 }
 void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
@@ -104,7 +103,7 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
      ++generation_;releaseIdSeen_=false;
      handshake_.frameKey(key_);sessionStarted_=true;lastSessionRx_=now;txSequence_=0;
      primarySeqGuard_.resetAfterHandshake();backupSeqGuard_.resetAfterHandshake();crossRadioSeqGuard_.resetAfterHandshake();
-     lastNrfRxValid_=lastE22RxValid_=false;commandQueue_.clear();mission_.reset();dedupe_.clear();stickLease_.reset();if(!detachedReturn_){abortMission();controller_.resetSession();}
+     lastNrfRxValid_=lastBackupRxValid_=false;commandQueue_.clear();mission_.reset();dedupe_.clear();stickLease_.reset();if(!detachedReturn_){abortMission();controller_.resetSession();}
    }
    RadioFrame ack;radio_frameInit(ack,(RadioMessageType)reply.type,BOAT_ID,REMOTE_ID,0,0,now,0);
    memcpy(ack.payload,reply.payload,8);if(radio_frameSeal(ack,rootKey_))nrf_.sendFrame(ack);
@@ -118,8 +117,8 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  if(f.type==RADIO_MSG_HEARTBEAT){
    RadioDecodedPayload heartbeat{};if(!radio_decodeHeartbeatPayload(f.payload,heartbeat))return;
  }else if(!crossSequenceAccepted&&!(f.type==RADIO_MSG_ACTION&&f.payload[0]==CMD_EMERGENCY_STOP))return;
- bool &rxValid=link==LINK_NRF_PRIMARY?lastNrfRxValid_:lastE22RxValid_;
- uint32_t &lastRx=link==LINK_NRF_PRIMARY?lastNrfRxMs_:lastE22RxMs_;
+ bool &rxValid=link==LINK_NRF_PRIMARY?lastNrfRxValid_:lastBackupRxValid_;
+ uint32_t &lastRx=link==LINK_NRF_PRIMARY?lastNrfRxMs_:lastBackupRxMs_;
  if(f.type==RADIO_MSG_HEARTBEAT){lastRx=lastSessionRx_=now;rxValid=true;return;}
  // Detached Home return keeps old plan private to the local supervisor.
  // A new session cannot attach to the old transaction or restart its target.
@@ -231,19 +230,19 @@ void BoatDualRadioPort::markActionExecuted(uint8_t sender,uint8_t epoch,uint16_t
 bool BoatDualRadioPort::sendFrame(ManagedLink link,const RadioFrame &f) {
  if(!sessionStarted_||!radio_frameVerify(f,key_)||!f.sequence||f.sequence>=RadioSessionCounter::REKEY_AT)return false;
  if(link==LINK_NRF_PRIMARY && nrfReady_)return nrf_.sendFrame(f);
- if(link==LINK_LORA_BACKUP && e22Configured_){RadioFrame backup=f;backup.flags=RADIO_FLAG_BACKUP_LINK;if(!radio_frameSeal(backup,key_))return false;return e22_.sendFrame(backup,millis());}
+ if(link==LINK_LORA_BACKUP && sx1262Ready_){RadioFrame backup=f;backup.flags=RADIO_FLAG_BACKUP_LINK;if(!radio_frameSeal(backup,key_))return false;return sx1262_.sendFrame(backup,millis());}
  return false;
 }
 bool BoatDualRadioPort::sendHeartbeat(ManagedLink link,uint32_t now) {
  if(!sessionReady())return false;
  RadioFrame f;radio_frameInit(f,RADIO_MSG_HEARTBEAT,BOAT_ID,REMOTE_ID,++txSequence_,0,now,sessionEpoch_);
- f.payload[0]=(uint8_t)(1U|(nrfReady_?2U:0U)|(e22Configured_?4U:0U)); // alive + radio availability; STOP state unknown
+ f.payload[0]=(uint8_t)(1U|(nrfReady_?2U:0U)|(sx1262Ready_?4U:0U)); // alive + radio availability; STOP state unknown
  f.payload[1]=1; // protocol build-major placeholder; reserved payload bytes remain zero
  if(!radio_frameSeal(f,key_))return false;
  return sendFrame(link,f);
 }
 bool BoatDualRadioPort::primaryFresh(uint32_t now)const{return sessionStarted_ && nrfReady_ && lastNrfRxValid_ && (uint32_t)(now-lastNrfRxMs_)<=250;}
-bool BoatDualRadioPort::backupFresh(uint32_t now)const{return sessionStarted_ && e22Configured_ && lastE22RxValid_ && (uint32_t)(now-lastE22RxMs_)<=6000;}
+bool BoatDualRadioPort::backupFresh(uint32_t now)const{return sessionStarted_ && sx1262Ready_ && lastBackupRxValid_ && (uint32_t)(now-lastBackupRxMs_)<=6000;}
 BoatFailsafeDecision BoatDualRadioPort::evaluateFailsafe(uint32_t now,bool mission,bool gnss,bool heading,bool battery,bool geofence)const {
  BoatLinkSafetyInputs in={primaryFresh(now),backupFresh(now),mission,gnss,heading,battery,geofence};
  return boatEvaluateLinkFailsafe(in);

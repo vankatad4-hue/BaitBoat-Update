@@ -1,9 +1,9 @@
 #pragma once
 #include <Arduino.h>
 #include <SPI.h>
-#include <HardwareSerial.h>
 #include "nrf24_link.h"
-#include "e22_uart_link.h"
+#include "heltec_sx1262_link.h"
+#include "boat_radio_hw_config.h"
 #include "radio_command_codec.h"
 #include "radio_key_store.h"
 #include "boat_radio_safety.h"
@@ -24,24 +24,6 @@ enum ManagedLink : uint8_t { LINK_NONE=0, LINK_NRF_PRIMARY=1, LINK_LORA_BACKUP=2
 #endif
 #ifndef BOAT_NRF_CSN_PIN
 #define BOAT_NRF_CSN_PIN (-1)
-#endif
-#ifndef BOAT_E22_UART_RX_PIN
-#define BOAT_E22_UART_RX_PIN (-1)
-#endif
-#ifndef BOAT_E22_UART_TX_PIN
-#define BOAT_E22_UART_TX_PIN (-1)
-#endif
-#ifndef BOAT_E22_M0_PIN
-#define BOAT_E22_M0_PIN (-1)
-#endif
-#ifndef BOAT_E22_M1_PIN
-#define BOAT_E22_M1_PIN (-1)
-#endif
-#ifndef BOAT_E22_AUX_PIN
-#define BOAT_E22_AUX_PIN (-1)
-#endif
-#ifndef BOAT_E22_RESET_PIN
-#define BOAT_E22_RESET_PIN (-1)
 #endif
 
 class BoatDualRadioPort {
@@ -72,16 +54,15 @@ public:
     bool completeApplicationAction(const BoatCommand &cmd,uint32_t generation,bool success,uint8_t stopState,uint8_t interlocks);
     bool sessionEstablished() const { return sessionStarted_; }
     bool primaryReady() const { return nrfReady_; }
-    bool backupReady() const { return e22Configured_; }
+    bool backupReady() const { return sx1262Ready_; }
     bool primaryFresh(uint32_t now) const;
     bool backupFresh(uint32_t now) const;
     BoatFailsafeDecision evaluateFailsafe(uint32_t now,bool missionActive,bool gnssOK,
                                            bool headingOK,bool batteryOK,bool geofenceOK) const;
 private:
-    HardwareSerial serial_;
     NRF24Link nrf_;
-    E22UartLink e22_;
-    bool nrfReady_,e22Configured_;
+    HeltecSx1262Link sx1262_;
+    bool nrfReady_,sx1262Ready_;
     uint8_t key_[32],rootKey_[32];
     SessionHandshake handshake_;
     uint32_t lastSessionRx_=0,generation_=0;
@@ -101,12 +82,12 @@ private:
     bool sendMissionFeedback(const MissionControlFeedback &f,uint32_t now);
     void abortMission();
     bool (*missionGate_)()=nullptr;
-    uint32_t lastNrfRxMs_,lastE22RxMs_;
-    uint32_t lastNrfHeartbeatTxMs_,lastE22HeartbeatTxMs_,lastE22HeartbeatAttemptMs_;
+    uint32_t lastNrfRxMs_,lastBackupRxMs_;
+    uint32_t lastNrfHeartbeatTxMs_,lastBackupHeartbeatTxMs_,lastBackupHeartbeatAttemptMs_;
     uint16_t txSequence_;
     bool authenticated_;
     bool sessionStarted_;
-    bool lastNrfRxValid_,lastE22RxValid_;
+    bool lastNrfRxValid_,lastBackupRxValid_;
     bool detachedReturn_=false;
     void resetSession(bool preserveReturn=false);
     bool sessionReady() const {return sessionStarted_&&txSequence_<RadioSessionCounter::REKEY_AT-1;}
