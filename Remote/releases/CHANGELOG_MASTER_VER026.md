@@ -336,3 +336,13 @@ Vendor review: Duelco **NST-3.2 42042237 8–36VDC** stop **supervisor** CANDIDA
 
 **Verified exact product listings:** Farnell BG **RECOM R-78E3.3-0.5 #2218602**, no live Farnell stock proof; Comet RS #10923552 exact same RECOM part **0 in local warehouse, distributor order only**, not guaranteed stock; **Olimex DCDC6-16-TO5 6–16V→5V/2A in stock at Bulgarian manufacturer** (USB-A 5V output/barrel input, installation/actual Heltec-VL pin audit required), Ardboard **Heltec Tracker v1.2** exact product listing (stock unconfirmed). Exact EKM014 and MDD20A remain selected but no approved **Bulgarian** seller confirmed; known exact listings at reputable EU specialists, delivery to BG checkout must still be verified. Independent STOP/POR/no-repeat/current-zero modules remain unselected and no powered actuator commissioning is authorized. Sonar unselected. Remote VER028 / Boat VER014 unchanged.
 
+
+## R62 — Boat/Remote source audit and endpoint-target preparation (2026-11-22)
+**Engineering work, not an official version release.** Confirmed selected endpoints: Boat ESP32-S3-DevKitC-1-N32R16V (32MB octal flash, 16MB octal PSRAM); Remote Waveshare ESP32-S3-Touch-LCD-4.3 Standard. Modules still await physical purchase, fit and electrical acceptance.
+
+- Remote: dual-radio manager rejects invalid link IDs, checks authenticated link age at send time and only rate-limits successful backup steering; added host test covering failed send/retry, stale link, 25% backup clamp and primary recovery. Added explicit `<cstring>` include after compile regression.
+- Boat: calibration record CRC now deterministic 48-byte little-endian serialization with golden vector. Added diagnostic NVS calibration readback without auto-apply; E22 RX processing bounded to 32 bytes/tick; ESP32-S3 flash/PSRAM endpoint identity printed on boot and host-tested.
+- Target CI: Boat board options explicitly select 32MB octal flash, 16MB octal PSRAM. Arduino ESP32 core 3.0.2 lacks default 32MB partition CSV; diagnostic build explicitly uses `PartitionScheme=huge_app` (no OTA); full 32MB OTA partition scheme remains a commissioning task.
+- Verified at writing: Remote host run 44956981643 **PASS**; Boat portable host run 44957202055 **PASS**; Boat safety/interface run 44956893866 **PASS**. Hardware target builds and physical tests require latest completion verification. Details in `docs/R62_ENDPOINT_CODE_AUDIT_AND_NEXT_GATES.md`.
+- Actuator driver still non-attached and no independent STOP/watchdog/contactor or key provisioning approved. Sonar deferred; SD stays Remote-only. **Remote VER028 / Boat VER014 unchanged** pending full target and physical acceptance.
+
