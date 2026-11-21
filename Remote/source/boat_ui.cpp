@@ -272,8 +272,6 @@ static void createHeader()
         17
     );
 
-    weatherLabel=createLabel(headerPanel,"ВРЕМЕ: --.-°C  ---- hPa",470,29);
-    lv_obj_set_style_text_font(weatherLabel,LV_FONT_DEFAULT,LV_PART_MAIN);
     // Add a gear button to open remote settings.
     lv_obj_t *settingsButton = lv_button_create(headerPanel);
     styleTouchButton(settingsButton, lv_color_hex(0x174F92));
@@ -384,6 +382,7 @@ static void createSonarPanel()
 {
     sonarPanel = createPanel(contentPanel, 400, 5, 385, 315);
     sonarTitle = createLabel(sonarPanel, "СОНАР • CHIRP", 12, 8);
+    weatherLabel=createLabel(sonarPanel,"ВРЕМЕ: --.-°C  ---- hPa",150,8);
     createLabel(sonarPanel, "ДЪЛБОЧИНА  --.- m", 12, 30);
     sonarPlot = lv_obj_create(sonarPanel);
     lv_obj_set_pos(sonarPlot, 42, 52); lv_obj_set_size(sonarPlot, 330, 210);
