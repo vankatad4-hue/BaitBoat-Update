@@ -35,3 +35,7 @@ TPS3431 at 3.3V, 100nF bypass; CWD 150pF C0G 5%, SET1/EN held enabled by hardwar
 - Cytron MDD20A datasheet: https://cdn.robotshop.com/media/c/cyt/rb-cyt-287/pdf/cytron-20a-6v-30v-dual-dc-motor-driver-datasheet.pdf
 
 Do not buy additional candidate components solely on this preliminary plan or fabricate a carrier from the CSV. Need exact V1.2 documentation or board inspection, resolve direct GPIO/expander budget, confirm feedback parts and switch/fuse calculations, capture native electrical schematic and run ERC before physical freeze. No physical acceptance or production release.
+
+
+## Active R6 continuation — direct MDD20A and model-independent sonar planning
+The selected architecture is still **Heltec-only, no RP2040**, with native ESP32-S3 LEDC PWM/DIR output to the external MDD20A. The new `mdd20a_arduino_stage.*` is a non-attached, unassigned, fail-closed implementation; see [R6 implementation gates](BOAT_DIRECT_MDD20A_IMPLEMENTATION_R6.md). A single model-independent [sonar integration plan](BOAT_SONAR_INTEGRATION_PLAN_UNDECIDED_R1.md) has been recorded; **sonar is NOT implemented and no model has been selected**. Historical R4 companion proposals must not be treated as active wiring.
