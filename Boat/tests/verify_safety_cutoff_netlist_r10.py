@@ -116,9 +116,21 @@ def check_xml(path):
     print(f"Native KiCad R10 XML exact pin topology passed: {len(actual)} nets")
     print("HARDWARE BLOCKED: conditioned STOP, comparators, ARM filter, FET ratings, coils, R7/ERC, physical acceptance")
 
+def check_erc(path):
+    """No unreviewed violations. Two missing external power sources are BLOCKERS."""
+    report=path.read_text(encoding="utf-8")
+    issues=re.findall(r"^\[([^]]+)\]:", report, flags=re.MULTILINE)
+    expected=["power_pin_not_driven","power_pin_not_driven"]
+    assert sorted(issues)==sorted(expected), f"Unexpected R10 ERC: {issues}"
+    print("KiCad R10: ZERO geometry errors/warnings; exactly 2 UNSOLVED power-source ERC errors.")
+    print("Fabrication blocked: an actual independently supplied logic regulator and return are not captured.")
+
+
 if __name__=="__main__":
     ap=argparse.ArgumentParser()
     ap.add_argument("--xml",type=Path)
+    ap.add_argument("--erc",type=Path)
     args=ap.parse_args()
     source_check()
     if args.xml:check_xml(args.xml)
+    if args.erc:check_erc(args.erc)
