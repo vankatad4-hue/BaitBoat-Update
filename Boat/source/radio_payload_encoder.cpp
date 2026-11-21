@@ -38,6 +38,11 @@ bool radio_encodeTelemetryPayload(const RadioDecodedPayload &in, uint8_t out[8])
         if(in.sonarHealth>3 || (in.sonarAlarmFlags&0xF0U)!=0) return false;
         out[0]=6; put16(out+1,in.depthCm); put16(out+3,in.sonarRangeCm);
         out[5]=in.sonarHealth; out[6]=in.sonarAlarmFlags; out[7]=in.sonarSample; return true;
+    case RADIO_PAYLOAD_WEATHER:
+        if(in.temperatureCentiC < -4000 || in.temperatureCentiC > 8500 || in.pressurePa < 30000 || in.pressurePa > 120000)return false;
+        out[0]=7;put16(out+1,(uint16_t)in.temperatureCentiC);
+        out[3]=(uint8_t)in.pressurePa;out[4]=(uint8_t)(in.pressurePa>>8);
+        out[5]=(uint8_t)(in.pressurePa>>16);out[6]=(uint8_t)(in.pressurePa>>24);return true;
     default:
         return false;
     }
