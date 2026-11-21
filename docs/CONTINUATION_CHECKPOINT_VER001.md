@@ -617,3 +617,7 @@ Reviewed official V2 March 2026 datasheet and HTIT-Tracker-FEM_V2.2 schematic; f
 
 ## R29 — Screenless Wireless Tracker V2 pin recovery (2026-11-21)
 Owner confirms onboard TFT will not be used. [R29 screenless pin budget and proposed allocation](../Boat/docs/BOAT_R29_V2_SCREENLESS_GPIO_RECOVERY.md) identifies nine *candidate* native signals: SPI 41/42/40, CE/CSN 43/44, I2C 6/17, dual PWM 21/37; TFT CS38 and RESET39 held inactive. This potentially removes R26/R28 GPIO shortage and SC18IS602B requirement. **Not wiring-ready:** TFT remains electrically connected, GPIO21 also drives backlight, GPIO43/44 are boot UART, TFT CS boot default and all waveform/fault tests unresolved. No migration completed, no actuator energization, releases held.
+
+
+## R30 — screenless V2 electrical conflict gate (2026-11-21)
+[Review](../Boat/docs/BOAT_R30_SCREENLESS_V2_ELECTRICAL_GATES.md) and [static test](../Boat/tools/r30_v2_pin_conflict_gate.py) committed, with CI workflow entry. R29's nine unique GPIOs are NOT nine electrically independent pins: GPIO21 is TFT backlight and rejected for motor PWM pending isolation evidence; GPIO40–42 share TFT nets; GPIO43/44 are UART0 at boot. The candidate mapping remains **NOT APPROVED**. Need manufacturer net trace and physical boot/reset measurements, alternate PWM pin/module and independent actuator safety stack. No migration or release authorized.
