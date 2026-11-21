@@ -691,3 +691,8 @@ User explicitly requires **NO manual driving** for compass calibration. Added po
 - Added `Boat/source/physical_driver_commissioning_gate.h`: local independent STOP/watchdog/motor+coil contactor feedback and current-zero safety preflight, with 100ms sample freshness and fail-closed single-coil pulse cap. This is an adapter prerequisite, not a commissioned `BoatPhysicalDriver` or independent electrical safety hardware.
 - Added `Boat/tests/physical_driver_commissioning_gate_test.cpp` to host CI. Observed host run 44947095178 PASS; diagnostic target run 44947079254 still in progress when checked.
 - Added `Boat/docs/BOAT_R48_INTEGRATION_ACCEPTANCE_MATRIX.md`: five-stage source status, hardware selection criteria, safety wiring and physical acceptance checklist. No exact independent safety parts selected or physical tests done. R45 pin schedule remains provisional. GPS-guided figure-eight, persistent calibration, Remote Start/Abort, integrated Boat+Remote target build and RF tests remain open. Boat VER014 remains official.
+
+
+## R49 — EKM014 software pulse guard (2026-11-21)
+- Added `Boat/source/ekm014_pulse_guard.h` and `Boat/tests/ekm014_pulse_guard_test.cpp`, registered in host CI. Single-coil, max 500ms configurable pulse, fresh power/current/independent limiter feedback and post-pulse current-zero before retrigger. **Uncommissioned and not wired to GPIO expander**; physical hardware limiter mandatory.
+- `Boat/docs/BOAT_R49_EKM014_IMPLEMENTATION.md` details limitations and integration dependencies. CI latest run 44947273124 was in progress at last check. Boat/Remote full target integration, RF, independent hardware safety and water tests remain pending. Official Boat VER014 unchanged.
