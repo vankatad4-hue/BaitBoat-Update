@@ -1,5 +1,7 @@
 # Boat Hardware and Firmware
 
+> **R18 active:** Previous carrier board size limits are canceled. Mount premade modules individually along the Boat hull, with protected keyed harnesses. [Distributed layout](docs/BOAT_DISTRIBUTED_MODULE_INSTALLATION_R18.md) · [verified Bulgaria-first source evidence](../docs/VERIFIED_ELECTRONICS_SOURCING_R18.csv). EKM014 selected; no contactor, timing or current sensing has been qualified. No actuator power.
+
 > **R17 commercial safety research (not commissioned):** [Safety monitor/contactor/timer candidates](docs/BOAT_PREMADE_SAFETY_STACK_R17.md), [18 interface handoffs](docs/BOAT_R17_MODULE_SAFETY_HANDOFF.csv), [21 physical acceptance gates](docs/BOAT_R17_RELEASE_GATES.csv). EKM014 selection unchanged. NO custom PCB and NO actuator power.
 
 > **R16 owner-confirmed selection:** **Electrokit EKM014 41024394** for all four Boat solenoids; [selected module data](docs/BOAT_EKM014_SELECTED_R16.md), [channel wiring](docs/BOAT_EKM014_PIN_WIRING_R16.csv), [commissioning checklist](docs/BOAT_EKM014_ACCEPTANCE_R16.md). No custom driver PCB; no powered actuators until separate premade safety functions are proven.

@@ -1,5 +1,7 @@
 # Flytec V080 Bait Boat Retrofit
 
+> **R18 ACTIVE (2026-11-21):** Boat electrical modules may be distributed along the hull; the old 77×79mm/30mm carrier limit is **RETIRED**. Buy only from legitimate electronics dealers: Bulgaria-first **Farnell BG, Comet, Olimex, Ardboard**; specific EU specialists as fallback; AliExpress only after exact seller/authenticity checks. OLX/eMAG/general marketplaces are EXCLUDED. [Supplier rules](docs/APPROVED_ELECTRONICS_SUPPLIERS_R18.md) · [Verified product-source evidence](docs/VERIFIED_ELECTRONICS_SOURCING_R18.csv) · [Distributed Boat placement](Boat/docs/BOAT_DISTRIBUTED_MODULE_INSTALLATION_R18.md). EKM014 remains owner-selected; actuator safety remains unqualified.
+
 > **R17 safety-module evaluation:** EKM014 is selected. Duelco NST-3.2 and Albright SW60C/A with contact feedback are research candidates only; **all physical safety release gates remain open**. [Current module-only safety design](Boat/docs/BOAT_PREMADE_SAFETY_STACK_R17.md) · [21 release gates](Boat/docs/BOAT_R17_RELEASE_GATES.csv).
 
 > **R16 selection (2026-11-21):** Owner confirmed **Electrokit EKM014 (41024394)** as the one 4-channel solenoid MOSFET module. [Selected module, safe wiring, outstanding tests](Boat/docs/BOAT_EKM014_SELECTED_R16.md). No custom PCB fabrication. Not yet installed or electrically approved.

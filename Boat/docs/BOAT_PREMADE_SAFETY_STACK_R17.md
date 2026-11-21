@@ -1,4 +1,6 @@
 # R17 — Ready-made actuator safety chain: vendor-checked candidate study
+
+> **R18 superseding mechanical decision:** The owner REMOVED the earlier small-board size limit. Duelco / Albright or other ready-made safety modules may be installed along the hull in independently protected housings. Statements about not fitting a 30mm carrier below are historical, NOT reasons for rejection. Physical hull fit, waterproofing and thermal suitability remain unverified. [Distributed module plan](BOAT_DISTRIBUTED_MODULE_INSTALLATION_R18.md).
 **2026-11-21 | Module-only policy R15 is binding | EKM014 R16 is OWNER SELECTED.**
 **Status: DESIGN CANDIDATES ONLY. No independent safety chain installed, physically tested, commissioned or released. NO ACTUATOR POWER.**
 
@@ -72,7 +74,7 @@ Removing EKM014 VL *alone* is NOT an independently demonstrated coil cutoff if a
 
 ## Mechanical reality check
 - EKM014 nominal **32×30mm** (hole pitch unresolved 27×25 vs product-listing contradiction), likely only this small module is plausible in legacy low-voltage 77×79 slot.
-- C1 Duelco DIN unit depth **~99mm**, C2 Albright SW60C length **~81mm** and thickness/height **~57mm**: neither is compatible with a 30mm lid clearance slot. **Existing boat hull additional-volume measurement is now a hard blocker.**
+- C1 Duelco DIN unit depth **~99mm**, C2 Albright SW60C length **~81mm** and thickness/height **~57mm**: neither is compatible with a 30mm lid clearance slot. **Additional hull bay selection and waterproofing remain to be measured, but the old 30mm height is NOT an active product-selection limit.**
 - Rearrange only factory-made modules and removable harnesses; 3D-printed *non-electrical* mounts and waterproof enclosures are permitted; no custom PCB even for an adaptor.
 
 ## Hard stop / continuation

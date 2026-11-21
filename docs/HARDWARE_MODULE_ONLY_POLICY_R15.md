@@ -1,4 +1,6 @@
 # Flytec V080 R15 — MODULE-ONLY ELECTRONICS POLICY
+
+> **R18 override (owner 2026-11-21):** Drop historical 77×79mm carrier/30mm lid envelope from **active** hardware selection. Distributed factory-built modules along hull allowed. Buy only from verified electronics suppliers: Bulgarian **Farnell, Comet, Olimex, Ardboard**, or documented specialist EU manufacturer/distributor when exact Bulgarian item not found. AliExpress exceptional + seller authenticity audit; NO OLX/eMAG/general marketplaces. [Sourcing evidence](VERIFIED_ELECTRONICS_SOURCING_R18.csv), [placement plan](../Boat/docs/BOAT_DISTRIBUTED_MODULE_INSTALLATION_R18.md).
 **Effective:** 2026-11-21 | **Branch:** `hardware-ready-dual-radio-r1` | **Status:** Architecture decision adopted, NOT hardware commissioned
 
 ## Binding engineering rule

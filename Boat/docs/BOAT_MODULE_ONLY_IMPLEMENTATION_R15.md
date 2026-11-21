@@ -1,11 +1,13 @@
 # R15 — Boat premade-modules-only implementation plan
+
+> **R18 ACTIVE:** Historical 77×79mm/30mm carrier measurements DO NOT LIMIT selectable premade modules; modules may be mounted separately along hull. Manufacturer-supplied or factory-produced electronic modules only, no custom PCB. [Distributed mounting details](BOAT_DISTRIBUTED_MODULE_INSTALLATION_R18.md) · [approved purchasing register](../../docs/VERIFIED_ELECTRONICS_SOURCING_R18.csv).
 **Status:** Active architecture plan; no assembled electrical harness, no qualified STOP interlock
 
 ## Modules / supplies
 | Slot | Function | Premade board/module | State |
 |--|--|--|--|
 | B01 | GNSS, boat application, telemetry | Heltec Wireless Tracker v1.2 ESP32-S3 | retained; physical pin mapping TBD |
-| B02 | Two independent 550 brushed motors | Cytron MDD20A | retained; separate mounting, not 77x79 carrier |
+| B02 | Two independent 550 brushed motors | Cytron MDD20A | retained; independently mounted along hull |
 | B03 | LH RH LK RK 12V coil power switching | Electrokit EKM014 (4x10A published) | **OWNER SELECTED (R16)**; not physically installed, coil current and safety qualification pending |
 | B04 | Safety logic 3.3V | RECOM R-78E3.3-0.5 preassembled SIP3 with commercial screw-terminal adapter | selected candidate; independently supervised |
 | B05 | Heltec supply 5V | Pololu S13V20F5 5V/2A | candidate separate from VL, source/injection pins TBD |

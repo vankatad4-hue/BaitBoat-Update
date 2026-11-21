@@ -1,4 +1,6 @@
 # R16 — Electrokit EKM014 selected solenoid module
+
+> **R18 mechanical and purchasing update:** EKM014 is mounted at a suitable independent location along the hull. Previous 77×79mm carrier no longer applies. Actual 27×25 vs 41×25 mounting hole discrepancy still requires vendor confirmation/physical measurement. Exact manufacturer listing at [Electrokit](https://www.electrokit.com/en/mosfet-drivkort-4-kan-50v-10a) is verified, **no exact Bulgarian shop listing confirmed**; Bulgarian shipping from Electrokit is unverified. [R18 sourcing](../../docs/VERIFIED_ELECTRONICS_SOURCING_R18.csv).
 **Decision status:** Model **CONFIRMED by owner** 2026-11-21; unpurchased, unassembled, UNCOMMISSIONED. Only commercial modules/harnesses, no custom PCB.
 
 ## Exact identification and external evidence
