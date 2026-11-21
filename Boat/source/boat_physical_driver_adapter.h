@@ -26,6 +26,8 @@ public:
   BoatSafetyContacts contacts{};Ekm014Feedback coil{};
   if(!hal_.sample(sample,contacts,coil)){fault();return false;}
   boatPhysicalSafetyToSample(contacts,now,sample);
+  // Two independent coil-zero indications must agree before arbitration.
+  if(contacts.coilCurrentZero!=coil.allCoilCurrentsZero){fault();return false;}
   const bool common=contacts.isolationTestSigned&&contacts.stopLoopClosed&&
     contacts.watchdogContactClosed&&contacts.motorContactorFeedbackClosed&&
     contacts.coilContactorFeedbackClosed&&contacts.batteryHealthy&&
@@ -35,7 +37,7 @@ public:
   return true;
  }
  bool apply(const BoatActuatorOutput &request,uint16_t leaseMs,uint32_t now){
-  if(!initialized_||faulted_||leaseMs==0||leaseMs>100||
+  if(!initialized_||faulted_||!guard_.enabled()||leaseMs==0||leaseMs>100||
      (uint32_t)(now-lastRead_)>=50U||
      !contacts_.isolationTestSigned||!contacts_.stopLoopClosed||
      !contacts_.watchdogContactClosed||!contacts_.motorContactorFeedbackClosed||
@@ -52,7 +54,7 @@ public:
    }else if(channel_!=request.releaseChannel)return fail();
    if(!hal_.motorWrite(0,0,leaseMs))return fail();
    const int8_t active=guard_.tick(now,coil_);
-   if(active!=request.releaseChannel)return fail();
+   if(!guard_.enabled()||active!=request.releaseChannel)return fail();
    if(!hal_.coilWrite(active))return fail();
    return true;
   }
@@ -60,14 +62,19 @@ public:
   if(!hal_.coilWrite(-1))return fail();
   if(guardActive_){
    const int8_t active=guard_.tick(now,coil_);
-   if(active>=0)return fail(); // software requested coil off too early
+   if(!guard_.enabled()||active>=0)return fail(); // software requested coil off too early
    guardActive_=false;channel_=-1;
   }
   if(guard_.awaitingZero()){
    guard_.tick(now,coil_);
+   if(!guard_.enabled())return fail();
    if(guard_.awaitingZero()&&(request.left||request.right))return fail();
   }
-  if((request.left||request.right)&&(!contacts_.coilCurrentZero||guard_.awaitingZero()))return fail();
+  // Never authorize propulsion on stale coil feedback or cleared fault state.
+  if((request.left||request.right)&&(!contacts_.coilCurrentZero||
+     !coil_.allCoilCurrentsZero||!coil_.independentPulseLimiterReady||
+     (uint32_t)(now-coil_.sampledAt)>=50U||!guard_.enabled()||
+     guard_.awaitingZero()))return fail();
   if(!hal_.motorWrite(request.left,request.right,leaseMs))return fail();
   return true;
  }
