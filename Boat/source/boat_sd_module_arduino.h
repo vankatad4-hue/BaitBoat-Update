@@ -29,7 +29,8 @@ public:
   SD.remove(path);
   File f=SD.open(path,FILE_WRITE);
   if(!f)return false;
-  const bool ok=f.write(buffer,len)==len&&f.flush();
+  const bool ok=f.write(buffer,len)==len;
+  f.flush();
   f.close();if(!ok){SD.remove(path);return false;}
   return true;
  }
