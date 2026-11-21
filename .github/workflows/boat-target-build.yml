@@ -35,7 +35,10 @@ jobs:
       - name: Compile Boat diagnostic (N32R16V 32MB octal flash, 16MB octal PSRAM; no actuation)
         run: |
           set -o pipefail
-          arduino-cli compile --verbose --export-binaries --fqbn 'esp32:esp32:esp32s3:FlashSize=32M,FlashMode=opi,PSRAM=opi' /tmp/FlytecBoatBuild 2>&1 | tee /tmp/boat-target-build.log
+          # Espressif core 3.0.2 selects a missing 32MB default partition CSV;
+          # pin the existing diagnostic-only huge_app table (no OTA) explicitly.
+          # A reviewed 32MB dual-OTA partition layout is still required before OTA.
+          arduino-cli compile --verbose --export-binaries --fqbn 'esp32:esp32:esp32s3:FlashSize=32M,FlashMode=opi,PSRAM=opi,PartitionScheme=huge_app' /tmp/FlytecBoatBuild 2>&1 | tee /tmp/boat-target-build.log
       - uses: actions/upload-artifact@v4
         if: success()
         with:
