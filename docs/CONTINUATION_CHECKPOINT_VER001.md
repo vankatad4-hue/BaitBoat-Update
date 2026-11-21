@@ -739,3 +739,9 @@ User explicitly requires **NO manual driving** for compass calibration. Added po
 - User requested completed working Boat prototype. Audited active `Boat/source/firmware/Flytec_Boat.ino` and `Boat/source/boat_application_port.cpp`: no commissioned `BoatPhysicalDriver` is attached, so current Boat target is **non-actuating diagnostic firmware**, not a functioning physical prototype.
 - Added `Boat/docs/BOAT_R56_PROTOTYPE_READINESS_GATE.md` with explicit remaining integration, independent STOP/watchdog/DC cutoff, GPIO and module verification, GPS/radio/solenoid tests, target compilation and on-water acceptance gates. No custom PCB; Remote SD only, Boat internal NVS; sonar deferred.
 - **No physical prototype, hardware acceptance, or new release is claimed.** Official Boat VER014 unchanged. Next: verify actual module SKUs and physical safety hardware, implement commissioned HAL, finish NVS and authenticated GPS calibration, then HIL/water tests and release.
+
+
+## R57 — procurement phase (2026-11-22)
+- User confirmed **no Boat electronics modules purchased yet**. Continue with verified modular BOM, Bulgarian/Farnell availability and electrical compatibility before physical wiring. No custom PCB, no Boat SD, sonar deferred.
+- Verified Electrokit EKM014 manufacturer product: SKU 41024394, 5–50V load rail, 4.5–12V logic rail, specified 3–12V logic levels, advertised 10A/channel; manufacturer-listed 169 SEK with stock at check. Terminal/header soldering required. Bulgarian delivery not yet verified. See `Boat/docs/BOAT_R57_PROCUREMENT_VERIFICATION.md`.
+- Exact remaining module listings, current limits, independent STOP/watchdog/DC-rated cutoff, safe startup, E22 model and complete purchase basket remain unresolved. **No working hardware prototype or official release**. Boat VER014 unchanged.
