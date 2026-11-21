@@ -1,5 +1,8 @@
 # Flytec V080 Boat Project — Master Status R4
 
+> **R62 ACTIVE STATUS (2026-11-22):** This document retains earlier Heltec/carrier/PCB-era history. Current selected Boat endpoint is **Espressif ESP32-S3-DevKitC-1-N32R16V**, HGLRC M100 PRO, GY-91, nRF24 primary, matched E22-900T22S backup, Cytron MDD20A, EKM014. **Ready-made modules only; no Boat SD**. Physical outputs remain uncommissioned. The current audit is [R62](../../docs/R62_ENDPOINT_CODE_AUDIT_AND_NEXT_GATES.md); [continuation checkpoint](../../docs/CONTINUATION_CHECKPOINT_VER001.md) takes precedence over historical lines below.
+
+
 Updated 2026-11-20. Development only; not compiled, bench-validated, or operational.
 
 ## Scope and retained hardware
@@ -434,3 +437,6 @@ Vendor review: Duelco **NST-3.2 42042237 8–36VDC** stop **supervisor** CANDIDA
 
 **Verified exact product listings:** Farnell BG **RECOM R-78E3.3-0.5 #2218602**, no live Farnell stock proof; Comet RS #10923552 exact same RECOM part **0 in local warehouse, distributor order only**, not guaranteed stock; **Olimex DCDC6-16-TO5 6–16V→5V/2A in stock at Bulgarian manufacturer** (USB-A 5V output/barrel input, installation/actual Heltec-VL pin audit required), Ardboard **Heltec Tracker v1.2** exact product listing (stock unconfirmed). Exact EKM014 and MDD20A remain selected but no approved **Bulgarian** seller confirmed; known exact listings at reputable EU specialists, delivery to BG checkout must still be verified. Independent STOP/POR/no-repeat/current-zero modules remain unselected and no powered actuator commissioning is authorized. Sonar unselected. Remote VER028 / Boat VER014 unchanged.
 
+
+## R62 — active endpoint code review and configuration corrections (2026-11-22)
+Read-only dual-slot figure-eight NVS startup diagnostics added; deterministic 48-byte little-endian calibration CRC; E22 parser bounded per poll; selected N32R16V flash/PSRAM identity checker; Boat target FQBN moved to 32M octal flash / 16M octal PSRAM and explicit non-OTA diagnostic partition for esp32 core 3.0.2. Host regression suite passed; full selected target build requires latest CI verification. No hardware drivers attached or physical STOP/contactor/watchdog verified; official Boat VER014 unchanged. See [R62 audit](../../docs/R62_ENDPOINT_CODE_AUDIT_AND_NEXT_GATES.md).
