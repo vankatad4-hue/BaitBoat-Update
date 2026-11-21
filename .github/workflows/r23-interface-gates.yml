@@ -8,6 +8,8 @@ on:
       - 'Boat/tools/r26_pin_budget.py'
       - 'Boat/tools/r30_v2_pin_conflict_gate.py'
       - 'Boat/tools/r32_v2_assignment_solver.py'
+      - 'Boat/source/mdd20a_i2c_direction_plan.h'
+      - 'Boat/tests/mdd20a_i2c_direction_plan_test.cpp'
       - '.github/workflows/r23-interface-gates.yml'
   pull_request:
     paths:
@@ -36,3 +38,5 @@ jobs:
         run: python Boat/tools/r30_v2_pin_conflict_gate.py -v
       - name: R32 V2 allocation budget tests
         run: python Boat/tools/r32_v2_assignment_solver.py -v
+      - name: R34 C++ direction-policy tests
+        run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/mdd20a_i2c_direction_plan_test.cpp -o /tmp/r34_direction_test && /tmp/r34_direction_test
