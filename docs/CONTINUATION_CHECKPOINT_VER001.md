@@ -625,3 +625,7 @@ Owner confirms onboard TFT will not be used. [R29 screenless pin budget and prop
 
 ## R31 — Actual firmware GPIO contract audit (2026-11-21)
 [Boat R31 source audit](../Boat/docs/BOAT_R31_ACTUAL_FIRMWARE_GPIO_AUDIT.md) examined boat_radio_hw_config.h, mdd20a_arduino_stage.cpp, and firmware/Flytec_Boat.ino. Existing direct motor HAL requires **six** native GPIOs (PWM2, DIR2, permit, watchdog edge), so full direct native budget is at least **13**, not the nine in R26/R29 (which assumed offloading). Current boat sketch remains non-actuating. Screenless V2 has no approved complete mapping; GPIO21 backlight and UART/TFT shared nets remain blockers. Need qualified COTS expander and firmware HAL redesign, board evidence and physical tests before migration. Releases held.
+
+
+## R32 — executable V2 screenless GPIO budget (2026-11-21)
+Added [R32 V2 assignment solver](../Boat/tools/r32_v2_assignment_solver.py) with eight arithmetic/constraint tests and CI step. Source-backed motor HAL requires six direct control lines. On conservative screenless V2 candidate set excluding TFT backlight GPIO21, eight provisional GPIOs remain. Direct firmware demand 13; direction-only offload 11; direction+permit+watchdog offload 9 (still one short); SPI bridge plus direction offload 7 (arithmetically fits, but bridge timing, boot states and independent STOP not verified). Do not equate offloading MCU permit/watchdog to satisfying independent safety hardware. No physical or CI results asserted; releases remain held.
