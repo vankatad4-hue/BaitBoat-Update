@@ -26,6 +26,8 @@ on:
       - 'Boat/tests/figure8_auto_session_test.cpp'
       - 'Boat/source/figure8_autonomous_motion.h'
       - 'Boat/tests/figure8_autonomous_motion_test.cpp'
+      - 'Boat/source/m100_ubx_nav_pvt.h'
+      - 'Boat/tests/m100_ubx_nav_pvt_test.cpp'
       - 'Remote/tests/weather_payload_test.cpp'
       - '.github/workflows/r23-interface-gates.yml'
   pull_request:
@@ -75,3 +77,5 @@ jobs:
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/figure8_auto_session_test.cpp -o /tmp/r43_auto && /tmp/r43_auto
       - name: R44 autonomous figure-eight intent fail-safe regression
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/figure8_autonomous_motion_test.cpp -o /tmp/r44_motion && /tmp/r44_motion
+      - name: R45 HGLRC M100 UBX NAV-PVT parser regression
+        run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/m100_ubx_nav_pvt_test.cpp -o /tmp/r45_ubx && /tmp/r45_ubx
