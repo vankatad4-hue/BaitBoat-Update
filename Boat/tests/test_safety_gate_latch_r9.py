@@ -114,5 +114,29 @@ class IndependentPulseLimiterRegression(unittest.TestCase):
         self.assertEqual(p.step(4, 2, **good), 2)
 
 
+
+    def test_clock_rollback_fails_closed_and_latches(self):
+        p = OneHotPulseLimiterModel(80)
+        good = dict(gate_power_good=True, motors_idle=True, coils_zero_current=True)
+        self.assertEqual(p.step(100, 1, **good), 1)
+        self.assertEqual(p.step(99, 1, **good), 0)
+        self.assertTrue(p.fault)
+        self.assertEqual(p.step(101, 1, **good), 0)
+
+    def test_negative_time_and_invalid_requests_fail_closed(self):
+        good = dict(gate_power_good=True, motors_idle=True, coils_zero_current=True)
+        for timestamp, mask in ((-1, 1), (0, -1), (0, 16)):
+            p = OneHotPulseLimiterModel(80)
+            self.assertEqual(p.step(timestamp, mask, **good), 0)
+            self.assertTrue(p.fault)
+
+    def test_one_hot_masks_exhaustive(self):
+        good = dict(gate_power_good=True, motors_idle=True, coils_zero_current=True)
+        for mask in range(16):
+            p = OneHotPulseLimiterModel(80)
+            result = p.step(0, mask, **good)
+            self.assertEqual(result, mask if mask.bit_count() == 1 else 0)
+            self.assertEqual(p.fault, mask.bit_count() > 1)
+
 if __name__ == "__main__":
     unittest.main()

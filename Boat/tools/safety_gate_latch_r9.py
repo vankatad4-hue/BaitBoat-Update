@@ -74,6 +74,13 @@ class OneHotPulseLimiterModel:
     def step(self, now_ms: int, request_mask: int, *,
              gate_power_good: bool, motors_idle: bool,
              coils_zero_current: bool) -> int:
+        # A real monostable has its own clock. A simulated backwards timestamp
+        # is not a valid wrap unless an explicit 32-bit modular counter is used.
+        # Fail closed on a time discontinuity instead of extending a coil pulse.
+        if not isinstance(now_ms, int) or now_ms < 0:
+            self.fault = True
+        if self.active_channel >= 0 and now_ms < self.at:
+            self.fault = True
         if not gate_power_good:
             self.fault = True
         if request_mask < 0 or request_mask > 15 or request_mask.bit_count() > 1:
