@@ -11,7 +11,7 @@ int main(){
  assert(!g.request(1,201,f));
  f.sampledAt=202;f.allCoilCurrentsZero=true;
  assert(g.tick(202,f)==-1);assert(!g.awaitingZero());
- assert(g.request(2,202,f));f.sampledAt=260;
+ assert(g.request(2,202,f));
  assert(g.tick(260,f)==-1); // stale feedback locks out
  assert(!g.request(3,260,f));
 }
