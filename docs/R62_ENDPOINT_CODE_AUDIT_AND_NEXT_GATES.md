@@ -14,10 +14,13 @@
 | Boat E22 UART | `Boat/source/e22_uart_link.cpp` | Bound each cooperative UART parser pass to 32 input bytes, preserving primary radio and independent watchdog service opportunities. |
 | Boat target | `.github/workflows/boat-target-build.yml` | Select `FlashSize=32M,FlashMode=opi,PSRAM=opi`, then explicit diagnostic-only `PartitionScheme=huge_app` because pinned esp32 core 3.0.2 is missing its default `app5M_fat24M_32MB.csv` partition file. **huge_app has no OTA**; do not use it as a production OTA plan. |
 
-## Verification
-- **PASS:** Remote portable host tests, run `44956981643`, includes new Remote link test and existing map, lake, input, telemetry and mission regressions.
-- **PASS:** Boat portable host tests, run `44957202055`, includes endpoint memory profile regression and preceding Boat calibration/transport changes. **PASS:** Boat R24 safety/interface tests, run `44956893866`, after the R62 CRC/transport changes available at that SHA.
-- Target compile **outstanding at draft**: latest ESP32-S3 N32R16V diagnostic pipeline (with explicit partition scheme) and full Waveshare Remote target pipeline. GitHub Actions results must be checked on latest relevant source head before claiming complete target validation. Earlier N32R16V 32M build failed **missing default partition file**, not a successful binary. No powered hardware tests.
+## Verification — GitHub Actions confirmed
+- **PASS — Remote portable host tests**, run [44956981643](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/44956981643), source SHA `bd176630`; verifies Remote radio regression and existing map/lake/telemetry/mission modules.
+- **PASS — Remote Waveshare full target compile**, run [44956981581](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/44956981581), source SHA `bd176630`; compilation is not hardware integration.
+- **PASS — Boat portable host tests**, run [44957202055](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/44957202055), source SHA `ec760833`; covers R62 memory gate, radio guard and CRC regression. **PASS — Boat safety/interface tests**, run [44956893866](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/44956893866).
+- **PASS — Boat selected N32R16V diagnostic target compile**, run [44957322196](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/44957322196), source/config SHA `8d50c208`; explicit `PartitionScheme=huge_app`. This compiles a **NON-ACTUATING diagnostic binary**, not a physical driver firmware.
+- Earlier build `44957190165` failed because Arduino ESP32 core 3.0.2 attempted to copy missing `app5M_fat24M_32MB.csv`. Fixed at `8d50c208`; retain the failure as historical, not current.
+- Physical tests: **NOT PERFORMED**; no hardware purchased or commissioned.
 
 ## Still missing — ordered by enabling dependency
 1. Complete safety BOM and wiring using **verified preassembled modules only**: independent physical STOP, 3S-compatible external watchdog/brownout, DC-rated branch isolation, one-hot non-retriggerable pulse cutoff and current/contactor feedback. Measure motor stall, solenoid pulse and supply transients before energizing. No custom PCB.
