@@ -81,3 +81,5 @@ jobs:
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/m100_ubx_nav_pvt_test.cpp -o /tmp/r45_ubx && /tmp/r45_ubx
       - name: R46 heading-feedback figure-eight safety regression
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/figure8_closed_loop_test.cpp -o /tmp/r46_figure8 && /tmp/r46_figure8
+      - name: R47 OTA preflight fail-closed regression
+        run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/boat_wifi_ota_preflight_test.cpp -o /tmp/r47_ota && /tmp/r47_ota
