@@ -1,3 +1,4 @@
+#include <initializer_list>
 #include <cassert>
 #include "../source/esp32s3_gpio_audit.h"
 int main(){
