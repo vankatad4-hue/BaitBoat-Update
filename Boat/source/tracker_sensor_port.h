@@ -5,6 +5,8 @@
 #include "tracker_gnss.h"
 #include "bmp280_compensation.h"
 #include "compass_calibration_session.h"
+#include "figure8_compass_calibration.h"
+#include "m100_compass_qmc5883l.h"
 #include "carrier_sensor_math.h"
 #include "boat_hardware_supervisor.h"
 // Logic-only sensor driver. Caller must establish verified GNSS power/reset
@@ -24,6 +26,11 @@ public:
  void poll(uint32_t now);
  void copySensors(BoatHardwareSample &sample,uint32_t now)const;
  bool imuReady()const{return imuReady_;}
+ bool m100CompassReady()const{return m100CompassReady_;}
+ bool startFigure8Calibration(){if(!imuReady_||!m100CompassReady_)return false;gy91Figure8_.start();m100Figure8_.start();return true;}
+ bool finishFigure8Calibration(Figure8Candidate &gy91,Figure8Candidate &m100){
+  const bool a=gy91Figure8_.finish(gy91),b=m100Figure8_.finish(m100);return a&&b;
+ }
  bool beginCompassCalibration(){if(!imuReady_)return false;compassCal_.start();return true;}
  bool finishCompassCalibration(CompassCalibrationCandidate &candidate){return compassCal_.finish(candidate);}
  bool compassCalibrationActive()const{return compassCal_.active();}
@@ -37,6 +44,8 @@ private:
  TrackerSensorConfig cfg_{};
  TrackerGnss gnss_;
  CompassCalibrationSession compassCal_;
+ Figure8CompassCalibration gy91Figure8_,m100Figure8_;
+ bool m100CompassReady_=false;uint32_t m100CompassPollAt_=0;
  bool bmpReady_=false,bmpValid_=false;uint8_t bmpAddress_=0;
  Bmp280Calibration bmpCal_{};int32_t bmpTemp_=0;uint32_t bmpPressure_=0,bmpAt_=0,bmpPollAt_=0;
  bool configured_=false,imuReady_=false,headingValid_=false,voltageValid_=false,adcPending_=false;
@@ -49,6 +58,7 @@ private:
  bool writeAdc(uint16_t value);
  bool initializeImu();
  bool initializeBmp();void pollBmp(uint32_t now);
+ bool initializeM100Compass();void pollM100Compass(uint32_t now);
  void pollImu(uint32_t now);
  void pollAdc(uint32_t now);
 };
