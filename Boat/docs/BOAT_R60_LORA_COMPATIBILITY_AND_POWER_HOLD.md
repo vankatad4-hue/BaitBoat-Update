@@ -1,5 +1,8 @@
 # R60 — E22 backup radio compatibility and motor power hold (2026-11-22)
 
+**R61 supersession:** Source audit confirms Remote and Boat were already specified for a matched pair of **E22-900T22S UART modules**. The D-V2 candidate below is *not* the approved purchase and must not be treated as a drop-in replacement. See `Boat/docs/BOAT_R61_RADIO_PAIR_AND_SAFETY_REVIEW.md`.
+
+
 ## Candidate, NOT approved for purchase
 - EBYTE E22-900T22D-V2.0, SX1262-based transparent UART LoRa module, 850.125–930.125MHz range, 868.125MHz default, 2.3–5.5V supply, **3.3V UART IO**, approx. 110mA TX at 22dBm, SMA-K 50-ohm antenna. Official product: https://ebyteiot.com/it/collections/lora-module/products/ebyte-e22-900t22d-v2-0-sx1262-lora-868mhz-wireless-module-uart-22dbm-5km-long-range-fec-sma-k-antenna-rf-wireless-transmitter
 - Do NOT interchange E22-900T22D, E22-900T22D-V2.0 and E220-900T22D without a full UART command, RF settings and pinout audit. E220 uses LLCC68 and its defaults may differ. Reference: https://www.ebyte.com/Uploadfiles/Files/2021-7-6/202176188184448.pdf
