@@ -33,6 +33,8 @@ on:
       - 'Boat/source/boat_physical_driver_adapter.h'
       - 'Boat/tests/boat_physical_driver_safety_r61_test.cpp'
       - 'Boat/tests/test_r61_e22_pair_contract.py'
+      - 'Boat/source/figure8_calibration_store.h'
+      - 'Boat/tests/figure8_calibration_store_test.cpp'
       - 'Boat/source/e22_uart_link.cpp'
       - 'Remote/source/e22_uart_link.cpp'
       - 'Boat/source/radio_protocol.h'
