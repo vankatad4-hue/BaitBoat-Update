@@ -1,5 +1,7 @@
 # R14 module-first alternative — replace R9 custom four-coil PCB (CANDIDATE)
 
+> **R15 decision:** This analysis now supports the MANDATORY premade-modules-only project. All PCB manufacture has been removed from the active plan. See [R15 policy](../../docs/HARDWARE_MODULE_ONLY_POLICY_R15.md).
+
 **Date:** 2026-11-21. **Decision status:** user asked whether ready-made NCD or equivalent modules can replace custom PCB development. Engineering recommendation is **Electrokit EKM014** as the preferred *commercial off-the-shelf candidate* for four coil power-switching channels. This is **not an authorized module purchase or final design freeze**; preserve R9 KiCad for fallback/reference and do not alter official VER028/VER014 releases.
 
 ## Candidate comparison using manufacturer/retailer descriptions

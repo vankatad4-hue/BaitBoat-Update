@@ -1,5 +1,7 @@
 # Boat Hardware and Firmware
 
+> **R15 ACTIVE:** No custom carrier or power/safety PCB. Build only with premanufactured modules and cable harnesses. R7–R13 KiCad sheets archived; don't fabricate. [New module plan](docs/BOAT_MODULE_ONLY_IMPLEMENTATION_R15.md) · [Wiring](docs/BOAT_MODULE_ONLY_WIRING_R15.csv). Hardware fails CLOSED until real independent safety/coil-current/power cutoff accepted. Old content below describes historical work.
+
 ## Baseline
 - Retain Flytec V080 hull, two 550 brushed motors, main switch and battery indicator.
 - Reported3S4P pack/20A BMS; confirm.

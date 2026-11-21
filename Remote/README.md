@@ -1,5 +1,7 @@
 # Remote Hardware and Firmware
 
+> **R15 ACTIVE:** Do not design or fabricate any electrical PCB including remote radio power, buttons, joystick IO or custom carrier. Use manufactured Waveshare/Adafruit/Pololu/I2C/radio modules and removable harnesses. The 3D-printed **shell is allowed**. [New remote module plan](docs/REMOTE_MODULE_ONLY_IMPLEMENTATION_R15.md) · [Remote harness](docs/REMOTE_MODULE_ONLY_WIRING_R15.csv). Earlier TPS63070/TPS61023 layout paragraphs below are historical designs only.
+
 ## Baseline
 - Waveshare ESP32-S3-Touch-LCD-4.3 Standard,800×480,LVGL9.6.0.
 - Handheld target300×210×70mm; screen, joysticks,16 buttons,OK/confirm; 1S4P18650 battery.

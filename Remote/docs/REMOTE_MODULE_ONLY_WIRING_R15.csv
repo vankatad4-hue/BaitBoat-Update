@@ -1,0 +1,15 @@
+Group,From_Module,Signal,To_Module,To_Port,I2C_Address_or_voltage,Status,Blocker
+Battery,Protected 1S4P BMS,PACK_1S_PROTECTED,Waveshare,PH2.0 single-cell,1S,NOT_WIRED,Polarities board charger and actual BMS
+Keys,Waveshare,3.3V_I2C,Adafruit MCP23017 breakout,SDA/SCL,0x20 candidate,NOT_WIRED,Existing CH422G bus conflict check
+Keys_output,MCP23017,16 individual active inputs,16 button assemblies,2x4 each side,GPA0-7 GPB0-7 tentative,NOT_WIRED,Key positions including OK anti-bounce and no release on stuck key
+Axes,Waveshare,3.3V_I2C,Adafruit ADS1115 #1,SDA/SCL,0x49 candidate,NOT_WIRED,Four stick analog channels and address strap
+Axes_signals,Joystick modules,A1_A2_B1_B2,ADS1115 #1,AIN0-3,0-3.3V,NOT_WIRED,Range deadzone out-of-range and neutral gating
+Diagnostics,Waveshare,3.3V_I2C,Adafruit ADS1115 #2,SDA/SCL,0x4A candidate,NOT_WIRED,Pack divider/NTC premade modules and address strap
+Backup_bridge,Waveshare,3.3V_I2C,SC16IS750 premade breakout,SDA/SCL,0x48 reserved,NOT_WIRED,Do not set ADS1115 to 0x48
+Backup_radio,SC16IS750,3.3V UART logic,EBYTE E22-900T22S,TX/RX/M0/M1/AUX,VCC via dedicated 5V,NOT_WIRED,Logic levels verify and RF partner compatibility
+Backup_power,Protected 1S4P,BAT_PROT,Pololu S13V20F5,VIN,2.8-22V module,NOT_WIRED,Low voltage dropout and no Waveshare 5V paralleling
+Backup_power_out,Pololu S13V20F5,5V,E22,VCC,5V,NOT_WIRED,Loaded TX brownout/ripple
+Primary_power,Protected 1S4P,BAT_PROT,Pololu S9V11F3S5,VIN,2-16V module,NOT_WIRED,RF peak and 1S startup
+Primary_power_out,Pololu S9V11F3S5,3.3V,nRF24 PA/LNA,VCC,3.3V,NOT_WIRED,Separate from controller rail
+Primary_control,Waveshare,3.3V SPI/CE/CSN,nRF24 PA/LNA,SPI/CE/CSN,GPIO TBD,NOT_MAPPED,Shared SD SPI and GPIO pin reservation
+USB_Charging,Waveshare,USB-C,Commercial charger/1S4P BMS,Manufacturer approved charging path,TBD,NOT_COMMISSIONED,Do not connect duplicate chargers to battery

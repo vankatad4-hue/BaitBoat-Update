@@ -1,0 +1,24 @@
+Side,Function,Vendor,Part_Number,Input_or_Supply,Output_or_Load,Quantity,State,Manufacturer_Reference,Qualification_Blocker
+Boat,Controller/GNSS/LoRa,Heltec,Wireless Tracker v1.2,Approved 5V interface TBD,3.3V GPIO,1,RETAINED_NOT_COMMISSIONED,https://heltec.org/project/Wireless-Tracker/,Physical board revision pinout and RF backup compatibility
+Boat,Brushed dual motor driver,Cytron,MDD20A,6-30V,2 brushed 550 motors,1,RETAINED_NOT_COMMISSIONED,https://www.cytron.io/c-industry/p-20amp-6v-30v-dc-motor-driver-2-channels,Motor stall and external mounting
+Boat,Four solenoid low-side power,Electrokit,EKM014,VH 5-50V and VL 4.5-12V,4 coil channels 10A each supplier claim,1,PREFERRED_CANDIDATE_NOT_QUALIFIED,https://docs.electrokit.com/en/modules/EKM014/,Measure 6A-class coil peak and common 10A fuse and module size
+Boat,Safety logic supply 3.3V,RECOM,R-78E3.3-0.5,6-28V input,3.3V 0.5A output,1,SELECTED_CANDIDATE_NOT_INSTALLED,https://recom-power.com/pdf/Innoline/R-78E-0.5.pdf,Use premade terminal adapter and independent POR
+Boat,Heltec 5V power,Pololu,S13V20F5,2.8-22V input,5V 2A,1,CANDIDATE,https://www.pololu.com/product/4085,Real 5V injection point unknown
+Boat,EKM014 VL 5V power,Pololu,S13V20F5,2.8-22V input,5V 2A,1,CANDIDATE,https://www.pololu.com/product/4085,Separate gate-driver rail and power-off fail-safe
+Boat,nRF24 PA LNA 3.3V,Pololu,D24V22F3,4-36V input,3.3V 2.6A,1,CANDIDATE,https://www.pololu.com/product/2857,RF ripple and PA peak/decoupling unknown
+Boat,nRF24 primary,Generic vendor-qualified,nRF24L01+ PA/LNA,3.3V regulated,RF and SPI controls,1,RETAINED_CANDIDATE,,Real module current and RF range
+Boat,Safety DC disconnect,Unselected,DC_RATED_MECHANICAL_CONTACTOR_ESTOP,3S pack min to max,Inductive motors plus coil bus,1,REQUIRED_UNRESOLVED,,Proper DC rating at 3S with fail-OFF and monitored manual rearm
+Boat,Hardware timer and one-hot,Unselected,PREMADE_NONRETRIGGERABLE_INTERLOCK,3S or regulated safety rail,4 drive permits,1,REQUIRED_UNRESOLVED,,Stuck-high requests no repeat startup brownout tests
+Boat,Independent POR and watchdog,Unselected,PREMADE_SUPERVISOR,3.3V measured,Fault relay enable,1,REQUIRED_UNRESOLVED,,Separate hard-wired power-on and brownout cut
+Boat,Current zero sensors,Unselected,PREMADE_RATED_CURRENT_FEEDBACK,3S rated bus,Motor and 4 coil current feedback,1,REQUIRED_UNRESOLVED,,Current feedback for autonomous safe rearm not mere MCU telemetry
+Boat,Sensor heading,Commercial,MPU9250 BMP280 breakout,3.3V,IMU compass and pressure,1,CANDIDATE_UNVERIFIED,,Physical 3.3V I2C and placement
+Remote,Controller touchscreen SD,Waveshare,ESP32-S3-Touch-LCD-4.3 Standard,1S battery/USB per vendor,800x480 LVGL,1,SELECTED,https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3,Verify single-cell charging and GPIO
+Remote,16 key GPIO breakout,Adafruit,MCP23017 STEMMA QT 5346,3.3V/I2C,16 digital inputs,1,CANDIDATE,https://www.adafruit.com/product/5346,0x20 bus addressing and key harness
+Remote,4 joystick axes ADC,Adafruit,ADS1115 breakout 1085,3.3V/I2C,4 single-ended analog inputs,1,CANDIDATE,https://www.adafruit.com/product/1085,Set address 0x49 and verify input range
+Remote,Battery and NTC ADC,Adafruit,ADS1115 breakout 1085,3.3V/I2C,4 conditioned analog inputs,1,CANDIDATE,https://www.adafruit.com/product/1085,Set 0x4A avoid SC16 0x48 address and divider
+Remote,nRF PA LNA power,Pololu,S9V11F3S5,2-16V input,3.3V up to 1.5A,1,CANDIDATE,https://www.pololu.com/product/2872,Board 1S low voltage runtime and RF burst
+Remote,E22 5V power,Pololu,S13V20F5,2.8-22V input,5V 2A,1,CANDIDATE,https://www.pololu.com/product/4085,Do not parallel Waveshare 5V rail and test low pack
+Remote,E22 UART adapter,Commercial,SC16IS750_BREAKOUT,3.3V/I2C,E22 UART control,1,CANDIDATE,,0x48 address pin and IRQ latency not validated
+Remote,E22 backup radio,EBYTE,E22-900T22S,5V supply 3.3V logic,868 MHz UART RF,1,RETAINED_CANDIDATE,,Boat SX1262 RF framing unproven
+Remote,1S4P battery pack,BMS vendor TBD,PROTECTED_1S4P_18650_PACK,4 cells in parallel,Board power protected battery,1,REQUIRED_UNRESOLVED,,Pack BMS charging current protection and dimensions
+Both,Commercial power distribution,Unselected,RATED_FUSE_TERMINAL_HARNESS,per voltage/current,wire and connector rated,1,REQUIRED_UNRESOLVED,,Waterproofing and service/thermal checks
