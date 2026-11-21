@@ -35,6 +35,17 @@ void setup(){
 void loop(){
  #if __has_include("tracker_commissioned_config.h")
  if(sensorsReady){
+  // Bench-only serial diagnostics. No actuator commissioning.
+  while(Serial.available()){
+   const int command=Serial.read();
+   if(command=='c')Serial.println(sensors.beginCompassCalibration()?"COMPASS: rotate slowly through 3D orientations; send f to finish.":"COMPASS: IMU unavailable.");
+   if(command=='f'){
+    CompassCalibrationCandidate candidate{};
+    if(sensors.finishCompassCalibration(candidate)){
+     Serial.printf("COMPASS CANDIDATE (NOT COMMISSIONED): samples=%lu offsets=(%.3f,%.3f,%.3f) scales=(%.5f,%.5f,%.5f)\\n",(unsigned long)candidate.samples,candidate.offsetUt[0],candidate.offsetUt[1],candidate.offsetUt[2],candidate.scale[0],candidate.scale[1],candidate.scale[2]);
+    }else Serial.println("COMPASS: insufficient coverage; no calibration applied.");
+   }
+  }
   const uint32_t now=millis();sensors.poll(now);
   if(now-lastReport>=1000U){lastReport=now;BoatHardwareSample s{};sensors.copySensors(s,now);
    Serial.printf("GNSS valid=%d latE7=%ld lonE7=%ld accuracy=%.2f headingValid=%d heading=%.2f voltageValid=%d mV=%u\\n",(int)s.fix.fresh,(long)s.fix.latE7,(long)s.fix.lonE7,s.fix.accuracyM,(int)s.fix.headingValid,s.fix.headingDeg,(int)s.voltageValid,(unsigned)s.batteryMillivolts);
