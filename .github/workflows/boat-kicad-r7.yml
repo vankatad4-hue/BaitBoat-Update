@@ -20,12 +20,14 @@ jobs:
       - name: Install KiCad CLI
         run: sudo apt-get update -qq && sudo apt-get install -y kicad
       - name: Parse schematic and export netlist
+        working-directory: Boat/hardware/Direct_MDD20A_R7
         run: |
           mkdir -p /tmp/boat-kicad
-          kicad-cli sch export netlist --output /tmp/boat-kicad/mdd20a.net Boat/hardware/Direct_MDD20A_R7/Boat_MDD20A_Control_R7.kicad_sch
+          kicad-cli sch export netlist --output /tmp/boat-kicad/mdd20a.net Boat_MDD20A_Control_R7.kicad_sch
       - name: Electrical rule check report (warnings allowed while netlist incomplete)
+        working-directory: Boat/hardware/Direct_MDD20A_R7
         run: |
-          kicad-cli sch erc --output /tmp/boat-kicad/erc.txt Boat/hardware/Direct_MDD20A_R7/Boat_MDD20A_Control_R7.kicad_sch || true
+          kicad-cli sch erc --output /tmp/boat-kicad/erc.txt Boat_MDD20A_Control_R7.kicad_sch || true
           test -s /tmp/boat-kicad/erc.txt
           echo '==== ERC report (first 100 lines) ===='
           head -n 80 /tmp/boat-kicad/erc.txt
