@@ -1,5 +1,8 @@
 # Flytec V080 Retrofit — Master Status R10
 
+> **R62 ACTIVE STATUS (2026-11-22):** Historical Heltec/PCB descriptions below are superseded by the current selected endpoints: Boat **ESP32-S3-DevKitC-1-N32R16V**, Remote **Waveshare ESP32-S3-Touch-LCD-4.3 Standard**, off-the-shelf modules only. Remote has the SD card; Boat does not. Exact hardware procurement and GPIO electrical acceptance remain pending. See the [R62 code audit](../../docs/R62_ENDPOINT_CODE_AUDIT_AND_NEXT_GATES.md) and [continuation checkpoint](../../docs/CONTINUATION_CHECKPOINT_VER001.md).
+
+
 Updated: 2026-11-20. Development branch; no firmware compile, hardware test, ERC/DRC, or operational release has been validated.
 
 ## Selected architecture
@@ -643,3 +646,6 @@ Read the dedicated [EKM014 R16 hardware and wiring contract](Boat/docs/BOAT_EKM0
 
 **Verified exact product listings:** Farnell BG **RECOM R-78E3.3-0.5 #2218602**, no live Farnell stock proof; Comet RS #10923552 exact same RECOM part **0 in local warehouse, distributor order only**, not guaranteed stock; **Olimex DCDC6-16-TO5 6–16V→5V/2A in stock at Bulgarian manufacturer** (USB-A 5V output/barrel input, installation/actual Heltec-VL pin audit required), Ardboard **Heltec Tracker v1.2** exact product listing (stock unconfirmed). Exact EKM014 and MDD20A remain selected but no approved **Bulgarian** seller confirmed; known exact listings at reputable EU specialists, delivery to BG checkout must still be verified. Independent STOP/POR/no-repeat/current-zero modules remain unselected and no powered actuator commissioning is authorized. Sonar unselected. Remote VER028 / Boat VER014 unchanged.
 
+
+## R62 — selected Waveshare Remote code review (2026-11-22)
+Remote dual-radio manager now rejects invalid ManagedLink identifiers, checks authenticated link freshness before sending, and applies backup motor-command pacing only on successful physical sends; new regression `Remote/tests/dual_radio_manager_r62_test.cpp` covers fail-retry, stale backup, rate limit and primary recovery. Missing C-string include fixed after CI. Remote portable host tests verified PASS (run 44956981643); full Waveshare target compile still requires result verification. No authenticated key provisioning, RF physical tests or on-device SD/LVGL validation. Backup LoRa short-rate steering cannot be treated as continuous motor control. Official Remote VER028 unchanged. See [R62 audit](../../docs/R62_ENDPOINT_CODE_AUDIT_AND_NEXT_GATES.md).
