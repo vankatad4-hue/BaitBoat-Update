@@ -4,6 +4,7 @@
 #include <HardwareSerial.h>
 #include "tracker_gnss.h"
 #include "bmp280_compensation.h"
+#include "compass_calibration_session.h"
 #include "carrier_sensor_math.h"
 #include "boat_hardware_supervisor.h"
 // Logic-only sensor driver. Caller must establish verified GNSS power/reset
@@ -23,6 +24,9 @@ public:
  void poll(uint32_t now);
  void copySensors(BoatHardwareSample &sample,uint32_t now)const;
  bool imuReady()const{return imuReady_;}
+ bool beginCompassCalibration(){if(!imuReady_)return false;compassCal_.start();return true;}
+ bool finishCompassCalibration(CompassCalibrationCandidate &candidate){return compassCal_.finish(candidate);}
+ bool compassCalibrationActive()const{return compassCal_.active();}
  bool weather(int32_t &temperatureCentiC,uint32_t &pressurePa,uint32_t now)const{
   if(!bmpValid_||(uint32_t)(now-bmpAt_)>5000U)return false;
   temperatureCentiC=bmpTemp_;pressurePa=bmpPressure_;return true;
@@ -32,6 +36,7 @@ private:
  HardwareSerial &serial_;TwoWire &wire_;
  TrackerSensorConfig cfg_{};
  TrackerGnss gnss_;
+ CompassCalibrationSession compassCal_;
  bool bmpReady_=false,bmpValid_=false;uint8_t bmpAddress_=0;
  Bmp280Calibration bmpCal_{};int32_t bmpTemp_=0;uint32_t bmpPressure_=0,bmpAt_=0,bmpPollAt_=0;
  bool configured_=false,imuReady_=false,headingValid_=false,voltageValid_=false,adcPending_=false;
