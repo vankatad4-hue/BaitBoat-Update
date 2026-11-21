@@ -15,30 +15,27 @@ CANDIDATES = frozenset((4, 5, 6, 7, 15, 16, 17, 18, 37, 43, 44))
 CONTESTED = frozenset((15, 16, 18, 37, 43, 44))
 STRICT_CANDIDATES = CANDIDATES - CONTESTED
 # The native SX1262 SPI data pins 9/10/11 are already occupied.
+# Internal SX1262 uses prewired board SPI: no additional carrier UART.
 CONSUMERS = {
-    "nrf_ce": 1, "nrf_csn": 1,
-    "e22_uart_tx": 1, "e22_uart_rx": 1,
-    "i2c_sda": 1, "i2c_scl": 1,
-    "mdd_pwm_left": 1, "mdd_pwm_right": 1,
-    "mdd_dir_left": 1, "mdd_dir_right": 1,
-    "external_watchdog_wdi": 1, "independent_gate_permit": 1,
+ "nrf_ce":1,"nrf_csn":1,"i2c_sda":1,"i2c_scl":1,
+ "mdd_pwm_left":1,"mdd_pwm_right":1,
+ "mdd_dir_left":1,"mdd_dir_right":1,
+ "external_watchdog_wdi":1,"independent_gate_permit":1,
 }
-EXPANDER_ELIGIBLE = frozenset(("e22_m0", "e22_m1", "e22_aux",
-                             "coil_selection", "slow_feedback"))
-REQUIRED_NATIVE = frozenset(("nrf_ce", "nrf_csn", "mdd_pwm_left",
-    "mdd_pwm_right", "external_watchdog_wdi", "independent_gate_permit"))
-def required_native_count(**changes: bool) -> int:
-    count = len(CONSUMERS)
-    if changes.get("i2c_uart_bridge", False):
-        count -= 2  # requires newly selected/proven bridge; NOT adopted
-    if changes.get("direction_expander", False):
-        count -= 2  # asynchronous latched DIR risk; NOT adopted
-    return count
-def budget(pins: FrozenSet[int] = CANDIDATES, **changes: bool) -> dict:
-    demand = required_native_count(**changes)
-    return {"candidate_count":len(pins), "demand":demand,
-            "shortfall":max(0, demand-len(pins)),
-            "feasible_on_count_alone":len(pins)>=demand}
+EXPANDER_ELIGIBLE = frozenset(("coil_selection","slow_feedback"))
+REQUIRED_NATIVE = frozenset(("nrf_ce","nrf_csn","mdd_pwm_left",
+ "mdd_pwm_right","mdd_dir_left","mdd_dir_right",
+ "external_watchdog_wdi","independent_gate_permit"))
+def required_native_count(**changes: bool)->int:
+ count=len(CONSUMERS)
+ if changes.get("external_e22",False):count+=2
+ if changes.get("direction_expander",False):count-=2 # NOT APPROVED
+ return count
+def budget(pins: FrozenSet[int]=CANDIDATES,**changes: bool)->dict:
+ demand=required_native_count(**changes)
+ return {"candidate_count":len(pins),"demand":demand,
+  "shortfall":max(0,demand-len(pins)),
+  "feasible_on_count_alone":len(pins)>=demand}
 def validate_assignment(mapping: dict, permitted: FrozenSet[int],
                         committed: bool = False) -> bool:
     if not committed or set(mapping) != set(CONSUMERS):
@@ -62,7 +59,8 @@ if __name__ == "__main__":
         "contested_pins":sorted(CONTESTED),
         "strict_baseline":budget(STRICT_CANDIDATES),
         "optimistic_baseline":budget(),
-        "with_unapproved_i2c_uart_bridge":budget(i2c_uart_bridge=True),
+        "retired_external_e22_baseline":budget(external_e22=True),
+        "onboard_sx1262_baseline":budget(),
         "with_unapproved_direction_expander":budget(direction_expander=True),
-        "implementation":"No pins assigned or enabled; sonar requires zero GPIO now",
+        "implementation":"No pins enabled; backup PHY unmatched; sonar remains on hold",
     },indent=2))

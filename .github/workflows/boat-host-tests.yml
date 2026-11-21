@@ -142,3 +142,7 @@ jobs:
       - name: Pack power budget and independent gate failure truth table
         run: |
           python3 -m unittest discover -s Boat/tests -p test_power_and_gate_r7.py -v
+      - name: SX1262 airtime and paced-RF fallback regression
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/heltec_sx1262_airtime_test.cpp -o /tmp/boat_sx1262_airtime
+          /tmp/boat_sx1262_airtime

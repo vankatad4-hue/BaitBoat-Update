@@ -5,8 +5,8 @@ GPIO,Claim,Source confidence,Current reservation,Potential use,Audit requirement
 7,Header J3 pin5,Community V1.2 + Heltec V1.1,Touch capable,I2C SCL candidate,Bus and pullups
 15,Header J3 pin4,Community V1.2 + Heltec V1.1,XTAL_32K_P or UART0 RTS,MDD PWM candidate only,Prove oscillator not populated or required
 16,Header J3 pin3,Community V1.2 + Heltec V1.1,XTAL_32K_N or UART0 CTS,MDD PWM candidate only,Prove oscillator not populated or required
-17,Header J3 pin2,Community V1.2 + Heltec V1.1,UART1 TX,E22 UART TX candidate,Confirm no other UART consumer
-18,Header J3 pin1,Community V1.2 + Heltec V1.1,UART1 RX and onboard LED,E22 UART RX candidate,Check onboard LED loading and boot behaviour
+17,Header J3 pin2,Community V1.2 + Heltec V1.1,UART1 TX,MDD DIR candidate,Confirm no other UART consumer
+18,Header J3 pin1,Community V1.2 + Heltec V1.1,UART1 RX and onboard LED,MDD DIR candidate,Check onboard LED loading and boot behaviour
 37,Header J2 pin16,Community V1.2 + Heltec V1.1,Possible ADC control or SPI DQS,WDI candidate only,Confirm V1.2 chip flash/power connections
 43,Header J2 pin4,Community V1.2 + Heltec V1.1,UART0 TX default console,Motor DIR/permit candidate,Needs debug console migration and reset-level test
 44,Header J2 pin3,Community V1.2 + Heltec V1.1,UART0 RX default console,Motor DIR/permit candidate,Needs debug console migration and reset-level test

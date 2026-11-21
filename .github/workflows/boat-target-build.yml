@@ -26,6 +26,7 @@ jobs:
           arduino-cli lib update-index
           arduino-cli core install esp32:esp32@3.0.2
           arduino-cli lib install "RF24@1.4.11"
+          arduino-cli lib install "RadioLib@7.3.0"
       - name: Stage diagnostic application
         run: |
           mkdir -p /tmp/FlytecBoatBuild
