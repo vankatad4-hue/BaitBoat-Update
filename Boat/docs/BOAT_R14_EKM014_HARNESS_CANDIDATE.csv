@@ -1,4 +1,3 @@
-# HISTORICAL R14 DRAFT; ACTIVE OWNER-SELECTED CHANNEL WIRING IS Boat/docs/BOAT_EKM014_PIN_WIRING_R16.csv
 Stage,Signal,From,To,Supply_or_interface,Status,Critical_qualification
 Coil_supply,VH,Independent fault-latched high-side coil output,EKM014 supply VH screw terminal,~9-12.6V 3S under rated cutoff,NOT_WIRED,Verify rail range and shared 10A board fuse
 Gate_driver,VL,Separate regulated 5V power module,EKM014 header VL,4.5-12V absolute supplier range,NOT_WIRED,Do not connect raw 12.6V 3S or RECOM safety 3.3V
