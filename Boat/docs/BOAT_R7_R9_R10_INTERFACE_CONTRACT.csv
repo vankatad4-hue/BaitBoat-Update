@@ -1,0 +1,13 @@
+SourceSheet,SourceNet,DestinationSheet,DestinationNet,ConnectionRule,Status
+R7,WDO_N,R10,WDO_N,Open-drain watchdog WDO_N; only ONE populated 3V3 pullup across assembled hierarchy,UNVERIFIED_HARNESS_OR_HIERARCHY
+R7,ACT_PERMIT,R10,MCU_PERMIT,MCU permission cannot bypass latched physical STOP or POR conditions,UNVERIFIED_HARNESS_OR_HIERARCHY
+R7,STOP_FEEDBACK,R10,STOP_OK_NC_SECOND_POLE,Use real isolated conditioned second physical STOP pole not a firmware boolean,UNVERIFIED_HARNESS_OR_HIERARCHY
+R7,GATE_FEEDBACK,R10,OUTPUT_FB_OK,Requires actual measured high-side output/cutoff feedback circuit absent,UNVERIFIED_HARNESS_OR_HIERARCHY
+R10,ACT_SOL_POS_AFTER_LATCH_TBD,R9,ACT_SOL_POS_AFTER_LATCH_TBD,J6 pin1 to R9 J1 pin1 after measured high side and branch fuse,UNVERIFIED_HARNESS_OR_HIERARCHY
+R10,PACK_RETURN,R9,ACT_RETURN,J6 pin2 to R9 J1 pin2 use qualified high-current actuator return not signal-ground wire,UNVERIFIED_HARNESS_OR_HIERARCHY
+R10,MOTOR_POS_FUSED,R7,POWER_MDD20A_TBD,J5 power to physical MDD20A VIN via rated fuse and harness (not R7 control header),UNVERIFIED_HARNESS_OR_HIERARCHY
+R7,SOL_REQ_LH,R9,PULSE_LH_LIMITED_TBD,NEVER direct connection; add independent hardware one-hot and non-retriggering maximum-pulse limiter,UNVERIFIED_HARNESS_OR_HIERARCHY
+R7,SOL_REQ_RH,R9,PULSE_RH_LIMITED_TBD,NEVER direct connection; add independent hardware one-hot and non-retriggering maximum-pulse limiter,UNVERIFIED_HARNESS_OR_HIERARCHY
+R7,SOL_REQ_LK,R9,PULSE_LK_LIMITED_TBD,NEVER direct connection; add independent hardware one-hot and non-retriggering maximum-pulse limiter,UNVERIFIED_HARNESS_OR_HIERARCHY
+R7,SOL_REQ_RK,R9,PULSE_RK_LIMITED_TBD,NEVER direct connection; add independent hardware one-hot and non-retriggering maximum-pulse limiter,UNVERIFIED_HARNESS_OR_HIERARCHY
+R7,+3V3,R10,VLOGIC_3V3,Qualify independent protected 3V3 rail and actual reference; R10 current power-source ERC errors not waived,UNVERIFIED_HARNESS_OR_HIERARCHY
