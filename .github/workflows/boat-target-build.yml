@@ -32,10 +32,10 @@ jobs:
           mkdir -p /tmp/FlytecBoatBuild
           cp Boat/source/*.cpp Boat/source/*.h /tmp/FlytecBoatBuild/
           cp Boat/source/firmware/Flytec_Boat.ino /tmp/FlytecBoatBuild/FlytecBoatBuild.ino
-      - name: Compile Boat application (unassigned GPIO, no actuation)
+      - name: Compile Boat diagnostic (N32R16V 32MB octal flash, 16MB octal PSRAM; no actuation)
         run: |
           set -o pipefail
-          arduino-cli compile --verbose --export-binaries --fqbn 'esp32:esp32:esp32s3' /tmp/FlytecBoatBuild 2>&1 | tee /tmp/boat-target-build.log
+          arduino-cli compile --verbose --export-binaries --fqbn 'esp32:esp32:esp32s3:FlashSize=32M,FlashMode=opi,PSRAM=opi' /tmp/FlytecBoatBuild 2>&1 | tee /tmp/boat-target-build.log
       - uses: actions/upload-artifact@v4
         if: success()
         with:
