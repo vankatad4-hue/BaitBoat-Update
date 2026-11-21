@@ -633,3 +633,7 @@ Added [R32 V2 assignment solver](../Boat/tools/r32_v2_assignment_solver.py) with
 
 ## R33 — actual premade bridge/expander sourcing (2026-11-21)
 [Boat R33 sourcing and feasibility](../Boat/docs/BOAT_R33_COTS_BRIDGE_SUPPLIER_VALIDATION.md): NXP SC18IS602B is **discontinued**, superseded as preferred candidate by active SC18IS606 and factory-built SC18IS606-EVB (stock not verified). Comet BG lists MIKROE-3743 obsolete bridge (0 local, 7 distributor) and MIKROE-1838 MCP23017 expansion board (0 local, 24 distributor), with dated pricing. No purchase. RF24 library is not plug-compatible with I2C-to-SPI bridge; transport adapter and RF timing tests needed. Existing six-direct-GPIO motor HAL must be redesigned for expander. GPIO mapping and safety unresolved; no physical acceptance or releases.
+
+
+## R34 — non-actuating I2C direction policy (2026-11-21)
+Added [pure motor-direction planning header](../Boat/source/mdd20a_i2c_direction_plan.h), [C++ assertions](../Boat/tests/mdd20a_i2c_direction_plan_test.cpp), and CI compilation/run step. The planner refuses commands without commissioning, STOP, isolated motor supply, zero PWM and healthy bus. Direction commits require independent physical feedback, not just I2C ACK. **No I2C bus driver, no GPIO writes, no motor HAL integration and no physical acceptance**; these are host policy tests only. Attempted local compile was blocked by container DNS when retrieving GitHub files; CI result not verified. Bridge nRF transport remains unimplemented, official releases held.
