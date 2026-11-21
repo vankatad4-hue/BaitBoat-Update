@@ -149,6 +149,9 @@ jobs:
         run: |
           python3 Boat/tools/mdd20a_harness_r8.py
           python3 -m unittest discover -s Boat/tests -p test_mdd20a_harness_r8.py -v
+      - name: Independent physical-fault latch and one-hot monostable behavior (simulated)
+        run: |
+          python3 -m unittest discover -s Boat/tests -p test_safety_gate_latch_r9.py -v
       - name: Pack power budget and independent gate failure truth table
         run: |
           python3 -m unittest discover -s Boat/tests -p test_power_and_gate_r7.py -v
