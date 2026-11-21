@@ -714,3 +714,9 @@ User explicitly requires **NO manual driving** for compass calibration. Added po
 - Added `Boat/source/figure8_calibration_record.h` with versioned CRC32, finite/range validation and valid-record dual-slot selection; `Boat/tests/figure8_calibration_record_test.cpp` added to host CI. **No NVS/SD storage backend yet**, no live calibration activation.
 - Last confirmed pre-R52 CI: host 44951517101 PASS; ESP32-S3 diagnostic target 44951495536 PASS. R52 runs not yet verified. Details: `Boat/docs/BOAT_R52_CALIBRATION_AND_DRIVER.md`.
 - Next: physically verified EKM014 and safety module wiring, commissioned BoatPhysicalDriver HAL, actual dual-slot NVS persistence, GPS-guided figure-eight and authenticated Remote Start/Abort, full target builds and hardware acceptance. Boat VER014 frozen; sonar deferred.
+
+
+## R53 — dual-slot calibration storage interface (2026-11-22)
+- Added `Boat/source/figure8_calibration_store.h` with dual-slot read/write callbacks, CRC-validated sequence selection, inactive-slot write and read-back verification; `Boat/tests/figure8_calibration_store_test.cpp` covers recovery and failures; CI updated. Documentation: `Boat/docs/BOAT_R53_CALIBRATION_STORAGE.md`.
+- **No physical NVS/SD backend or activation yet**; no GPS-guided autonomous figure-eight, Remote Start/Abort, independent safety hardware or commissioned physical driver. R52 host 44951795285 PASS and diagnostic target 44951779135 PASS; R53 build 44954429335 in progress when checked.
+- Next implement ESP32-S3 NVS backend and rollback tests, integrate authenticated calibration protocol and GPS trajectory only after hardware safety acceptance. Boat VER014 frozen, sonar deferred.
