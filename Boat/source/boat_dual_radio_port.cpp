@@ -53,9 +53,6 @@ void BoatDualRadioPort::resetSession(bool preserveReturn){
 bool BoatDualRadioPort::begin() {
  resetSession();nrfReady_=false;sx1262Ready_=false;authenticated_=radioKey_get(rootKey_);
  lastNrfHeartbeatTxMs_=lastBackupHeartbeatTxMs_=lastBackupHeartbeatAttemptMs_=0;
-#if BOAT_NRF_CE_PIN >= 0 && BOAT_NRF_CSN_PIN >= 0
- nrfReady_=nrf_.begin(false);
-#endif
 // Both chip selects must be inactive before sharing the Tracker SPI bus.
 #if BOAT_SX1262_BOARD_AUDIT_SIGNED && BOAT_SX1262_PEER_PHY_VERIFIED && BOAT_SX1262_EU868_APPROVED
  if(BOAT_NRF_CSN_PIN>=0 && BOAT_SX1262_NSS>=0 && BOAT_SX1262_SCK>=0 &&
@@ -63,8 +60,13 @@ bool BoatDualRadioPort::begin() {
   pinMode(BOAT_NRF_CSN_PIN,OUTPUT);digitalWrite(BOAT_NRF_CSN_PIN,HIGH);
   pinMode(BOAT_SX1262_NSS,OUTPUT);digitalWrite(BOAT_SX1262_NSS,HIGH);
   SPI.begin(BOAT_SX1262_SCK,BOAT_SX1262_MISO,BOAT_SX1262_MOSI,BOAT_SX1262_NSS);
-  sx1262Ready_=sx1262_.begin();
  }
+#endif
+#if BOAT_NRF_CE_PIN >= 0 && BOAT_NRF_CSN_PIN >= 0
+ nrfReady_=nrf_.begin(false);
+#endif
+#if BOAT_SX1262_BOARD_AUDIT_SIGNED && BOAT_SX1262_PEER_PHY_VERIFIED && BOAT_SX1262_EU868_APPROVED
+ if(BOAT_NRF_CSN_PIN>=0 && BOAT_SX1262_NSS>=0) sx1262Ready_=sx1262_.begin();
 #endif
 
  // Wait for the remote's authenticated session-start marker. Its epoch is the
