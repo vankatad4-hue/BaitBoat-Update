@@ -10,6 +10,7 @@
 #include "tracker_sensor_port.h"
 #include "mdd20a_direct_profile.h"
 #include "figure8_calibration_nvs.h"
+#include "boat_endpoint_memory_gate.h"
 #if __has_include("tracker_commissioned_config.h")
 #include "tracker_commissioned_config.h"
 static HardwareSerial gnssUart(2);
@@ -27,6 +28,12 @@ static bool calibrationStorageReady=false;
 void setup(){
  Serial.begin(115200);
  Serial.println("Flytec Boat: external E22 UART backup design; uncommissioned radio and actuator GPIO disabled.");
+ const uint32_t flashBytes=(uint32_t)ESP.getFlashChipSize();
+ const uint32_t psramBytes=(uint32_t)ESP.getPsramSize();
+ Serial.printf("Boat endpoint: flash=%lu PSRAM=%lu, selected N32R16V: %s\\n",
+     (unsigned long)flashBytes,(unsigned long)psramBytes,
+     boatEndpointMemoryMatches(flashBytes,psramBytes)?"MEMORY MATCH ONLY":"MISMATCH - DIAGNOSTIC ONLY");
+
  calibrationStorageReady=calibrationNvs.begin();
  if(calibrationStorageReady){
   Figure8CalibrationNvs::bind(&calibrationNvs);
