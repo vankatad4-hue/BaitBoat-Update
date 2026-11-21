@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name "Flytec") (type "KiCad") (uri "${KIPRJMOD}/Flytec.kicad_sym") (options "") (descr "Project-local preliminary custom symbols"))
+)

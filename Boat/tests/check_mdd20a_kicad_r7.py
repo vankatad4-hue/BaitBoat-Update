@@ -24,3 +24,7 @@ def balanced(text):
     return depth==0 and not quote
 assert balanced(s)
 print("Preliminary KiCad R7 source structure and signals OK (not a tool ERC)")
+
+lib=f.parent/'Flytec.kicad_sym'
+assert lib.exists() and '(kicad_symbol_lib' in lib.read_text()
+assert (f.parent/'sym-lib-table').exists()
