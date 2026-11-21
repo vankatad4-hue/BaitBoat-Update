@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include "figure8_compass_calibration.h"
-// Non-actuating coordinator. Operator manually steers a figure eight.
+// Non-actuating sensor coordinator; autonomous motion is planned separately.
 // Completes when both independent compass sweeps have coverage and a minimum
 // elapsed time; no automatic actuator commands or navigation enable.
 enum class Figure8AutoState:uint8_t{IDLE,COLLECTING,CANDIDATE_READY,TIMED_OUT,ABORTED};
