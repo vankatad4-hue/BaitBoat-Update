@@ -601,3 +601,7 @@ R22 seven Python unittest cases were executed in a local isolated environment an
 
 ## R24 — host-only physical commissioning safety gates (2026-11-21)
 Added [R24 fail-closed commissioning checklist tests](../Boat/tools/r24_safety_gate.py), six unit tests covering 18 mandatory physical acceptance fields, absence of assembled hardware and human review, onehot/no-repeat, and deferred sonar scope. Expanded [GitHub Actions interface gate](../.github/workflows/r23-interface-gates.yml) to run both R22 and R24 host tests (13 cases total). No GitHub Actions success asserted; the commit-linked PR-only run lookup returned no runs for the earlier R23 workflow. No real safety hardware selected or certified. No GPIO or LoRa physical validation. Remote VER028 / Boat VER014 held.
+
+
+## R26 — GPIO budget feasibility blocker (2026-11-21)
+Added [R26 pin-budget engineering finding](../Boat/docs/BOAT_R26_PIN_BUDGET_BLOCKER.md) and [four arithmetic unit tests](../Boat/tools/r26_pin_budget.py); GitHub Actions workflow expanded to run them. On provisional 6 externally usable GPIO candidates, the minimal separate-SPI nRF24 + I2C + dual PWM interface requires 9 pins (shortfall 3), excluding DIR/feedback. Heltec v1.1 documented header does not expose onboard SX1262 SPI pins; v1.2 physical access is unverified, so shared SPI is **NOT** an approved solution. No firmware, harness, or actuator enable. Next engineering gate: verified v1.2 manufacturer schematic and a commercially premade interface option with proven timing. Remote VER028 / Boat VER014 remain held.
