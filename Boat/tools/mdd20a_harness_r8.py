@@ -18,7 +18,8 @@ def carrier_schematic_labels(path):
     data = pathlib.Path(path).read_text(encoding="utf8")
     entries = [(float(y), net) for net, y in re.findall(
         r'\(label "([^"]+)" \(at 133\.35 ([0-9.]+) 0\)', data)]
-    return tuple(net for _, net in sorted(entries))
+    # J5 also occupies x=133.35 in the schematic; J2 is the upper bank.
+    return tuple(net for y, net in sorted(entries) if 60 <= y <= 75)
 
 if __name__ == "__main__":
     print("MDD20A carrier crossover valid:", valid_harness(CROSSOVER))
