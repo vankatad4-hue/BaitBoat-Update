@@ -139,3 +139,6 @@ jobs:
         run: |
           python3 Boat/tools/gpio_feasibility_r7.py
           python3 -m unittest discover -s Boat/tests -p test_gpio_feasibility_r7.py -v
+      - name: Pack power budget and independent gate failure truth table
+        run: |
+          python3 -m unittest discover -s Boat/tests -p test_power_and_gate_r7.py -v
