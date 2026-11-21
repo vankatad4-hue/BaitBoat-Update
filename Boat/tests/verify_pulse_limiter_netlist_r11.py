@@ -65,7 +65,7 @@ def verify_netlist(path):
     assert actual["CLR_MONO_N"]=={("U1","3"),("U2","1"),("U9","8")}
     assert actual["FIRE_POS_EDGE"]=={("U1","2"),("U2","9"),("U8","8")}
     assert actual["WINDOW_OFF"]=={("U5","13"),("U8","4")}
-    assert actual["ONEHOT_VALID"]=={("U5","8"),("U9","10"),("U9","13"),("U9","5")}
+    assert actual["ONEHOT_VALID"]=={("U5","8"),("U9","10"),("U9","12"),("U9","5")}
     assert actual["RC_TIMING"]=={("U1","15"),("R1","2"),("C1","1")}
     assert actual["GND"]>= {("U1","1"),("U1","8"),("U1","11"),("U1","14"),("U2","8"),("U8","7"),("C1","2")}
     assert actual["VLOGIC_3V3"]>= {("U1","16"),("U2","16"),("J2","1"),("R1","1")}
