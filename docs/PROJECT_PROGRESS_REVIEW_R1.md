@@ -1,3 +1,5 @@
+> **R62 confirmed-endpoint code review (2026-11-22):** Latest engineering status, audited code fixes, verified Boat/Remote host tests and **both endpoint target-build PASS results** are in [R62 endpoint audit](R62_ENDPOINT_CODE_AUDIT_AND_NEXT_GATES.md). Active Boat board **ESP32-S3-DevKitC-1-N32R16V**, Remote **Waveshare ESP32-S3-Touch-LCD-4.3 Standard**; both modules and independent safety hardware remain unpurchased/uncommissioned. Prior R1/Heltec/PCB descriptions below are historical. Current implementation is **not operational**; no changes to official Boat VER014 / Remote VER028.
+
 > **R15 UPDATE:** Historical custom electronic PCB plan superseded by the owner's **premade modules only** decision. Active hardware policy: [R15](HARDWARE_MODULE_ONLY_POLICY_R15.md); Boat and Remote module wiring plans take precedence over this prior R1 review.
 
 # Flytec V080 Project Progress Review R1
