@@ -89,3 +89,5 @@ jobs:
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/ekm014_pulse_guard_test.cpp -o /tmp/r49_ekm014 && /tmp/r49_ekm014
       - name: R50 physical driver adapter regression
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/boat_physical_driver_adapter_test.cpp -o /tmp/r50_driver && /tmp/r50_driver
+      - name: R51 ESP32-S3 reserved GPIO and output audit regression
+        run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/esp32s3_gpio_audit_test.cpp -o /tmp/r51_gpio && /tmp/r51_gpio
