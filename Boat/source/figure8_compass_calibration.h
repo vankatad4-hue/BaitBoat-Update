@@ -16,13 +16,16 @@ public:
   if(!active_||!std::isfinite(m.x)||!std::isfinite(m.y))return false;
   const double r=std::hypot(m.x,m.y);
   if(r<8||r>150)return false;
-  if(m.x<loX_)loX_=m.x;if(m.x>hiX_)hiX_=m.x;
-  if(m.y<loY_)loY_=m.y;if(m.y>hiY_)hiY_=m.y;
+  if(m.x<loX_)loX_=m.x;
+  if(m.x>hiX_)hiX_=m.x;
+  if(m.y<loY_)loY_=m.y;
+  if(m.y>hiY_)hiY_=m.y;
   if(count_<UINT16_MAX)++count_;
   // Occupancy relative to uncorrected origin is a coarse coverage gate.
   const double a=std::atan2(m.y,m.x)+3.141592653589793;
   int sector=(int)(a*(12.0/(2*3.141592653589793)));
-  if(sector<0)sector=0;if(sector>11)sector=11;
+  if(sector<0)sector=0;
+  if(sector>11)sector=11;
   sectors_|=(uint16_t)(1u<<sector);
   return true;
  }
