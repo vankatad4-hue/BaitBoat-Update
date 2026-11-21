@@ -73,14 +73,22 @@ void TrackerSensorPort::pollAdc(uint32_t now){
 void TrackerSensorPort::poll(uint32_t now){
  if(!configured_)return;
  // Bounded RX work; at 115200 baud service frequently enough to prevent backlog.
- for(unsigned i=0;i<256&&serial_.available();++i){const int c=serial_.read();if(c>=0)gnss_.feed((char)c,now);}
+ for(unsigned i=0;i<256&&serial_.available();++i){const int c=serial_.read();if(c>=0){if(cfg_.gnssBaud==115200)m100Ubx_.feed((uint8_t)c,now);else gnss_.feed((char)c,now);}}
  pollImu(now);pollAdc(now);pollBmp(now);pollM100Compass(now);
  autoFigure8_.update(now);
 }
 void TrackerSensorPort::copySensors(BoatHardwareSample &s,uint32_t now)const{
+ if(cfg_.gnssBaud==115200){
+  const auto g=m100Ubx_.snapshot(now);
+  s.fix.latE7=g.latE7;s.fix.lonE7=g.lonE7;s.fix.accuracyM=g.accuracyM;
+  s.fix.fresh=g.positionValid;s.gnssAt=g.at;s.gpsFixType=g.positionValid?g.fixType:0;
+  s.satellites=g.satellites;s.speedValid=g.speedValid;
+  s.speedCmPerSecond=g.speedCmS;s.speedAt=g.at;
+ }else{
  auto g=gnss_.snapshot(now);
  s.fix.latE7=g.latE7;s.fix.lonE7=g.lonE7;s.fix.accuracyM=g.estimatedAccuracyM;s.fix.fresh=g.positionValid;s.gnssAt=g.at;
  s.gpsFixType=g.fixType;s.satellites=g.satellites;s.speedValid=g.speedValid;s.speedCmPerSecond=g.speedCmS;s.speedAt=g.at;
+ }
  s.fix.headingDeg=heading_;s.headingAt=headingAt_;s.fix.headingValid=headingValid_&&now-headingAt_<300U;
  s.batteryMillivolts=voltage_;s.batteryAt=voltageAt_;s.voltageValid=voltageValid_&&now-voltageAt_<1000U;
  // No guessed state-of-charge or battery/geofence safety authorization.
