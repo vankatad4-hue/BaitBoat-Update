@@ -83,3 +83,5 @@ jobs:
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/figure8_closed_loop_test.cpp -o /tmp/r46_figure8 && /tmp/r46_figure8
       - name: R47 OTA preflight fail-closed regression
         run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/boat_wifi_ota_preflight_test.cpp -o /tmp/r47_ota && /tmp/r47_ota
+      - name: R48 physical safety contacts and coil pulse regression
+        run: g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/physical_driver_commissioning_gate_test.cpp -o /tmp/r48_gate && /tmp/r48_gate
