@@ -629,3 +629,7 @@ Owner confirms onboard TFT will not be used. [R29 screenless pin budget and prop
 
 ## R32 — executable V2 screenless GPIO budget (2026-11-21)
 Added [R32 V2 assignment solver](../Boat/tools/r32_v2_assignment_solver.py) with eight arithmetic/constraint tests and CI step. Source-backed motor HAL requires six direct control lines. On conservative screenless V2 candidate set excluding TFT backlight GPIO21, eight provisional GPIOs remain. Direct firmware demand 13; direction-only offload 11; direction+permit+watchdog offload 9 (still one short); SPI bridge plus direction offload 7 (arithmetically fits, but bridge timing, boot states and independent STOP not verified). Do not equate offloading MCU permit/watchdog to satisfying independent safety hardware. No physical or CI results asserted; releases remain held.
+
+
+## R33 — actual premade bridge/expander sourcing (2026-11-21)
+[Boat R33 sourcing and feasibility](../Boat/docs/BOAT_R33_COTS_BRIDGE_SUPPLIER_VALIDATION.md): NXP SC18IS602B is **discontinued**, superseded as preferred candidate by active SC18IS606 and factory-built SC18IS606-EVB (stock not verified). Comet BG lists MIKROE-3743 obsolete bridge (0 local, 7 distributor) and MIKROE-1838 MCP23017 expansion board (0 local, 24 distributor), with dated pricing. No purchase. RF24 library is not plug-compatible with I2C-to-SPI bridge; transport adapter and RF timing tests needed. Existing six-direct-GPIO motor HAL must be redesigned for expander. GPIO mapping and safety unresolved; no physical acceptance or releases.
