@@ -9,6 +9,7 @@
 #include "boat_application_port.h"
 #include "tracker_sensor_port.h"
 #include "mdd20a_direct_profile.h"
+#include "figure8_calibration_nvs.h"
 #if __has_include("tracker_commissioned_config.h")
 #include "tracker_commissioned_config.h"
 static HardwareSerial gnssUart(2);
@@ -19,9 +20,24 @@ static Figure8AutoState lastFigure8State=Figure8AutoState::IDLE;
 #endif
 static BoatDualRadioPort radio;
 static BoatApplicationPort application(radio);
+// Read-only calibration inspection on the prototype diagnostic firmware.
+// This does not apply offsets or start automatic figure-eight motion.
+static Figure8CalibrationNvs calibrationNvs;
+static bool calibrationStorageReady=false;
 void setup(){
  Serial.begin(115200);
  Serial.println("Flytec Boat: external E22 UART backup design; uncommissioned radio and actuator GPIO disabled.");
+ calibrationStorageReady=calibrationNvs.begin();
+ if(calibrationStorageReady){
+  Figure8CalibrationNvs::bind(&calibrationNvs);
+  Figure8CalibrationStore store({Figure8CalibrationNvs::readBridge,
+                                 Figure8CalibrationNvs::writeBridge});
+  Figure8StoredCalibration stored{};
+  if(store.load(stored))
+   Serial.printf("Figure8 NVS: valid record seq=%lu (not applied; no motor output).\\n",
+                 (unsigned long)stored.sequence);
+  else Serial.println("Figure8 NVS: no valid record; calibration remains unavailable.");
+ }else Serial.println("Figure8 NVS: unavailable; calibration remains unavailable.");
  const auto motorProfile=mdd20aUnassignedProfile();
  if(!mdd20aDirectProfileValid(motorProfile,0))Serial.println("MDD20A direct GPIO profile unassigned; no motor outputs configured.");
  const bool ready=radio.begin();
