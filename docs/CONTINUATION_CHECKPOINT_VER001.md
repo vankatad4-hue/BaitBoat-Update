@@ -653,3 +653,12 @@ Added [external E22 UART board adapter](../Boat/source/e22_uart_board_port.h), w
 
 ## R38–R39 — E22 migration and GNSS gates (2026-11-21)
 R38 replaced BoatDualRadioPort's onboard HeltecSX1262Link with external E22UartBoardPort using existing E22UartLink and retained authenticated cross-radio command policy. Added fail-disabled audited E22 UART and nRF SPI pin gates in boat_radio_hw_config.h; no pins are enabled. R39 added [HGLRC M100 PRO profile gate](../Boat/source/hglrc_m100_pro_profile.h) and [host tests](../Boat/tests/hglrc_m100_pro_profile_test.cpp), registered in CI. [Wiring and safety acceptance](../Boat/docs/BOAT_R39_WIRING_AND_PHYSICAL_ACCEPTANCE.md) identifies missing exact board/SKU and factory-built independent safety stack. Host tests for earlier R38 change succeeded; R39 and target compilation were still running at last check. GPS real NMEA, E22 RF, pin freeze, actuator and safety physical testing NOT performed. No release.
+
+
+## R40–R41 — GY-91 BMP280 weather + magnetometer calibration (2026-11-21)
+- Implemented BMP280 chip-ID probe, factory coefficient decoding, compensated pressure Pa and temperature centi-C, stale-data rejection in Boat sensor port. HGLRC M100 PRO remains GPS source.
+- Added shared eight-byte weather telemetry subtype 7 to Boat and Remote, freshness gating and Bulgarian weather readout in sonar panel.
+- Added non-actuating magnetometer min/max sweep candidate (start/finish by serial c/f) and portable tests. No automatic calibration approval or autopilot enabling; approved offsets/matrix must be entered into signed heading profile after field verification.
+- Added regression gates for BMP280 Bosch example, weather packet roundtrip and compass candidate. CI status must be checked on latest head; earlier R41 compile warning corrected. Prior portable suites passed, final target build and physical acceptance still pending.
+- Relevant documents: Boat/docs/BOAT_R40_BMP280_REMOTE_WEATHER.md and Boat/docs/BOAT_R41_GY91_COMPASS_CALIBRATION.md.
+- Continue with target compile, correct any errors, confirm real ESP32-S3/M100/E22/GY-91 GPIO wiring and independent physical STOP/coil safety. Actuator power remains disconnected until hardware commissioning.
