@@ -1,0 +1,41 @@
+name: R11 one-hot 74HC221 timing schematic native KiCad
+on:
+  push:
+    branches: [hardware-ready-dual-radio-r1]
+    paths:
+      - 'Boat/hardware/Pulse_Limiter_R11/**'
+      - 'Boat/tests/verify_pulse_limiter_netlist_r11.py'
+      - '.github/workflows/boat-kicad-pulse-r11.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-netlist-erc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: R11 source guard, 1024 truth combinations and R7-R10 naming
+        run: python3 Boat/tests/verify_pulse_limiter_netlist_r11.py
+      - name: Install KiCad CLI
+        run: sudo apt-get update -qq && sudo apt-get install -y kicad
+      - name: Export R11 physical 74HC221 / 74HC175 actual XML netlist
+        run: |
+          mkdir -p /tmp/boat-r11
+          kicad-cli sch export netlist --format kicadxml --output /tmp/boat-r11/pulse.xml Boat/hardware/Pulse_Limiter_R11/Boat_Pulse_Limiter_R11.kicad_sch
+      - name: Cross-check KiCad-extracted pin topology against R11 contract
+        run: python3 Boat/tests/verify_pulse_limiter_netlist_r11.py --xml /tmp/boat-r11/pulse.xml
+      - name: ERC is a blocking engineering gate; fail on ANY new unexpected warning
+        run: |
+          kicad-cli sch erc --output /tmp/boat-r11/erc.txt Boat/hardware/Pulse_Limiter_R11/Boat_Pulse_Limiter_R11.kicad_sch || true
+          test -s /tmp/boat-r11/erc.txt
+          python3 Boat/tests/verify_pulse_limiter_netlist_r11.py --erc /tmp/boat-r11/erc.txt
+          echo "### R11 PARTIAL logic topology passed, but 2 power-source ERC errors OPEN" >> "$GITHUB_STEP_SUMMARY"
+          echo "Release-token hardware, actual independent power/zero-current comparators, glitch/race verification and timing-component ratings missing; no motor/coil power authorized." >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload real native KiCad exported network and ERC report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: boat-r11-timing-netlist-erc
+          path: /tmp/boat-r11/
+          if-no-files-found: ignore
