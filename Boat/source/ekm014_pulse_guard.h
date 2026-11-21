@@ -22,7 +22,7 @@ public:
   enabled_=true;return true;
  }
  bool request(int8_t channel,uint32_t now,const Ekm014Feedback &f){
-  if(!enabled_||active_>=0||awaitZero_||channel<0||channel>=4||!ready(f,now))return false;
+  if(!enabled_||active_>=0||awaitZero_||channel<0||channel>=4||!f.allCoilCurrentsZero||!ready(f,now))return false;
   active_=channel;started_=now;return true;
  }
  // Returns the ONLY allowed active channel; -1 means all outputs OFF.
@@ -43,6 +43,7 @@ public:
    (uint32_t)(now-f.sampledAt)<50U;
  }
  bool awaitingZero()const{return awaitZero_;}
+ bool enabled()const{return enabled_;}
 private:
  bool enabled_=false,awaitZero_=false;
  int8_t active_=-1;uint16_t width_[4]={};
