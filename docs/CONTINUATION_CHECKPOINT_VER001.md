@@ -621,3 +621,7 @@ Owner confirms onboard TFT will not be used. [R29 screenless pin budget and prop
 
 ## R30 — screenless V2 electrical conflict gate (2026-11-21)
 [Review](../Boat/docs/BOAT_R30_SCREENLESS_V2_ELECTRICAL_GATES.md) and [static test](../Boat/tools/r30_v2_pin_conflict_gate.py) committed, with CI workflow entry. R29's nine unique GPIOs are NOT nine electrically independent pins: GPIO21 is TFT backlight and rejected for motor PWM pending isolation evidence; GPIO40–42 share TFT nets; GPIO43/44 are UART0 at boot. The candidate mapping remains **NOT APPROVED**. Need manufacturer net trace and physical boot/reset measurements, alternate PWM pin/module and independent actuator safety stack. No migration or release authorized.
+
+
+## R31 — Actual firmware GPIO contract audit (2026-11-21)
+[Boat R31 source audit](../Boat/docs/BOAT_R31_ACTUAL_FIRMWARE_GPIO_AUDIT.md) examined boat_radio_hw_config.h, mdd20a_arduino_stage.cpp, and firmware/Flytec_Boat.ino. Existing direct motor HAL requires **six** native GPIOs (PWM2, DIR2, permit, watchdog edge), so full direct native budget is at least **13**, not the nine in R26/R29 (which assumed offloading). Current boat sketch remains non-actuating. Screenless V2 has no approved complete mapping; GPIO21 backlight and UART/TFT shared nets remain blockers. Need qualified COTS expander and firmware HAL redesign, board evidence and physical tests before migration. Releases held.
