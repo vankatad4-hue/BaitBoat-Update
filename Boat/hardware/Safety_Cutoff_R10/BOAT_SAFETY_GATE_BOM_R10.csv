@@ -17,3 +17,6 @@ F2,Motor branch fuse,TBD,Two 550 stall measurements missing
 F3,Coil branch fuse,TBD,Four coil peak current missing
 J5,MDD20A separate motor power,TBD,Separate motor mount and harness
 J6,R9 four coil supply,TBD,Maps to R9 J1; no pulse limiter supplied here
+S2,Third mechanically linked NC STOP witness,Actual triple-pole STOP device TBD,Separate from S1 and J3 STOP_OK
+R5,STOP witness input pullup,10k provisional,Do not connect to Q2 driver source
+U5,Schmitt contact witness inversion,SN74HC14 candidate,Verify physical supply and contact bounce

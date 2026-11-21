@@ -32,3 +32,9 @@ Created 2026-11-21. The standalone editable schematic `Boat_Safety_Cutoff_R10.ki
 - `.github/workflows/boat-kicad-safety-r10.yml`: real KiCad CLI native schematic ERC/netlist validation.
 
 **The R10 schematic is NOT a complete physical safety system.** Zero ERC on this standalone sheet, if achieved, only means KiCad caught no connection-class errors in this isolated candidate.
+
+
+## R10 safety improvement: independent third STOP witness (still unqualified)
+Initial R10 review detected a dangerous auto-rearm path if the J3 second-pole STOP_OK sensor stayed falsely HIGH while S1 interrupted Q2 source ground. Native R10 now includes **S2, a third mechanically linked normally-closed contact**, 10k pullup R5 and U5 SN74HC14 Schmitt inverter. S2 closed pulls STOP_SENSE_N low and inverter drives STOP_CONTACT_CLOSED_OK high; opening S2 forces a LOW input into the extra U3 AND stage. This asynchronously clears U4's SN74HC74 and prevents automatic reenergization after STOP release, even with J3 STOP_OK stuck HIGH. The safety chain is now 10 J3 inputs **plus the independent S2 contact witness**. S1 remains purely in the Q2 source-return path, and S2 sense is electrically separate; connecting STOP_SENSE_N to Q2 source would defeat the physical STOP.
+
+A *single actual triple-pole mechanically linked STOP switch* is necessary (S1 Q2 source cutoff, an independently conditioned J3 STOP_OK, and S2 separately sensed NC). Hardware mechanical linkage, test of contact synchronization, contact weld behavior, SN74HC14 thresholds and input wiring all remain unsigned. It is a candidate only. Reference: https://www.ti.com/product/SN74HC14 .

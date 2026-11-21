@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 SCH = ROOT / "hardware/Safety_Cutoff_R10/Boat_Safety_Cutoff_R10.kicad_sch"
 EXPECTED_REFS = {"J1","J2","J3","J4","J5","J6","U1","U2","U3","U4",
-                 "Q1","Q2","R1","R2","R3","R4","F1","F2","F3","S1"}
+                 "Q1","Q2","R1","R2","R3","R4","R5","F1","F2","F3","S1","S2","U5"}
 SAFE_IN = ("STOP_OK_NC_SECOND_POLE","WDO_N","UVLO_OK","CURRENT_OK",
            "TEMP_OK","RAIL_OK","MOTOR_IDLE","COIL_IDLE","OUTPUT_FB_OK","POR_OK")
 PIN_AND = ((1,2,3),(4,5,6),(9,10,8),(12,13,11))
@@ -22,23 +22,23 @@ GATES = [
   ("SAFE_5",SAFE_IN[6],"SAFE_6"),
   ("SAFE_6",SAFE_IN[7],"SAFE_7"),
   ("SAFE_7",SAFE_IN[8],"SAFE_8"),
-  ("SAFE_8",SAFE_IN[9],"ALL_SAFE_CLEAR_N"),
+  ("SAFE_8",SAFE_IN[9],"ALL_PRESTOP_OK"),
   ("LATCH_Q","MCU_PERMIT","DRIVE_ALLOWED"),
-  ("PACK_RETURN","PACK_RETURN",None),
+  ("ALL_PRESTOP_OK","STOP_CONTACT_CLOSED_OK","ALL_SAFE_CLEAR_N"),
   ("PACK_RETURN","PACK_RETURN",None),
 ]
 
 def source_check():
     s = SCH.read_text()
     refs = re.findall(r'\(symbol \(lib_id "FlytecR10:[^"]+"\).*?\(property "Reference" "([^"]+)"', s)
-    assert len(refs) == len(EXPECTED_REFS) == 20
+    assert len(refs) == len(EXPECTED_REFS) == 23
     assert set(refs) == EXPECTED_REFS, set(refs)
-    assert s.count('(property "Footprint" ""') == 20
+    assert s.count('(property "Footprint" ""') == 23
     assert 'R10-NO-FABRICATION' in s
     assert 'ARM_RISING_EDGE_RELEASE_QUALIFIED_TBD' in s
     assert 'PMOS_HIGH_SIDE_SOA_TBD' in s
     assert 'RP2040' not in s and 'SONAR' not in s and 'E22' not in s
-    print("R10 schematic source guard passed: 20 unqualified parts, no footprints")
+    print("R10 schematic source guard passed: 23 unqualified parts, no footprints")
 
 def expected():
     n = defaultdict(set)
@@ -66,6 +66,11 @@ def expected():
       "R2":("PACK_FUSED","HIGH_SIDE_GATE"),
       "R3":("DRIVE_ALLOWED","PACK_RETURN"),
       "R4":("ACTUATOR_BUS","PACK_RETURN"),
+      "R5":("VLOGIC_3V3","STOP_SENSE_N"),
+      "S2":("STOP_SENSE_N","PACK_RETURN"),
+      "U5":("STOP_SENSE_N","STOP_CONTACT_CLOSED_OK","PACK_RETURN",None,
+            "PACK_RETURN",None,"PACK_RETURN",None,
+            "PACK_RETURN",None,"PACK_RETURN",None,"PACK_RETURN","VLOGIC_3V3"),
     }.items():
       for idx,net in enumerate(ps,1):
         if net:put(net,ref,idx)
@@ -88,7 +93,8 @@ def check_xml(path):
     want=expected()
     # KiCad emits synthetic nets for explicitly no-connected unused outputs.
     # Audit precisely those pins, not arbitrary floating/unconnected inputs.
-    allowed_nc = {("U3","8"),("U3","11"),("U4","6"),("U4","8"),("U4","9")}
+    allowed_nc = {("U3","11"),("U4","6"),("U4","8"),("U4","9"),
+                  ("U5","4"),("U5","6"),("U5","8"),("U5","10"),("U5","12")}
     nc_nets = {name: nodes for name,nodes in actual.items()
                if name.startswith("unconnected-")}
     assert len(nc_nets)==len(allowed_nc)
@@ -101,7 +107,10 @@ def check_xml(path):
       assert actual[name]==want[name], f"{name}: got {sorted(actual[name])}; expected {sorted(want[name])}"
     assert actual["STOP_SOURCE_RETURN"]=={("Q2","3"),("S1","1")}
     assert actual["HIGH_SIDE_GATE"]=={("Q1","1"),("Q2","2"),("R2","2")}
-    assert actual["ALL_SAFE_CLEAR_N"]=={("U3","3"),("U4","1")}
+    assert actual["ALL_SAFE_CLEAR_N"]=={("U3","8"),("U4","1")}
+    assert actual["ALL_PRESTOP_OK"]=={("U3","3"),("U3","9")}
+    assert actual["STOP_CONTACT_CLOSED_OK"]=={("U3","10"),("U5","2")}
+    assert actual["STOP_SENSE_N"]=={("S2","1"),("R5","2"),("U5","1")}
     assert actual["WDO_N"]=={("J3","2"),("R1","2"),("U1","2")}
     assert actual["ACTUATOR_BUS"]=={("Q1","3"),("F2","1"),("F3","1"),("R4","1")}
     print(f"Native KiCad R10 XML exact pin topology passed: {len(actual)} nets")

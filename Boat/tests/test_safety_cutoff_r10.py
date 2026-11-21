@@ -27,7 +27,7 @@ class HardwareTopologyReferenceTests(unittest.TestCase):
             x=SafetyInputs(tuple(combo),True,True,False)
             self.assertEqual(model.step(x),all(combo),combo)
             if not all(combo):
-                self.assertFalse(model.step(safe_frame()))
+                # ARM held while the fault clears must not create a clean edge.
                 self.assertFalse(model.step(safe_frame(arm=True,permit=False)))
                 self.assertFalse(model.step(safe_frame(arm=True)))
                 self.assertFalse(model.step(safe_frame()))
@@ -41,7 +41,23 @@ class HardwareTopologyReferenceTests(unittest.TestCase):
         self.assertFalse(m.step(safe_frame(arm=True,stop=False,permit=False)))
         # Fail closed for *current* output when physically cut; hardware Q1
         # short-failure is NOT covered by this model.
-        self.assertTrue(m.step(safe_frame(arm=True,stop=True)))
+        # Independent S2 opened while S1 interrupted Q2 return, so
+        # releasing STOP cannot reenergize without a NEW arm sequence.
+        self.assertFalse(m.step(safe_frame(arm=True,stop=True)))
+        self.assertFalse(m.step(safe_frame()))
+        self.assertTrue(m.step(safe_frame(arm=True)))
+
+    def test_one_monitor_stuck_good_still_latches_on_stop(self):
+        for second_pole_stuck, witness_stuck in ((True,False),(False,True)):
+            m=CutoffLogicModel()
+            m.step(safe_frame())
+            self.assertTrue(m.step(safe_frame(arm=True)))
+            statuses=(True,)*10 if second_pole_stuck else (False,)+(True,)*9
+            failed=SafetyInputs(statuses,False,True,True,witness_stuck)
+            self.assertFalse(m.step(failed))
+            self.assertFalse(m.step(safe_frame(arm=True)))
+            self.assertFalse(m.step(safe_frame()))
+            self.assertTrue(m.step(safe_frame(arm=True)))
 
     def test_stuck_arm_and_power_up_and_permit(self):
         m=CutoffLogicModel()

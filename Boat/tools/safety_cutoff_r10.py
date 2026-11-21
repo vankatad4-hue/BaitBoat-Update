@@ -15,6 +15,7 @@ class SafetyInputs:
     physical_stop_nc_closed: bool
     mcu_permit: bool
     physical_arm_pressed: bool
+    stop_witness_nc_closed: bool = True
     def valid(self):
         return len(self.safe) == len(SAFE_NAMES) and all(type(x) is bool for x in self.safe)
 
@@ -31,7 +32,7 @@ class CutoffLogicModel:
             self.shutdowns+=1
             return False
         # Actual R10 nets form ten-input AND -> async CLEAR of HC74.
-        safe=all(x.safe)
+        safe=all(x.safe) and x.stop_witness_nc_closed
         # Physical NC stop contact also breaks Q2's return, independently
         # of the separate STOP_OK logic input.
         if not safe:
@@ -48,5 +49,7 @@ class CutoffLogicModel:
         self.last_arm=x.physical_arm_pressed
         return safe and self.latch and x.mcu_permit and x.physical_stop_nc_closed
 
-def safe_frame(arm=False,permit=True,stop=True):
-    return SafetyInputs((True,) * len(SAFE_NAMES),stop,permit,arm)
+def safe_frame(arm=False,permit=True,stop=True,witness=None):
+    if witness is None:
+        witness=stop  # Third, separately wired NC STOP contact S2.
+    return SafetyInputs((True,) * len(SAFE_NAMES),stop,permit,arm,witness)
