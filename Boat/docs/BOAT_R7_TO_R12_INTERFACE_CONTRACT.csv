@@ -3,8 +3,8 @@ Release_Raw,R7_SOL_REQ_LH,R7_SOL_REQ_LH,R12_J1_PIN1,SOL_REQ_LH,NOT_PHYSICALLY_CO
 Release_Raw,R7_SOL_REQ_RH,R7_SOL_REQ_RH,R12_J1_PIN2,SOL_REQ_RH,NOT_PHYSICALLY_CONNECTED,3V3 input conditioning and default LOW at boot
 Release_Raw,R7_SOL_REQ_LK,R7_SOL_REQ_LK,R12_J1_PIN3,SOL_REQ_LK,NOT_PHYSICALLY_CONNECTED,3V3 input conditioning and default LOW at boot
 Release_Raw,R7_SOL_REQ_RK,R7_SOL_REQ_RK,R12_J1_PIN4,SOL_REQ_RK,NOT_PHYSICALLY_CONNECTED,3V3 input conditioning and default LOW at boot
-Safety,Unqualified_Logic_3V3,VLOGIC_3V3,R12_J2_PIN1,VLOGIC_3V3,REGULATOR_NOT_SELECTED,3S isolated protected 3V3 rail and POR sequencing
-Safety,Unqualified_GND,LOGIC_RETURN,R12_J2_PIN2,GND,RETURN_UNVERIFIED,No actuator current in logic return
+Safety,R13_J2_PIN1,VLOGIC_3V3,R12_J2_PIN1,VLOGIC_3V3,RECOM_MODULE_SELECTED_NOT_WIRED,3S protected fused non-isolated 3V3 supply plus independent POR supervisor required
+Safety,R13_J2_PIN2,LOGIC_RETURN_STAR,R12_J2_PIN2,GND,RETURN_NOT_WIRED,Non-isolated common reference only no actuator load current in safety harness
 Safety,R10_U4_1Q,LATCH_Q,R12_J2_PIN3,HW_LATCH_OK_R10,NOT_BROUGHT_OUT,Independent physical STOP latch requires connector and measured feedback
 Safety,External_POR,POR_OK_TBD,R12_J2_PIN4,POR_OK_TBD,NOT_DESIGNED,Reset held until all RC nodes and logic inputs settled
 Safety,External_Motor_Current_Zero,MOTOR_CURRENT_ZERO_TBD,R12_J2_PIN5,MOTOR_CURRENT_ZERO_TBD,NOT_DESIGNED,Independent analog current-zero comparator and measured off

@@ -1,0 +1,18 @@
+Source,SourcePin,SourceNet,Destination,DestinationPin,DestinationNet,Status,Gate
+3S_BMS_SWITCHED,positive_after_master,PACK_SWITCHED_3S_TBD,R13_J1,1,PACK_SWITCHED_3S_TBD,UNVERIFIED,actual BMS fuse switch wire and polarity
+3S_LOGIC_STAR,qualified_return,LOGIC_RETURN_STAR,R13_J1,2,LOGIC_RETURN_STAR,UNVERIFIED,low current reference only no high-current motor or coil return
+R13_F1,fused_input,PACK_SWITCHED_LOGIC_FUSED,R13_U1,1,+VIN,SCHEMATIC_ONLY,fuse inrush and overload trip ratings not selected
+R13_U1,2,GND,R13_J2,2,LOGIC_RETURN_STAR,SCHEMATIC_ONLY,non-isolated return star wiring
+R13_U1,3,+VOUT,R13_J2,1,VLOGIC_3V3,SCHEMATIC_ONLY,manufacturer fixed 3.3V 500mA within measured load budget
+R13_J2,1,VLOGIC_3V3,R10_J2,1,VLOGIC_3V3,NOT_PHYSICALLY_WIRED,qualified safety 3V3 stable and independent POR needed
+R13_J2,2,LOGIC_RETURN_STAR,R10_J2,2,PACK_RETURN,NOT_PHYSICALLY_WIRED,low current star and measured ground noise
+R13_J2,1,VLOGIC_3V3,R11_J2,1,VLOGIC_3V3,NOT_PHYSICALLY_WIRED,total output decoupling under RECOM startup cap limit
+R13_J2,2,LOGIC_RETURN_STAR,R11_J2,2,GND,NOT_PHYSICALLY_WIRED,no PWM or coil return in logic cable
+R13_J2,1,VLOGIC_3V3,R12_J2,1,VLOGIC_3V3,NOT_PHYSICALLY_WIRED,release-token RC and POR timing not qualified
+R13_J2,2,LOGIC_RETURN_STAR,R12_J2,2,GND,NOT_PHYSICALLY_WIRED,no high-current return in logic cable
+R13_J3,1,VLOGIC_3V3,TEST_PROBE,positive,SAFETY_VOLTAGE,SCHEMATIC_ONLY,test point only not power-good output
+R13_J3,2,LOGIC_RETURN_STAR,TEST_PROBE,return,LOGIC_RETURN_STAR,SCHEMATIC_ONLY,probe reference at quiet ground
+EXTERNAL_SUPERVISOR,TBD,POWER_GOOD_TO_RESET,R12_J2,4,POR_OK_TBD,NOT_IMPLEMENTED,must assert reset at brownout/restart and permit only deliberate physical arm
+EXTERNAL_SUPERVISOR,TBD,POWER_GOOD_TO_FAULT,R10_J3,10,POR_OK,NOT_IMPLEMENTED,R10 fault latch trip independent of MCU
+R13,NOT_USED,RF_3V3,NRF24_PA_LNA,TBD,INDEPENDENT_RF_SUPPLY_REQUIRED,NOT_IMPLEMENTED,radio current bursts must not brownout safety logic
+R13,NOT_USED,MCU_5V,HELTEC_TRACKER,TBD,INDEPENDENT_5V_REGULATOR_REQUIRED,NOT_IMPLEMENTED,no pack 3S on Heltec single cell charger or 3V3 safety line
