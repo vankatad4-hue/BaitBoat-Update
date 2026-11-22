@@ -1,5 +1,8 @@
 # Flytec V080 Boat Project — Master Status R4
 
+> **LATEST R30H-10 AUTHORITY (2026-11-22):** VS Code + PlatformIO is the **primary** development toolchain; [R30H-10 workflow](../../docs/PLATFORMIO_PRIMARY_WORKFLOW_R30H10.md). Both PlatformIO targets previously built successfully [#45063024581](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45063024581), but physical GPIO/nRF/E22/GNSS-PPS/**independent STOP/current zero** remain NOT_RUN/BLOCKED. [Hardware test plan](BOAT_R30H_10_HARDWARE_ACCEPTANCE.md) / [18 gates](BOAT_R30H_10_PHYSICAL_GATES.csv). Current R27 INA231 replaces the former ADS1115 **Boat battery sensor**; R29 uses one common 3S actuator power bus. All unsigned safety interlocks and no-upload/no-actuator limits remain in force. Earlier status below is historical; Boat VER014 frozen.
+
+
 > **R79 ACTIVE STATUS (2026-11-22):** Current Boat procurement authority is [Hardware Selection R20](BOAT_HARDWARE_SELECTION_R20.md). Active baseline: ESP32-S3-DevKitC-1-N32R16V, HGLRC M100 PRO/QMC5883L, GY-91, nRF24, E22-900T22S, MCP23017, ADS1115 battery ADC, Cytron MDD20A, EKM014 and selected premade regulators. R79 adds local 3S battery monitoring, low-battery mission hold/RTH and critical STOP. Older Heltec/central-carrier/PCB descriptions below are historical. Parts and physical wiring remain uncommissioned; use the [continuation checkpoint](../../docs/CONTINUATION_CHECKPOINT_VER001.md) and R20/R79 docs as authority.
 
 
