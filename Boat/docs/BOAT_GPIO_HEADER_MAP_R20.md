@@ -136,3 +136,9 @@ Use the exact EBYTE E22-900T22S user manual for the purchased suffix/revision. D
 ## R21 ADC input/wiring revision
 
 The GPIO7/8 I²C candidate mapping remains unsigned. ADS1115 AIN0 now uses the superseding [R21 150kΩ/33kΩ battery divider](BOAT_R21_BATTERY_ADC_COMMISSIONING.md), not the original R20 100kΩ/33kΩ proposal. Validate the input relative to its 3.3V VDD during every power transition, including the unpowered state; PGA ±4.096V does not change the analog input absolute maximum rating.
+
+## R23 update: manufacturer-checked header assignments and full module connections
+
+[R23 GPIO/header + harness guide](BOAT_R23_GPIO_PINOUT_AND_HARNESSES.md) and [64-net machine-readable connection matrix](BOAT_R23_MODULE_CONNECTION_MATRIX.csv) take precedence for actual proposed module-to-module wiring. The Espressif DevKitC-1 published J1/J3 header positions match all 18 assigned GPIOs in the R20 crosswalk; this is **documentation-level verification only**, not physical verification of the yet-to-be-purchased PCB or module connector orientation.
+
+Notable electrical holds: M100 PRO powered at 5V but TX/I²C HIGH must be tested against ESP32's 3.3V tolerance; E22 TXD/AUX at 5V VCC still needs level measurement; Waveshare MCP23017 `A0/A1/A2` open HIGH = I²C `0x27`; 5V EKM014 VL accepts 3.3V GPIO inputs and separate 3S VH must stay disconnected. The updated purchase register correctly assigns two separate Pololu D24V10F3 units to nRF24 and sensors/I²C. Reserved GPIO1,2,41,42 remain unwired pending actual safety interface selection. **All firmware actuator and radio audit flags remain false.**
