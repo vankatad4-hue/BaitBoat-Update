@@ -43,7 +43,7 @@ static BoatCommand g_pendingStop{};
 static uint8_t g_authKey[32],g_rootKey[32];
 static bool g_rootReady=false;
 static SessionHandshake g_session;
-static uint32_t g_lastSessionRx=0,g_lastHandshakeTx=0;
+static uint32_t g_lastHandshakeTx=0;
 static MissionUpload g_missionUpload;
 static MissionControlClient g_missionControl;
 static uint32_t g_lastStickTx=0;
@@ -275,7 +275,7 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame){
     if(frame.type>=SESSION_HELLO&&frame.type<=SESSION_CONFIRM){
         if(link!=LINK_NRF_PRIMARY||!g_rootReady||frame.sequence||frame.commandId||frame.sessionEpoch||!radio_frameVerify(frame,g_rootKey))return;
         if(g_session.remoteReceive((SessionHandshakeMessage)frame.type,frame.payload,g_rootKey,radioPlatformHmac,now,true)&&g_session.established()){
-            g_session.frameKey(g_authKey);g_lastSessionRx=now;g_ackTracker.reset(g_sessionEpoch);
+            g_session.frameKey(g_authKey);g_ackTracker.reset(g_sessionEpoch);
         }
         return;
     }
@@ -287,7 +287,7 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame){
     const bool cross=g_boatSequenceGuard.accept(frame.sequence);
     if(!cross&&frame.type!=RADIO_MSG_HEARTBEAT)return;
     if(!dispatchValidatedPayload(link,frame,now))return;
-    g_lastSessionRx=now;g_linkManager.reportValidRx(link,true,now);
+    g_linkManager.reportValidRx(link,true,now);
 }
 
 void boatRadio_update() {
