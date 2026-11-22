@@ -43,3 +43,9 @@ Espressif [official DevKitC-1 v1.1 header tables](https://docs.espressif.com/pro
 5. Once modules arrive, independently test **power-on**, reset, unplugged GPIO, stuck-high, simultaneous requests, one-pulse only, contact weld, brownout, MCU freeze and current zero on dummy loads. No firmware output adapter or on-water operations beforehand.
 
 **Version hold:** Remote VER028 / Boat VER014 unchanged; no hardware purchased/actuated, no sonar implementation.
+
+
+### R67 superseding sensor/expander model choice
+- Owner fixed **GY-91 MPU-9250 + BMP280** (1×) and exact **Waveshare MCP23017 IO Expansion Board SKU15391** (1×) on Boat; see [R67 selected hardware notes](BOAT_R67_GY91_MCP23017_SELECTION.md).
+- R65 generic MCP23017 **0x20** was a research address, **NOT this board's factory default**: Waveshare 15391 has **0x27** by default; 0x20 requires physical jumper changes. Use [R67 I²C plan](BOAT_R67_I2C_AND_EXPANDER_MAP.csv) as authoritative until hardware commissioning.
+- Four expander GPIOs are only *candidate release requests* to a separate independent qualified safety controller; never direct live EKM014 drive. Model is selected; no actual board or driver is commissioned.
