@@ -32,5 +32,5 @@ int main(){
  assert(boatHomeSequenceNewer(8,7));
  assert(!boatHomeSequenceNewer(7,8));
  assert(boatHomeSequenceNewer(1,0xFFFFFFFFU)); // wrap-safe ordering
- std::cout<<"Boat Home NVS record CRC/range tests passed\\n";
+ std::cout<<"Boat Home NVS record CRC/range tests passed\n";
 }
