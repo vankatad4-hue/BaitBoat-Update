@@ -129,3 +129,7 @@ The current [R30A Boat assembly and physical-test handoff](Boat/docs/BOAT_R30A_P
 ## R30C one shared 3S supply — physical safety feedback pending
 
 The Boat's [R30C physical feedback contract](Boat/docs/BOAT_R30C_ONE_BUS_SAFETY_FEEDBACK_CONTRACT.md) identifies a remaining mismatch between legacy dual-contactor firmware assumptions and the selected ONE 3S4P pack shared by Cytron MDD20A VM and EKM014 VH. R30C defines a software-only review contract for ONE common DC-rated disconnect and separate hardwired STOP/watchdog/current-zero/coil limiting functions, without adding or energizing hardware. `COMMON_BUS_HARDWARE_COMMISSIONED=false` preserves the output lock, and all physical approval gates remain OPEN.
+
+## R30E — local-only Boat safety fault telemetry
+
+The Boat now has documented [R30E local fault reasons and diagnostic envelope](Boat/docs/BOAT_R30E_LOCAL_FAULT_TELEMETRY.md), with a default-locked USB serial report and portable host tests for the read-only common-bus safety inputs. An actual hardware safety reader is still unselected; the report correctly states `NO_READER`, not healthy. This is **not** authenticated Remote RF telemetry or a safety-override command. Shared 3S motor/solenoid supply, unsigned physical interlocks, and version markers remain unchanged.
