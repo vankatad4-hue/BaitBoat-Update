@@ -1,6 +1,6 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-22, **R30H-9 zero-GPIO diagnostic marker contract and physical probe crosswalk committed; R30H-10 physical acquisition pending** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
+**Checkpoint:** 2026-11-22, **R30H-10 safe source cleanup and dual Arduino/PlatformIO target builds PASS; physical R30H-10 RF-only/STOP/PPS acquisition still NOT_RUN** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `hardware-ready-dual-radio-r1`
 
@@ -618,7 +618,7 @@ Shared preflight and hostile tests verify epoch gating, primary freshness, ident
 See [full source cleanup and build evidence](SOURCE_CLEANUP_R30H_10_R1.md).
 
 - **Both PlatformIO targets: SUCCESS** — [workflow #45063024581](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45063024581), Boat N32R16V and Remote Waveshare Standard with ESP32 Arduino core 3.3.12, compilation-only, no upload.
-- **Both Arduino reference targets: SUCCESS** on the archived-source revision — [Boat #45061849197](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45061849197) and [Remote #45061849238](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45061849238). Remote target rerun for latest PIO adapter cleanup is separately tracked under [#45063024540](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45063024540).
+- **Both Arduino reference targets: SUCCESS** on the archived-source revision — [Boat #45061849197](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45061849197) and [Remote #45061849238](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45061849238). Latest Remote Arduino target after adapter archival also **SUCCESS**: [#45063024540](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45063024540).
 - **Both host workflows: SUCCESS** after the Remote entrypoint correction — [Remote #45063024532](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45063024532); Boat host [#45061849147](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45061849147); static active-source inventory [#45063024449](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45063024449) SUCCESS.
 - **197 active-source files, 56 sketch/C++ compile roots, one intentionally preserved reference/example header**. Six retired unreferenced or duplicated files were preserved in [history](https://github.com/vankatad4-hue/BaitBoat-Update/tree/hardware-ready-dual-radio-r1/docs/archive/2026-11-22/source_cleanup_r30h10) and removed from live sources. This is static review and safe cleanup, not complete runtime performance optimization.
 - Remote LVGL 9.6 sonar DEMO point coordinates repaired (float-to-integer), duplicate SD status corrected with 4-case host test. Retired Heltec SX1262 and unused older configuration files archived. Boat uses selected nRF24/E22 UART and INA231 BUS-only; sonar still deferred.
