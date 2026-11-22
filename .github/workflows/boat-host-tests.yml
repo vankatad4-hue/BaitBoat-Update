@@ -12,6 +12,9 @@ on:
       - 'Boat/docs/BOAT_R27_INA231_ACCEPTANCE.csv'
       - 'Boat/docs/BOAT_R27_INA231_HARNESS_OVERRIDE.csv'
       - 'Boat/docs/BOAT_R29_SHARED_3S_BUS_CONNECTIONS.csv'
+      - 'Boat/docs/BOAT_R30A_EFFECTIVE_ASSEMBLY_NETS.csv'
+      - 'Boat/docs/BOAT_R30A_READINESS_GATES.csv'
+      - 'Boat/hardware_test/INA231_Battery_Bench/**'
       - '.github/workflows/boat-host-tests.yml'
   pull_request:
     branches:
@@ -24,6 +27,9 @@ on:
       - 'Boat/docs/BOAT_R27_INA231_ACCEPTANCE.csv'
       - 'Boat/docs/BOAT_R27_INA231_HARNESS_OVERRIDE.csv'
       - 'Boat/docs/BOAT_R29_SHARED_3S_BUS_CONNECTIONS.csv'
+      - 'Boat/docs/BOAT_R30A_EFFECTIVE_ASSEMBLY_NETS.csv'
+      - 'Boat/docs/BOAT_R30A_READINESS_GATES.csv'
+      - 'Boat/hardware_test/INA231_Battery_Bench/**'
       - '.github/workflows/boat-host-tests.yml'
 
 jobs:
@@ -257,6 +263,10 @@ jobs:
             -o /tmp/boat_r29_shared_bus
           /tmp/boat_r29_shared_bus
           python3 Boat/tools/verify_r29_shared_bus.py
+      - name: R30A effective assembly nets and 24 fail-closed physical readiness gates
+        run: |
+          python3 Boat/tools/verify_r30a_assembly_package.py
+          python3 -m unittest Boat/tests/test_r30a_assembly_package.py -v
       - name: R66 COTS safety PLC capacity and external interlock acceptance oracle (host only)
         run: |
           python3 -m unittest Boat/tests/test_r66_safety_plc_budget.py -v
