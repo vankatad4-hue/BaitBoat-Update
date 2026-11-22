@@ -64,10 +64,10 @@ def guard():
     assert any("ADS1115 #2" in r["To_Module"] and "0x4A" in r["I2C_Address_or_voltage"] for r in remote)
     assert not any("ADS1115" in r["To_Module"] and r["I2C_Address_or_voltage"]=="0x48" for r in remote)
     for main in ("README.md","Boat/README.md","Remote/README.md"):
-        assert "R15" in (ROOT/main).read_text(encoding="utf-8")
-    print("R15 MODULE ONLY POLICY PASS: two sides, "+str(len(bom))+" BOM rows, "
+        assert "R20" in (ROOT/main).read_text(encoding="utf-8")
+    print("R20 ACTIVE MODULE-ONLY POLICY PASS (legacy R15 regression checks): two sides, "+str(len(bom))+" BOM rows, "
           +str(len(boat)+len(remote))+" uncommissioned wiring entries, 6 KiCad workflows manual-only")
-    print("NO unsafe hardware approval inferred; all B08-B11 independent safety parts are still unresolved")
+    print("NO independent hardware cutoff inferred; software failsafes remain on the Boat ESP32 and physical STOP/feedback acceptance is pending")
 
 if __name__=="__main__":
     guard()
