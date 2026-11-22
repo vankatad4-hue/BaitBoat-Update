@@ -9,6 +9,10 @@ public:
     static constexpr uint8_t CAPACITY=4;
     BoatCommandQueue();
     void clear();
+    // Drop queued commands from a lost link, retaining an emergency STOP.
+    void discardLink(uint8_t link,bool keepEmergencyStop=true);
+    // Drop every queued action except an already received emergency STOP.
+    void clearNonEmergency();
     bool push(const BoatCommand &cmd,uint8_t link,bool duplicate,uint8_t epoch);
     bool pop(BoatCommand &cmd,bool &duplicate,uint8_t &link,uint8_t &epoch);
     bool contains(uint8_t epoch,uint16_t commandId) const;
