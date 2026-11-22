@@ -82,3 +82,7 @@ See [R30B application-level brownout/freshness guard and fault simulation](BOAT_
 ## R30D read-only common-bus feedback diagnostics — still uncommissioned
 
 [R30D software contract and simulated reader faults](BOAT_R30D_READONLY_FEEDBACK_SIMULATION.md) add input-only observation fields with original timestamps and source IDs for one shared 3S bus STOP, external watchdog, **ONE** disconnect auxiliary, independent limiter, motor/coil current zero and INA231 voltage. No actual reader device, pin assignment or electrical sensor has been selected. `ACTUAL_READER_COMMISSIONED=false`, common-disconnect rating/power-off signoff false, current-zero and pulse-limiter certification false, and the default Boat firmware still never attaches a real driver. Physical preparation limited to unpowered inspection and planned logic-only commissioning; no actuator power allowed.
+
+## R30E diagnostic-only status and local telemetry
+
+[Read the R30E fault-code and USB local telemetry specification](BOAT_R30E_LOCAL_FAULT_TELEMETRY.md). The selected Boat ESP32-S3 diagnostic emits an explicit uncommissioned `NO_READER` status every two seconds until there is real, physically verified local STOP/watchdog/current-zero hardware. It does **not** report invented healthy inputs, does not publish a new authenticated RF packet to the Remote and cannot authorize motors or release solenoids. Common 3S VM/VH bus, 24 open physical gates and all unsigned wiring remain unchanged.
