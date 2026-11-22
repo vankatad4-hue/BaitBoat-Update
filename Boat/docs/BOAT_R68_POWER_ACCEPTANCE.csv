@@ -4,10 +4,12 @@ R68-P02,All,3S pack 11.1V steady,Output voltage and high-current loop ripple; no
 R68-P03,All,3S pack 9.0V nominal low edge,Outputs within tolerance; battery brownout independent STOP; no auto-arm,NOT_RUN
 R68-P04,All,Pack sag below 9.0V at startup and load,Regulators brownout fail safe and no unexpected actuator enabled,NOT_RUN
 R68-P05,BOAT_5V_MCU,ESP32 plus HGLRC M100 PRO GPS including QMC plus conditional nRF adapter startup,5V droop and aggregate regulator current within limits; verify GNSS UART and compass I2C 3V3 logic and never dual-source backfeed,NOT_RUN
-R68-P06,BOAT_5V_GATE,EKM014 VL 5V under pulse requests with VH disconnected,Driver supply current stable and 0 commanded pulse; no energization,NOT_RUN
+R68-P06,BOAT_5V_GATE,TRACO TSR 2-2450 supplying EKM014 VL at 5V with VH physically disconnected,Measure 4.9-5.1V output and actual VL current; stable supply; no IN1-IN4 output or coil energization,NOT_RUN
 R68-P07,BOAT_3V3_E22,E22 TX while Ardboard nRF adapter powered from separate 5V branch,E22 3V3 stable and nRF adapter 3V3 stable independently with no brownouts,NOT_RUN
 R68-P08,BOAT_3V3_SENSORS,All sensor and Waveshare MCP I2C traffic,3V3 voltage in tolerance and 0x27 bus verified; no I2C pullup backfeed,NOT_RUN
 R68-P09,All,Disconnect MCU supply while sensors/expander remain powered,No phantom-powered ESP32 GPIO or unintended request inputs,NOT_RUN
 R68-P10,All,Reverse supply and fuse/disconnect fault bench test,Independent protected harness and safe cutoff; board damage prevented by approved protection,NOT_RUN
 R68-P11,All,Heat and waterproof enclosure simulated load,No thermal overload and stable output across practical temperatures,NOT_RUN
 R68-P12,All,Independent physical STOP with live dummy loads,Motor and EKM014 VH isolations actually interrupt while safety sensing remains active,NOT_RUN
+R74-P13,BOAT_5V_GATE,TSR 2-2450 startup shutdown 0-to-measured-VL-load step at 9.0 11.1 12.6V input and hot enclosure,Scope output ripple overshoot and load transient; measure case temperature and fuse/cable heating; confirm no reset or unexpected output pulse,NOT_RUN
+R74-P14,BOAT_5V_MCU,DCDC6-16-TO5 ESP32-S3 plus M100 PRO and conditional Ardboard nRF adapter aggregate startup/RF bursts,Measure 5V rail current droop cable loss thermal margin and USB backfeed; second DCDC6 only if measurements justify separate branch; never parallel outputs,NOT_RUN
