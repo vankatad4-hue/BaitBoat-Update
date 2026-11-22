@@ -1,4 +1,5 @@
 #include "sc16is750_bridge.h"
+#include "sc16is750_fifo_budget_r30h.h"
 
 static constexpr uint8_t REG_RHR_THR_DLL=0x00;
 static constexpr uint8_t REG_IER_DLH=0x01;
@@ -121,7 +122,9 @@ size_t SC16IS750Bridge::writeFifo(const uint8_t *data,size_t length) {
     while(total<length) {
         uint8_t level=0;
         if(!readReg(REG_TXLVL,level)) break;
-        size_t freeBytes=64U-level;
+        // TXLVL reports the number of FREE byte positions (0x40=empty).
+        // The previous 64-level inversion prevented writes to an empty FIFO.
+        const size_t freeBytes=r30h_sc16::freeTxSlots(level);
         if(freeBytes==0) break;
         size_t chunk=length-total;
         if(chunk>freeBytes) chunk=freeBytes;
@@ -140,7 +143,8 @@ void SC16IS750Bridge::flush() {
     const uint32_t start=millis();
     while(millis()-start<100) {
         uint8_t level=0;
-        if(!readReg(REG_TXLVL,level) || level==0) break;
+        // Drain only when every slot is free, not when TX FIFO is FULL.
+        if(!readReg(REG_TXLVL,level) || r30h_sc16::txFifoEmpty(level)) break;
         delay(1);
     }
 }
