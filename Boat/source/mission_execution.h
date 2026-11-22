@@ -8,6 +8,9 @@ enum ExecIntent:uint8_t{INTENT_STOP,INTENT_NAV_TARGET,INTENT_NAV_HOME,INTENT_REL
 struct ExecInputs{
  MissionNavigationFix fix;
  bool stopActive,primaryFresh,backupFresh,stationary,releaseInterlocks,releaseIdle;
+ // Set only by the local Boat radio watchdog after the 10-second dual-link
+ // loss threshold and a validated NVS Home point. Never supplied over radio.
+ bool autonomousRth;
 };
 struct ExecOutput{ExecIntent intent;int8_t channel;uint16_t token;};
 class MissionExecution{
@@ -25,10 +28,11 @@ public:
  // unconfirmed release pulse, invalid Home navigation or active STOP.
  bool divertHome(const ExecInputs &in){
   if(phase_!=EXEC_OUTBOUND&&phase_!=EXEC_AT_TARGET&&phase_!=EXEC_RETURNING&&phase_!=EXEC_PAUSED)return false;
-  if(in.stopActive||!in.releaseIdle||!missionNavigation_evaluate(plan_,in.fix,true).valid){abort();return false;}
+  if(in.stopActive||!in.releaseIdle||!in.releaseInterlocks||!missionNavigation_evaluate(plan_,in.fix,true).valid){abort();return false;}
   remaining_=0;phase_=EXEC_RETURNING;return true;
  }
  MissionNavigationResult navigation(const ExecInputs &in)const{return missionNavigation_evaluate(plan_,in.fix,phase_==EXEC_RETURNING);}
+ bool homeNavigationValid(const ExecInputs &in)const{return plan_.transaction&&missionNavigation_evaluate(plan_,in.fix,true).valid;}
  bool pause(bool authenticated){
   if(!authenticated||(phase_!=EXEC_OUTBOUND&&phase_!=EXEC_RETURNING))return false;
   resumePhase_=phase_;phase_=EXEC_PAUSED;return true;
@@ -59,7 +63,7 @@ public:
 
   // No authenticated fresh radio on either path: hold mission state and ask
   // for zero motor/coil outputs. A fresh link later resumes this same phase.
-  if(!in.primaryFresh&&!in.backupFresh)return stopped;
+  if(!in.primaryFresh&&!in.backupFresh&&!(in.autonomousRth&&phase_==EXEC_RETURNING))return stopped;
 
   const bool navHome=phase_==EXEC_RETURNING||(phase_==EXEC_PAUSED&&resumePhase_==EXEC_RETURNING);
   const auto nav=missionNavigation_evaluate(plan_,in.fix,navHome);
