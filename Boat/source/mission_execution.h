@@ -52,8 +52,7 @@ public:
   // Its bounded output is stopped by the actuator supervisor and the mission
   // is aborted because completion can no longer be trusted.
   if(phase_==EXEC_RELEASE_WAIT){
-   const bool navHome=phase_==EXEC_RETURNING;
-   const auto nav=missionNavigation_evaluate(plan_,in.fix,navHome);
+   const auto nav=missionNavigation_evaluate(plan_,in.fix,false);
    if(!in.primaryFresh||!in.releaseInterlocks||!nav.arrived||now-releaseAt_>=5000U)abort();
    return stopped;
   }
