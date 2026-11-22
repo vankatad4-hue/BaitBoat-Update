@@ -55,6 +55,11 @@ struct BoatState
     bool emergencyStop;             // True when the boat reports STOP active.
     bool emergencyStopConfirmed;    // True only when telemetry confirms the current emergency-stop state (active or released).
     bool actuatorSafetyReady;      // Fresh authenticated telemetry must set true only after boat interlocks pass.
+    // R30F display-only uncommissioned safety observation. These fields
+    // NEVER participate in stop confirmation or actuatorSafetyReady.
+    bool diagnosticFresh;
+    uint8_t diagnosticReason;
+    uint16_t diagnosticFlags;
 };
 
 // Global boat state shared between software modules.
