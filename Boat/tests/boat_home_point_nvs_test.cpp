@@ -45,5 +45,5 @@ int main(){
  assert(empty.begin());
  assert(!empty.load(loaded));
  empty.end();
- std::cout<<"Boat Home two-slot NVS adapter tests passed\\n";
+ std::cout<<"Boat Home two-slot NVS adapter tests passed\n";
 }
