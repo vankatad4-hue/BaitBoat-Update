@@ -76,6 +76,17 @@ int main(){
  auto sample=nmea.utcSnapshot(12);
  assert(sample.valid&&sample.unixMs==expected);
  assert(!nmea.utcSnapshot(2013).valid);
+ // R30H-7: a valid RMC date from a different GNSS UTC second must not
+ // discipline wall-clock against the old GGA fix.
+ TrackerGnss skewed;
+ feedNmea(skewed,"GNGGA,123455.123,4212.0000,N,02730.0000,E,1,08,1.0,0,M,0,M,,",10);
+ feedNmea(skewed,"GNGSA,A,3",11);
+ feedNmea(skewed,"GNRMC,123456.123,A,4212.0000,N,02730.0000,E,2.0,0.0,221126,,,A",12);
+ assert(!skewed.utcSnapshot(12).valid);
+ // Only a new valid GGA for the matching second may qualify UTC.
+ feedNmea(skewed,"GNGGA,123456.123,4212.0000,N,02730.0000,E,1,08,1.0,0,M,0,M,,",13);
+ assert(skewed.utcSnapshot(13).valid);
+
  TrackerGnss legacy;
  feedNmea(legacy,"GNGGA,123456.123,4212.0000,N,02730.0000,E,1,08,1.0,0,M,0,M,,",10);
  feedNmea(legacy,"GNGSA,A,3",11);
