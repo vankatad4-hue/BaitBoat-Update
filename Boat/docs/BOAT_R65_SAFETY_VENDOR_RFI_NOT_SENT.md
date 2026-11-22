@@ -41,3 +41,10 @@ Do not sign off any fuse/cutoff/pulse until measuring actual 3S cell and BMS cut
 
 ## Expected result
 A supplier-backed bill of materials with exact manufacturer full SKUs, pinouts, DC inductive/load-current ratings, safe pulse timing, module manuals, physical dimensions, actual purchase availability/delivery to Bulgaria and manufacturer-supported interconnect diagram. Until then, all motor/coil load feeds and four EKM014 active requests remain disconnected; firmware commission flags OFF. Official Boat VER014 / Remote VER028 unchanged.
+
+
+## R66 amendment — please add to every controller/vendor enquiry (NOT SENT)
+- Our conservative architecture has **18 independent input functions and six physical output functions**. [R66 I/O signal ledger](BOAT_R66_INTERLOCK_RESOURCE_REQUIREMENTS.csv). Does the proposed assembly support these **at once** under the manufacturer's supported application blocks and actual firmware?
+- Pilz PNOZ m B0 **772100** has 20 safe digital inputs but **only four safe semiconductor outputs**. **No single B0** can directly supply both 4 individual EKM014 pulse outputs and **two additional independently rated disconnect outputs**. Proposed split: independent contactor/STOP modules provide separate motor/coil power removal; B0 four channels only after full independent wiring/fault analysis. Check B0 newer **772714** additional functions, firmware and needed chip card/terminal/Configurator licences.
+- Supply candidate **DDR-30G-24** (9–36V input, 24V/30W/1.25A) from verified Bulgarian Mean Well distributor: https://meanwell.bg/product/ddr-30g-24. Request actual required controller peak/start watts and fault behavior during 3S load sag below **9V**; rated load must include any relay/controller accessory, but contactor coil may use separate regulated rail. Neither 15W nor 30W is purchase-approved without real current budget.
+- Please identify **preassembled** 3.3V input to 24V safety input and 24V *safe output* to 3.3V active-high EKM014 IN1–4 interfaces, with error-state output forced LOW and traceable documentation. Do not suggest a bare optocoupler PCB/soldered custom logic matrix.
