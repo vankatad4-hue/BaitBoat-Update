@@ -72,8 +72,8 @@ void BoatDualRadioPort::resetSession(bool preserveMission){
   linkLossHold_=false;detachedReturn_=false;failsafeRthActive_=false;
   abortMission();controller_.resetSession();stickLease_.reset();
   missionIntent_={INTENT_STOP,-1,0};
+  haveAuthenticatedRx_=false;lastAnyAuthenticatedRxMs_=0;
  }
- haveAuthenticatedRx_=false;lastAnyAuthenticatedRxMs_=0;
  handshake_.reset();radioSession_wipe(key_,32);sessionStarted_=false;
  primarySeqGuard_.resetAfterHandshake();backupSeqGuard_.resetAfterHandshake();crossRadioSeqGuard_.resetAfterHandshake();
  lastNrfRxValid_=lastBackupRxValid_=false;commandQueue_.clear();mission_.reset();dedupe_.clear();txSequence_=0;
