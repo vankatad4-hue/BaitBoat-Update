@@ -48,3 +48,7 @@ A [R66 source-only capacity test](../tests/test_r66_safety_plc_budget.py) checks
 ### Worst-case 3S current sensitivity (engineering bound, NOT a measured load)
 
 At the DDR-30G-24 published full **30W** output and published nominal **89%** efficiency, indicative 3S input demand is `Iin = 30W/(Vin * 0.89)`: approximately **3.75A at 9.0V**, **3.01A at 11.2V**, and **2.68A at 12.6V**, not including startup surge or derating. A provisional **6A single solenoid** at the 9.0V corner plus a 30W safety rail would consume **~9.75A** of the reported 20A BMS nominal output budget *before both motors, MCU, radio, contactor and margin*. This is not a claimed real operating consumption. It highlights why two 550 stall currents must be measured and why a 30W DC/DC rail cannot be casually added to a 20A pack assumption. A suitably sized fuse and safe low-voltage shutdown must be derived from actual current waveforms.
+
+
+### R67 module choice downstream note (non-actuating)
+The user confirmed **GY-91 MPU-9250 + BMP280** and exact **Waveshare MCP23017 IO Expansion Board SKU15391** for Boat. The MCP23017's **manufacturer default I²C 0x27** supersedes R65 generic 0x20 assumptions. This only establishes a low-voltage four-request expander model; it **does not supply safety-rated, independently timed 4-channel onehot control** or reduce the 18-input/6-output independent safety requirements. The actual I/O PLC interface, level conversion and physical DC isolation remain unresolved. See [R67 document](BOAT_R67_GY91_MCP23017_SELECTION.md).
