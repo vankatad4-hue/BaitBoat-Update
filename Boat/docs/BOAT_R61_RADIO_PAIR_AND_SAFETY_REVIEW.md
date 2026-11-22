@@ -26,3 +26,7 @@ New `Boat/tests/boat_physical_driver_safety_r61_test.cpp` covers normal coil-off
 
 ## Status
 Hardware modules not purchased; no physical assembly, watchdog/contactor selection, target enabled-output compilation, RF field tests or on-water acceptance. **Boat output firmware remains non-actuating and official VER014 unchanged**. Sonar postponed; Remote integrated SD is the only map/waypoint SD.
+
+
+### R69 owner reconfirmation (2026-11-22)
+Owner explicitly reconfirmed **EBYTE E22-900T22S UART SMD** as the exact selected LoRa backup model, **one each on Boat and Remote**. Proposed E22-900T30S is **not selected**. Do not accidentally substitute the higher-power 30S, 22D/D-V2, or E220. Exact ready-made carriers, 3.3 V I/O and per-endpoint power, antennas, and EU868 legal RF settings remain purchasing blockers. No physical radio compatibility or safety test performed and no firmware pin/codec changes authorized.
