@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-// R35: MCP23017 bank=0 default register map; port B pins 0/1 direction.
+// R20: MCP23017 bank=0 default register map; port B pins 0/1 direction.
 // This adapter does not initialize a physical bus, authorize motor power,
 // control PWM, or replace the independent STOP/contactor.
 class Mcp23017RegisterBus {
@@ -34,11 +34,11 @@ public:
    if(!ready_||!motorPowerIsolated||!pwmZero||bits>3U) {
      failClosed();return false;
    }
-   if(!bus_.writeRegister(address_,0x14,bits)) {
+   if(!bus_.writeRegister(address_,0x15,bits)) {
      failClosed();return false;
    }
    uint8_t actual=0xFF;
-   if(!bus_.readRegister(address_,0x12,actual)|| (actual&3U)!=bits) {
+   if(!bus_.readRegister(address_,0x13,actual)|| (actual&3U)!=bits) {
      failClosed();return false;
    }
    return true;
@@ -47,7 +47,7 @@ public:
  bool failClosed() {
    ready_=false;
    // Best effort only: I2C can fail; independent hardware power cut is REQUIRED.
-   return bus_.writeRegister(address_,0x14,0x00);
+   (void)bus_.writeRegister(address_,0x15,0x00);return false;
  }
 private:
  Mcp23017RegisterBus &bus_;
