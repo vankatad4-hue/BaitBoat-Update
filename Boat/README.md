@@ -67,3 +67,11 @@ The **historical R23 pin and signal baseline** is [R23 GPIO pinout/harnesses](do
 ## R30C single-bus STOP and physical feedback
 
 [The R30C feedback contract](docs/BOAT_R30C_ONE_BUS_SAFETY_FEEDBACK_CONTRACT.md) documents how a future **single shared 3S actuator bus** could be supervised: one qualified common DC-rated disconnection feedback, hardwired STOP, independent watchdog, independently measured motor/coil current zero and externally bounded one-hot coil pulses. No module is chosen, no contacts exist and the code flag `COMMON_BUS_HARDWARE_COMMISSIONED=false` prevents authorization. Historic dual-contactor tests do **not** count as evidence for the owner's one-pack design. `Flytec_Boat.ino` still has no commissioned actuator driver. Both releases frozen.
+
+## R30C verified CI — source and documentation (2026-11-22)
+
+- [**Boat host Actions #45044409605**](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45044409605), commit `1d7fef011214277941dbfa6804dbc193fde98fe9`: **SUCCESS**. The dedicated R30C C++17 synthetic STOP/watchdog/common-disconnect/current-zero fault suite printed **"R30C common-bus STOP/watchdog/contact/current-zero model PASS; physical output permanently locked"**; accompanying static source/physical-gate check printed **PASS**.
+- [**Latest R30C documentation-triggered Boat host Actions #45044485081**](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45044485081), commit `e7d7e1588e89ecc9463ce3f87fd6f638406ee0ea`: **SUCCESS**, including R29, R30A, R30B and R30C portable host checks.
+- [**Boat ESP32-S3 target Actions #45044281786**](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45044281786), executable-source commit `c49f83cf8debcf7ce40776aed9e1338e65598d5b`: **SUCCESS**, both non-actuating main Boat diagnostic and default-locked INA231 bench compiled; all artifact uploads completed. Later R30C files updated tests/tools/docs/workflow, not executable Boat source.
+- These are **software-only results**, not physical DC cutoff or feedback. `COMMON_BUS_HARDWARE_COMMISSIONED=false`, INA231 physical commissioning false, legacy dual-contactor driver unattached, shared 3S wiring uncommissioned, all 24 R30A physical gates OPEN and 81 older physical checks NOT_RUN. No hardware chosen, no motor/coil load energized or safety claims made; Boat VER014 / Remote VER028 frozen.
+
