@@ -40,6 +40,23 @@ int main(){
  assert(c.tick(in,107,true,false).intent==INTENT_STOP);
  assert(c.status().phase==MC_ABORTED);
 
+
+ // Complete radio loss during a pending release intent also aborts it;
+ // reconnect must never replay that one-shot action.
+ BoatMissionController c2;
+ in.primaryFresh=true;in.backupFresh=true;in.fix.lonE7=1000;
+ start(c2,p,in);
+ assert(c2.tick(in,300,true,true).intent==INTENT_NAV_TARGET);
+ in.fix.lonE7=2000;
+ assert(c2.tick(in,301,true,true).intent==INTENT_STOP); // arrived at target
+ assert(c2.tick(in,302,true,true).intent==INTENT_RELEASE);
+ in.primaryFresh=false;in.backupFresh=false;
+ assert(c2.tick(in,303,true,false).intent==INTENT_STOP);
+ assert(c2.status().phase==MC_ABORTED);
+ in.primaryFresh=true;
+ assert(c2.tick(in,304,true,true).intent==INTENT_STOP);
+ assert(c2.status().phase==MC_ABORTED);
+
  // Explicit Home remains available as a user-requested mission action.
  in.primaryFresh=true;in.backupFresh=true;in.fix.lonE7=1000;
  start(c,p,in);
