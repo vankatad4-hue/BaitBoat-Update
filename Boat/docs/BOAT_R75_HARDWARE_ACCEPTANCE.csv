@@ -1,5 +1,5 @@
 Test_ID,Area,Setup,Acceptance,Status
-R75-M01,TSR socket fit,Sample TSR 2-2450 and BINDER MPE 006-1-003 3-pin socket; MP70S3 secondary only,0.46mm nominal square pins within MPE 0.25x0.45mm square-pin limit only if sample/manufacturer confirms; no force or damage and stable after vibration,NOT_RUN
+R75-M01,TSR socket fit,Sample TSR 2-2450 and BINDER MPE 006-1-003 3-pin socket; MP70S3 secondary only,0.46mm nominal square pins against MPE documented 0.25x0.45mm square-pin size only if sample/manufacturer confirms; no force or damage and stable after vibration,NOT_RUN
 R75-M02,Removable connector,Test Phoenix 1757022 plug with 1926028 header and soldered pigtails,Correct mechanical mating friction retention strain relief and no solder-joint load; no custom PCB,NOT_RUN
 R75-E01,TSR harness pinout,Unpowered continuity test from regulator pins to connector,Pin 1 VIN pin 2 GND pin 3 VOUT; no shorts or reversed wiring,NOT_RUN
 R75-F01,Input fuse and holder,Inspect SCHURTER 0001.2508 and exact Littelfuse holder datasheet and harness,2.5A time-lag fuse DC rating holder DC rating terminal conductor range and branch wire protection all verified,NOT_RUN
