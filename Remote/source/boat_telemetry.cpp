@@ -1,4 +1,5 @@
 #include "boat_telemetry.h"
+#include "radio_safety_diagnostic_v1.h"
 BoatTelemetry telemetry;
 static constexpr uint32_t STATUS_MAX_AGE=1500,BATTERY_MAX_AGE=5000,COORD_PAIR_MAX_GAP=500,GPS_MAX_AGE=2000,NAV_MAX_AGE=2000,SONAR_MAX_AGE=1500;
 static constexpr uint32_t SAFETY_DIAGNOSTIC_MAX_AGE_MS=6000U; // R30F 2-second nominal TX
@@ -38,6 +39,14 @@ bool telemetryApplyRadioPayload(const RadioDecodedPayload &p,bool primary,uint32
   telemetry.speed=(p.speedCmPerSecond==0xFFFFU)?0.0f:(float)p.speedCmPerSecond/100.0f;telemetry.navigationStatus=p.navigationStatus;
   telemetry.waypointIndex=p.waypointIndex;telemetry.navigationSample=p.navigationSample;telemetry.navigationReceivedAtMs=now;telemetry.receivedAtMs=now;return true;
  case RADIO_PAYLOAD_SAFETY_DIAGNOSTIC:
+  // Revalidate even for internal callers outside the authenticated decoder.
+  // This must never become a STOP ACK or motor safety observation.
+  {
+   radio_r30f::Diagnostic d{};
+   d.reason=p.diagnosticReason;d.flags=p.diagnosticFlags;
+   d.millivolts=p.diagnosticMillivolts;d.sequence=p.diagnosticSequence;
+   if(!primary||!radio_r30f::validate(d))return false;
+  }
   // Only authenticated PRIMARY receive path can call this successfully.
   // This read-only sidecar must not refresh normal STATUS, STOP confirmation,
   // battery charge, command ACK or motor-safety telemetry timestamps.
