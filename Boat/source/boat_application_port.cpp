@@ -65,6 +65,17 @@ void BoatApplicationPort::tick(){
    radio_.completeApplicationAction(cmd,generation_,ok,2,0);
    continue;
   }
+  if(cmd.type==CMD_SET_MODE){
+   // Previously this command could be ACKed as queued but then discarded.
+   // Home may be requested only for a locally validated *running* mission.
+   // The Boat cannot infer a safe new Home mission from a radio mode byte.
+   const bool linked=(link==LINK_NRF_PRIMARY&&in.primaryFresh)||
+                     (link==LINK_LORA_BACKUP&&in.backupFresh);
+   const bool ok=cmd.mode==MODE_RETURN_HOME&&linked&&
+                 !executor_.stopped()&&radio_.requestReturnHome();
+   radio_.completeApplicationAction(cmd,generation_,ok,2,0,link);
+   continue;
+  }
   const auto phase=radio_.missionPhase();
   const bool manualMode=phase==MC_IDLE||phase==MC_COMPLETE||phase==MC_ABORTED;
   if(cmd.type==CMD_MANUAL_MOTORS&&manualMode&&!manualPending_)
