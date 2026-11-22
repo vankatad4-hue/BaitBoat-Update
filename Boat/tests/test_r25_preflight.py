@@ -44,6 +44,9 @@ class ElectricalEvidenceTests(unittest.TestCase):
         self.sign("M100_TX_HIGH_ISOLATED",1.1); self.assertBlocked()
     def test_adc_unpowered_delta_rejected(self):
         self.sign("ADC_POWERDOWN_PEAK_AIN_MINUS_VDD",2.272); self.assertBlocked()
+    def test_safe_negative_adc_delta_screen(self):
+        self.sign("ADC_POWERUP_PEAK_AIN_MINUS_VDD",-1.028)
+        self.assertEqual(r25.validate(self.rows,self.root),[])
     def test_missing_evidence_rejected(self):
         row=self.sign("MAIN_5V_LOAD",5.0)
         (self.root/row["Evidence_Path"]).unlink()
