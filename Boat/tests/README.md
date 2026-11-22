@@ -99,3 +99,9 @@ R77A also retains the authenticated session across ordinary RF silence so the ba
 - `ekm014_mcp23017_adapter_test.cpp`: MCP23017 GPA0–GPA3 one-hot EKM014 logical output, bank/address mapping, readback mismatch and fail-closed return semantics.
 - `mcp23017_direction_adapter_test.cpp`: R20 MCP23017 0x27 GPB0/GPB1 direction mapping.
 - `test_r65_pin_resources.py` now validates the R20 candidate crosswalk and unsigned status; the historical R65 crosswalk is not procurement authority.
+
+## R21 battery ADC full-charge/invalid-readings regression
+
+- `tracker_sensors_test.cpp` now verifies the corrected 150kΩ/33kΩ shared divider value reconstructs a healthy 12.6V full pack without crossing the 3.0V ADS1115 code sanity limit; invalid code is rejected.
+- `boat_battery_policy_test.cpp` verifies the **first** invalid reading stops voltage authorization immediately; 1-second data-age invalidation is additional protection. Raw 9.9V critical STOP remains a separate immediate action.
+- These are host-only tests. Hardware ADC power sequencing and actual DMM measurements are explicitly **NOT_RUN**.
