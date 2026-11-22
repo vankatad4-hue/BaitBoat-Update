@@ -37,7 +37,7 @@ Use a calibrated programmable supply in place of the 3S pack; do not use the act
 1. At 12.0V, verify green status and approximately 80% estimated charge.
 2. At 11.3V, verify yellow status and the Remote message `СРЕДНА БАТ. — ЗАРЕДИ`.
 3. Hold 10.7V: outbound mission motion must be inhibited immediately; at 2,999ms no RTH request; at 3,000ms the low-battery RTH latch must set.
-4. Verify Remote battery label turns red and shows Boat voltage/estimated charge with `НИСКА БАТ. — RTH`. At critical STOP, verify the separate `КРИТ. БАТ. — STOP` warning.
+4. Verify Remote battery label turns red and shows Boat voltage/estimated charge with `НИСКА БАТ. — RTH; ЗАРЕДИ/СМЕНИ` only after the Boat confirms return-home mode. At critical STOP, verify the separate `КРИТ. БАТ. — STOP` warning.
 5. Raise voltage above the RTH threshold after latching: RTH must remain active and the old outbound mission must not resume.
 6. Hold 10.1V for at least 1 second: critical STOP must latch and all dummy motor/release outputs must go OFF.
 7. Apply 9.8V: critical STOP must be immediate.
