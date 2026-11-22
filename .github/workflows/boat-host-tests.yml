@@ -241,6 +241,13 @@ jobs:
           grep -F 'INA231_PHYSICAL_COMMISSIONED=false' Boat/source/ina231_voltage_contract_r27.h
           grep -F 'if(boat_r27::INA231_MODULE_SELECTED)' Boat/source/tracker_sensor_port.cpp
           grep -F 'c.battery={false' Boat/source/tracker_sensor_profile.example.h
+      - name: R28 INA231 triggered bus, fresh-sample and I2C fault simulations
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/ina231_acquisition_faults_r28_test.cpp -o /tmp/boat_ina231_r28
+          /tmp/boat_ina231_r28
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I Boat/tests/r28_stubs Boat/tests/ina231_wire_r28_test.cpp -o /tmp/boat_ina231_wire_r28
+          /tmp/boat_ina231_wire_r28
+          python3 Boat/tools/verify_r28_prototype_gate.py
       - name: R66 COTS safety PLC capacity and external interlock acceptance oracle (host only)
         run: |
           python3 -m unittest Boat/tests/test_r66_safety_plc_budget.py -v
