@@ -70,7 +70,8 @@ public:
    return stop;
   }
   if(phase_==MC_PREPARED){if(now-stagedAt_>=10000U||!in.primaryFresh){phase_=MC_ABORTED;}return stop;}
-  if(!in.primaryFresh&&!in.backupFresh&&(phase_==MC_OUTBOUND||phase_==MC_PAUSED||phase_==MC_OVERRIDE_ACTIVE||phase_==MC_OVERRIDE_NEUTRAL||phase_==MC_RETURNING)){
+  // Backup is not continuous steering supervision (3s airtime vs 200ms lease).
+  if(!in.primaryFresh&&(phase_==MC_OUTBOUND||phase_==MC_PAUSED||phase_==MC_OVERRIDE_ACTIVE||phase_==MC_OVERRIDE_NEUTRAL||phase_==MC_RETURNING)){
    if(!diverted_){divertHome(in,appReady);return stop;}
   }
   if((phase_==MC_OVERRIDE_ACTIVE||phase_==MC_OVERRIDE_NEUTRAL)&&!in.primaryFresh){
