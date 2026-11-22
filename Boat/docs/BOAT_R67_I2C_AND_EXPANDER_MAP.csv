@@ -1,7 +1,8 @@
 Side,Module,Selected_Product,Quantity,Bus,Address,Proposed_Connection,Role,State,Commissioning_Blocker
 Boat,IMU,GY-91 MPU-9250 + BMP280,1,I2C,0x68_or_0x69,GPIO8_SDA_and_GPIO21_SCL,IMU_accel_gyro_mag,OWNER_SELECTED_NOT_PURCHASED,Verify authentic MPU9250 ID and 3V3 bus
 Boat,Barometer,GY-91 onboard BMP280,0,I2C,0x76_or_0x77,Shared_GY91_I2C,Pressure_temperature,INCLUDED_WITH_GY91,Verify actual BMP280 ID and calibrated readings
-Boat,M100 compass,QMC5883L variant TBD,1,I2C,0x0D_candidate,GPIO8_SDA_and_GPIO21_SCL,Independent_GNSS_compass,PREVIOUSLY_SELECTED_SENSOR_ARCHITECTURE,Verify actual module compass and address
+Boat,M100 PRO integrated QMC compass,HGLRC M100 PRO onboard QMC5883L,0,I2C,0x0D_candidate,GPIO8_SDA_and_GPIO21_SCL,Included_compass_not_separate_board,INCLUDED_WITH_M100_PRO,Power full GPS module from verified 5V 3.6-5.5V rated; verify I2C pullup voltage and UART levels
+Boat,M100 PRO GPS assembly,HGLRC M100 PRO GPS with onboard QMC5883L,1,UART_plus_I2C,UART_with_compass_0x0D_candidate,GNSS_UART_and_compass_GPIO8_SDA_GPIO21_SCL,Complete_GNSS_plus_compass_board,OWNER_SELECTED_NOT_PURCHASED,3.6-5.5V board VIN use verified 5V; measure 3V3 safe UART and I2C outputs before ESP32 connection
 Boat,Expansion,Waveshare MCP23017 IO Expansion Board SKU15391,1,I2C,0x27_factory_default,GPIO8_SDA_and_GPIO21_SCL,Four_limited_request_intents_only,OWNER_SELECTED_MODEL_NOT_PURCHASED,Board address jumper and harness plus unselected independent safety controller
 Boat,Expansion_output_1,SKU15391_MCP23017_GPA0,0,Digital_intent,NONE,GPA0,Left_hopper_request_only,UNCOMMISSIONED,Independent_onehot_nonretrigger_controller_absent
 Boat,Expansion_output_2,SKU15391_MCP23017_GPA1,0,Digital_intent,NONE,GPA1,Right_hopper_request_only,UNCOMMISSIONED,Independent_onehot_nonretrigger_controller_absent
