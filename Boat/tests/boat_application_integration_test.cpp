@@ -19,7 +19,7 @@ static bool apply(const BoatActuatorOutput &o,uint16_t lease){
 }
 static void disable(){++disables;output={0,0,-1};}
 static void request(BoatDualRadioPort &r,BoatCommandType type,unsigned id,ManagedLink link=LINK_NRF_PRIMARY,int16_t l=0,int16_t rr=0){
- BoatCommand c{};c.type=type;c.commandId=id;c.createdAtMs=fakeNow;c.activate=type>=CMD_RELEASE_HOPPER_LEFT;c.leftMotor=l;c.rightMotor=rr;r.queue.push_back({c,link});
+ BoatCommand c{};c.type=type;c.mode=type==CMD_SET_MODE?MODE_RETURN_HOME:MODE_MANUAL;c.commandId=id;c.createdAtMs=fakeNow;c.activate=type>=CMD_RELEASE_HOPPER_LEFT;c.leftMotor=l;c.rightMotor=rr;r.queue.push_back({c,link});
 }
 static void at(BoatApplicationPort &a,uint32_t t){fakeNow=t;a.tick();}
 int main(){
