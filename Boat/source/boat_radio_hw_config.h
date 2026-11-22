@@ -30,3 +30,6 @@
 #define BOAT_E22_UART_LOGIC_LEVELS_VERIFIED 0
 #define BOAT_E22_UART_PIN_AUDIT_SIGNED 0
 #define BOAT_E22_RF_AIRTIME_AUDIT_SIGNED 0
+// R30H-2: optional BOAT-LOCAL, USB-only read-only event trace. Disabled by default.
+// May be enabled only in the non-actuating diagnostic target after physical logic-level checks.
+#define BOAT_R30H_LOCAL_TRACE_ENABLED 0
