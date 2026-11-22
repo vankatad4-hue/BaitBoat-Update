@@ -37,6 +37,8 @@ No additional hardware is introduced for this behavior; the storage uses the sel
 - `Boat/source/mission_controller.h` — RTH eligibility and safe manual takeover.
 - `Boat/source/boat_hardware_supervisor.h` — no-radio exception restricted to local Home navigation.
 - `Boat/source/boat_application_port.cpp` — passes local RTH authorization to the actuator supervisor.
+- `Boat/tests/boat_home_point_record_test.cpp` and `Boat/tests/boat_home_point_nvs_test.cpp` — CRC/range validation, two-slot persistence, corruption fallback and adapter reconstruction tests.
+- Host CI: [run 45006240407](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45006240407) PASS. Boat diagnostic target compile: [run 45005788272](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45005788272) PASS. These are software checks, not physical NVS or RF acceptance.
 
 ## Safety boundary
 
