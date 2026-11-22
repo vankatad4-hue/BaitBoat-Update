@@ -55,7 +55,29 @@ static lv_obj_t *sonarTitle;       // Sonar panel title.
 static lv_obj_t *stopButton;       // Emergency stop button.
 static lv_obj_t *inputStatusLabel;  // Live joystick read/calibration state in footer.
 static lv_obj_t *safetyStatusLabel; // Live STOP/interlock state in footer.
+static lv_obj_t *diagnosticStatusLabel; // R30F unverified Boat diagnostics; NEVER a safety permission.
 
+// R30F read-only reported fault. None of these reason codes establishes
+// independent electrical safety or changes the actual STOP/interlock UI.
+static const char *diagnosticReasonBulgarian(uint8_t code){
+ switch(code){
+  case 1:return "НЯМА ЧЕТЕЦ";
+  case 2:return "ГРЕШКА ВХОД";
+  case 3:return "ЛИПСВА ИЗТОЧНИК";
+  case 4:return "ДУБЛИРАН ИЗТОЧНИК";
+  case 5:return "СТАРИ КОНТАКТИ";
+  case 6:return "СТАРА БАТЕРИЯ";
+  case 7:return "НЕВАЛИДНА БАТ.";
+  case 8:return "STOP КОНТАКТ";
+  case 9:return "WATCHDOG";
+  case 10:return "ОБЩ ПРЕКЪСВАЧ";
+  case 11:return "ЛИМИТЕР БОБИНИ";
+  case 12:return "ТОК БОБИНИ";
+  case 13:return "ТОК ДВИГАТЕЛИ";
+  case 14:return "НЕПУСКАНА В УПОТР.";
+  default:return "НЕПОЗНАТ КОД";
+ }
+}
 static bool mapExpanded = false;   // Map full-screen state.
 static bool sonarExpanded = false; // Sonar full-screen state.
 static bool mapManagerActive = false; // Avoid map reads while import replaces SD files.
@@ -514,6 +536,12 @@ static void createFooter()
     safetyStatusLabel = createLabel(footerPanel, "STOP: НЕИЗВЕСТНО", 410, 4);
     lv_obj_set_width(safetyStatusLabel, 380);
     lv_label_set_long_mode(safetyStatusLabel, LV_LABEL_LONG_DOT);
+    // R30F separate line never replaces the STOP/low-battery alert.
+    diagnosticStatusLabel = createLabel(footerPanel,
+        "ДИАГН.: НЯМА ДАННИ (НЕПОТВ.)", 410, 24);
+    lv_obj_set_width(diagnosticStatusLabel, 380);
+    lv_label_set_long_mode(diagnosticStatusLabel, LV_LABEL_LONG_DOT);
+    lv_obj_set_style_text_color(diagnosticStatusLabel,COLOR_MUTED,LV_PART_MAIN);
     // Create a button for joystick calibration.
 lv_obj_t *sticksButton = lv_button_create(footerPanel);
 styleTouchButton(sticksButton, lv_color_hex(0x174F92));
@@ -829,6 +857,22 @@ void updateBoatScreen(const BoatState &state)
         lv_obj_set_style_text_color(safetyStatusLabel,
             (state.lowBattery||state.criticalBattery) ? COLOR_RED : (batteryMid ? COLOR_YELLOW : COLOR_MUTED),
             LV_PART_MAIN);
+    }
+
+    // Diagnostic messages are authenticated but never a substitute for
+    // independently commissioned physical contacts or STOP confirmation.
+    if(diagnosticStatusLabel){
+        char diagnosticText[96];
+        if(state.diagnosticFresh)
+            snprintf(diagnosticText,sizeof(diagnosticText),
+                "ДИАГН.: НЕПОТВ. / %s",
+                diagnosticReasonBulgarian(state.diagnosticReason));
+        else snprintf(diagnosticText,sizeof(diagnosticText),
+                "ДИАГН.: НЯМА ДАННИ (НЕПОТВ.)");
+        lv_label_set_text(diagnosticStatusLabel,diagnosticText);
+        lv_obj_set_style_text_color(diagnosticStatusLabel,
+             state.diagnosticFresh&&state.diagnosticReason>=8&&
+             state.diagnosticReason<=13?COLOR_RED:COLOR_MUTED,LV_PART_MAIN);
     }
 
     // Change STOP button text when emergency stop is active.
