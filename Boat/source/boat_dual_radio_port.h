@@ -7,6 +7,7 @@
 #include "radio_command_codec.h"
 #include "radio_key_store.h"
 #include "boat_radio_safety.h"
+#include "boat_home_point_record.h"
 #include "radio_payload_encoder.h"
 #include "boat_command_queue.h"
 #include "mission_wire.h"
@@ -49,6 +50,8 @@ public:
     bool missionOverrideOutput(int16_t &left,int16_t &right)const;
     bool missionReleaseComplete(uint16_t transaction,uint16_t token,bool success);
     void update();
+    void setHomePointStore(const BoatHomePointStore &store){homePointStore_=store;}
+    bool failsafeReturnHomeActive()const{return failsafeRthActive_;}
     bool takeCommand(BoatCommand &cmd,bool &duplicateAction,ManagedLink &receivedOn);
     void markActionExecuted(uint8_t sender,uint8_t epoch,uint16_t commandId);
     bool sendFrame(ManagedLink link,const RadioFrame &frame);
@@ -80,11 +83,17 @@ private:
     BoatMissionController controller_;
     MissionStickLease stickLease_;
     BoatRadioWatchdog radioWatchdog_;
+    BoatHomePointStore homePointStore_{};
+    uint32_t lastAnyAuthenticatedRxMs_=0;
+    bool haveAuthenticatedRx_=false;
+    bool failsafeRthActive_=false;
     bool linkLossHold_=false;
     bool (*missionInput_)(ExecInputs &)=nullptr;
     ExecOutput missionIntent_={INTENT_STOP,-1,0};
     uint32_t lastMissionStatusMs_=0;
     bool missionInputs(ExecInputs &in,uint32_t now)const;
+    void noteAuthenticatedRx(uint32_t now){lastAnyAuthenticatedRxMs_=now;haveAuthenticatedRx_=true;}
+    bool maybeStartFailsafeReturnHome(uint32_t now);
     bool sendMissionFeedback(const MissionControlFeedback &f,uint32_t now);
     void abortMission();
     bool (*missionGate_)()=nullptr;
