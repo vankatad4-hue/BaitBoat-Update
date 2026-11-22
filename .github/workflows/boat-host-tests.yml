@@ -327,6 +327,12 @@ jobs:
           python3 -m unittest Boat/tests/test_r30h_event_analyzer.py -v
           python3 Boat/tools/analyze_r30h_rf_events.py Boat/docs/BOAT_R30H_RF_EVENTS_TEMPLATE.csv > /tmp/r30h_empty.txt || test "$?" -eq 3
           grep -F "NOT_RUN: empty evidence CSV" /tmp/r30h_empty.txt
+      - name: R30H-3 worst-case software-only E22 STOP and link-loss phase sweep
+        run: |
+          python3 -m unittest Boat/tests/test_r30h3_software_exposure.py -v
+          python3 Boat/tools/simulate_r30h3_rf_timing.py > /tmp/r30h3_software_exposure.json
+          python3 -m json.tool /tmp/r30h3_software_exposure.json > /dev/null
+          grep -q '"physical_RF_and_STOP_acceptance": "NOT_RUN"' /tmp/r30h3_software_exposure.json
       - name: R30H-2 bounded local event trace and 10-second RTH logic simulation
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I Boat/tests/stubs \
