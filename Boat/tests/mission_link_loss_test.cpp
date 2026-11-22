@@ -105,6 +105,21 @@ int main(){
  assert(!c5.divertHome(rthIn,true));
  assert(c5.status().phase==MC_ABORTED);
 
+ // R79: low battery holds outbound motion, then a validated Home diversion
+ // cancels the remaining target/release sequence.
+ BoatMissionController c6;
+ ExecInputs lowIn={{0,1000,1,270,true,true,true,true},false,true,true,true,true,true,false,false};
+ start(c6,p,lowIn);
+ assert(c6.tick(lowIn,600,true,true).intent==INTENT_NAV_TARGET);
+ lowIn.batteryLow=true;
+ assert(c6.tick(lowIn,601,true,true).intent==INTENT_STOP);
+ assert(c6.status().phase==MC_OUTBOUND);
+ assert(c6.canDivertHome()&&c6.divertHome(lowIn,true));
+ lowIn.autonomousRth=true;
+ assert(c6.tick(lowIn,602,true,false).intent==INTENT_NAV_HOME);
+ lowIn.fix.batteryHealthy=false;
+ assert(c6.tick(lowIn,603,true,false).intent==INTENT_STOP);
+
  // Prepared but never started remains stopped; link recovery does not start it.
  c.resetSession();assert(c.stage(p,0,true,true));
  in.primaryFresh=false;in.backupFresh=false;

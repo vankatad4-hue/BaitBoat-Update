@@ -82,3 +82,11 @@ R77A also retains the authenticated session across ordinary RF silence so the ba
 - If any gate fails, outputs remain STOP. Link recovery before timeout resumes the held mission; after RTH starts, the old outbound mission is not resumed. Primary-radio manual takeover requires a new explicit request, neutral sticks and a stationary/idle boat.
 - boat_home_point_record_test.cpp and boat_home_point_nvs_test.cpp validate record CRC/range handling, two-slot persistence and corruption fallback using a host Preferences emulator; boat_radio_safety_test.cpp, mission_link_loss_test.cpp and boat_hardware_supervisor_test.cpp validate timer/policy/decision logic. CI does not prove actual NVS retention, RF, GPS, motors, coils or independent power cutoff.
 - Physical bench procedure: use isolated, current-limited supplies and rated resistive/indicator dummy loads only; leave actual motors and solenoids disconnected. The test plan is ../docs/BOAT_R78_RADIO_LOSS_DUMMY_LOAD_BENCH_TEST.md.
+
+
+## R79 low-boat-battery failsafe
+
+- `boat_battery_policy_test.cpp` checks 3S voltage estimation, green/yellow/red bands, the 3-second low-battery RTH latch, stale-sample fail-closed behavior and critical STOP.
+- `mission_link_loss_test.cpp` verifies low battery holds outbound motion and permits only validated Home diversion.
+- `boat_application_low_battery_test.cpp` exercises the production application bridge with a simulated battery sample and dummy output; it checks Home-only navigation with all release outputs off.
+- Thresholds are commissioning defaults and require calibration with the actual pack and divider.

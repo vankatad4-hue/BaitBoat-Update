@@ -11,7 +11,7 @@ struct FakeAck{uint32_t id;bool success;ManagedLink reply;};
 class BoatDualRadioPort{
 public:
  bool primary=true,backup=false,detached=false,failsafeRth=false;uint32_t gen=1;
- bool returnAllowed=false;unsigned returnRequests=0;
+ bool returnAllowed=false;unsigned returnRequests=0,lowBatteryReturnRequests=0;
  MissionControlPhase phase=MC_IDLE;ExecOutput intent={INTENT_STOP,-1,0};
  MissionNavigationResult nav{};uint16_t tx=0;
  bool (*input)(ExecInputs &)=nullptr;bool (*gate)()=nullptr;
@@ -19,7 +19,7 @@ public:
  std::vector<FakeAck> acks;std::vector<RadioDecodedPayload> telemetry;
  void setMissionInputs(bool (*p)(ExecInputs &)){input=p;}
  void setMissionPreparationGate(bool (*p)()){gate=p;}
- void update(){}
+ void update(){if(phase==MC_RETURNING&&intent.intent==INTENT_STOP)intent={INTENT_NAV_HOME,-1,0};}
  bool takeCommand(BoatCommand &c,bool &dup,ManagedLink &link){if(queue.empty())return false;c=queue.front().first;link=queue.front().second;queue.pop_front();dup=false;return true;}
  void localEmergencyStop(){phase=MC_ABORTED;intent={INTENT_STOP,-1,0};queue.clear();}
  bool primaryFresh(uint32_t)const{return primary;}
@@ -33,6 +33,7 @@ public:
  MissionNavigationResult missionNavigation()const{return nav;}
  bool confirmManual(){return false;}
  bool requestReturnHome(){++returnRequests;if(!returnAllowed)return false;detached=true;phase=MC_RETURNING;intent={INTENT_STOP,-1,0};return true;}
+ bool requestLowBatteryReturnHome(){++lowBatteryReturnRequests;if(!returnAllowed)return false;detached=true;failsafeRth=true;phase=MC_RETURNING;intent={INTENT_STOP,-1,0};return true;}
  bool missionOverrideOutput(int16_t &l,int16_t &r)const{l=r=0;return false;}
  bool missionReleaseComplete(uint16_t,uint16_t,bool){return true;}
  bool completeApplicationAction(const BoatCommand &c,uint32_t g,bool ok,uint8_t,uint8_t,ManagedLink reply=LINK_NRF_PRIMARY){if(g!=gen)return false;acks.push_back({c.commandId,ok,reply});return true;}
