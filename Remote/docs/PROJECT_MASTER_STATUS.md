@@ -658,3 +658,9 @@ The 3 s LoRa airtime pacing cannot maintain the Boat's ~200 ms manual motor comm
 
 - Boat controller **ESP32-S3-DevKitC-1-N32R16V** preliminary pin budget now documented in `Boat/docs/BOAT_R65_SAFETY_AND_PIN_BUDGET.md` and its 44-header-pin CSV. Four Boat EKM014 requests need a **premade expansion interface into independent qualified hardware onehot/no-repeat gating** because Boat radio/motor/safety interfaces consume the candidate safe GPIOs; the Boat and Remote have independent I2C buses (both may use 0x20 on separate buses).
 - No change to chosen Remote Waveshare 4.3 Standard, Remote-integrated SD lake/waypoint storage, primary nRF or E22 SMD-carrier block. Remote actuator commands remain guarded; backup LoRa STOP/active-mission Home only. No new purchased hardware or Remote firmware change. Release marker 028 unchanged; sonar deferred.
+
+
+## R66 cross-endpoint status (2026-11-22)
+
+- Boat independent preassembled safety controller capacity study and host-only reference tests: `Boat/docs/BOAT_R66_SAFETY_ARCHITECTURE_REVIEW.md`. A candidate Pilz B0 24V PLC cannot alone replace rated motor/coil power cutoffs and 24V outputs must never be directly wired to EKM014 3.3V logic. All safety hardware remains uncommissioned.
+- Remote Waveshare model, primary nRF, matched E22 UART selection, SD lake/waypoint design, and fail-closed release command policy unchanged. Do not bypass Boat physical release guards for UI demonstrations. Remote VER028 unchanged; no sonar firmware.
