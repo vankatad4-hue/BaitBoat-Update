@@ -51,5 +51,39 @@ int main(){
  hw=sample(500);assert(s.clearStop(hw,500,true,true));
  assert(boatHardware_inputs(hw,600,false).stopActive);
  auto fresh=boatHardware_inputs(sample(700),700,false);assert(!fresh.stopActive);
- std::cout<<"Hardware sample validity, propulsion watchdog and release executor passed\n";
+
+ // Radio watchdog: total loss returns all outputs OFF without latching a
+ // normal propulsion stop; a restored link does not replay stale sticks.
+ BoatActuatorSupervisor radio;
+ auto radioHw=sample(700);
+ assert(radio.configure({{100,150,200,250},400,3}));
+ assert(radio.clearStop(radioHw,700,true,true));
+ ExecInputs rin=boatHardware_inputs(radioHw,700,false);
+ rin.primaryFresh=true;rin.backupFresh=false;
+ radio.manual(300,300,700,true);
+ assert(radio.tick(rin,701,stop,nav,false,false,0,0,701).left==300);
+ rin.primaryFresh=false;rin.backupFresh=false;
+ auto radioOff=radio.tick(rin,702,stop,nav,false,false,0,0,702);
+ assert(radioOff.left==0&&radioOff.right==0&&radioOff.releaseChannel==-1);
+ assert(!radio.stopped());
+ rin.primaryFresh=true;
+ radio.manual(300,300,703,true); // stale non-neutral stick is rejected
+ assert(radio.tick(rin,704,stop,nav,false,false,0,0,704).left==0);
+ radio.manual(0,0,705,true);     // explicit neutral re-arms manual input
+ radio.manual(300,300,706,true);
+ assert(radio.tick(rin,707,stop,nav,false,false,0,0,707).left==300);
+
+ // Backup-only link can sustain autonomous navigation, but not manual sticks.
+ rin.primaryFresh=false;rin.backupFresh=true;
+ MissionNavigationResult radioHome={true,false,15,90,0};
+ const auto backupDrive=radio.tick(rin,708,{INTENT_NAV_HOME,-1,0},radioHome,true,false,0,0,708);
+ assert(backupDrive.left>0&&backupDrive.right>0);
+ rin.primaryFresh=false;rin.backupFresh=false;
+ const auto noLink=radio.tick(rin,709,{INTENT_NAV_HOME,-1,0},radioHome,true,false,0,0,709);
+ assert(noLink.left==0&&noLink.right==0&&noLink.releaseChannel==-1);
+ rin.backupFresh=true;
+ const auto recovered=radio.tick(rin,710,{INTENT_NAV_HOME,-1,0},radioHome,true,false,0,0,710);
+ assert(recovered.left>0&&recovered.right>0);
+
+ std::cout<<"Hardware sample validity, radio watchdog and release executor passed\n";
 }
