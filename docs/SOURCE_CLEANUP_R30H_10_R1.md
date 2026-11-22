@@ -16,3 +16,7 @@ GitHub Actions PlatformIO run [#45059667477](https://github.com/vankatad4-hue/Ba
 - No bulk deletion of legacy modules with live tests or reference documents: retrospective files stay for traceability. This is a conservative source cleanup, **not** proof that all project modules are optimized or release-ready.
 - Required: Remote and Boat host tests, Arduino target builds, **both** experimental PlatformIO targets. A passing compile proves only source compatibility, not physical RF/STOP, GPS/PPS, PWM or current measurements.
 - R30H-10 physical scope remains blocked pending actual board/module inspection and passive analyzer captures; authorized Boat VER014 / Remote VER028 stay fixed.
+
+## Follow-up safe UI correction
+
+The main screen's duplicated SD label selection was inverted for `sdCardReady=true`. It now uses `Remote/source/ui_sd_status.h`, a pure side-effect-free helper shared across GPS-fix/no-fix display paths and checked by `Remote/tests/ui_sd_status_test.cpp` in Remote portable CI. This does not modify storage mounting, file writes, map indexing or safety rules.

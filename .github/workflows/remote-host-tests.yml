@@ -132,6 +132,11 @@ jobs:
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
             Remote/tests/r30h7_utc_clock_ui_test.cpp -o /tmp/remote_r30h7_utc_ui
           /tmp/remote_r30h7_utc_ui
+      - name: SD-card status truth table (no display or hardware required)
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
+            Remote/tests/ui_sd_status_test.cpp -o /tmp/remote_ui_sd_status
+          /tmp/remote_ui_sd_status
       - name: R30H-9 Remote no-GPIO marker policy and Boat-sourced physical preflight
         run: |
           cmp Boat/source/r30h9_marker_contract.h Remote/source/r30h9_marker_contract.h

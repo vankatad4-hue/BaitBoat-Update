@@ -17,3 +17,5 @@ The Remote displays Boat voltage plus estimated percentage, not the Remote's own
 ## LVGL / PlatformIO compatibility (R30H-10 software pass)
 
 The non-actuating, explicitly labeled DEMO sonar illustration in `boat_ui.cpp` uses integer LVGL 9.6 point coordinates instead of narrowing float initializers. This repairs the known Remote PlatformIO compiler error without changing sonar, timing, STOP/RTH, radio security, or source-of-truth Arduino behavior. A complete fresh PlatformIO and Arduino target CI result is required before calling either build verified.
+
+The portable SD status helper (`ui_sd_status.h`) now distinguishes **no mounted TF card**, **mounted card without offline map**, and **ready offline map**; all four combinations are covered by a C++11 host regression. The previous duplicated conditional incorrectly reported “НЯМА SD КАРТА” while the card was mounted.
