@@ -69,15 +69,10 @@ public:
    if(phase_!=MC_PREPARED||!appReady||now-stagedAt_>=10000U){engine_.abort();phase_=MC_ABORTED;}
    return stop;
   }
-  if(phase_==MC_PREPARED){if(now-stagedAt_>=10000U||!in.primaryFresh){phase_=MC_ABORTED;}return stop;}
-  // Backup is not continuous steering supervision (3s airtime vs 200ms lease).
-  if(!in.primaryFresh&&(phase_==MC_OUTBOUND||phase_==MC_PAUSED||phase_==MC_OVERRIDE_ACTIVE||phase_==MC_OVERRIDE_NEUTRAL||phase_==MC_RETURNING)){
-   if(!diverted_){divertHome(in,appReady);return stop;}
-  }
-  if((phase_==MC_OVERRIDE_ACTIVE||phase_==MC_OVERRIDE_NEUTRAL)&&!in.primaryFresh){
-   // Do not carry a stale manual override into a backup-only session.
-   engine_.abort();phase_=MC_ABORTED;return stop;
-  }
+  if(phase_==MC_PREPARED){if(now-stagedAt_>=10000U){phase_=MC_ABORTED;}return stop;}
+  // Both radio paths absent: stop all outputs but preserve the autonomous
+  // mission phase. It resumes only after either authenticated link is fresh.
+  if(!in.primaryFresh&&!in.backupFresh)return stop;
   auto out=engine_.tick(in,now);
   switch(engine_.phase()){
    case EXEC_OUTBOUND:phase_=MC_OUTBOUND;break;
@@ -96,6 +91,13 @@ public:
  // A status hint only. No manual motor output is generated here; the future
  // executor must validate and lease each fresh authenticated stick command.
  bool temporaryOverrideConfirmed()const{return phase_==MC_OVERRIDE_ACTIVE;}
+ bool cancelOverrideForLinkLoss(){
+  if(phase_!=MC_OVERRIDE_ACTIVE&&phase_!=MC_OVERRIDE_NEUTRAL)return false;
+  if(!engine_.cancelPauseForLinkLoss()){emergencyAbort();return false;}
+  phase_=engine_.phase()==EXEC_RETURNING?MC_RETURNING:MC_OUTBOUND;
+  lastResult_=MC_REJECTED;
+  return true;
+ }
 private:
  bool diverted_=false;
  MissionExecution engine_;MissionPlan plan_{};MissionControlPhase phase_=MC_IDLE;uint32_t stagedAt_=0;
