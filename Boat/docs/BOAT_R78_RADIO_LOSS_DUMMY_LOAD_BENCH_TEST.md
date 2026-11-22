@@ -1,3 +1,5 @@
+> **SUPERSEDED RAIL ASSIGNMENT:** R20/R79 moved E22-900T22S VCC to the 5V DCDC6 main rail; D24V10F3 unit 1 now powers nRF24 and unit 2 powers sensors/I/O. Use [R20 GPIO/header map](BOAT_GPIO_HEADER_MAP_R20.md) and [R79 bench procedure](BOAT_R79_LOW_BATTERY_BENCH_TEST.md) as current authority. The R78 test sequence remains useful for radio-loss behavior only.
+
 # Boat R78 — radio-loss and recovery bench test (dummy loads only)
 
 Date: 2026-11-22  
