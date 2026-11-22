@@ -669,3 +669,7 @@ The 3 s LoRa airtime pacing cannot maintain the Boat's ~200 ms manual motor comm
 ## R68A cross-endpoint power note (2026-11-22)
 
 The owner supplied Ardboard **article 1127** nRF24 AMS1117-3.3 socket for **Boat** radio-power investigation. This is **not** confirmation of a Remote power architecture: Remote uses 1S4P and needs its own verified battery-to-5V adapter supply if this socket model is ever chosen there. No design/purchase change to Remote radio rails, LoRa or SD storage. Boat nRF adapter proposal is downstream of verified 5V, while E22 remains on an independent proposed 3.3V Pololu rail; all hardware and actuator safety gates remain uncommissioned. Remote VER028 unchanged.
+
+
+## R69 — matched E22-900T22S backup radio confirmed (2026-11-22)
+The owner reconfirmed **1× EBYTE E22-900T22S UART SMD on Remote and 1× same exact model on Boat**. Do not use the proposed E22-900T30S. Remote I²C-to-UART SC16IS750 path and Boat direct UART remain tentative pending real breakout compatibility, hardware 3.3V supplies and RF tests. EU868 regulatory configuration and LoRa STOP/Home-only limitations unchanged; Remote VER028 not advanced.
