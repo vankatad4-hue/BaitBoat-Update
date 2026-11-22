@@ -1,0 +1,13 @@
+Gate_ID,Required_Physical_Check,Status,Observation,Evidence,Reviewer
+H9-P01,Verify actual Boat N32R16V module and DevKitC board revision,NOT_RUN,,,
+H9-P02,Verify actual Waveshare Standard SKU25948 and PORT connector contact order,NOT_RUN,,,
+H9-P03,Reserve Boat GPIO1/2/41/42 for physical STOP and feedback (no repurpose),NOT_RUN,,,
+H9-P04,Verify Remote GPIO15 RS485 conflict; SPI/SD/EXP and LCD no debug allocation,NOT_RUN,,,
+H9-P05,Check 3.3V/5V logic measurement and analyzer probe input tolerance,NOT_RUN,,,
+H9-P06,Physically disconnect both MDD20A VM and EKM014 VH common bus loads,NOT_RUN,,,
+H9-P07,Verify nRF/E22 antenna load regional band and radio TX policy,NOT_RUN,,,
+H9-P08,Use external ONE instrument clock and independently verified PPS second,NOT_RUN,,,
+H9-P09,Characterize event-to-probe edge latency including marker GPIO jitter,NOT_RUN,,,
+H9-P10,Exclude USB-local millis and packet TX buffer admission from RF/STOP timing claims,NOT_RUN,,,
+H9-P11,Independently inspect hardware interlocks and current-zero before any motion tests,NOT_RUN,,,
+H9-P12,Obtain independent engineer/test witness signoff for trace provenance,NOT_RUN,,,
