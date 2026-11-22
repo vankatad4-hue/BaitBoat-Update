@@ -224,6 +224,11 @@ jobs:
         run: |
           python3 Boat/tools/verify_r25_preflight.py --baseline
           python3 -m unittest Boat/tests/test_r25_preflight.py -v
+      - name: R26 INA226 alternative identity and voltage-only safety gate (host only)
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/ina226_candidate_voltage_r26_test.cpp -o /tmp/boat_r26_ina226
+          /tmp/boat_r26_ina226
+          grep -F 'INA226_HARDWARE_SELECTED = false' Boat/source/ina226_voltage_candidate_r26.h
       - name: R66 COTS safety PLC capacity and external interlock acceptance oracle (host only)
         run: |
           python3 -m unittest Boat/tests/test_r66_safety_plc_budget.py -v
