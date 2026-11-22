@@ -53,8 +53,8 @@ BoatPolicyResult boatPolicyApply(const BoatCommand &cmd,bool backup,
         return BOAT_POLICY_INVALID;
     }
     if(cmd.type==CMD_MANUAL_MOTORS) {
-        if(state.mode!=MODE_MANUAL || (backup?!in.backupLinkFresh:!in.primaryLinkFresh)) return BOAT_POLICY_REJECTED_SAFETY;
-        const int16_t max=backup?250:1000;
+        if(state.mode!=MODE_MANUAL || backup || !in.primaryLinkFresh) return BOAT_POLICY_REJECTED_SAFETY;
+        const int16_t max=1000;
         out.leftMotor=limitMotor(cmd.leftMotor,max);
         out.rightMotor=limitMotor(cmd.rightMotor,max);
         return BOAT_POLICY_ACCEPTED;
