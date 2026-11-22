@@ -111,3 +111,10 @@ R77A also retains the authenticated session across ordinary RF silence so the ba
 - `boat_ads1115_bench_math_test.cpp` verifies 3S full-charge and 10.8V thresholds with the R21 150kΩ/33kΩ ratio, plus zero/negative raw counts, bad pack voltage and ADC input above the firmware's 3.0V sanity bound.
 - `../tools/verify_ads1115_bench_isolation_r22.py` verifies sensor-only sketch GPIO audit lock and disallows actuator/radio APIs.
 - CI also builds the locked standalone ESP32-S3 Arduino sketch. A successful compiler test is not a DMM calibration, input back-power review or live sensor acceptance.
+
+## R23 ESP32-S3 candidate GPIO and 64-module-net contract
+
+- `boat_r23_gpio_contract_test.cpp`: all 18 ESP GPIO placements match R20/DevKitC-1 J1/J3 candidates and existing nRF/E22 macros; no collisions or use of reserved 1.8V/memory/strapping/USB pins; MCU safety/actuator flags remain false.
+- `../tools/verify_gpio_connections_r23.py`: verifies each of 64 `BOAT_R23_MODULE_CONNECTION_MATRIX.csv` rows against the complete 44-position R20 header crosswalk and disallows any active EKM014, MDD20A or fabricated physical-safety wiring.
+- Historical R68/R68A regulator and adapter snapshots are retained, but their purchase-register consistency checks now require the **current R23** nRF D24V10F3 and sensor D24V10F3 rail selection with E22 on 5V main and Ardboard socket optional, not the superseded E22 3.3V socket power plan.
+- CI result is a **source / document consistency test only**, not electrical pinout/level certification.
