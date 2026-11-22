@@ -1,0 +1,24 @@
+{
+  "schema": "R30H4-1",
+  "evidence_mode": "UNSPECIFIED",
+  "clock_domain": "",
+  "capture_file_sha256": "",
+  "instrument": {
+    "model": "",
+    "asset_id": "",
+    "sample_rate_hz": 0
+  },
+  "firmware": {
+    "remote_commit": "",
+    "boat_commit": ""
+  },
+  "hardware": {
+    "remote_board_revision": "",
+    "boat_board_revision": "",
+    "e22_remote_sku": "",
+    "e22_boat_sku": "",
+    "actuator_power_disconnected": null
+  },
+  "physical_preflight_evidence": "",
+  "operator_notes": "Leave blank until actual external logic-analyzer capture; never copy simulated values into hardware evidence."
+}
