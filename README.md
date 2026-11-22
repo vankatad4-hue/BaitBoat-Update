@@ -156,3 +156,8 @@ Intermediate early R30F CI runs failed because their respective commit snapshots
 ## R30G — Boat diagnostic traffic cannot queue behind controls
 
 [Verified R30G design and tests](Boat/docs/BOAT_R30G_RADIO_DIAGNOSTIC_PRIORITY.md) add a one-slot, short-lived, primary-nRF-only optional diagnostic budget. Heartbeat, STOP/ACK, mission and radio-loss policy run before any diagnostic attempt; old optional observations are dropped instead of accumulating. [Boat host #45049989270](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45049989270) and [Boat ESP32-S3 target #45049610592](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45049610592) passed. Remote firmware, selected ONE common 3S4P battery bus, physically unsigned independent STOP and official Boat VER014 / Remote VER028 remain unchanged.
+
+
+## R30H actual RF latency acceptance preparation
+
+The [R30H RF measurement procedure](Boat/docs/BOAT_R30H_RF_LATENCY_BENCH_PROCEDURE.md), [22-case unsigned test matrix](Boat/docs/BOAT_R30H_RF_TEST_MATRIX.csv), [empty event CSV template](Boat/docs/BOAT_R30H_RF_EVENTS_TEMPLATE.csv), and [host-only timestamp analyzer](Boat/tools/analyze_r30h_rf_events.py) are ready. **No real-radio, STOP-current, or RTH timing was measured.** The nRF/E22 radios and independent common-3S physical STOP/interlock gates still need purchased-board signoff; motor VM and solenoid VH remain disconnected. Firmware release markers stay Boat VER014 and Remote VER028. See [continuation checkpoint](docs/CONTINUATION_CHECKPOINT_VER001.md) for remaining gates.
