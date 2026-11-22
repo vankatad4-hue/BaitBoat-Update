@@ -73,39 +73,37 @@ class R68PowerContract(unittest.TestCase):
         self.assertEqual(len(tests), 14)
         self.assertTrue(all(t["State"] == "NOT_RUN" for t in tests))
 
-    def test_purchase_register_owner_confirmed_two_independent_3v3_rails(self):
+    def test_r23_active_purchase_register_3v3_roles(self):
+        """R68 BOM remains historical; current R20/R23 procurement is authoritative."""
         register = ROOT / "docs/PROJECT_PURCHASE_REGISTER_R20.csv"
         with register.open(encoding="utf-8", newline="") as fh:
             rows = list(csv.DictReader(fh))
-        role_rows = {
-            row["Item"]: row for row in rows if row["Side"] == "Boat"
-        }
-        self.assertEqual(role_rows["E22 backup dedicated 3V3 power"]["Exact_part"],
-                         "Pololu D24V10F3 #2830")
-        self.assertEqual(role_rows["Sensor and I2C expansion 3V3 power"]["Exact_part"],
-                         "Pololu D24V10F3 #2830")
-        self.assertEqual(
-            role_rows["E22 backup dedicated 3V3 power"]["Selected_or_candidate"],
-            "R72_OWNER_CONFIRMED_D24V10F3_NOT_PURCHASED"
-        )
-        self.assertEqual(
-            role_rows["Sensor and I2C expansion 3V3 power"]["Selected_or_candidate"],
-            "R72_OWNER_CONFIRMED_D24V10F3_NOT_PURCHASED"
-        )
-        self.assertEqual(
-            role_rows["Alternative sensor 3V3 RECOM from R68"]["Selected_or_candidate"],
-            "R71_SUPERSEDED_CANDIDATE_NOT_SELECTED"
-        )
+        role_rows = {r["Item"]: r for r in rows if r["Side"] == "Boat"}
+        rf = role_rows["nRF24 primary 3V3 power unit 1"]
+        sensors = role_rows["Sensor and I2C expansion 3V3 power"]
+        self.assertEqual(rf["Exact_part"], "Pololu D24V10F3 #2830")
+        self.assertEqual(sensors["Exact_part"], "Pololu D24V10F3 #2830")
+        self.assertEqual(rf["Selected_or_candidate"],
+                         "R23_ACTIVE_R20_NRF24_RAIL_NOT_PURCHASED")
+        self.assertEqual(sensors["Selected_or_candidate"],
+                         "R23_ACTIVE_R20_SENSOR_RAIL_NOT_PURCHASED")
+        self.assertIn("nRF24 PA/LNA", rf["Purchase_gate"])
+        self.assertIn("E22 VCC supplied", rf["Purchase_gate"])
+        self.assertIn("ADS1115", sensors["Purchase_gate"])
+        self.assertEqual(role_rows["nRF24 local socket power adapter"]["Qty"], "0")
         self.assertEqual(role_rows["Main controller 5V power"]["Exact_part"],
                          "Olimex DCDC6-16-TO5")
-        self.assertEqual(role_rows["Main controller 5V power"]["Selected_or_candidate"],
-                         "R74_OWNER_CONFIRMED_DCDC6_16_TO5_NOT_PURCHASED")
+        self.assertIn("5V", role_rows["Backup LoRa"]["Purchase_gate"])
         self.assertEqual(role_rows["Solenoid logic dedicated 5V VL power"]["Exact_part"],
                          "TRACO Power TSR 2-2450")
-        self.assertEqual(role_rows["Solenoid logic dedicated 5V VL power"]["Selected_or_candidate"],
-                         "R74_OWNER_SELECTED_TSR2_2450_NOT_PURCHASED")
+        self.assertEqual(role_rows["Alternative sensor 3V3 RECOM from R68"]["Selected_or_candidate"],
+                         "R71_SUPERSEDED_CANDIDATE_NOT_SELECTED")
         self.assertEqual(role_rows["Previous EKM014 VL regulator alternative"]["Selected_or_candidate"],
                          "R74_SUPERSEDED_NOT_SELECTED")
+        current = (ROOT / "Boat/docs/BOAT_R23_GPIO_PINOUT_AND_HARNESSES.md").read_text(encoding="utf-8")
+        self.assertIn("Pololu D24V10F3 #2830", current)
+        self.assertIn("5V main", current)
+        self.assertIn("NO WIRE", current)
 
 if __name__ == "__main__":
     unittest.main()
