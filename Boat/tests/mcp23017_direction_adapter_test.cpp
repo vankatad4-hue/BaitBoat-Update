@@ -6,16 +6,16 @@ struct FakeBus : Mcp23017RegisterBus {
  bool failWrite=false,failRead=false,stuck=false;
  int writes=0;
  bool writeRegister(uint8_t addr,uint8_t reg,uint8_t value) override {
-   assert(addr==0x20); ++writes;
+   assert(addr==0x27); ++writes;
    if(failWrite)return false;
    if(reg==0x0A)iocon=value;
-   if(reg==0x14){latch=value;if(!stuck)gpio=value;}
-   if(reg==0x00)iodir=value;
+   if(reg==0x15){latch=value;if(!stuck)gpio=value;}
+   if(reg==0x01)iodir=value;
    return true;
  }
  bool readRegister(uint8_t addr,uint8_t reg,uint8_t &value) override {
-   assert(addr==0x20);
-   if(failRead||reg!=0x12)return false;
+   assert(addr==0x27);
+   if(failRead||reg!=0x13)return false;
    value=gpio;return true;
  }
 };

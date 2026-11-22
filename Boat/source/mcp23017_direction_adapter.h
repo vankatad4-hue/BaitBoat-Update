@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-// R35: MCP23017 bank=0 default register map; port A pins 0/1 direction.
+// R35: MCP23017 bank=0 default register map; port B pins 0/1 direction.
 // This adapter does not initialize a physical bus, authorize motor power,
 // control PWM, or replace the independent STOP/contactor.
 class Mcp23017RegisterBus {
@@ -11,19 +11,19 @@ public:
 };
 class Mcp23017DirectionAdapter {
 public:
- explicit Mcp23017DirectionAdapter(Mcp23017RegisterBus &bus,uint8_t address=0x20)
+ explicit Mcp23017DirectionAdapter(Mcp23017RegisterBus &bus,uint8_t address=0x27)
    :bus_(bus),address_(address){}
  bool prepareDisabled() {
    ready_=false;
    if(address_<0x20||address_>0x27)return false;
    // IOCON=0x00: BANK=0, sequential register addressing.
-   // OLATA=0x14, IODIRA=0x00, GPIOA=0x12.
+   // OLATB=0x15, IODIRB=0x01, GPIOB=0x13.
    // Set latch low BEFORE enabling output drivers.
    if(!bus_.writeRegister(address_,0x0A,0x00))return false;
-   if(!bus_.writeRegister(address_,0x14,0x00))return false;
-   if(!bus_.writeRegister(address_,0x00,0xFC))return false;
+   if(!bus_.writeRegister(address_,0x15,0x00))return false;
+   if(!bus_.writeRegister(address_,0x01,0xFC))return false;
    uint8_t actual=0xFF;
-   if(!bus_.readRegister(address_,0x12,actual)|| (actual&0x03U)!=0U) {
+   if(!bus_.readRegister(address_,0x13,actual)|| (actual&0x03U)!=0U) {
      failClosed();return false;
    }
    ready_=true;return true;
