@@ -3,7 +3,7 @@
 #include <iostream>
 int main(){
  MissionPlan p={1,0,0,1,300,0,1000,0,0};
- ExecInputs in={{0,0,1,90,true,true,true,true},true,true,true,true,true,true};
+ ExecInputs in={{0,0,1,90,true,true,true,true},true,true,true,true,true,true,false};
  BoatMissionController c;MissionControlFeedback ack{};uint8_t bytes[8];MissionControlRequest req{MCTRL_START,1,1},decoded{};
  assert(missionControlEncode(req,bytes)&&missionControlDecode(bytes,decoded)&&decoded.request==1);
  bytes[7]=1;assert(!missionControlDecode(bytes,decoded));
@@ -37,7 +37,7 @@ int main(){
  // the previously active autonomous phase; no old stick value is replayed.
  BoatMissionController linkLoss;
  MissionPlan lp={7,0,0,1,300,0,1000,0,0};
- ExecInputs lin={{0,0,1,90,true,true,true,true},true,true,true,true,true,true};
+ ExecInputs lin={{0,0,1,90,true,true,true,true},true,true,true,true,true,true,false};
  assert(linkLoss.stage(lp,0,true,true));lin.stopActive=false;
  MissionControlFeedback linkAck{};
  assert(linkLoss.request({MCTRL_START,7,1},lin,1,true,true,true,linkAck)&&linkAck.result==MC_ACCEPTED);
