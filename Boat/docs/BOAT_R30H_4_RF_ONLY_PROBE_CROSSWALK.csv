@@ -1,10 +1,10 @@
 Channel_ID,Analyzer_Event,Endpoint,Physical_signal,Expected_edge,Meaning_and_limitation,Physical_mapping_state,Verified_testpoint,Measured_logic_high_V,Measured_logic_low_V,Evidence,Engineer_signoff
-R4-01,STOP_BUTTON_EDGE,Remote,STOP input electrical edge,RISING,Read-only low-voltage probe; button polarity must be verified,NOT_READY,,,,,
+R4-01,STOP_BUTTON_EDGE,Remote,STOP input electrical edge,TO_VERIFY,Read-only low-voltage probe; button polarity must be verified,NOT_READY,,,,,
 R4-02,REMOTE_NRF_SPI_CSN,Remote,nRF24 CSN SPI edge,FALLING,"SPI transaction only, not STOP packet or RF transmission",NOT_READY,,,,,
 R4-03,BOAT_NRF_IRQ,Boat,nRF24 IRQ electrical edge,FALLING,IRQ alone not authenticated STOP or application intent,NOT_READY,,,,,
 R4-04,REMOTE_E22_UART_TX_START,Remote,E22 UART TXD frame start,FALLING,3.3V TTL level physically measured; UART start may be heartbeat,NOT_READY,,,,,
 R4-05,BOAT_E22_UART_RX_START,Boat,Boat E22 UART RXD start,FALLING,UART edge does not prove HMAC/replay accepted,NOT_READY,,,,,
-R4-06,RF_CUT_TRIGGER,RF fixture,Single common analyzer trigger for RF block,RISING,Safe RF isolation/attenuation; never disconnect powered antenna,NOT_READY,,,,,
+R4-06,RF_CUT_TRIGGER,RF fixture,Single common analyzer trigger for RF block,TO_VERIFY,Safe RF isolation/attenuation; never disconnect powered antenna,NOT_READY,,,,,
 R4-07,BOAT_STOP_INTENT_MARKER,Boat,Verified read-only logical STOP testpoint,RISING,NOT IMPLEMENTED: must first commission safe nonactuating debug GPIO,NOT_READY,,,,,
 R4-08,BOAT_LOGICAL_OUTPUT_OFF_MARKER,Boat,Verified logical output off testpoint,RISING,NOT IMPLEMENTED: must not imply current zero or hardware relay,NOT_READY,,,,,
 R4-09,BOAT_LAST_AUTH_RX_MARKER,Boat,Verified authenticated-frame acceptance testpoint,RISING,NOT IMPLEMENTED: no GPIO debug marker or common clock today,NOT_READY,,,,,
