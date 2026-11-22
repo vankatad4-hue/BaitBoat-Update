@@ -47,20 +47,24 @@ public:
   const ExecOutput stopped={INTENT_STOP,-1,0};
   if(phase_==EXEC_IDLE||phase_==EXEC_COMPLETE||phase_==EXEC_ABORTED)return stopped;
   if(in.stopActive){abort();return stopped;}
-  const bool navHome=phase_==EXEC_RETURNING||(phase_==EXEC_PAUSED&&resumePhase_==EXEC_RETURNING);
-  const auto nav=missionNavigation_evaluate(plan_,in.fix,navHome);
-  if(!nav.valid){abort();return stopped;}
-  // Loss of primary prevents new releases. If already pulsing, stop and
-  // abort rather than move with an unconfirmed actuator.
+
+  // A release already in progress is never replayed after primary-link loss.
+  // Its bounded output is stopped by the actuator supervisor and the mission
+  // is aborted because completion can no longer be trusted.
   if(phase_==EXEC_RELEASE_WAIT){
+   const bool navHome=phase_==EXEC_RETURNING;
+   const auto nav=missionNavigation_evaluate(plan_,in.fix,navHome);
    if(!in.primaryFresh||!in.releaseInterlocks||!nav.arrived||now-releaseAt_>=5000U)abort();
    return stopped;
   }
-  // A 3-second LoRa slot is not equivalent to fresh primary control.
-  if(!in.primaryFresh){
-   if(!divertHome(in)){abort();return stopped;}
-   if(!navHome)return stopped; // recompute Home geometry next tick
-  }
+
+  // No authenticated fresh radio on either path: hold mission state and ask
+  // for zero motor/coil outputs. A fresh link later resumes this same phase.
+  if(!in.primaryFresh&&!in.backupFresh)return stopped;
+
+  const bool navHome=phase_==EXEC_RETURNING||(phase_==EXEC_PAUSED&&resumePhase_==EXEC_RETURNING);
+  const auto nav=missionNavigation_evaluate(plan_,in.fix,navHome);
+  if(!nav.valid){abort();return stopped;}
   if(phase_==EXEC_PAUSED)return stopped;
   if(!in.releaseIdle){abort();return stopped;}
   if(phase_==EXEC_OUTBOUND){
@@ -69,7 +73,10 @@ public:
   }
   if(phase_==EXEC_AT_TARGET){
    if(!in.stationary)return stopped;
-   if(!remaining_||!in.primaryFresh){remaining_=0;phase_=EXEC_RETURNING;return stopped;}
+   // Only the primary nRF link can authorize irreversible bait/hook releases.
+   // With backup-only coverage, hold at the target until primary returns.
+   if(!in.primaryFresh)return stopped;
+   if(!remaining_){phase_=EXEC_RETURNING;return stopped;}
    if(!nav.arrived||!in.releaseInterlocks){abort();return stopped;}
    for(uint8_t i=0;i<4;++i)if(remaining_&(1U<<i)){
     remaining_&=(uint8_t)~(1U<<i);++releaseToken_;releaseAt_=now;phase_=EXEC_RELEASE_WAIT;
@@ -82,6 +89,13 @@ public:
    return {INTENT_NAV_HOME,-1,0};
   }
   abort();return stopped;
+ }
+ // A lost manual override must not resume stale stick values. Restore the
+ // autonomous phase that was active before the override instead.
+ bool cancelPauseForLinkLoss(){
+  if(phase_!=EXEC_PAUSED)return false;
+  phase_=resumePhase_;
+  return true;
  }
  ExecPhase phase()const{return phase_;}
 private:
