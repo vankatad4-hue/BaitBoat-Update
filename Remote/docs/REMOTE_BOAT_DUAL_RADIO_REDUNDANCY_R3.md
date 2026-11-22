@@ -30,3 +30,7 @@ Identical modules/settings, antennas attached, close-range first. Verify config 
 
 ## R61 purchasing and assembly gate (2026-11-22)
 The specified **E22-900T22S is a bare SMD radio module (26×16mm)**, not a connectorized plug-in board. No custom PCB is permitted: purchase only with a verified ready-made SMD-to-header carrier or professionally assembled off-the-shelf breakout that preserves RF grounding, regulated power, AUX, M0, M1, UART and antenna connection. Neither an adapter SKU nor pair RF interoperation has been verified. **Do not order an E22-900T22D-V2 as an undocumented substitute.** If necessary, formally revise both endpoints to matching DIP variants with configuration/readback and RF bench tests first. EU868 field use remains blocked on regulatory airtime and authenticated radio sessions.
+
+
+### R69 model lock reaffirmed (2026-11-22)
+Owner confirmed **exact same EBYTE E22-900T22S UART SMD** for both endpoints (two units total, one Boat and one Remote). Keep existing cross-device configuration contract; **E22-900T30S not selected**. The physical E22 SMD-to-header factory breakout is still unresolved. Do not replace with different E22/E220 variant on either endpoint. LoRa backup STOP/active-mission RTH only, no manual drive or release. EU868 power/duty and antenna qualification pending. Physical purchasing, wiring and tests still outstanding.
