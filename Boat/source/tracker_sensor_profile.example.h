@@ -1,7 +1,7 @@
 #pragma once
 #include "tracker_sensor_port.h"
 // Copy locally to tracker_commissioned_config.h ONLY after documented audit.
-// This example intentionally has no valid GPIO mapping or calibration.
+// Contains R20 candidate GPIOs only; pinAuditSigned and all calibration flags remain false.
 inline TrackerSensorConfig trackerLocalProfile(){
  TrackerSensorConfig c{};
  c.pinAuditSigned=false;
