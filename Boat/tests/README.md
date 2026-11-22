@@ -72,3 +72,13 @@ The full set is run by the Boat portable host tests workflow. These are software
 
 
 R77A also retains the authenticated session across ordinary RF silence so the backup link can restore the same session after a long outage. Remote dual-radio manager tests cover transition from LINK_NO_LINK back to LINK_BACKUP. Sequence-limit rekey and endpoint power-cycle still use the primary handshake.
+
+
+## R78 dual-radio loss, NVS Home and dummy-load bench preparation
+
+- The Boat stores the authenticated mission Home coordinate in a two-slot, CRC-verified NVS record during mission preparation and reads it back before acknowledging preparation.
+- Both radios stale: motor and solenoid requests remain OFF immediately. The 10-second RTH timer is measured from the last accepted authenticated frame.
+- At timeout, automatic RTH is allowed only for an eligible active mission with matching valid Boat NVS Home, fresh GNSS/heading, healthy battery, valid geofence and local release/STOP interlocks. No radio never authorizes a release.
+- If any gate fails, outputs remain STOP. Link recovery before timeout resumes the held mission; after RTH starts, the old outbound mission is not resumed. Primary-radio manual takeover requires a new explicit request, neutral sticks and a stationary/idle boat.
+- boat_home_point_record_test.cpp, boat_radio_safety_test.cpp, mission_link_loss_test.cpp and boat_hardware_supervisor_test.cpp validate portable record/policy/decision logic. CI does not prove actual NVS retention, RF, GPS, motors, coils or independent power cutoff.
+- Physical bench procedure: use isolated, current-limited supplies and rated resistive/indicator dummy loads only; leave actual motors and solenoids disconnected. The test plan is ../docs/BOAT_R78_RADIO_LOSS_DUMMY_LOAD_BENCH_TEST.md.
