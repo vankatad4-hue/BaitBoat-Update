@@ -526,3 +526,10 @@ User reaffirmed **EBYTE E22-900T22S UART SMD**, one module in Boat and one match
 - Added Olimex PWR-CABLE 30cm AWG22 3A barrel input pigtail candidate for DCDC6. DCDC6 output is USB-A 5V/2A, so a cable-only protected split to ESP32 and M100 is still required; Ardboard nRF is excluded until load/thermal/noise tests.
 - New [R75 socket/harness/fuse plan](BOAT_R75_TSR_SOCKET_HARNESS_AND_FUSE_PLAN.md), [R75 full hardware confirmation audit](BOAT_R75_HARDWARE_CONFIRMATION_AUDIT.md), and [11 NOT_RUN physical acceptance gates](BOAT_R75_HARDWARE_ACCEPTANCE.csv). Purchase register and static host CI test updated.
 - **Major unresolved blockers:** independent physical STOP/contactor/watchdog/manual reset; factory-made four-way one-hot bounded non-retriggerable coil pulse controller; six independent current-zero checks; measured 550 motor and four coil currents/pulse limits; BMS actual current/sag; M100 signal levels; E22 carrier and nRF module/adapter qualification; fuses/wiring/waterproof mounting. No actuator commissioning or physical hardware acceptance. Boat VER014 / Remote VER028 unchanged.
+
+
+## R75A — TSR socket mating tolerance review (2026-11-22)
+
+- **BINDER MPE 006-1-003-D-B1STF-XS0** is now the primary dimensioned SIP3 socket candidate: 3-pin, 2.54mm, 3A, with manufacturer-published square mating pin limit 0.25×0.45mm. TRACO specifies 0.46×0.46mm nominal with ±0.1mm pin tolerance, so compatibility is **not guaranteed**; sample fit and written manufacturer confirmation are required.
+- econ connect MP70S3 is demoted to secondary because the product listing gives a round pin form and no square mating-pin tolerance. If neither socket passes, use direct-solder pigtail replacement rather than forcing pins into an incompatible socket.
+- Updated [R75 mechanical/fuse plan](BOAT_R75_TSR_SOCKET_HARNESS_AND_FUSE_PLAN.md), [hardware audit](BOAT_R75_HARDWARE_CONFIRMATION_AUDIT.md), [purchase register](../../docs/PROJECT_PURCHASE_REGISTER_R20.csv), [acceptance matrix](BOAT_R75_HARDWARE_ACCEPTANCE.csv) and static CI test. All physical fit tests remain NOT_RUN.
