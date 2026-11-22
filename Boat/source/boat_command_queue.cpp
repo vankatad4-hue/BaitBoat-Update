@@ -6,6 +6,30 @@ void BoatCommandQueue::clear() {
     memset(entries_,0,sizeof(entries_));
     write_=read_=count_=0;
 }
+void BoatCommandQueue::discardLink(uint8_t link,bool keepEmergencyStop) {
+    Entry kept[CAPACITY]{};
+    uint8_t n=0;
+    for(uint8_t i=0;i<count_;++i) {
+        const Entry &e=entries_[(uint8_t)((read_+i)%CAPACITY)];
+        if(e.link==link && !(keepEmergencyStop&&e.command.type==CMD_EMERGENCY_STOP))continue;
+        kept[n++]=e;
+    }
+    memset(entries_,0,sizeof(entries_));
+    for(uint8_t i=0;i<n;++i)entries_[i]=kept[i];
+    read_=0;count_=n;write_=(uint8_t)(n%CAPACITY);
+}
+void BoatCommandQueue::clearNonEmergency() {
+    Entry kept[CAPACITY]{};
+    uint8_t n=0;
+    for(uint8_t i=0;i<count_;++i) {
+        const Entry &e=entries_[(uint8_t)((read_+i)%CAPACITY)];
+        if(e.command.type!=CMD_EMERGENCY_STOP)continue;
+        kept[n++]=e;
+    }
+    memset(entries_,0,sizeof(entries_));
+    for(uint8_t i=0;i<n;++i)entries_[i]=kept[i];
+    read_=0;count_=n;write_=(uint8_t)(n%CAPACITY);
+}
 bool BoatCommandQueue::push(const BoatCommand &cmd,uint8_t link,bool duplicate,uint8_t epoch) {
     if(full()) return false;
     entries_[write_]={cmd,link,duplicate,epoch};
