@@ -78,8 +78,8 @@ public:
   // makes completion ambiguous. Abort it even if both radios disappear; never
   // replay a hopper/hook release after reconnect.
   if(engine_.phase()==EXEC_RELEASE_WAIT&&!in.primaryFresh){engine_.abort();phase_=MC_ABORTED;return stop;}
-  // Both radio paths absent: stop all outputs but preserve a navigation phase.
-  // It resumes only after either authenticated link is fresh.
+  // Both radio paths absent: STOP and preserve the mission phase. The sole
+  // exception is a local, NVS-validated Home return after the 10-second gate.
   if(!in.primaryFresh&&!in.backupFresh&&!in.autonomousRth)return stop;
   auto out=engine_.tick(in,now);
   switch(engine_.phase()){
