@@ -117,6 +117,12 @@ jobs:
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror Remote/tests/mission_control_client_test.cpp -o /tmp/remote_mission_control
           /tmp/remote_mission_control
+      - name: R30H-5 authenticated GPS UTC portable receiver discipline
+        run: |
+          cmp Boat/source/radio_utc_time_v1.h Remote/source/radio_utc_time_v1.h
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror \
+            Remote/tests/r30h5_utc_clock_test.cpp -o /tmp/remote_r30h5_utc
+          /tmp/remote_r30h5_utc
       - name: R30H-3 Remote-local STOP request vs E22 queue admission (no RF)
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
