@@ -114,3 +114,8 @@ The **BINDER MPE 006-1-003-D-B1STF-XS0** is now the primary dimensioned SIP3 soc
 The user directed that no physical elements be added. Existing nRF24/E22 freshness is now used by a software watchdog: if both links expire, firmware requests zero motor output and all four solenoid outputs OFF; an eligible autonomous mission is held and resumes after a fresh authenticated link/session returns. Backup-only navigation may continue, but manual steering and irreversible releases remain primary-only. Stale commands/sticks are discarded; an interrupted release is aborted and never replayed. Automatic RTH on total link loss is removed; explicit user-requested Home remains.
 
 This is **not** the independent hardware STOP architecture required in P0. It runs on the main ESP32-S3 and cannot cut load power on MCU freeze, stuck GPIO or shorted driver MOSFET. Physical independent STOP/contactors, feedback, watchdog, one-hot pulse hardware and current-zero sensing remain unresolved. No new hardware, GPIO, BOM or physical acceptance was added. See [R77 implementation report](BOAT_R77_DUAL_RADIO_WATCHDOG_IMPLEMENTATION.md).
+
+
+### R77A — backup radio recovery after long outage
+
+Boat and Remote now retain their authenticated session across ordinary RF inactivity; the 6.5-second idle teardown was removed. This permits the E22 backup link to restore the same session after an extended RF outage, while the R77 watchdog continues to stop all outputs when both freshness windows expire. Sequence-limit rekey or endpoint power-cycle still requires the existing primary nRF24 handshake. This is software/session behavior only and does not change the unresolved independent hardware safety requirements.
