@@ -1,0 +1,25 @@
+Direction,Signal,Description,Requirement,Candidate_Implementer
+Input,COIL_REQUEST_LH,Coil left hopper request,PLC must reject if other request asserted,4_CHANNEL_PLC
+Input,COIL_REQUEST_RH,Coil right hopper request,PLC must reject if other request asserted,4_CHANNEL_PLC
+Input,COIL_REQUEST_HL,Hook left request,PLC must reject if other request asserted,4_CHANNEL_PLC
+Input,COIL_REQUEST_HR,Hook right request,PLC must reject if other request asserted,4_CHANNEL_PLC
+Input,ESTOP_CHANNEL_A,Physical emergency stop redundant circuit A,Debounce/diagnostic per manufacturer,PHYSICAL_INDEPENDENT
+Input,ESTOP_CHANNEL_B,Physical emergency stop redundant circuit B,Cross-wire/short monitoring per manufacturer,PHYSICAL_INDEPENDENT
+Input,LOCAL_MANUAL_RESET,Local physical fault reset,No auto-rearm when permanently held,PHYSICAL_INDEPENDENT
+Input,WATCHDOG_HEALTHY,Independent watchdog status,Loss causes physical power removal,PHYSICAL_INDEPENDENT
+Input,MOTOR_DISCONNECT_AUX,Mechanically validated motor contactor feedback,Welded contact blocks rearm,PHYSICAL_INDEPENDENT
+Input,COIL_DISCONNECT_AUX,Mechanically validated coil contactor feedback,Welded contact blocks rearm,PHYSICAL_INDEPENDENT
+Input,BATTERY_3S_OK,Independent battery voltage threshold,3S sag/brownout triggers lockout,PHYSICAL_INDEPENDENT
+Input,COIL1_ZERO,Physical coil-1 current below verified threshold,Not ESP32-only INA telemetry,PHYSICAL_INDEPENDENT
+Input,COIL2_ZERO,Physical coil-2 current below verified threshold,Not ESP32-only INA telemetry,PHYSICAL_INDEPENDENT
+Input,COIL3_ZERO,Physical coil-3 current below verified threshold,Not ESP32-only INA telemetry,PHYSICAL_INDEPENDENT
+Input,COIL4_ZERO,Physical coil-4 current below verified threshold,Not ESP32-only INA telemetry,PHYSICAL_INDEPENDENT
+Input,MOTOR1_ZERO,Physical left-motor current safe,Validated sensing method,PHYSICAL_INDEPENDENT
+Input,MOTOR2_ZERO,Physical right-motor current safe,Validated sensing method,PHYSICAL_INDEPENDENT
+Input,V24_RAIL_OK,Regulated 24V monitored rail,9V input cutoff and 3S sag must be measured,PHYSICAL_INDEPENDENT
+Output,GATE_LH,One timed; one-hot release control to EKM014 IN1,Output conversion to EKM014 <=VL prebuilt,4_CHANNEL_PLC
+Output,GATE_RH,One timed; one-hot release control to EKM014 IN2,Output conversion to EKM014 <=VL prebuilt,4_CHANNEL_PLC
+Output,GATE_HL,One timed; one-hot release control to EKM014 IN3,Output conversion to EKM014 <=VL prebuilt,4_CHANNEL_PLC
+Output,GATE_HR,One timed; one-hot release control to EKM014 IN4,Output conversion to EKM014 <=VL prebuilt,4_CHANNEL_PLC
+Output,MOTOR_BRANCH_ISOLATION,Independent current-rated motor-rail disconnect,Not satisfied by motor PWM or 3A STOP relay contacts,EXTERNAL_SAFETY_CHAIN
+Output,COIL_BRANCH_ISOLATION,Independent current-rated EKM014 VH disconnect,Not satisfied by EKM014 VL logic inhibit,EXTERNAL_SAFETY_CHAIN
