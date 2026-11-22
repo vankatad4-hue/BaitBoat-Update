@@ -707,3 +707,7 @@ The main display uses `НИСКА БАТ. — ЗАРЕДИ/СМЕНИ` when red 
 ## R27 Boat battery sensor update (2026-11-22)
 
 Boat's selected battery-voltage module is now **Ardboard INA231 product 1491**, 3.3V I²C BUS-only; former ADS1115 divider is historical and INA226 remained a candidate. Boat runtime INA231 I²C not yet wired or commissioned, so **Remote must continue to show stale/unavailable Boat battery telemetry** and block mission preparation when no valid Boat reading is received. No Remote code, display thresholds, radio firmware, screen design, purchase quantity or version changed. Remote VER028 / Boat VER014 remain; physical test and independent Boat actuator STOP still pending.
+
+## R28 Boat sensor software boundary (2026-11-22)
+
+Boat's selected INA231 sensor now has a software-only triggered measurement state machine, I²C transport adapter, and integration into the Boat `TrackerSensorPort`, but `INA231_PHYSICAL_COMMISSIONED=false` and all local signoffs remain unset. The Boat must supply invalid/unavailable battery telemetry until physical signoff, so Remote's existing stale/missing Boat-battery warning and mission-preparation lock remain correct. No changes to Remote LVGL/SD/radio firmware, Remote physical casing or release version; **Remote VER028 / Boat VER014**.
