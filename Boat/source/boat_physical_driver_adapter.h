@@ -25,8 +25,9 @@ public:
   if(!initialized_||faulted_)return false;
   BoatSafetyContacts contacts{};Ekm014Feedback coil{};
   if(!hal_.sample(sample,contacts,coil)){fault();return false;}
-  // Battery health is derived from the ADS1115 voltage sample; do not require
-  // a separate unselected battery-comparator contact.
+  // Battery health depends on a real commissioned, fresh local voltage sample
+  // (selected INA231 R27/R28). Neither cached data nor remote telemetry
+  // may replace a locally acquired battery reading.
   contacts.batteryHealthy=sample.voltageValid&&
     (uint32_t)(now-sample.batteryAt)<=BoatBatteryMonitor::MAX_SAMPLE_AGE_MS;
   batteryAt_=sample.batteryAt;
