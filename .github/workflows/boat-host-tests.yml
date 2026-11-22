@@ -187,3 +187,5 @@ jobs:
         run: |
           python3 -m unittest Boat/tests/test_r66_safety_plc_budget.py -v
           python3 -m unittest Boat/tests/test_r66_external_interlock_oracle.py -v
+      - name: R68 proposed power rail inventory and non-actuating sourcing gate
+        run: python3 -m unittest Boat/tests/test_r68_power_contract.py -v
