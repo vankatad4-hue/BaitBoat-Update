@@ -327,6 +327,10 @@ jobs:
           python3 -m unittest Boat/tests/test_r30h_event_analyzer.py -v
           python3 Boat/tools/analyze_r30h_rf_events.py Boat/docs/BOAT_R30H_RF_EVENTS_TEMPLATE.csv > /tmp/r30h_empty.txt || test "$?" -eq 3
           grep -F "NOT_RUN: empty evidence CSV" /tmp/r30h_empty.txt
+      - name: R30H-1 physical radio signoff stays unsigned (SC16IS750 and E22)
+        run: |
+          python3 Boat/tools/verify_r30h_radio_preflight.py
+          python3 -m unittest Boat/tests/test_r30h_radio_preflight.py -v
       - name: R66 COTS safety PLC capacity and external interlock acceptance oracle (host only)
         run: |
           python3 -m unittest Boat/tests/test_r66_safety_plc_budget.py -v
