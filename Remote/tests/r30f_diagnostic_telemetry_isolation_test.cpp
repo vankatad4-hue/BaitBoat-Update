@@ -45,6 +45,14 @@ int main(){
  telemetryApplyToBoatState(state,1600);
  assert(state.emergencyStop && state.emergencyStopConfirmed);
  assert(!state.actuatorSafetyReady);
+ // A subsequent fresh authenticated diagnostic remains display-only: even
+ // while normal STOP status is confirmed it must not clear or override it.
+ d.diagnosticReason=1;d.diagnosticFlags=0x0A02U;
+ d.diagnosticMillivolts=0xffffU;
+ assert(telemetryApplyRadioPayload(d,true,1650));
+ telemetryApplyToBoatState(state,1660);
+ assert(state.emergencyStop && state.emergencyStopConfirmed);
+ assert(!state.actuatorSafetyReady);
  const uint32_t oldStatus=telemetry.statusReceivedAtMs;
  const uint32_t oldBattery=telemetry.batteryReceivedAtMs;
  d.diagnosticReason=1;d.diagnosticFlags=0x0A02U;
