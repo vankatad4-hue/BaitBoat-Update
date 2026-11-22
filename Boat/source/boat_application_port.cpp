@@ -47,8 +47,15 @@ void BoatApplicationPort::tick(){
  if(!sample_.physicalStopReleased||!sample_.watchdogReady||!in.fix.batteryHealthy){fault();radio_.update();radio_.sendHardwareTelemetry(boatHardware_status(sample_,millis(),true,MC_ABORTED,false,radio_.primaryFresh(millis())));return;}
  radio_.update();
  if(generation_!=radio_.sessionGeneration()){
-  if(manualPending_){manualPending_=false;executor_.stop();radio_.localEmergencyStop();driver_.disable();}
-  executor_.cancelManual();if(!radio_.detachedReturnActive()){executor_.stop();driver_.disable();}
+  // A normal radio re-handshake must not permanently fault the physical
+  // driver: the radio watchdog has already commanded zero outputs. An
+  // in-flight solenoid action is different; its result is uncertain, so latch
+  // STOP and abort rather than replaying it after reconnection.
+  if(manualPending_||executor_.releaseBusy()){
+   manualPending_=false;executor_.stop();radio_.localEmergencyStop();
+  }else{
+   executor_.cancelManual();
+  }
   generation_=radio_.sessionGeneration();
  }
  in=boatHardware_inputs(sample_,millis(),executor_.stopped());
