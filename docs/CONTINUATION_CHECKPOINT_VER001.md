@@ -936,3 +936,8 @@ Evidence and implementation: [R74 regulator technical decision, pinout, fuse and
 ## R75A — SIP3 socket dimensional correction (2026-11-22)
 
 The primary socket candidate is now **BINDER MPE 006-1-003-D-B1STF-XS0** (3-pin, 2.54mm pitch, 3A). Manufacturer lists square mating-pin size of **0.25×0.45mm**; the TRACO TSR pin is **0.46×0.46mm nominal, ±0.1mm**. This is a near match, not a guaranteed fit. Sample-fit and written manufacturer confirmation are required. econ connect MP70S3 is demoted to secondary because the listing identifies a round pin form and no square pin tolerance. If neither socket is accepted, use direct-solder pigtails and treat regulator replacement as a desolder/rework operation; never force the pins. Purchase register, R75 plan/audit/acceptance and static CI test updated. No physical test or purchase; versions unchanged.
+
+
+## R75C — DCDC6 PWR-CABLE full-charge check
+
+DCDC6 input range is 6–16V, but Olimex lists PWR-CABLE as 12V/3A while the 3S pack reaches 12.6V. The cable page also conflicts on 2.1mm vs 2.5mm barrel inner diameter. Do not assume the cable is accepted until voltage suitability at 12.6V, actual fit and center-positive polarity are verified. DCDC6 schematic shows center-positive input; the official DCDC6 page says PWR-CABLE pairs with it. Purchase register and R75 plan/audit now flag this; input fuse and keyed harness still open.
