@@ -1,6 +1,7 @@
 # Flytec V080 Boat — active hardware and firmware
 
 **Current hardware authority:** [BOAT_HARDWARE_SELECTION_R20.md](docs/BOAT_HARDWARE_SELECTION_R20.md)  
+**R21 ADC commissioning:** [BOAT_R21_BATTERY_ADC_COMMISSIONING.md](docs/BOAT_R21_BATTERY_ADC_COMMISSIONING.md) (not physically tested).  
 **GPIO/header map:** [BOAT_GPIO_HEADER_MAP_R20.md](docs/BOAT_GPIO_HEADER_MAP_R20.md) (candidate, unsigned).  
 **Current failsafe:** [R79 low-battery failsafe](docs/BOAT_R79_LOW_BATTERY_FAILSAFE.md)  
 **Bench procedure:** [R79 battery/radio-loss dummy-load test](docs/BOAT_R79_LOW_BATTERY_BENCH_TEST.md)
@@ -30,7 +31,7 @@ Ready-made modules and removable harnesses only; no custom electronic PCB.
 - Low-battery RTH requires valid Home, GNSS/heading/geofence and local STOP/release interlocks. All release outputs remain OFF.
 - If there is no autonomous mission, the Remote warns and manual return is the operator's responsibility. New missions are blocked at red.
 
-Critical battery is displayed separately as `КРИТ. БАТ. — STOP`. The ADS1115 divider is a commissioning candidate (100kΩ/33kΩ, 1%, 100nF); calibrate against a DMM before enabling the sensor profile. Estimated percentage is voltage-based, not coulomb-counted.
+Critical battery is displayed separately as `КРИТ. БАТ. — STOP`. The revised R21 ADS1115 divider is an unsigned commissioning candidate (150kΩ/33kΩ, 1%, 100nF); calibrate against a DMM before enabling the sensor profile. Estimated percentage is voltage-based, not coulomb-counted.
 
 ## Current status
 
