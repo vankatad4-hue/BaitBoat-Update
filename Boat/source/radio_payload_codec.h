@@ -13,7 +13,8 @@ enum RadioPayloadKind : uint8_t {
     RADIO_PAYLOAD_GNSS_LONGITUDE,
     RADIO_PAYLOAD_NAVIGATION,
     RADIO_PAYLOAD_SONAR_SUMMARY,
-    RADIO_PAYLOAD_WEATHER
+    RADIO_PAYLOAD_WEATHER,
+    RADIO_PAYLOAD_SAFETY_DIAGNOSTIC // R30F optional authenticated telemetry subtype 8; NEVER a control permission
 };
 
 enum RadioAckResult : uint8_t {
@@ -58,6 +59,10 @@ struct RadioDecodedPayload {
     uint8_t sonarHealth;
     uint8_t sonarAlarmFlags;
     uint8_t sonarSample;
+    uint8_t diagnosticReason;
+    uint16_t diagnosticFlags;
+    uint16_t diagnosticMillivolts;
+    uint8_t diagnosticSequence;
 };
 
 // Reject unknown subtype, invalid enums/ranges and nonzero reserved bytes/bits.
