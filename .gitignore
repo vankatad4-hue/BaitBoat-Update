@@ -1,0 +1,18 @@
+# PlatformIO / VS Code local build outputs
+**/.pio/
+.pio/
+.vscode/*.log
+.vscode/*.db
+.vscode/*.ipch
+# Fonts are generated from a locally licensed source, never committed as a
+# substitute for the original DejaVu font and its license.
+Remote/source/flytec_bg_14.c
+Remote/source/flytec_bg_14.generated.h
+Remote/source/FONT_LICENSE.txt
+Remote/out/
+out/ui-font/
+# Do not commit provisioned secure keys or signed local harness profiles.
+**/tracker_commissioned_config.h
+**/radio_auth_key_local.h
+**/secrets.h
+**/.env
