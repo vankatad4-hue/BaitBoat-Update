@@ -1,6 +1,7 @@
 #include "boat_telemetry.h"
 BoatTelemetry telemetry;
 static constexpr uint32_t STATUS_MAX_AGE=1500,BATTERY_MAX_AGE=5000,COORD_PAIR_MAX_GAP=500,GPS_MAX_AGE=2000,NAV_MAX_AGE=2000,SONAR_MAX_AGE=1500;
+static constexpr uint32_t SAFETY_DIAGNOSTIC_MAX_AGE_MS=6000U; // R30F 2-second nominal TX
 static bool fresh(uint32_t now,uint32_t stamp,uint32_t maxAge){return (uint32_t)(now-stamp)<=maxAge;}
 void telemetryInit(){telemetry={};telemetry.batteryPercent=-1;telemetry.stopState=2;}
 void telemetryUpdate(const BoatTelemetry &d){telemetry=d;telemetry.receivedAtMs=millis();}
@@ -36,6 +37,18 @@ bool telemetryApplyRadioPayload(const RadioDecodedPayload &p,bool primary,uint32
   telemetry.navigationValid=true;telemetry.heading=(p.headingCentidegrees==0xFFFFU)?-1.0f:(float)p.headingCentidegrees/100.0f;
   telemetry.speed=(p.speedCmPerSecond==0xFFFFU)?0.0f:(float)p.speedCmPerSecond/100.0f;telemetry.navigationStatus=p.navigationStatus;
   telemetry.waypointIndex=p.waypointIndex;telemetry.navigationSample=p.navigationSample;telemetry.navigationReceivedAtMs=now;telemetry.receivedAtMs=now;return true;
+ case RADIO_PAYLOAD_SAFETY_DIAGNOSTIC:
+  // Only authenticated PRIMARY receive path can call this successfully.
+  // This read-only sidecar must not refresh normal STATUS, STOP confirmation,
+  // battery charge, command ACK or motor-safety telemetry timestamps.
+  if(!primary)return false;
+  telemetry.diagnosticValid=true;telemetry.diagnosticPrimary=true;
+  telemetry.diagnosticReason=p.diagnosticReason;
+  telemetry.diagnosticFlags=p.diagnosticFlags;
+  telemetry.diagnosticMillivolts=p.diagnosticMillivolts;
+  telemetry.diagnosticSequence=p.diagnosticSequence;
+  telemetry.diagnosticReceivedAtMs=now;
+  return true;
  case RADIO_PAYLOAD_WEATHER:
   telemetry.weatherValid=true;telemetry.temperatureCentiC=p.temperatureCentiC;telemetry.pressurePa=p.pressurePa;
   telemetry.weatherReceivedAtMs=now;telemetry.receivedAtMs=now;return true;
@@ -69,4 +82,11 @@ void telemetryApplyToBoatState(BoatState &s,uint32_t now){
  if(statusFresh&&telemetry.reportedMode<=2)s.mode=(BoatMode)telemetry.reportedMode;
  if(statusFresh&&telemetry.stopState<=1&&telemetry.statusPrimary){s.emergencyStop=telemetry.stopState==1;s.emergencyStopConfirmed=true;}else s.emergencyStopConfirmed=false;
  s.actuatorSafetyReady=statusFresh&&telemetry.statusPrimary&&telemetry.stopState==0&&(telemetry.safetyFlags&1U)!=0&&!s.failsafeActive&&s.radioPrimaryConnected&&s.radioActiveLink==RADIO_UI_NRF_PRIMARY;
+ // Display-only: never feed this into actuatorSafetyReady, STOP, mission
+ // permission, radio freshness, battery capacity or failsafe state.
+ s.diagnosticFresh=telemetry.diagnosticValid&&telemetry.diagnosticPrimary&&
+    fresh(now,telemetry.diagnosticReceivedAtMs,SAFETY_DIAGNOSTIC_MAX_AGE_MS)&&
+    s.radioPrimaryConnected&&s.radioActiveLink==RADIO_UI_NRF_PRIMARY;
+ s.diagnosticReason=s.diagnosticFresh?telemetry.diagnosticReason:0U;
+ s.diagnosticFlags=s.diagnosticFresh?telemetry.diagnosticFlags:0U;
 }
