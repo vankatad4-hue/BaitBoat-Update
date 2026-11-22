@@ -32,10 +32,23 @@ assert "INA231_PHYSICAL_COMMISSIONED=false" in ina
 sensor=get("Boat/source/tracker_sensor_profile.example.h")
 assert "c.ina231BoardAndWiringSigned=false" in sensor
 assert "c.ina231DmmCalibrationSigned=false" in sensor
-for fn,count in [("Boat/docs/BOAT_R23_GPIO_AND_LEVEL_SIGNOFF.csv",32),
-                 ("Boat/docs/BOAT_R25_POWER_LEVEL_EVIDENCE.csv",28),
-                 ("Boat/docs/BOAT_R27_INA231_ACCEPTANCE.csv",21)]:
-    with (ROOT/fn).open(newline="",encoding="utf-8") as f:
-        tests=list(csv.DictReader(f))
-    assert len(tests)==count and all(t["Status"]=="NOT_RUN" for t in tests)
+# R23 predates R25/R27 and uses Test_Status plus three per-pin bench
+# columns, not the newer generic Status. Explicit schemas are fail-closed:
+# absent/renamed fields or any physical PASS/FAIL/partial value rejects CI.
+acceptance_files = [
+    ("Boat/docs/BOAT_R23_GPIO_AND_LEVEL_SIGNOFF.csv", 32,
+     ("Continuity_Test", "Power_On_Level_Test",
+      "Power_Off_Level_Test", "Test_Status")),
+    ("Boat/docs/BOAT_R25_POWER_LEVEL_EVIDENCE.csv", 28, ("Status",)),
+    ("Boat/docs/BOAT_R27_INA231_ACCEPTANCE.csv", 21, ("Status",)),
+]
+for fn, count, status_fields in acceptance_files:
+    with (ROOT / fn).open(newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        assert reader.fieldnames and all(x in reader.fieldnames for x in status_fields), fn
+        tests = list(reader)
+    assert len(tests) == count, (fn, len(tests), count)
+    assert len({t["Check_ID"] for t in tests}) == count, fn
+    assert all(all(t[field] == "NOT_RUN" for field in status_fields)
+               for t in tests), fn
 print("R29 shared 3S bus policy and 81 physical NOT_RUN safeguards verified; no motor/solenoid hardware commissioned")
