@@ -85,3 +85,7 @@ The [R22 ADS1115 battery bench sketch](Boat/hardware_test/ADS1115_Battery_Bench/
 The actual purchased PCB revision and headers, M100 PRO 5V-powered UART/I²C signal levels, E22 TXD/AUX levels, RF carriers, independent STOP/watchdog/current-zero hardware, battery ADC calibration and output dummy-load acceptance remain **unverified**. Firmware safety flags remain off and high-current motor/solenoid inputs must stay disconnected.
 
 The [R23 electrical sign-off worksheet](Boat/docs/BOAT_R23_GPIO_AND_LEVEL_SIGNOFF.csv) enumerates 32 physical tests (18 GPIOs and 14 interface/power/safety checks), all **NOT_RUN**. The documented header mapping is not a signed physical acceptance.
+
+## R24 boot/reset diagnostic follow-up
+
+The [R24 shared MCP23017 boot/reset safety review](Boat/docs/BOAT_R24_BOOT_RESET_OUTPUT_SAFETY.md) records the manufacturer's EKM014 120 kΩ input pull-down behavior and adds a **non-actuating software register audit** covering both EKM014 GPA0–3 and MDD20A DIR GPB0–1. It includes simulated reset, active output and I²C-failure regression tests in Boat host CI. This is **not an independent electrical watchdog or cutoff**, does not claim coil-current-zero, and does not authorize motor/solenoid high-current wiring. All R23 electrical signoffs are still NOT_RUN; Boat VER014 / Remote VER028 unchanged.
