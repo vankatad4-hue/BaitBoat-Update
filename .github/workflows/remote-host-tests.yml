@@ -37,6 +37,18 @@ jobs:
             Remote/source/radio_payload_codec.cpp Remote/tests/radio_payload_codec_test.cpp \
             -o /tmp/remote_payload_codec
           /tmp/remote_payload_codec
+      - name: R30F Remote diagnostic codec and read-only telemetry isolation
+        run: |
+          cmp Boat/source/radio_safety_diagnostic_v1.h Remote/source/radio_safety_diagnostic_v1.h
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
+            Remote/source/radio_payload_codec.cpp Remote/source/radio_payload_encoder.cpp \
+            Remote/tests/r30f_optional_safety_diag_codec_test.cpp -o /tmp/r30f_remote_codec
+          /tmp/r30f_remote_codec
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/stubs -IRemote/source \
+            Remote/source/boat_telemetry.cpp Remote/source/radio_payload_codec.cpp \
+            Remote/tests/r30f_diagnostic_telemetry_isolation_test.cpp -o /tmp/r30f_remote_isolation
+          /tmp/r30f_remote_isolation
+          python3 Boat/tools/verify_r30f_diagnostic_protocol.py
       - name: ACK tracker
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
