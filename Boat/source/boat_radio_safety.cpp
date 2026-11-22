@@ -17,7 +17,10 @@ void BoatCommandDeduplicator::markExecuted(uint8_t sender, uint8_t epoch, uint16
     writeIndex_=(uint8_t)((writeIndex_+1U)%32U);
 }
 BoatFailsafeDecision boatEvaluateLinkFailsafe(const BoatLinkSafetyInputs &in) {
-    if (in.nrfValidFresh || in.loraValidFresh) return BOAT_FS_NONE;
+    // Backup alone is not continuous manual authority: LoRa pacing exceeds
+    // the Boat's 200ms motor command lease. Only primary freshness suppresses
+    // link-loss action; backup remains available for STOP/Home requests.
+    if (in.nrfValidFresh) return BOAT_FS_NONE;
     if (in.autonomousMissionActive && in.gnssValidFresh && in.headingValid &&
         in.batteryHealthy && in.geofenceValid)
         return BOAT_FS_RETURN_HOME;
