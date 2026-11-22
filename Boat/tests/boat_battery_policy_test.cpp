@@ -9,6 +9,8 @@ int main(){
  s=m.update(true,10700,3099);assert(!s.rthRequested);
  s=m.update(true,10700,3100);assert(s.rthRequested&&s.band==BOAT_BATTERY_RED&&!s.critical);
  s=m.update(true,12000,3200);assert(s.rthRequested&&s.band==BOAT_BATTERY_RED);
+ m.reset();s=m.update(true,12600,0);assert(s.valid&&!s.critical);
+ s=m.update(true,9800,1);assert(s.critical&&s.band==BOAT_BATTERY_CRITICAL); // raw collapse bypasses filter
  m.reset();s=m.update(true,10000,0);assert(s.band==BOAT_BATTERY_RED&&!s.critical);
  s=m.update(true,9000,20);assert(s.critical&&s.band==BOAT_BATTERY_CRITICAL&&!s.rthRequested);
  m.reset();s=m.update(true,12000,0);assert(s.valid);
