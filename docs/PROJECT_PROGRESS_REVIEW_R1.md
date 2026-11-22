@@ -555,3 +555,10 @@ Manufacturer review corrected the E22-900T22S VCC rail to 5V from DCDC6-16-TO5; 
 - The candidate component values and shared divider constant are in `Boat/source/boat_battery_divider.h`; the sensor profile remains uncommissioned.
 - [R21 ADC wiring and electrical commissioning](../Boat/docs/BOAT_R21_BATTERY_ADC_COMMISSIONING.md), [blank lab worksheet](../Boat/docs/BOAT_R21_ADC_CALIBRATION_WORKSHEET.csv) and additional host tests are committed.
 - CI validated Boat host tests and diagnostic ESP32-S3 compilation on R21 code commit `bd4199585dbd0ec48b3c745aa8b35612aa78e8f4`. No physical sensor calibration, output commissioning or water acceptance has occurred.
+
+## R22 independent ADC battery bench (2026-11-22)
+
+- Prepared independent, GPIO-locked [ADS1115 raw-readout bench sketch](../Boat/docs/BOAT_R22_ADS1115_SENSOR_ONLY_BRINGUP.md), using R21 divider constant, with no radio/mission/actuator imports. Outputs serial readings labelled `UNCOMMISSIONED`, not propulsion permission.
+- Portable host checks cover full 12.6V 3S charge, low/RTH threshold and invalid raw ranges, and a static check validates the default GPIO lockout and isolation from actuator APIs.
+- Boat host run #45021864048 succeeded; ESP32-S3 target run #45021889338 succeeded for both main diagnostic and separate locked ADC sketch. ZIP release packaging remains on the active branch; no official version promotion until physical acceptance.
+- Physical ADC power-on/off sequencing, DMM readings, actual chip identity and independent hardware STOP/feedback validation are NOT_RUN.
