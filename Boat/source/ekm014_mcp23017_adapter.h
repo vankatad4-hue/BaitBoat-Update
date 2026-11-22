@@ -16,24 +16,24 @@ public:
   // BANK=0. Clear OLATA before changing GPA0..3 from inputs to outputs.
   if(!bus_.writeRegister(address_,0x0A,0x00))return false;
   if(!bus_.writeRegister(address_,0x14,0x00))return false;
-  if(!bus_.writeRegister(address_,0x00,0xF0))return failClosed();
+  if(!bus_.writeRegister(address_,0x00,0xF0)){failClosed();return false;}
   uint8_t actual=0xFF;
-  if(!bus_.readRegister(address_,0x12,actual)||(actual&0x0FU)!=0U)return failClosed();
+  if(!bus_.readRegister(address_,0x12,actual)||(actual&0x0FU)!=0U){failClosed();return false;}
   ready_=true;return true;
  }
  bool setChannel(flytec_ekm014_r16::Channel channel){
   const uint8_t mask=flytec_ekm014_r16::logicalMask(channel);
   if(!ready_||!flytec_ekm014_r16::isSingleChannelMask(mask))return false;
   if(activeMask_!=0U&&activeMask_!=mask)return false; // never switch channels hot
-  if(!bus_.writeRegister(address_,0x14,mask))return failClosed();
+  if(!bus_.writeRegister(address_,0x14,mask)){failClosed();return false;}
   uint8_t actual=0xFF;
-  if(!bus_.readRegister(address_,0x12,actual)||(actual&0x0FU)!=mask)return failClosed();
+  if(!bus_.readRegister(address_,0x12,actual)||(actual&0x0FU)!=mask){failClosed();return false;}
   activeMask_=mask;return true;
  }
  bool allOff(){
-  if(!bus_.writeRegister(address_,0x14,0x00))return failClosed();
+  if(!bus_.writeRegister(address_,0x14,0x00)){failClosed();return false;}
   uint8_t actual=0xFF;
-  if(!bus_.readRegister(address_,0x12,actual)||(actual&0x0FU)!=0U)return failClosed();
+  if(!bus_.readRegister(address_,0x12,actual)||(actual&0x0FU)!=0U){failClosed();return false;}
   activeMask_=0;return true;
  }
  bool ready()const{return ready_;}
@@ -41,7 +41,7 @@ public:
  bool failClosed(){
   ready_=false;activeMask_=0;
   // Best effort only: an I2C failure can leave the expander latch unchanged.
-  return bus_.writeRegister(address_,0x14,0x00);
+  (void)bus_.writeRegister(address_,0x14,0x00);return false;
  }
 private:
  Mcp23017RegisterBus &bus_;
