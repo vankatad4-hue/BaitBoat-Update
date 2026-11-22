@@ -34,8 +34,8 @@ int main() {
   assert(o.leftMotor==1000 && o.rightMotor==-1000);
   i.primaryLinkFresh=false;i.backupLinkFresh=true;
   assert(boatPolicyApply(c,false,i,s,o)==BOAT_POLICY_REJECTED_SAFETY); // primary frame requires primary freshness
-  assert(boatPolicyApply(c,true,i,s,o)==BOAT_POLICY_ACCEPTED);
-  assert(o.leftMotor==250 && o.rightMotor==-250);
+  assert(boatPolicyApply(c,true,i,s,o)==BOAT_POLICY_REJECTED_SAFETY);
+  assert(o.leftMotor==0 && o.rightMotor==0);
   i=ready();
 
   c=command(CMD_SET_MODE);c.mode=MODE_AUTOPILOT;
