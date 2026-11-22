@@ -21,31 +21,27 @@ Boat pack: 3S4P Li-ion, nominal 11.1 V, fully charged ~12.6 V, nominal low opera
 ## Functional rail topology (no commissioning wiring permit)
 
 ```text
-                    Li-ion 3S4P + BMS, pack ~9.0–12.6 V
-                                  |
-                       MAIN SWITCH / DC RATED
-                                  |
-                        FUSED + PROTECTED LOGIC BUS
-                                  |
-               +------------------+------------------+
-               |                  |                  |
-       Olimex DCDC6-16      Pololu S13V20F5   Pololu D24V10F3
-       5 V MCU, ≤2A         5 V EKM VL          3.3 V RF, ≤1A
-          |                       |                  |
-    ESP32-S3 DevKitC        EKM014 driver       nRF PA/LNA
-    onboard 3V3 LDO         *VL only*           E22-900T22S
-               |
-               |
-               +--------------------- RECOM R-78E3.3-0.5
-                                     3.3 V sensor bus, 0.5A
-                                            |
-                                 GY-91 + QMC + Waveshare 15391
+  3S PACK + BMS (nominal 11.1 V, verify sag/fuse)
+                 |
+       MASTER SWITCH + INDIVIDUAL FUSED INPUT BRANCHES
+                 |
+       +---------+----------+---------+-----------+
+       |         |          |         |
+     OLIMEX    POLOLU     POLOLU     RECOM
+      5 V       5 V        3.3 V      3.3 V
+      MCU        VL         RADIO      SENSORS
+       |         |          |         |
+     ESP32     EKM014    nRF PA/LNA   GY-91
+     DevKitC    VL only   E22 UART    QMC5883L
+                                   MCP23017 15391
 
-  Separate fused, hardware-interlocked high-current load branches:
-  PACK -> independently verified STOP / DC contactors -> MDD20A MOTOR
-                                                  -> EKM014 VH coil load
-  Those DC load-isolation devices and current-zero hardware remain UNSELECTED.
-  A PLC 24 V rail would be separate, with its own converter and measured budget.
+  High-current load power is an ENTIRELY SEPARATE protected branch:
+  PACK -> independently qualified DC-rated STOP / cutoff ->
+       (A) MDD20A / 2 motors
+       (B) EKM014 VH / four 12 V coils
+
+  Neither the 5 V VL supply nor any GPIO is an independent STOP.
+  The safety-controller 24 V rail (if selected) is separate.
 ```
 
 **No cross-feed**: do NOT use an external 3.3 V regulator to inject into ESP32 3V3 when MCU is already powered from 5 V/USB, and do not backfeed ESP32 GPIO via I²C pullups if sensor 3.3 V is present while MCU is off. The exact board has **three mutually exclusive supply options**: USB, header 5V/GND or header 3V3/GND ([Espressif official DevKitC-1 guide](https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-devkitc-1/user_guide_v1.1.html)). Use exactly **one 5 V injection path** at a time; when external header 5V is fitted, avoid concurrent USB power unless a verified prebuilt isolating accessory is used. USB power can be chosen through appropriate cable; do not assert the attached connector style until board revision is inspected. Never power full 3S directly into ESP32 5 V, GY-91, MCP23017 or 3.3 V radios.
