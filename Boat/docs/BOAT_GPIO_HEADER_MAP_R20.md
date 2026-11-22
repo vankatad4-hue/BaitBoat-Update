@@ -70,7 +70,7 @@ The selected E22-900T22S is the 26-pad UART module. Verify the exact suffix and 
 - Pad 12 ANT → 50Ω 868MHz antenna feed.
 - Connect all module GND pads to the RF/power ground. Do not use the antenna shield as the only ground return.
 
-**Power correction:** E22-900T22S should be supplied from the Boat 5V main rail, not the 3.3V D24V10F3 rail, to meet the manufacturer's rated RF output-power condition. UART/control logic remains 3.3V TTL. The DCDC6-16-TO5 5V/2A rail is the candidate source, subject to measured peak current, ripple and temperature. Never feed 5V into RXD, TXD, M0, M1 or AUX.
+**Power correction:** The selected E22-900T22S supply is the Boat 5V main rail. EBYTE specifies a range including 3.3V and 5V (typical 5V); 5V is the chosen supply allocation, not an absolute requirement for basic operation. UART/control logic remains 3.3V TTL. The DCDC6-16-TO5 5V/2A rail is the candidate source, subject to measured peak current, ripple and temperature. Never feed 5V into RXD, TXD, M0, M1 or AUX.
 
 Use a premade carrier/breakout for the SMD E22 module; do not design a custom PCB.
 
