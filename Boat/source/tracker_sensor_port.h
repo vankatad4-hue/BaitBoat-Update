@@ -11,6 +11,7 @@
 #include "m100_compass_qmc5883l.h"
 #include "carrier_sensor_math.h"
 #include "boat_hardware_supervisor.h"
+#include "ina231_acquisition_r28.h"
 // Logic-only sensor driver. Caller must establish verified GNSS power/reset
 // and choose exact UART/I2C header pins. Does not set safety or stationary flags.
 struct TrackerSensorConfig{
@@ -20,6 +21,10 @@ struct TrackerSensorConfig{
  uint8_t imuAddress,adcAddress;
  CarrierHeadingCalibration heading;
  CarrierBatteryCalibration battery;
+ // R28 INA231 selected; all three local signoff gates default false.
+ bool ina231BoardAndWiringSigned=false;
+ bool ina231DmmCalibrationSigned=false;
+ uint8_t ina231Address=boat_r27::I2C_CANDIDATE_ADDRESS;
 };
 class TrackerSensorPort{
 public:
@@ -57,6 +62,8 @@ private:
  bool bmpReady_=false,bmpValid_=false;uint8_t bmpAddress_=0;
  Bmp280Calibration bmpCal_{};int32_t bmpTemp_=0;uint32_t bmpPressure_=0,bmpAt_=0,bmpPollAt_=0;
  bool configured_=false,imuReady_=false,headingValid_=false,voltageValid_=false,adcPending_=false;
+ bool ina231Ready_=false;
+ boat_r28::VoltageSampler ina231Sampler_{};
  double heading_=0;uint16_t voltage_=0;
  uint32_t headingAt_=0,voltageAt_=0,adcAt_=0,imuPollAt_=0;
  double adjust_[3]={1,1,1};
