@@ -52,3 +52,10 @@ At the DDR-30G-24 published full **30W** output and published nominal **89%** ef
 
 ### R67 module choice downstream note (non-actuating)
 The user confirmed **GY-91 MPU-9250 + BMP280** and exact **Waveshare MCP23017 IO Expansion Board SKU15391** for Boat. The MCP23017's **manufacturer default I²C 0x27** supersedes R65 generic 0x20 assumptions. This only establishes a low-voltage four-request expander model; it **does not supply safety-rated, independently timed 4-channel onehot control** or reduce the 18-input/6-output independent safety requirements. The actual I/O PLC interface, level conversion and physical DC isolation remain unresolved. See [R67 document](BOAT_R67_GY91_MCP23017_SELECTION.md).
+
+
+## R77 firmware policy update — no new hardware
+
+The user directed that no physical elements be added and that the boat stop all outputs when both radios are lost, then continue an eligible autonomous mission when an authenticated link returns. R77 implements this as a software watchdog over existing nRF24/E22 freshness. It removes automatic RTH on total link loss, holds eligible mission state, requires neutral/new manual input after primary recovery, and aborts rather than replaying an interrupted release. The authenticated session is retained across ordinary RF silence so backup E22 can restore after a long outage.
+
+**This does not close R66 independent hardware requirements.** The watchdog runs on the main ESP32-S3 and cannot interrupt power on MCU freeze, stuck GPIO, shorted driver MOSFET or welded contactor. The physical STOP, motor/EKM014 VH contactors, independent watchdog, monitored feedback, one-hot bounded non-retriggerable pulse controller and current-zero sensors remain unselected/uncommissioned. No actuator power or physical acceptance is authorized. See [R77 implementation](BOAT_R77_DUAL_RADIO_WATCHDOG_IMPLEMENTATION.md).
