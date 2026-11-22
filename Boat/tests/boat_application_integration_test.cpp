@@ -36,12 +36,12 @@ int main(){
  request(r,CMD_CLEAR_STOP,2);at(a,4);assert(r.acks.back().success);
  // Missing active/validated mission must be rejected; no optimistic EXECUTED ACK.
  request(r,CMD_SET_MODE,191,LINK_NRF_PRIMARY);at(a,5);
- assert(!r.acks.back().success);
+ assert(!r.acks.back().success && r.returnRequests==1);
  r.phase=MC_OUTBOUND;r.tx=42;r.returnAllowed=true;r.backup=true;
  r.primary=false;
  request(r,CMD_SET_MODE,192,LINK_LORA_BACKUP);at(a,6);
  assert(r.acks.back().success && r.acks.back().reply==LINK_LORA_BACKUP);
- assert(r.returnRequests==1 && r.detached);
+ assert(r.returnRequests==2 && r.detached);
  r.primary=true;r.backup=false;r.returnAllowed=false;
  r.detached=false;r.phase=MC_IDLE;r.tx=0;
  unsigned id=3;
