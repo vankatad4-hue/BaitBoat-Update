@@ -1,4 +1,5 @@
 #include "radio_payload_encoder.h"
+#include "radio_safety_diagnostic_v1.h"
 #include <string.h>
 
 static void clear8(uint8_t out[8]) { memset(out, 0, 8); }
@@ -43,6 +44,12 @@ bool radio_encodeTelemetryPayload(const RadioDecodedPayload &in, uint8_t out[8])
         out[0]=7;put16(out+1,(uint16_t)in.temperatureCentiC);
         out[3]=(uint8_t)in.pressurePa;out[4]=(uint8_t)(in.pressurePa>>8);
         out[5]=(uint8_t)(in.pressurePa>>16);out[6]=(uint8_t)(in.pressurePa>>24);return true;
+    case RADIO_PAYLOAD_SAFETY_DIAGNOSTIC: {
+        // Only telemetry bits; never encode STOP, ACK or a command.
+        const radio_r30f::Diagnostic d={in.diagnosticReason,
+            in.diagnosticFlags,in.diagnosticMillivolts,in.diagnosticSequence};
+        return radio_r30f::encode(d,out);
+    }
     default:
         return false;
     }
