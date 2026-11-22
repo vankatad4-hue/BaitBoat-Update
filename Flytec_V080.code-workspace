@@ -1,0 +1,31 @@
+{
+  "folders": [
+    {
+      "name": "Flytec Boat — PlatformIO",
+      "path": "Boat"
+    },
+    {
+      "name": "Flytec Remote — PlatformIO",
+      "path": "Remote"
+    },
+    {
+      "name": "Shared docs",
+      "path": "docs"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.pio": true
+    },
+    "search.exclude": {
+      "**/.pio": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "platformio.platformio-ide",
+      "ms-vscode.cpptools",
+      "ms-python.python"
+    ]
+  }
+}
