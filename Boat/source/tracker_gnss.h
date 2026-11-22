@@ -73,18 +73,19 @@ private:
    if(n<3||!number(f[2],d)||d!=3){gsaValid_=false;return;}
    gsaValid_=true;fixType_=3;gsaAt_=now;
   }else if(!strcmp(kind,"RMC")){
-   if(n<10||!utc(f[1],epoch)||strcmp(f[2],"A")||!number(f[7],d)||d<0||d>194.0){
+   if(n<8||!utc(f[1],epoch)||strcmp(f[2],"A")||!number(f[7],d)||d<0||d>194.0){
     rmcValid_=false;utc_.valid=false;return;
    }
+   // Preserve existing GNSS position/speed parsing for legacy RMC without
+   // a UTC date. Such sentences NEVER qualify the wall-clock discipline.
    uint64_t unixMs=0;
-   if(!flytec_utc::utcFromNmeaDate(f[9],epoch,unixMs)){
-    rmcValid_=false;utc_.valid=false;return;
-   }
+   const bool utcDateValid=n>=10&&flytec_utc::utcFromNmeaDate(f[9],epoch,unixMs);
    if(rmcSeen_&&rmcUtc_==epoch)return;
    rmcSeen_=rmcValid_=true;rmcUtc_=epoch;rmcAt_=now;speed_=(uint16_t)std::llround(d*51.444444);
    // NMEA sentence-end timestamp: serial buffering latency unknown and
    // no PPS anchor. Time is COARSE only and NOT stop-latency evidence.
-   utc_.unixMs=unixMs;utc_.localMs=now;utc_.receiverTimeAccMs=1000U;utc_.valid=true;
+   utc_.unixMs=utcDateValid?unixMs:0;
+   utc_.localMs=now;utc_.receiverTimeAccMs=1000U;utc_.valid=utcDateValid;
   }else if(!strcmp(kind,"GST")){
    double latSigma,lonSigma;
    if(n<9||!utc(f[1],epoch)||!number(f[6],latSigma)||!number(f[7],lonSigma)||latSigma<=0||lonSigma<=0){gstValid_=false;return;}
