@@ -20,8 +20,8 @@ Status: active procurement authority; selected parts are not yet purchased/commi
 | Four-channel release driver | EKM014 | Selected |
 | Main 5V rail | Olimex DCDC6-16-TO5 | Selected; one fitted, second optional only if measurements justify |
 | EKM014 logic rail | TRACO TSR 2-2450 | Selected |
-| 3.3V E22 rail | Pololu D24V10F3 #2830 | Selected |
-| 3.3V sensor/I/O rail | Pololu D24V10F3 #2830 | Selected |
+| 3.3V RF rail | Pololu D24V10F3 #2830 unit 1 | nRF24L01+ PA/LNA |
+| 3.3V sensor/I/O rail | Pololu D24V10F3 #2830 unit 2 | GY-91, ADS1115, MCP23017 |
 | Battery | 3S4P 18650 Li-ion, 11.1V nominal, ~10Ah, 20A BMS | Existing design baseline |
 
 The ADS1115 was already assumed by the Boat's I²C ADC acquisition code at address 0x48 but was omitted from R19's parts table. R20 makes that module explicit. It is a measurement module, not a separate safety controller or power cutoff.
@@ -71,10 +71,10 @@ Full behavior: [BOAT_R79_LOW_BATTERY_FAILSAFE.md](BOAT_R79_LOW_BATTERY_FAILSAFE.
 
 | Rail | Source | Loads |
 |---|---|---|
-| 5V main logic/GNSS | 1× DCDC6-16-TO5 | ESP32-S3 board and M100 PRO; validate combined peak current/noise |
+| 5V main logic/GNSS/RF | 1× DCDC6-16-TO5 (5V/2A) | ESP32-S3 board, M100 PRO and E22-900T22S VCC; validate combined peak current/noise |
 | 5V EKM014 logic | 1× TSR 2-2450 | EKM014 VL only |
-| 3.3V RF | D24V10F3 #2830 unit 1 | E22-900T22S |
-| 3.3V sensors/I/O | D24V10F3 #2830 unit 2 | GY-91, ADS1115, MCP23017 and assigned low-voltage branch |
+| 3.3V RF | D24V10F3 #2830 unit 1 | nRF24L01+ PA/LNA |
+| 3.3V sensors/I/O | D24V10F3 #2830 unit 2 | GY-91, ADS1115, MCP23017 |
 | Motor power | 3S battery through fused distribution | MDD20A |
 | Solenoid power | 3S battery through fused distribution | EKM014 VH |
 
@@ -87,9 +87,13 @@ Do not parallel regulator outputs. Confirm nRF24 PA/LNA supply filtering against
 - No custom carrier PCB or custom driver PCB is part of the active design.
 - Older Heltec and central-carrier architecture records are in [the historical archive](../../docs/archive/2026-11-22/README.md).
 
+## GPIO/header map
+
+The unsigned candidate pin allocation is documented in [BOAT_GPIO_HEADER_MAP_R20.md](BOAT_GPIO_HEADER_MAP_R20.md). Firmware pin-audit flags remain false until the exact purchased board revision is verified.
+
 ## Remaining hardware decisions and acceptance
 
-1. Complete exact ESP32-S3 board-revision GPIO/header mapping for GNSS UART, nRF24 SPI, E22 UART/M0/M1/AUX, GY-91, ADS1115, MCP23017, MDD20A and EKM014.
+1. Sign the candidate GPIO/header map in [BOAT_GPIO_HEADER_MAP_R20.md](BOAT_GPIO_HEADER_MAP_R20.md) against the exact purchased ESP32-S3 board revision.
 2. Verify ADS1115 divider ratio and offset against a DMM; commission sensor profile only after calibration.
 3. Measure supply current, ripple and temperature on DCDC6-16-TO5, both D24V10F3 rails and TSR 2-2450 during boot, GNSS acquisition and simultaneous radio transmission.
 4. Measure each 550 motor startup/stall current and each solenoid pulse current; calculate fuses, cable gauges and connector ratings against the 20A BMS.
