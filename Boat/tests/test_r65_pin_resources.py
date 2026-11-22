@@ -102,7 +102,7 @@ class BoatR65PinResources(unittest.TestCase):
     def test_hardware_still_uncommissioned(self):
         config = (ROOT / "Boat/source/boat_radio_hw_config.h").read_text()
         for macro in RADIO_DISABLED_MACROS:
-            self.assertRegex(config, rf"(?m)^#define {macro} \\(-1\\)$")
+            self.assertRegex(config, rf"(?m)^#define {macro} \(-1\)$")
         for macro in RADIO_HOLDS:
             self.assertRegex(config, rf"(?m)^#define {macro} 0$")
         sketch = (ROOT / "Boat/source/firmware/Flytec_Boat.ino").read_text()
