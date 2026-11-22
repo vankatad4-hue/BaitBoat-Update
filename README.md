@@ -16,6 +16,31 @@ This repository contains the Boat controller, handheld Remote, firmware, hardwar
 
 Older Heltec Wireless Tracker/SX1262 and central-carrier-PCB documents are archived. The active design uses ready-made modules and removable wiring; no custom PCB is required.
 
+## VS Code + PlatformIO (parallel migration)
+
+The complete Boat and Remote source trees now have experimental, **no-flash**
+PlatformIO configurations alongside their existing Arduino CLI builds:
+
+- [Boat/platformio.ini](Boat/platformio.ini) — ESP32-S3 DevKitC-1 N32R16V, 32 MB OPI flash / 16 MB OPI PSRAM.
+- [Remote/platformio.ini](Remote/platformio.ini) — Waveshare ESP32-S3-Touch-LCD-4.3 Standard, 16 MB flash / OPI PSRAM, LVGL 9.6.0.
+- [Full Windows VS Code instructions](docs/PLATFORMIO_VSCODE_MIGRATION_R1.md), [multi-folder workspace](Flytec_V080.code-workspace) and [experimental GitHub compile workflow](.github/workflows/platformio-migration-build.yml).
+
+To compile from a PlatformIO terminal without flashing:
+
+```powershell
+pio run -d Boat -e boat_n32r16v_diagnostic
+pio run -d Remote -e remote_waveshare_43_diagnostic
+```
+
+The original `.ino` files remain the one source of truth and are included once by
+PlatformIO-only entry-point adapters. `pio run --target upload` is blocked by the
+custom upload command on both endpoints until actual hardware acceptance.
+The PIO platform (espressif32 8.0.0 / Arduino ESP32 core 3.3.12) is newer than
+the authoritative Arduino CLI reference (3.0.2), so both full target builds
+must pass before replacing that reference workflow. This change **does not**
+commission RF electronics, open GPIO audit flags, attach motor/solenoid
+drivers or promote Boat VER014 / Remote VER028.
+
 ## Boat hardware baseline
 
 | Function | Active selection |
