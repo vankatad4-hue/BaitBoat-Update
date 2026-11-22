@@ -533,3 +533,8 @@ User reaffirmed **EBYTE E22-900T22S UART SMD**, one module in Boat and one match
 - **BINDER MPE 006-1-003-D-B1STF-XS0** is now the primary dimensioned SIP3 socket candidate: 3-pin, 2.54mm, 3A, with manufacturer-published square mating-pin size 0.25×0.45mm. TRACO specifies 0.46×0.46mm nominal with ±0.1mm pin tolerance, so compatibility is **not guaranteed**; sample fit and written manufacturer confirmation are required.
 - econ connect MP70S3 is demoted to secondary because the product listing gives a round pin form and no square mating-pin tolerance. If neither socket passes, use direct-solder pigtail replacement rather than forcing pins into an incompatible socket.
 - Updated [R75 mechanical/fuse plan](BOAT_R75_TSR_SOCKET_HARNESS_AND_FUSE_PLAN.md), [hardware audit](BOAT_R75_HARDWARE_CONFIRMATION_AUDIT.md), [purchase register](../../docs/PROJECT_PURCHASE_REGISTER_R20.csv), [acceptance matrix](BOAT_R75_HARDWARE_ACCEPTANCE.csv) and static CI test. All physical fit tests remain NOT_RUN.
+
+
+## R75B — DCDC6 input connector clarification
+
+Olimex explicitly says DCDC6-16-TO5 pairs with its PWR-CABLE, but the PWR-CABLE page describes a female barrel pigtail and contains an inner-diameter discrepancy (2.1mm in the connector description versus 2.5mm elsewhere). DCDC6 schematic shows center-positive input. Treat PWR-CABLE as a candidate only until physical connector fit and polarity are verified; retain branch fuse and keyed wire termination as open items. R75 plan, audit, checkpoint and purchase register updated.
