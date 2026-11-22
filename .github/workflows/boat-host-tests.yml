@@ -9,6 +9,7 @@ on:
       - 'Boat/tools/**'
       - 'Boat/tests/**'
       - 'Boat/docs/BOAT_R25_POWER_LEVEL_EVIDENCE.csv'
+      - 'Boat/docs/BOAT_R27_INA231_ACCEPTANCE.csv'
       - '.github/workflows/boat-host-tests.yml'
   pull_request:
     branches:
@@ -18,6 +19,7 @@ on:
       - 'Boat/tools/**'
       - 'Boat/tests/**'
       - 'Boat/docs/BOAT_R25_POWER_LEVEL_EVIDENCE.csv'
+      - 'Boat/docs/BOAT_R27_INA231_ACCEPTANCE.csv'
       - '.github/workflows/boat-host-tests.yml'
 
 jobs:
@@ -229,6 +231,13 @@ jobs:
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/ina226_candidate_voltage_r26_test.cpp -o /tmp/boat_r26_ina226
           /tmp/boat_r26_ina226
           grep -F 'INA226_HARDWARE_SELECTED = false' Boat/source/ina226_voltage_candidate_r26.h
+      - name: R27 selected Ardboard INA231 BUS-only contract, R79 policy and ADS fail-closed
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/ina231_voltage_contract_r27_test.cpp -o /tmp/boat_r27_ina231
+          /tmp/boat_r27_ina231
+          grep -F 'INA231_PHYSICAL_COMMISSIONED=false' Boat/source/ina231_voltage_contract_r27.h
+          grep -F 'if(boat_r27::INA231_MODULE_SELECTED)' Boat/source/tracker_sensor_port.cpp
+          grep -F 'c.battery={false' Boat/source/tracker_sensor_profile.example.h
       - name: R66 COTS safety PLC capacity and external interlock acceptance oracle (host only)
         run: |
           python3 -m unittest Boat/tests/test_r66_safety_plc_budget.py -v
