@@ -99,10 +99,12 @@ def check():
     bom=read_csv(BOM)
     selected=[r for r in bom if r["Side"]=="Boat" and r["Part_Number"]=="EKM014"]
     assert len(selected)==1 and selected[0]["State"]=="OWNER_SELECTED_NOT_INSTALLED_NOT_QUALIFIED"
+    # Current docs deliberately supersede the R18 sourcing snapshot with R20.
+    # Keep provenance in the old release while requiring current authority labels.
     for x in ("docs/CONTINUATION_CHECKPOINT_VER001.md",
-              "Boat/docs/PROJECT_MASTER_STATUS.md",
-              "Remote/releases/CHANGELOG_MASTER_VER026.md"):
-        assert "R18" in (ROOT/x).read_text(encoding="utf-8")
+              "Boat/docs/PROJECT_MASTER_STATUS.md"):
+        assert "R20" in (ROOT/x).read_text(encoding="utf-8")
+    assert "R18" in (ROOT/"Remote/releases/CHANGELOG_MASTER_VER026.md").read_text(encoding="utf-8")
     print(f"R18 PASS: {len(items)} supplier entries, BG/foreign distinctions and approved retailer URLs checked")
     print("Farnell BG RECOM and Bulgarian Olimex source verified as listings; exact EKM014 / MDD20A BG seller NOT proven")
     print("NO live prices reserved, no AliExpress seller approved, and NO actuator power commissioned")
