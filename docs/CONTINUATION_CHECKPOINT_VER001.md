@@ -941,3 +941,14 @@ The primary socket candidate is now **BINDER MPE 006-1-003-D-B1STF-XS0** (3-pin,
 ## R75C — DCDC6 PWR-CABLE full-charge check
 
 DCDC6 input range is 6–16V, but Olimex lists PWR-CABLE as 12V/3A while the 3S pack reaches 12.6V. The cable page also conflicts on 2.1mm vs 2.5mm barrel inner diameter. Do not assume the cable is accepted until voltage suitability at 12.6V, actual fit and center-positive polarity are verified. DCDC6 schematic shows center-positive input; the official DCDC6 page says PWR-CABLE pairs with it. Purchase register and R75 plan/audit now flag this; input fuse and keyed harness still open.
+
+
+## R76 — Original controller board comparison and safety verification (2026-11-22)
+
+The user supplied photos of original receiver PCB **JR-V030RX-2507**. Visual evidence shows B+/B− battery pads, six-wire GPS header labelled SDA/SCL/GND/+5V/RX/TX, ANT connection, four M1–M4 connectors (their loads are not yet mapped), central controller IC, onboard power conversion and multiple MOSFET banks on the reverse. It is visually consistent with the V030/V080 receiver family, but exact revision/schematic and IC/FET part numbers remain unknown.
+
+**Adopt as design patterns only:** six-wire GPS UART+I²C harness; two reversible brushed motor channels; four individually switched actuator channels; serviceable battery/power connectors. The current MDD20A dual H-bridge + EKM014 four-channel low-side module already reproduce the functional arrangement with replaceable modules. Keep these; do not duplicate original MOSFET circuitry in a custom PCB. EKM014 is not an H-bridge and its shared 10A fuse does not enforce one-hot operation.
+
+**Independent safety:** original photos do not show a separate safety relay, load contactors, mechanically monitored feedback, independent watchdog or fault-latched motor/coil disconnect. The V030/V080 manual's lost-signal return/electronic fence is navigation behavior, not an independent hardware E-stop. This cannot exclude a hidden/external safety device, but none is evidenced. The retrofit's R65/R66/R17 safety chain is still a design requirement only: exact STOP, contactors, watchdog, one-hot bounded pulse controller and current-zero feedback remain unselected/uncommissioned. No actuator power.
+
+Detailed report: [R76 original-board reverse-engineering review](../Boat/docs/BOAT_R76_ORIGINAL_JR_V030RX_BOARD_REVIEW.md). Next: macro photographs of IC/FET markings and connected harnesses, power-off continuity mapping, then controlled current measurements for each motor/coil. No pinout/BOM/firmware/release change; Boat VER014 / Remote VER028 frozen.
