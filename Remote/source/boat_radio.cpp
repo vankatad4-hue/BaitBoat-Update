@@ -432,6 +432,13 @@ void boatRadio_update() {
 bool boatRadio_utcNow(uint64_t &unixMs){
     return sessionReady()&&g_gpsUtcClock.utcNow(millis(),unixMs);
 }
+flytec_r30h6::ClockReport boatRadio_utcQuality(){
+    // Display/status path only; a stale/unauthenticated primary link makes
+    // the quality INVALID, without touching STOP, radio freshness or RTH.
+    const uint32_t now=millis();
+    return flytec_r30h6::report(g_gpsUtcClock,now,false,
+              sessionReady()&&g_linkManager.primaryHealthy(now));
+}
 bool boatRadio_isConnected(){return g_session.established()&&g_linkManager.connected(millis());}
 BoatRadioLink boatRadio_getActiveLink(){return toPublicLink(g_linkManager.active());}
 BoatRadioState boatRadio_getState(){return toPublicState(g_linkManager.state());}
