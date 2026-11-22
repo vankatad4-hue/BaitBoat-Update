@@ -80,6 +80,10 @@ static const lv_color_t COLOR_RED =
 
 static const lv_color_t COLOR_GREEN =
     lv_color_hex(0x20C979);
+static const lv_color_t COLOR_YELLOW =
+    lv_color_hex(0xF2C94C);
+static const lv_color_t COLOR_MUTED =
+    lv_color_hex(0x94A3B8);
 
 // --------------------------------------------------
 // HELPER: CREATE A LABEL
@@ -756,17 +760,24 @@ void updateBoatScreen(const BoatState &state)
     }
     lv_label_set_text(connectionLabel, radioText);
 
-    // Do not present a fabricated battery percentage before fresh telemetry.
-    char batteryText[32];
-    if (telemetry.batteryPercentValid && (uint32_t)(millis()-telemetry.batteryPercentReceivedAtMs) <= 1500U)
-        snprintf(batteryText, sizeof(batteryText), "БАТЕРИЯ: %d%%", telemetry.batteryPercent);
-    else
-        snprintf(batteryText, sizeof(batteryText), "БАТЕРИЯ: --");
-
-    lv_label_set_text(
-        batteryLabel,
-        batteryText
-    );
+    // Boat battery is independent of the Remote's own battery. Percentage is
+    // voltage-estimated by the Boat; never show stale or invented values.
+    const uint32_t batteryNow=millis();
+    const bool percentFresh=telemetry.batteryPercentValid&&
+        (uint32_t)(batteryNow-telemetry.batteryPercentReceivedAtMs)<=1500U;
+    const bool voltageFresh=telemetry.batteryVoltageValid&&
+        (uint32_t)(batteryNow-telemetry.batteryReceivedAtMs)<=1500U;
+    char batteryText[48];
+    lv_color_t batteryColor=COLOR_MUTED;
+    if(percentFresh){
+        if(voltageFresh)snprintf(batteryText,sizeof(batteryText),"ЛОДКА: %.1fV %d%%",telemetry.batteryVoltage,telemetry.batteryPercent);
+        else snprintf(batteryText,sizeof(batteryText),"ЛОДКА: %d%%",telemetry.batteryPercent);
+        if(state.lowBattery||telemetry.batteryPercent<=20)batteryColor=COLOR_RED;
+        else if(telemetry.batteryPercent<=50)batteryColor=COLOR_YELLOW;
+        else batteryColor=COLOR_GREEN;
+    }else snprintf(batteryText,sizeof(batteryText),"ЛОДКА: --");
+    lv_label_set_text(batteryLabel,batteryText);
+    lv_obj_set_style_text_color(batteryLabel,batteryColor,LV_PART_MAIN);
 
     // Update operating mode.
     switch (state.mode)
@@ -802,7 +813,10 @@ void updateBoatScreen(const BoatState &state)
     if (inputStatusLabel) lv_label_set_text(inputStatusLabel,inputText);
     char safetyText[128];
     const char *stopText = state.emergencyStop ? (state.emergencyStopConfirmed ? "ПОТВЪРДИ" : "ЗАКЛЮЧЕН?") : (state.emergencyStopConfirmed ? "ИЗЧИСТЕН" : "UNKNOWN");
-    const char *healthText = state.failsafeActive ? "АВАР. РЕЖИМ" : (state.lowBattery ? "НИСКА БАТ." : (state.actuatorSafetyReady ? "ГОТОВО" : "БЛОКИРАНО"));
+    const bool batteryMid=percentFresh&&telemetry.batteryPercent<=50&&!state.lowBattery;
+    const char *healthText = state.lowBattery ? "НИСКА БАТ. — RTH" :
+        (batteryMid ? "СРЕДНА БАТ. — ЗАРЕДИ" :
+        (state.failsafeActive ? "АВАР. РЕЖИМ" : (state.actuatorSafetyReady ? "ГОТОВО" : "БЛОКИРАНО")));
     snprintf(safetyText,sizeof(safetyText),"STOP:%s %s ACK:%u",stopText,healthText,(unsigned)boatRadio_pendingCommandAcks());
     if (safetyStatusLabel) lv_label_set_text(safetyStatusLabel,safetyText);
 

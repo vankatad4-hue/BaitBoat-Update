@@ -1,6 +1,7 @@
 #include "mission_ui.h"
 #include "mission_storage.h"
 #include "boat_state.h"
+#include "boat_telemetry.h"
 #include "boat_radio.h"
 #include "boat_commands.h"
 #include "lake_storage.h"
@@ -144,6 +145,12 @@ static void startMission(lv_event_t *e){
  if(lv_event_get_code(e)!=LV_EVENT_CLICKED||planPanel)return;
  const MissionUploadState state=boatRadio_missionUploadState();
  if(state==UPLOAD_ACTIVE||boatRadio_missionLocked()){showExecution();return;}
+ const uint32_t batteryNow=millis();
+ const bool batteryFresh=telemetry.batteryPercentValid&&
+   (uint32_t)(batteryNow-telemetry.batteryPercentReceivedAtMs)<=1500U&&
+   telemetry.batteryVoltageValid&&(uint32_t)(batteryNow-telemetry.batteryReceivedAtMs)<=5000U;
+ if(!batteryFresh){setStatus("НЯМА АКТУАЛНИ ДАННИ ЗА БАТЕРИЯ");return;}
+ if(boatState.lowBattery||telemetry.batteryPercent<=20){setStatus("НИСКА БАТЕРИЯ — МИСИЯТА Е БЛОКИРАНА");return;}
  if(!storageReady||!sdMissionAvailable()||selectedSlot<0||selectedSlot>=SLOT_COUNT||!slots[selectedSlot].valid||!homeValid){setStatus("НУЖНИ СА ТОЧКА И ДОМ");return;}
  const WaypointSlot &w=slots[selectedSlot];
  if(!missionStorage_validCoordinate(w.lat,w.lon)||!missionStorage_validCoordinate(homeLat,homeLon)){setStatus("НЕВАЛИДНИ КООРДИНАТИ");return;}

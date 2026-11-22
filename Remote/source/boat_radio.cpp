@@ -158,7 +158,12 @@ bool boatRadio_sendCommand(const BoatCommand &command) {
 }
 
 static bool missionPreparationSafe(){
-    return g_begun && g_nrfReady && g_session.established() &&
+    const uint32_t now=millis();
+    const bool batteryFresh=telemetry.batteryPercentValid&&
+        (uint32_t)(now-telemetry.batteryPercentReceivedAtMs)<=1500U&&
+        telemetry.batteryVoltageValid&&(uint32_t)(now-telemetry.batteryReceivedAtMs)<=5000U;
+    return batteryFresh&&telemetry.batteryPercent>20&&!boatState.lowBattery&&
+           g_begun && g_nrfReady && g_session.established() &&
            g_linkManager.active()==LINK_NRF_PRIMARY && g_linkManager.primaryHealthy(millis()) &&
            boatState.radioConnected && boatState.mode==MODE_MANUAL &&
            boatState.emergencyStop && boatState.emergencyStopConfirmed &&
