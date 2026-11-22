@@ -56,7 +56,8 @@ public:
    if(!in.primaryFresh||!in.releaseInterlocks||!nav.arrived||now-releaseAt_>=5000U)abort();
    return stopped;
   }
-  if(!in.primaryFresh&&!in.backupFresh){
+  // A 3-second LoRa slot is not equivalent to fresh primary control.
+  if(!in.primaryFresh){
    if(!divertHome(in)){abort();return stopped;}
    if(!navHome)return stopped; // recompute Home geometry next tick
   }
