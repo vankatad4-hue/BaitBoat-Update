@@ -952,3 +952,20 @@ The user supplied photos of original receiver PCB **JR-V030RX-2507**. Visual evi
 **Independent safety:** original photos do not show a separate safety relay, load contactors, mechanically monitored feedback, independent watchdog or fault-latched motor/coil disconnect. The V030/V080 manual's lost-signal return/electronic fence is navigation behavior, not an independent hardware E-stop. This cannot exclude a hidden/external safety device, but none is evidenced. The retrofit's R65/R66/R17 safety chain is still a design requirement only: exact STOP, contactors, watchdog, one-hot bounded pulse controller and current-zero feedback remain unselected/uncommissioned. No actuator power.
 
 Detailed report: [R76 original-board reverse-engineering review](../Boat/docs/BOAT_R76_ORIGINAL_JR_V030RX_BOARD_REVIEW.md). Next: macro photographs of IC/FET markings and connected harnesses, power-off continuity mapping, then controlled current measurements for each motor/coil. No pinout/BOM/firmware/release change; Boat VER014 / Remote VER028 frozen.
+
+
+## R77 — Dual-radio watchdog stop/recovery implementation (2026-11-22)
+
+User directed: add no new physical elements; if there is no radio, stop all; when radio returns, continue; implement as a watchdog.
+
+Implemented in Boat firmware using existing authenticated link freshness:
+- Primary nRF24 fresh window <=250ms; backup E22 fresh window <=6000ms. Either fresh path keeps the radio watchdog alive for autonomous navigation.
+- If both links expire, motor requests go to zero and the four-channel EKM014 interface is commanded all-off. Automatic RTH on radio loss has been removed.
+- Eligible outbound/returning/paused missions are held and resume after a fresh authenticated link/session returns. Transport queues and stale commands are cleared. Manual control is primary-only and requires neutral then a fresh command after primary loss.
+- At target, backup-only coverage waits for primary before an irreversible hopper/hook release. A release intent/pulse interrupted by primary loss is aborted; active pulse is commanded off and STOP-latched, never replayed.
+- Explicit user-requested Return Home remains available.
+- Changed Boat radio safety, dual-radio port, command queue, mission controller/execution, actuator supervisor and application bridge. Tests updated for watchdog transition, hold/resume, queue purge, release non-replay and neutral-before-manual.
+
+Detailed report: [R77 implementation](../Boat/docs/BOAT_R77_DUAL_RADIO_WATCHDOG_IMPLEMENTATION.md).
+
+**Important:** this implements the requested software radio-loss behavior only. Because no new hardware elements were permitted, the watchdog runs on the same ESP32-S3 and is NOT an independent hardware power cutoff. It cannot protect against a frozen MCU, stuck GPIO or shorted driver MOSFET. The R65/R66/R17 independent physical STOP/contactors/feedback/watchdog/one-hot pulse/current-zero stack remains unimplemented and is still the blocker before live motor/coil power. No new hardware, GPIO or BOM selection; Boat VER014 / Remote VER028 remain unchanged. Host workflow and target diagnostic compile are the next gates; physical tests remain NOT_RUN.
