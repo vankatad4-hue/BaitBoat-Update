@@ -6,6 +6,7 @@ power integrity, driver current-zero or physical STOP. Never sign gates in CI.
 """
 import csv
 import io
+import json
 import pathlib
 import re
 
@@ -29,6 +30,9 @@ REQUIRED = (
     "Boat/docs/BOAT_R30H_1_RF_MODULE_SIGNOFF.csv",
     "Boat/docs/BOAT_R30H_RF_TEST_MATRIX.csv",
     "Boat/docs/BOAT_R30H_3_STOP_RF_ACCEPTANCE.csv",
+    "Boat/docs/BOAT_R30H_4_LOGIC_CAPTURE_TEMPLATE.csv",
+    "Boat/docs/BOAT_R30H_4_CAPTURE_MANIFEST_TEMPLATE.json",
+    "Boat/docs/BOAT_R30H_4_RF_ONLY_PROBE_CROSSWALK.csv",
 )
 LOCKED_MACROS = {
     "Remote/source/radio_hw_config.h": (
@@ -146,6 +150,30 @@ def verify(source):
         if row.get("Status") != "NOT_RUN" or any(row.get(c) for c in (
             "Measured_max_ms", "Approved_limit_ms", "Evidence_link", "Engineering_signoff")):
             errors.append(f"R30H-3 gate cannot be pre-approved: {row['Gate_ID']}")
+    # R30H-4: do not promote unmeasured analyzer edges, probe mappings, or
+    # self-declared metadata to approved RF/STOP timing in the repository.
+    capture = "Boat/docs/BOAT_R30H_4_LOGIC_CAPTURE_TEMPLATE.csv"
+    reader = csv.DictReader(io.StringIO(source[capture]))
+    if not reader.fieldnames or not {"capture_id","trial_id","case_id","clock_domain",
+                                      "time_us","platform","event","edge","origin"}.issubset(reader.fieldnames):
+        errors.append("R30H-4 external analyzer template schema was altered")
+    if list(reader):
+        errors.append("R30H-4 authoritative capture must remain empty NOT_RUN")
+    manifest_name = "Boat/docs/BOAT_R30H_4_CAPTURE_MANIFEST_TEMPLATE.json"
+    try:
+        manifest=json.loads(source[manifest_name])
+        if manifest.get("schema")!="R30H4-1" or manifest.get("evidence_mode")!="UNSPECIFIED" or manifest.get("capture_file_sha256"):
+            errors.append("R30H-4 template cannot claim real/simulated capture or evidence")
+    except (ValueError,TypeError,AttributeError):
+        errors.append("R30H-4 capture manifest must be valid unsigned JSON")
+    probes = list(csv.DictReader(io.StringIO(source["Boat/docs/BOAT_R30H_4_RF_ONLY_PROBE_CROSSWALK.csv"])))
+    if len(probes)!=10 or len({r.get("Channel_ID") for r in probes})!=10:
+        errors.append("R30H-4 physical crosswalk must list 10 unique unsigned probes")
+    for probe in probes:
+        if probe.get("Physical_mapping_state")!="NOT_READY" or any(probe.get(field) for field in
+             ("Verified_testpoint","Measured_logic_high_V","Measured_logic_low_V","Evidence","Engineer_signoff")):
+            errors.append("R30H-4 probe cannot be signed without genuine physical inspection")
+            break
     matrix = list(csv.DictReader(io.StringIO(source["Boat/docs/BOAT_R30H_RF_TEST_MATRIX.csv"])))
     if len(matrix) != 22 or any(r["State"] != "NOT_RUN" for r in matrix):
         errors.append("R30H physical test matrix must retain 22 NOT_RUN scenarios")
