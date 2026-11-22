@@ -703,3 +703,7 @@ The owner reconfirmed **1× EBYTE E22-900T22S UART SMD on Remote and 1× same ex
 ### Red battery operator message refinement
 
 The main display uses `НИСКА БАТ. — ЗАРЕДИ/СМЕНИ` when red but the Boat is not reporting Home return; `НИСКА БАТ. — RTH; ЗАРЕДИ/СМЕНИ` only when the Boat reports return-to-home; and `КРИТИЧНА БАТЕРИЯ — STOP!` when the Boat reports critical cutoff. This avoids promising that Home diversion has begun merely because the voltage is low.
+
+## R27 Boat battery sensor update (2026-11-22)
+
+Boat's selected battery-voltage module is now **Ardboard INA231 product 1491**, 3.3V I²C BUS-only; former ADS1115 divider is historical and INA226 remained a candidate. Boat runtime INA231 I²C not yet wired or commissioned, so **Remote must continue to show stale/unavailable Boat battery telemetry** and block mission preparation when no valid Boat reading is received. No Remote code, display thresholds, radio firmware, screen design, purchase quantity or version changed. Remote VER028 / Boat VER014 remain; physical test and independent Boat actuator STOP still pending.
