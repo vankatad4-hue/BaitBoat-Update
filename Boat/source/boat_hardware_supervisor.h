@@ -72,7 +72,22 @@ public:
  BoatActuatorOutput tick(const ExecInputs &in,uint32_t now,ExecOutput intent,const MissionNavigationResult &nav,bool missionActive,bool overrideActive,int16_t overrideLeft,int16_t overrideRight,uint32_t safetySampleAt){
   const BoatActuatorOutput off={0,0,-1};
   if(!configured_||stopLatched_||in.stopActive||!in.fix.batteryHealthy){stop();return off;}
-  if(in.batteryLow&&missionActive&&intent.intent!=INTENT_NAV_HOME)return off;
+  if(in.batteryLow&&missionActive&&intent.intent!=INTENT_NAV_HOME){
+   // During a battery abort, deenergize any ongoing release *immediately*.
+   // Still advance the post-off feedback gate, otherwise awaitIdle_ would
+   // remain permanently set and safe Home diversion could never begin.
+   if(pulseActive_)cancelReleaseForFailsafe(now);
+   if(awaitIdle_){
+    if((int32_t)(safetySampleAt-offAt_)>0&&in.releaseIdle){
+     completion_={lastTx_,lastToken_,false,true};
+     awaitIdle_=false;releaseCancelled_=false;
+    }else if((uint32_t)(now-offAt_)>=500U){
+     completion_={lastTx_,lastToken_,false,true};
+     awaitIdle_=false;releaseCancelled_=false;stopLatched_=true;
+    }
+   }
+   return off;
+  }
   // Never retain/replay a manual stick command after primary-link loss.
   if(!in.primaryFresh){cancelManual();manualNeedsNeutral_=true;}
   // Both authenticated radio paths stale: all outputs OFF, except a locally
