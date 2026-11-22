@@ -67,3 +67,6 @@ Intermediate early R30F CI runs failed because their respective commit snapshots
 
 **Next engineering step:** R30G — review rate limiting and bounded-queue/backpressure behavior of diagnostic packets during manual control and deliberate link loss, then regression-test no control-freshness or priority inversion. Physical radio acceptance and motor power remain blocked.
 
+## R30G transport scheduling amendment — supersedes immediate send assumption
+
+R30F's type-8 wire bytes, authenticated 32-byte frame and Remote decoding/UI remain unchanged. Effective Boat TX policy is now [R30G one-slot optional scheduling](BOAT_R30G_RADIO_DIAGNOSTIC_PRIORITY.md). `BoatDualRadioPort::sendHardwareTelemetry(RADIO_PAYLOAD_SAFETY_DIAGNOSTIC)` returns **true when a replaceable one-slot offer is accepted**, **not** when the RF packet is delivered or ACKed. `BoatDualRadioPort::update()` transmits only after mandatory control, mission and heartbeat work, with short expiry and no retries. R30F safety-field semantics (`UNVERIFIED|COMMISSIONING_LOCK`) and independent physical STOP requirement remain unchanged.
