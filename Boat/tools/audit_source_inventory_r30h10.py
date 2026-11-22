@@ -22,7 +22,7 @@ def inventory():
 def build_roots():
     boat = ROOT / 'Boat/source'
     remote = ROOT / 'Remote/source'
-    return sorted([p for p in boat.glob('*.cpp') if p.name != 'heltec_sx1262_link.cpp'] +
+    return sorted(list(boat.glob('*.cpp')) +
                   list(remote.glob('*.cpp')) +
                   [boat / 'firmware/Flytec_Boat.ino', remote / 'Flytec_Remote.ino'])
 
@@ -49,11 +49,13 @@ def check_guards():
     remote = (ROOT / 'Remote/source/radio_hw_config.h').read_text(encoding='utf-8')
     sd = (ROOT / 'Remote/source/display_port.cpp').read_text(encoding='utf-8')
     required = (
-        '-<heltec_sx1262_link.cpp>' in pio,
+        '-<heltec_sx1262_link.cpp>' not in pio,
+        not (ROOT / 'Boat/source/heltec_sx1262_link.cpp').exists(),
+        not (ROOT / 'Boat/source/heltec_sx1262_link.h').exists(),
         'RadioLib @' not in pio,
         'RadioLib@' not in arduino,
-        'rm /tmp/FlytecBoatBuild/heltec_sx1262_link.cpp' in arduino,
-        'rm /tmp/FlytecBoatR30H2Trace/heltec_sx1262_link.cpp' in arduino,
+        'rm /tmp/FlytecBoatBuild/heltec_sx1262_link.cpp' not in arduino,
+        'rm /tmp/FlytecBoatR30H2Trace/heltec_sx1262_link.cpp' not in arduino,
         '#define REMOTE_NRF_PIN_AUDIT_SIGNED 0' in remote,
         '#define REMOTE_SD_DUMMY_CSN_PIN 6' in remote,
         '#error "REMOTE nRF CE conflicts' in remote,

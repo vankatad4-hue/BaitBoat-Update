@@ -39,6 +39,8 @@ The `boat_radio_hw_config.h` numeric GPIOs are unchanged and remain audit-locked
 
 ## Build inventory: retired implementation isolation (R30H-10 software pass)
 
-- **Active radio transport:** nRF24L01+ plus E22 UART. The retired Heltec SX1262 implementation in `heltec_sx1262_link.{cpp,h}` is preserved solely for historical reference and old host regressions; it is excluded from both Boat PlatformIO and Arduino diagnostic target builds. RadioLib is no longer an active Boat target dependency. No removal of audit locks or adoption of a new radio is implied.
+- **Active radio transport:** nRF24L01+ plus E22 UART. The retired Heltec SX1262 implementation `heltec_sx1262_link.{cpp,h}` was moved out of the live source tree to `docs/archive/2026-11-22/source_cleanup_r30h10/Boat/source/`. Neither PlatformIO nor Arduino now needs a legacy exclusion or RadioLib. The historic airtime header/tests remain for traceability. No audit locks were relaxed.
 - The retired R21/R22 ADS1115 and R26 INA226 reference headers/tests remain available for historical regression only, not as active battery acquisition. R27/R28 INA231 BUS-only remains the selected (uncommissioned) path.
 - Source-level inventory changes are not hardware acceptance. All R30A physical STOP, coil-current-zero, and R30H-10 RF/PPS measurements remain pending.
+
+- The unreferenced R36/R02 candidate-only `config/boat_config.h` and `config/radio_config.h` were archived under the same R30H-10 source-cleanup archive. Current selected hardware and radio macros remain in the live `boat_radio_hw_config.h` and R20/R27/R29 documents.

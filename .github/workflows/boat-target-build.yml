@@ -32,8 +32,6 @@ jobs:
         run: |
           mkdir -p /tmp/FlytecBoatBuild
           cp Boat/source/*.cpp Boat/source/*.h /tmp/FlytecBoatBuild/
-          # Retired Heltec SX1262 implementation is historical, not a live radio driver.
-          rm /tmp/FlytecBoatBuild/heltec_sx1262_link.cpp
           cp Boat/source/firmware/Flytec_Boat.ino /tmp/FlytecBoatBuild/FlytecBoatBuild.ino
       - name: Compile Boat diagnostic (N32R16V 32MB octal flash, 16MB octal PSRAM; no actuation)
         run: |
@@ -47,7 +45,6 @@ jobs:
           set -euo pipefail
           mkdir -p /tmp/FlytecBoatR30H2Trace
           cp Boat/source/*.cpp Boat/source/*.h /tmp/FlytecBoatR30H2Trace/
-          rm /tmp/FlytecBoatR30H2Trace/heltec_sx1262_link.cpp
           cp Boat/source/firmware/Flytec_Boat.ino /tmp/FlytecBoatR30H2Trace/FlytecBoatR30H2Trace.ino
           sed -i 's/#define BOAT_R30H_LOCAL_TRACE_ENABLED 0/#define BOAT_R30H_LOCAL_TRACE_ENABLED 1/' /tmp/FlytecBoatR30H2Trace/boat_radio_hw_config.h
           grep -F '#define BOAT_NRF_PIN_AUDIT_SIGNED 0' /tmp/FlytecBoatR30H2Trace/boat_radio_hw_config.h
