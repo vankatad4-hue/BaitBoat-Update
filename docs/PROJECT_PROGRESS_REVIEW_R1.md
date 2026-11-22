@@ -449,3 +449,9 @@ Developed and host-tested an aligned backup-radio control policy: STOP and activ
 
 ## R69 — backup radio model owner-reconfirmed (2026-11-22)
 Procurement lock: **two identical EBYTE E22-900T22S UART SMD** backup LoRa modules, one per endpoint. E22-900T30S investigated, **not selected**; no firmware swap or power system change. Factory assembled carrier for each remains unverified; physical supply, UART 3.3V, antenna and EU868 compliance tests pending. Canonical purchase register updated to owner-confirmed exact model but still not purchased; Boat 014 / Remote 028 withheld.
+
+
+## R71 — candidate simplification: identical 3.3 V power modules (2026-11-22)
+
+- Engineering review supports two separate preassembled **Pololu D24V10F3 #2830** modules for Boat: one **E22-900T22S**, one **GY-91/QMC5883L/Waveshare MCP23017**. This is a *user-proposed, not yet final owner-confirmed* part selection. Replaces the R68 preferred RECOM 3.3V sensor rail, retained as alternative but not in active two-rail BOM.
+- Updated [R71 electrical/qualification report](../Boat/docs/BOAT_R71_DUAL_D24V10F3_3V3_RAIL_REVIEW.md), [active power rail CSV](../Boat/docs/BOAT_R68_POWER_RAIL_BOM.csv), canonical purchase register and R68 static host tests. Independent outputs, fuses, noise/RF/thermal, I²C no-backfeed and separate 5V MCU/EKM014 supplies unchanged. No physical test or release; Boat VER014/Remote VER028 unchanged.
