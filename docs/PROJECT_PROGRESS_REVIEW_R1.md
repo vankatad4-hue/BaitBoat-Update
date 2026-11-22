@@ -455,3 +455,9 @@ Procurement lock: **two identical EBYTE E22-900T22S UART SMD** backup LoRa modul
 
 - Engineering review supports two separate preassembled **Pololu D24V10F3 #2830** modules for Boat: one **E22-900T22S**, one **GY-91/QMC5883L/Waveshare MCP23017**. This is a *user-proposed, not yet final owner-confirmed* part selection. Replaces the R68 preferred RECOM 3.3V sensor rail, retained as alternative but not in active two-rail BOM.
 - Updated [R71 electrical/qualification report](../Boat/docs/BOAT_R71_DUAL_D24V10F3_3V3_RAIL_REVIEW.md), [active power rail CSV](../Boat/docs/BOAT_R68_POWER_RAIL_BOM.csv), canonical purchase register and R68 static host tests. Independent outputs, fuses, noise/RF/thermal, I²C no-backfeed and separate 5V MCU/EKM014 supplies unchanged. No physical test or release; Boat VER014/Remote VER028 unchanged.
+
+
+## R72 — Boat E22 + sensor 3.3 V regulator selection locked (2026-11-22)
+
+- **Confirmed by owner:** **2× Pololu D24V10F3 #2830** (Boat only), one dedicated to **E22-900T22S**, one dedicated to **GY-91/QMC5883L/Waveshare MCP23017 SKU15391**; both remain unpurchased. R71 preferred proposal upgraded to selected hardware; old RECOM sensor regulator remains unselected alternative.
+- Updated [purchase register](PROJECT_PURCHASE_REGISTER_R20.csv), [power BOM](../Boat/docs/BOAT_R68_POWER_RAIL_BOM.csv), [detailed R71 review with R72 confirmation](../Boat/docs/BOAT_R71_DUAL_D24V10F3_3V3_RAIL_REVIEW.md) and static test. No radio/actuator wiring approval, no verified power/ripple/thermal testing; E22 factory-made carrier and physically independent STOP/solenoid interlock unresolved. Boat VER014, Remote VER028 frozen.
