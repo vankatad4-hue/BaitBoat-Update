@@ -86,3 +86,10 @@ Owner decision replaces ALL historical custom electronic PCB designs (Boat and R
 - [Bench acceptance](../../docs/MODULE_ONLY_ACCEPTANCE_R15.md)
 
 The physically separate Cytron MDD20A drives two motors; manufactured Electrokit EKM014 is the **candidate** 4-coil driver, no custom FET PCB. Hardware STOP, 3S DC-rated cutoff, POR/onehot/timer, current-zero and final GPIO are unselected and not wired. No actuator power, sonar still unselected. Remote VER028/Boat VER014 held.
+
+
+## R77 — software radio watchdog (2026-11-22)
+
+The current active R77 firmware policy uses the selected nRF24 primary and E22-900T22S backup freshness. Either authenticated fresh path keeps autonomous navigation alive; both stale paths command zero motor outputs and all solenoid channels OFF. Link loss holds an eligible mission; a fresh authenticated session resumes it. Manual steering and irreversible releases remain primary-only. Manual input requires neutral after primary loss. Release intent/pulse interrupted by primary loss aborts and cannot replay. Automatic RTH on link loss is removed; explicit Home remains.
+
+This is a software watchdog on the main ESP32-S3, not an independent hardware cutoff. The older R8 Heltec/SX1262 notes above are historical and do not supersede the active R75/R77 hardware status. No physical GPIO or output driver is commissioned. See ../docs/BOAT_R77_DUAL_RADIO_WATCHDOG_IMPLEMENTATION.md.
