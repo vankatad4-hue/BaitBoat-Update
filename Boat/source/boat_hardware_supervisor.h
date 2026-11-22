@@ -25,7 +25,7 @@ inline ExecInputs boatHardware_inputs(const BoatHardwareSample &s,uint32_t now,b
  fix.fresh=fix.fresh&&now-s.gnssAt<2000U;
  fix.headingValid=fix.headingValid&&now-s.headingAt<300U;
  fix.batteryHealthy=safe&&s.batteryHealthy&&fix.batteryHealthy;
- return {fix,stopLatched||!safe||!s.physicalStopReleased,false,false,safe&&s.stationary&&!s.leftMotorActive&&!s.rightMotorActive,safe&&s.releaseInterlocks,safe&&s.releaseIdle};
+ return {fix,stopLatched||!safe||!s.physicalStopReleased,false,false,safe&&s.stationary&&!s.leftMotorActive&&!s.rightMotorActive,safe&&s.releaseInterlocks,safe&&s.releaseIdle,false};
 }
 inline bool boatHardware_configValid(const BoatActuatorConfig &c){
  if(!c.maxNavMotor||c.maxNavMotor>1000||!std::isfinite(c.yawGain)||c.yawGain<=0||c.yawGain>1000)return false;
@@ -71,7 +71,8 @@ public:
   if(!in.primaryFresh){cancelManual();manualNeedsNeutral_=true;}
   // Both authenticated radio paths stale: all motors and solenoids OFF.
   // An interrupted release is latched because its physical completion is unknown.
-  if(!in.primaryFresh&&!in.backupFresh){
+  const bool radioIndependentHome=in.autonomousRth&&missionActive&&intent.intent==INTENT_NAV_HOME;
+  if(!in.primaryFresh&&!in.backupFresh&&!radioIndependentHome){
    if(releaseBusy()){
     completion_={lastTx_,lastToken_,false,true};
     pulseActive_=awaitIdle_=false;
