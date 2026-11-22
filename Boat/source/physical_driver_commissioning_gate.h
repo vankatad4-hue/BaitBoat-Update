@@ -11,7 +11,7 @@ struct BoatSafetyContacts {
  bool coilContactorFeedbackClosed=false;
  bool coilCurrentZero=false;
  bool motorCurrentZero=false;
- bool batteryHealthy=false;
+ bool batteryHealthy=false; // Derived from fresh ADS1115 voltage sample; not a separate contact.
  bool isolationTestSigned=false;
  uint32_t sampledAt=0;
 };

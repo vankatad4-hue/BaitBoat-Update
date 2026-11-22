@@ -25,6 +25,11 @@ public:
   if(!initialized_||faulted_)return false;
   BoatSafetyContacts contacts{};Ekm014Feedback coil{};
   if(!hal_.sample(sample,contacts,coil)){fault();return false;}
+  // Battery health is derived from the ADS1115 voltage sample; do not require
+  // a separate unselected battery-comparator contact.
+  contacts.batteryHealthy=sample.voltageValid&&
+    (uint32_t)(now-sample.batteryAt)<=BoatBatteryMonitor::MAX_SAMPLE_AGE_MS;
+  batteryAt_=sample.batteryAt;
   boatPhysicalSafetyToSample(contacts,now,sample);
   // Two independent coil-zero indications must agree before arbitration.
   if(contacts.coilCurrentZero!=coil.allCoilCurrentsZero){fault();return false;}
@@ -42,6 +47,7 @@ public:
      !contacts_.isolationTestSigned||!contacts_.stopLoopClosed||
      !contacts_.watchdogContactClosed||!contacts_.motorContactorFeedbackClosed||
      !contacts_.coilContactorFeedbackClosed||!contacts_.batteryHealthy||
+     (uint32_t)(now-batteryAt_)>BoatBatteryMonitor::MAX_SAMPLE_AGE_MS||
      (uint32_t)(now-contacts_.sampledAt)>=100U)return fail();
   if(request.left< -1000||request.left>1000||request.right< -1000||
      request.right>1000||request.releaseChannel< -1||request.releaseChannel>3)return fail();
@@ -85,6 +91,6 @@ private:
  BoatPhysicalHal hal_{};
  BoatSafetyContacts contacts_{};Ekm014Feedback coil_{};
  Ekm014PulseGuard guard_{};
- uint32_t lastRead_=0;bool initialized_=false,faulted_=true,guardActive_=false;
+ uint32_t lastRead_=0,batteryAt_=0;bool initialized_=false,faulted_=true,guardActive_=false;
  int8_t channel_=-1;
 };
