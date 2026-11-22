@@ -569,3 +569,8 @@ Owner requested **no new physical elements**: on total radio loss stop all outpu
 Detailed implementation: [R77 dual-radio watchdog](BOAT_R77_DUAL_RADIO_WATCHDOG_IMPLEMENTATION.md).
 
 **Critical scope:** this is a software radio watchdog on the main ESP32-S3, not an independent hardware safety channel. It cannot cut power if the MCU freezes or a driver MOSFET fails short. R65/R66/R17 physical STOP, load isolation, monitored feedback, independent watchdog and one-hot bounded pulse/current-zero requirements remain open. No new physical elements, GPIO assignments, purchases or live-load tests. Boat VER014 / Remote VER028 unchanged.
+
+
+### R77A — backup recovery across long RF outage
+
+Removed the 6.5-second idle-session teardown on both Boat and Remote. Radio watchdog freshness still expires and stops outputs, but the authenticated session key and replay counters remain intact during RF silence. This allows a fresh authenticated E22 backup frame to restore the existing session after a long outage, without adding hardware or requiring nRF24 to return. Power-cycle and sequence-limit rekey still use the existing primary nRF24 handshake. Remote dual-radio manager regression now tests recovery from LINK_NO_LINK after an extended outage. See R77 report. No release/BOM/GPIO change.
