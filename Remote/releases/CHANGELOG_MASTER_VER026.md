@@ -346,3 +346,10 @@ Vendor review: Duelco **NST-3.2 42042237 8–36VDC** stop **supervisor** CANDIDA
 - Verified at writing: Remote host run 44956981643 **PASS**; Boat portable host run 44957202055 **PASS**; Boat safety/interface run 44956893866 **PASS**. Selected endpoint target builds subsequently **PASSED**: Boat diagnostic run 44957322196; full Waveshare Remote run 44956981581. Neither is physical commissioning. Details in `docs/R62_ENDPOINT_CODE_AUDIT_AND_NEXT_GATES.md`.
 - Actuator driver still non-attached and no independent STOP/watchdog/contactor or key provisioning approved. Sonar deferred; SD stays Remote-only. **Remote VER028 / Boat VER014 unchanged** pending full target and physical acceptance.
 
+
+## R63 — shared Boat/Remote safety radio corrections (2026-11-22)
+Engineering-only branch milestone; no official Remote/Boat package version bump.
+- Remote LoRa backup permits only emergency STOP or Home diversion of a previously started mission; no backup manual steering because E22 airtime pacing is ~3000ms, while Boat motor commands require ~200ms local freshness. Restricted at link manager, radio transport and authenticated decoder; updated host coverage and explicit Home command path.
+- Boat codec and command policy reject backup manual commands and no-plan Home. Link-loss, mission controller and execution policies now divert Home on loss of the authenticated primary even when backup heartbeats remain; otherwise STOP. Added `BoatDualRadioPort::requestReturnHome`, Boat application's CMD_SET_MODE handling and an ACK on the originating radio. No actuator wiring/permission; no manual backup steering commissioned.
+- Verified host CI: Remote 44991125196 PASS, Boat 44991241882 PASS. Latest target compilation still requires confirmation. Source and limitations: `docs/R63_BACKUP_CONTROL_AND_RTH_INTEGRATION.md`.
+- Safety chain, ready-made E22 carrier, RF compliance, real GPS/physical safety, 3S battery/current measurements and water acceptance remain outstanding. No sonar work; Remote SD only. Official Boat VER014 / Remote VER028 unchanged.
