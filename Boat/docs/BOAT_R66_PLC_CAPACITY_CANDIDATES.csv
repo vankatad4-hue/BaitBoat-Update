@@ -1,0 +1,4 @@
+Candidate,Manufacturer_Part,Safe_Inputs,Safe_Outputs,Supply_Volts,Max_Manufacturer_W,Design_State,Evidence_URL,Notes
+PNOZ_M_B0,Pilz 772100,20,4,24,UNKNOWN,RESEARCH_ONLY,https://www.pilz.com/en-INT/eshop/product/772100,20 configurable safety inputs and four safe semiconductor outputs; all non-PLC cutoffs still needed
+PNOZ_M_C0,Pilz 772105,8,4,24,UNKNOWN,NOT_FIT_CURRENT_INPUT_BUDGET,https://www.pilz.com/en-INT/eshop/product/772105,Eight safe inputs not enough for full selected signal list
+G9SP_N10S,Omron G9SP-N10S,10,4,24,9.6,NOT_FIT_CURRENT_INPUT_BUDGET,https://industrial.omron.eu/en/products/g9sp-n,10 safe PNP inputs 4 safe outputs max 400mA 24V supply; 9.6W upper bound
