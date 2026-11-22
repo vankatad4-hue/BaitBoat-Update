@@ -11,6 +11,7 @@ on:
       - 'Boat/docs/BOAT_R25_POWER_LEVEL_EVIDENCE.csv'
       - 'Boat/docs/BOAT_R27_INA231_ACCEPTANCE.csv'
       - 'Boat/docs/BOAT_R27_INA231_HARNESS_OVERRIDE.csv'
+      - 'Boat/docs/BOAT_R29_SHARED_3S_BUS_CONNECTIONS.csv'
       - '.github/workflows/boat-host-tests.yml'
   pull_request:
     branches:
@@ -22,6 +23,7 @@ on:
       - 'Boat/docs/BOAT_R25_POWER_LEVEL_EVIDENCE.csv'
       - 'Boat/docs/BOAT_R27_INA231_ACCEPTANCE.csv'
       - 'Boat/docs/BOAT_R27_INA231_HARNESS_OVERRIDE.csv'
+      - 'Boat/docs/BOAT_R29_SHARED_3S_BUS_CONNECTIONS.csv'
       - '.github/workflows/boat-host-tests.yml'
 
 jobs:
@@ -248,6 +250,13 @@ jobs:
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I Boat/tests/r28_stubs Boat/tests/ina231_wire_r28_test.cpp -o /tmp/boat_ina231_wire_r28
           /tmp/boat_ina231_wire_r28
           python3 Boat/tools/verify_r28_prototype_gate.py
+      - name: R29 shared 3S bus integrated radio battery actuator and INA231 fault scenarios
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IBoat/tests/stubs \
+            Boat/tests/boat_r29_shared_bus_integration_test.cpp \
+            -o /tmp/boat_r29_shared_bus
+          /tmp/boat_r29_shared_bus
+          python3 Boat/tools/verify_r29_shared_bus.py
       - name: R66 COTS safety PLC capacity and external interlock acceptance oracle (host only)
         run: |
           python3 -m unittest Boat/tests/test_r66_safety_plc_budget.py -v
