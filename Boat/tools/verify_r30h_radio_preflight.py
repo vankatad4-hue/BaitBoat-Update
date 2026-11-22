@@ -16,9 +16,11 @@ REQUIRED = (
     "Remote/source/boat_radio.cpp",
     "Remote/source/radio_hw_config.h",
     "Remote/source/e22_uart_link.cpp",
+    "Remote/source/e22_uart_link.h",
     "Boat/source/boat_radio_hw_config.h",
     "Boat/source/boat_dual_radio_port.cpp",
     "Boat/source/e22_uart_link.cpp",
+    "Boat/source/e22_uart_link.h",
     "Boat/source/firmware/Flytec_Boat.ino",
     "Boat/docs/BOAT_R30H_1_RF_MODULE_SIGNOFF.csv",
     "Boat/docs/BOAT_R30H_RF_TEST_MATRIX.csv",
@@ -98,7 +100,7 @@ def verify(source):
             errors.append(f"Boat/Remote E22 {key} differs or is malformed")
         elif a[1:3] != [0, 9] or a[6:9] != [0x67, 0xC3, 0x12]:
             errors.append(f"E22 {key} provisional 9600/62.5k/868.125 profile drift")
-    for code in (boat_e22, remote_e22):
+    for code in (source["Boat/source/e22_uart_link.h"], source["Remote/source/e22_uart_link.h"]):
         if "EST_AIRTIME_MS=25" not in code:
             errors.append("E22 provisional airtime constant changed; re-audit regulatory budget")
     worksheet = list(csv.DictReader(io.StringIO(source["Boat/docs/BOAT_R30H_1_RF_MODULE_SIGNOFF.csv"])))
