@@ -2,6 +2,7 @@
 
 **Selected controller:** Waveshare ESP32-S3-Touch-LCD-4.3 Standard, 800×480.  
 **UI:** LVGL 9.6, Bulgarian labels.  
+**Boat hardware baseline:** R20, documented in [Boat Hardware Selection R20](../Boat/docs/BOAT_HARDWARE_SELECTION_R20.md).  
 **Project status:** [Remote master status](docs/PROJECT_MASTER_STATUS.md).
 
 ## Active hardware
