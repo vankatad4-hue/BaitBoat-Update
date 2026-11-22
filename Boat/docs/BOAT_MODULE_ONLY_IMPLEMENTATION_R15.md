@@ -3,6 +3,8 @@
 > **R19 PROCUREMENT AUTHORITY:** The active Boat BOM and power-rail allocation are now in [BOAT_HARDWARE_SELECTION_R19.md](BOAT_HARDWARE_SELECTION_R19.md). This R15 document is historical for the Heltec/older regulator candidate list; do not order components from its superseded table. Keep the no-custom-PCB and ready-made-module-only constraint.
 
 
+> **R18 HISTORICAL UPDATE:** The old 77×79mm/30mm carrier note is superseded by the distributed-module decision and then by the active R19 BOM above. Do not treat this R18 note as a current procurement or mechanical constraint. The current modular installation plan is R18; the current component list is R19.
+
 > **R18 ACTIVE:** Historical 77×79mm/30mm carrier measurements DO NOT LIMIT selectable premade modules; modules may be mounted separately along hull. Manufacturer-supplied or factory-produced electronic modules only, no custom PCB. [Distributed mounting details](BOAT_DISTRIBUTED_MODULE_INSTALLATION_R18.md) · [approved purchasing register](../../docs/VERIFIED_ELECTRONICS_SOURCING_R18.csv).
 **Status:** Active architecture plan; no assembled electrical harness, no qualified STOP interlock
 
