@@ -3,6 +3,7 @@
 #include "boat_hardware_supervisor.h"
 #include "physical_driver_commissioning_gate.h"
 #include "ekm014_pulse_guard.h"
+#include "boat_r29_shared_bus_contract.h"
 // R50 transport-neutral physical-driver coordinator. Hardware HAL callbacks
 // must be wired to actual local, independently verified contacts. No fake
 // feedback or default GPIO assignments. This is not commissioned hardware.
@@ -50,8 +51,9 @@ public:
      !contacts_.coilContactorFeedbackClosed||!contacts_.batteryHealthy||
      (uint32_t)(now-batteryAt_)>BoatBatteryMonitor::MAX_SAMPLE_AGE_MS||
      (uint32_t)(now-contacts_.sampledAt)>=100U)return fail();
-  if(request.left< -1000||request.left>1000||request.right< -1000||
-     request.right>1000||request.releaseChannel< -1||request.releaseChannel>3)return fail();
+  // R29: common 3S rail means motor and release requests must be mutually
+  // exclusive, before any HAL callback. This only denies conflicting commands.
+  if(!boat_r29::exclusiveActuatorRequest(request))return fail();
   if(request.releaseChannel>=0){
    if(request.left||request.right||!contacts_.motorCurrentZero)return fail();
    if(!guardActive_){
