@@ -1,6 +1,6 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-22, **R30H-10 safe source cleanup and dual Arduino/PlatformIO target builds PASS; physical R30H-10 RF-only/STOP/PPS acquisition still NOT_RUN** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
+**Checkpoint:** 2026-11-22, **VS Code + PlatformIO PRIMARY developer workflow; dual PlatformIO targets PASS; R30H-10 physical GPIO/RF/GNSS-PPS/independent STOP still NOT_RUN/BLOCKED** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `hardware-ready-dual-radio-r1`
 
@@ -624,3 +624,13 @@ See [full source cleanup and build evidence](SOURCE_CLEANUP_R30H_10_R1.md).
 - Remote LVGL 9.6 sonar DEMO point coordinates repaired (float-to-integer), duplicate SD status corrected with 4-case host test. Retired Heltec SX1262 and unused older configuration files archived. Boat uses selected nRF24/E22 UART and INA231 BUS-only; sonar still deferred.
 - **Safety/physical acceptance remains OPEN**: no real radio STOP/RTH/PPS accuracy or independent STOP/current-zero acceptance, no motor/solenoid power approval. Remote GPIO6 (SD dummy CS/nRF CE) and GPIO15 (RS485/nRF CSN) remain electrically conflicted and unsigned. Keep Boat VER014 / Remote VER028 and reference Arduino build; passing PIO is a viable parallel compilation path, not firmware promotion.
 
+
+## R30H-10 — VS Code + PlatformIO primary workflow + unsigned physical gate handoff (2026-11-22)
+
+**User decision:** PlatformIO in VS Code is the **primary development/build/CI toolchain from now on** for both Boat and Remote; Arduino CLI 3.0.2 remains a **secondary compatibility regression**, not the main build path. [Primary developer instructions](PLATFORMIO_PRIMARY_WORKFLOW_R30H10.md) supersede the experimental/parallel workflow designation. Both PIO targets previously passed [run #45063024581](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45063024581) (no flashing). This is not physical acceptance, and new CI for the workflow-label/guard changes must be independently checked after GitHub Actions finishes.
+
+- [R30H-10 physical acceptance procedure](../Boat/docs/BOAT_R30H_10_HARDWARE_ACCEPTANCE.md) and [18 unsigned physical gates](../Boat/docs/BOAT_R30H_10_PHYSICAL_GATES.csv) now specify board and connector verification, Remote GPIO6 SD/CE and GPIO15 RS485/CSN conflicts, measured nRF/E22 logic and RF-only traces, real GNSS PPS source and UTC-second assignment, one-analyzer-clock STOP edge recordings and an independent hardware STOP/current-zero/solenoid-pulse-limiter test path.
+- **Real physical results: NOT_RUN; GPIO6/GPIO15 and independent STOP: BLOCKED.** No verified spare marker GPIO; Boat GPIO1/2/41/42 reserved for physical safety, both R30H9 markers remain -1. Authenticated STOP event and PPS timing not instrumented; do not claim edge-only captures prove end-to-end STOP.
+- **Physical isolation unchanged:** Both MDD20A VM and EKM014 VH must remain disconnected from the one common 3S bus for RF-only sessions. Real STOP hardware must be proven independently on suitable dummy loads before any propulsion or release activation. Do not infer a physical STOP from software watchdog or BMS.
+- Both PlatformIO projects keep compile-only, custom upload denial. GPIO/RF/marker flags stay 0; software/host CI grants no authorization to enable physical modules, override RF compliance, change 10-second RTH conditions or bump **Boat VER014 / Remote VER028**.
+- Hardware purchase/inspection, passive voltage-safe analyzer measurements, signed trace provenance and independent engineering witness are prerequisites to completing R30H-10. Sensor, STOP, RTH and battery safety gates otherwise remain fail-closed.
