@@ -36,8 +36,10 @@ assert "static_assert(!ACTUAL_READER_COMMISSIONED" in test
 assert "assert(!physical.begin(nonexistent,pulses,false))" in test
 # Adapter has no production write/enable/actuation method; only read().
 src=port[port.find("class ReadOnlySource"):port.find("enum class Result")]
+# Ignore explanatory "//" comments; check only actual API declarations.
+api_only="\n".join(line.split("//",1)[0] for line in src.splitlines())
 for bad in ("write(", "motor(", "coil(", "enable(", "clearStop(", "permit(", "cutOutputs("):
-    assert bad not in src, bad
+    assert bad not in api_only, bad
 assert "!independentHardwareCommissioned" in rd("Boat/source/boat_physical_driver_adapter.h")
 with (root/"Boat/docs/BOAT_R30A_READINESS_GATES.csv").open(newline="",encoding="utf-8") as f:
     gates=list(csv.DictReader(f))
