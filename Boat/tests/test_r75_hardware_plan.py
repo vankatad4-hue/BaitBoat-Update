@@ -24,8 +24,10 @@ class R75HardwarePlanContract(unittest.TestCase):
         with REGISTER.open(encoding="utf-8", newline="") as fh:
             rows = list(csv.DictReader(fh))
         items = {r["Item"]: r for r in rows if r["Side"] == "Boat"}
-        self.assertEqual(items["TSR SIP3 removable socket"]["Selected_or_candidate"],
-                         "R75_MECHANICAL_CANDIDATE_PIN_FIT_UNVERIFIED")
+        self.assertEqual(items["TSR SIP3 primary socket candidate"]["Selected_or_candidate"],
+                         "R75A_BETTER_DIMENSIONED_CANDIDATE_SAMPLE_FIT_REQUIRED")
+        self.assertEqual(items["TSR SIP3 alternate socket"]["Selected_or_candidate"],
+                         "R75A_SECONDARY_SOCKET_CANDIDATE_NO_SQUARE_PIN_SPEC")
         self.assertEqual(items["TSR pluggable harness cable side"]["Exact_part"],
                          "Phoenix Contact MSTB 2.5/3-ST-5.08 order 1757022")
         self.assertEqual(items["TSR pluggable harness header side"]["Exact_part"],
