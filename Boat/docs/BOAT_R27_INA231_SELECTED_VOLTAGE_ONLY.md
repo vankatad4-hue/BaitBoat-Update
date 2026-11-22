@@ -50,3 +50,7 @@ Sources: [Ardboard product 1491](https://www.ardboard.com/index.php?route=produc
 ### R27 superseding harness matrix (2026-11-22)
 
 The [R27 INA231 10-net battery-sense override](BOAT_R27_INA231_HARNESS_OVERRIDE.csv) replaces **only** the historical R23 `H03_ADS` nets. It leaves the rest of the 64-net R23 manufacturer pin map unchanged and marks every new INA231 connection **UNWIRED_PENDING** or **NO_WIRE**. The static [R27 selection checker](../tools/verify_r27_battery_selection.py) asserts exact Boat procurement model/quantity, GPIO7/8, 3.3V sensor rail, a protected low-current BUS sense, 0.1Ω shunt exclusion, permanent commissioning=false and 21 NOT_RUN evidence checks. These are software/design assertions, not inspected wire approvals.
+
+## R28 supersession — triggered CVRF acquisition instead of R27 continuous fixture (2026-11-22)
+
+R28 now integrates the selected INA231 into the dormant Boat sensor port via [real TwoWire register adapter, triggered BUS-only sampling and fault simulation](BOAT_R28_INA231_LOGIC_SIMULATION.md). The R27 `0x4126` continuous-mode fixture is **historical host evidence**, not the preferred production acquisition loop. R28 config `0x4122` requests a fresh BUS-only conversion and accepts it only with conversion-ready register evidence, no I²C error, plausible 3S voltage and actual timestamp. **Physical commissioning remains globally false, and not a single INA231 acceptance row is marked PASS.**
