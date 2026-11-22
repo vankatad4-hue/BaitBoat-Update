@@ -8,7 +8,7 @@ static void start(BoatMissionController &c,MissionPlan p,ExecInputs &in){
 }
 int main(){
  MissionPlan p={1,0,0,15,300,0,2000,0,0};
- ExecInputs in={{0,1000,1,270,true,true,true,true},false,true,true,true,true,true};
+ ExecInputs in={{0,1000,1,270,true,true,true,true},false,true,true,true,true,true,false};
  BoatMissionController c;start(c,p,in);
  assert(c.tick(in,2,true,true).intent==INTENT_NAV_TARGET);
 
