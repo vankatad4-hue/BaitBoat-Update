@@ -34,7 +34,8 @@ int main() {
  s.commandQueued=true;skipped(b,s,1020);s.commandQueued=false;
  s.activeMission=true;skipped(b,s,1020);s.activeMission=false;
  s.recentCommand=true;skipped(b,s,1020);s.recentCommand=false;
- s.failsafeOrLinkLoss=true;skipped(b,s,1020);s.failsafeOrLinkLoss=false;
+ // Link loss is destructive (tested separately below); do not use it
+ // while checking the same record remains pending across busy TX windows.
  skipped(b,s,1041); // heartbeat due soon; no preemption
  assert(b.pending());
  assert(b.offer(newPacket,1010)); // replaces older record, bounded size 1
