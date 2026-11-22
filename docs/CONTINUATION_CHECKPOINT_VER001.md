@@ -969,3 +969,8 @@ Implemented in Boat firmware using existing authenticated link freshness:
 Detailed report: [R77 implementation](../Boat/docs/BOAT_R77_DUAL_RADIO_WATCHDOG_IMPLEMENTATION.md).
 
 **Important:** this implements the requested software radio-loss behavior only. Because no new hardware elements were permitted, the watchdog runs on the same ESP32-S3 and is NOT an independent hardware power cutoff. It cannot protect against a frozen MCU, stuck GPIO or shorted driver MOSFET. The R65/R66/R17 independent physical STOP/contactors/feedback/watchdog/one-hot pulse/current-zero stack remains unimplemented and is still the blocker before live motor/coil power. No new hardware, GPIO or BOM selection; Boat VER014 / Remote VER028 remain unchanged. Host workflow and target diagnostic compile are the next gates; physical tests remain NOT_RUN.
+
+
+### R77A — long-outage backup recovery
+
+The authenticated session is now retained across ordinary RF inactivity on both Boat and Remote; the 6.5-second inactivity teardown was removed. The watchdog still stops outputs when both freshness windows expire, but a fresh authenticated E22 backup frame can restore the same session after a long RF outage. Sequence-limit rekey or endpoint power-cycle still uses the existing primary nRF24 handshake. Remote dual-radio manager test covers LINK_NO_LINK -> LINK_BACKUP recovery. No new hardware, no release version change. See [R77 watchdog implementation](../Boat/docs/BOAT_R77_DUAL_RADIO_WATCHDOG_IMPLEMENTATION.md).
