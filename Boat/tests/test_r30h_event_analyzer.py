@@ -63,6 +63,13 @@ class R30HAnalyzerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 analyzer.parse(p)
 
+    def test_unsupported_case_requires_human_review(self):
+        errors, metrics, case, transport, clock, assessed = analyzer.check(
+            "001", {"meta": ("H18", "DUAL", "LA1"), "events": {"AUTH_LINK_RESTORED": 1234}})
+        self.assertFalse(assessed)
+        self.assertFalse(errors)
+        self.assertEqual({}, metrics)
+
     def test_no_rth_without_evidence_and_release_activity_fail(self):
         events = {"RF_BLOCKED": 200000, "LAST_AUTH_RX": 190000,
                   "BOTH_STALE": 6500000, "LOGICAL_OUTPUT_OFF": 6502000,
