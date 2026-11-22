@@ -41,3 +41,14 @@ The user asks whether **2× identical Pololu D24V10F3, part #2830** can replace 
 5. **Procurement:** TME Bulgaria POLOLU-2830 quantity **2**, real purchase stock and delivery recheck. This is a preferred engineering proposal, **NOT yet a frozen owner order**.
 
 **Release hold:** Boat VER014 / Remote VER028 unchanged; no radio/actuator GPIO commissioned, no new release ZIP or manufactured custom board.
+
+
+## R72 — final owner selection supersedes R71 proposal status (2026-11-22)
+
+**OWNER CONFIRMED EXACT MODEL AND QUANTITY: 2× Pololu D24V10F3, manufacturer #2830 for BOAT ONLY**:
+- **#1 `BOAT_3V3_E22`** dedicated 3.3 V feed to selected EBYTE E22-900T22S backup radio; the radio's ready-made carrier and its 3.3 V VCC/logic interface remain subject to physical verification.
+- **#2 `BOAT_3V3_SENSORS`** dedicated 3.3 V feed to selected GY-91 MPU-9250/BMP280, verified 3.3 V QMC5883L compass and Waveshare MCP23017 I/O Expansion Board SKU 15391.
+- Both use separate appropriately protected 3S battery VIN branches; VOUT must **not** be paralleled; they share a suitable signal reference ground, NOT galvanic isolation. Exact power-up/default states, noise, thermal and sensor-level compatibility still need bench qualification.
+- Prior RECOM R-78E3.3-0.5 sensor proposal remains **UNSELECTED_ALTERNATIVE** and not an additional required purchase.
+- Canonical purchase register and power BOM statuses are now `R72_OWNER_CONFIRMED_D24V10F3_NOT_PURCHASED`. **Confirmed part selection is not a claim of purchase, measured current/voltage, safe actuator enable, or official release.**
+- No change to ESP32 5 V converter, EKM014 VL converter (both still owner-unconfirmed), or Ardboard nRF24 adapter candidate. **Boat VER014 and Remote VER028 remain frozen.**
