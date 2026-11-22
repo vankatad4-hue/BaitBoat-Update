@@ -543,3 +543,14 @@ Olimex explicitly says DCDC6-16-TO5 pairs with its PWR-CABLE, but the PWR-CABLE 
 ## R75C — DCDC6 cable 3S full-charge voltage check
 
 The DCDC6 accepts 6–16V, while Olimex lists PWR-CABLE as 12V/3A. A 3S pack reaches 12.6V. The PWR-CABLE page also conflicts on 2.1mm vs 2.5mm barrel inner diameter. The cable is still a candidate: verify its voltage suitability at 12.6V, actual connector fit and center-positive polarity before use. DCDC6 schematic confirms center-positive input; branch fuse/wire coordination remains open.
+
+
+## R76 — Original JR-V030RX-2507 receiver-board comparison (2026-11-22)
+
+Owner supplied front/rear photographs of the original board marked **JR-V030RX-2507**. It is visually consistent with the V030/V080 receiver-board family, but the exact PCB revision and schematic are not publicly identified. Visible: B+/B− battery pads, six-wire GPS/peripheral header labelled SDA/SCL/GND/+5V/RX/TX, ANT connection, four M1–M4 connectors (load mapping unverified), central controller IC, power-conversion parts and multiple reverse-side MOSFET banks. Specialist replacement listing captions the underside as H-bridge. Exact MOSFET/MCU/RF ICs and channel topology remain unverified.
+
+**Useful architecture to retain:** GPS UART+I²C six-wire harness pattern; two reversible brushed motors via dual H-bridge; four separate low-side actuator channels; clearly separated battery/power harnesses. Current selected MDD20A + EKM014 already reproduce the motor and four-load functions as ready-made modules. Keep them; do not reproduce the original discrete MOSFET circuitry on a custom PCB. EKM014 is low-side only, not H-bridge, and its shared 10A fuse/logic input is not a one-hot safety controller.
+
+**Safety verdict:** no independent hardware safety chain can be verified on the original PCB photographs. No separate safety relay, rated load contactor, monitored auxiliary, independent watchdog or fault-latched power isolation is visible. V030/V080 manual's lost-signal return/electronic fence are navigation/radio behaviors, not independent electrical emergency stop. The retrofit is also not yet physically independently safe: R65/R66/R17 requirements remain unselected/uncommissioned (STOP, manual reset, watchdog, motor and EKM014 VH contactors, feedback, one-hot non-retrigger pulse control and current-zero sensors).
+
+Added [R76 original-board reverse-engineering review](BOAT_R76_ORIGINAL_JR_V030RX_BOARD_REVIEW.md). No pinout, BOM, firmware, actuator wiring or release version changed. Next evidence: macro photos of IC/MOSFET markings, full connected harness photos, power-off continuity mapping and controlled independent motor/coil current measurements. Boat VER014 / Remote VER028 unchanged.
