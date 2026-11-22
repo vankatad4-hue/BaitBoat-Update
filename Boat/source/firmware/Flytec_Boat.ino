@@ -162,7 +162,7 @@ void loop(){
  if(Serial && Serial.availableForWrite()>=120){
    boat_r30h2::Record ev{};
    if(radio.takeR30HTrace(ev)){
-     Serial.printf("R30H2,BOAT_LOCAL,%lu,%lu,%s,%u,%u,%u,%lu,INTENT_ONLY\\n",
+     Serial.printf("R30H2,BOAT_LOCAL,%lu,%lu,%s,%u,%u,%u,%lu,INTENT_ONLY\n",
        (unsigned long)ev.timestampMs,(unsigned long)ev.lastAcceptedRxMs,
        boat_r30h2::label(ev.event),(unsigned)ev.link,
        (unsigned)ev.freshMask,(unsigned)ev.commandId,
