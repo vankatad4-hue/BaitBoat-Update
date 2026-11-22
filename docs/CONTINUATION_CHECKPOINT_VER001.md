@@ -416,3 +416,10 @@ R30H артефакти:
 **R30H статус:** процедура/матрица/host evidence checker **PREPARED**; физически radio identity/level/interoperability, RF loss times, STOP output latency, actual 10s RTH motion, независими STOP/current-zero и common-3S hardware **NOT_RUN / BLOCKED**. R30A 24 OPEN gates; R23/R25/R27 81 NOT_RUN. Документацията и analyzer CI са софтуерни, не физически протокол от проведен тест.
 
 **Следващо продължение:** R30H-1 inspect bought module revisions + legal antenna/logic rails; R30H-2 provision secure pairing and collect measured RF-only authenticated timestamps, keeping MDD20A VM and EKM014 VH disconnected; R30H-3 compare actual STOP/dual-link freshness timings and revise unacceptable 6s/3s safety exposures; R30H-4 independent physical signoff before dummy-load tests; R30H-5 accept/reject signed latency budget. Sonar still deferred.
+
+
+### R30H host verification status (2026-11-22)
+
+- [Boat host Actions #45050691271](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45050691271) completed **SUCCESS** after the initial R30H test+workflow integration, including the new R30H event checker step.
+- Subsequent R30H analyzer change makes unmodeled matrix scenarios explicitly **MANUAL_REVIEW_REQUIRED**; an additional regression tests this fail-closed behavior. On [Boat host Actions #45050834071](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45050834071), the **R30H test step itself passed**; overall run was still in progress at last inspection. This is not actual RF measurement or signed STOP/RTH acceptance.
+- Current authoritative references remain [R30H bench procedure](../Boat/docs/BOAT_R30H_RF_LATENCY_BENCH_PROCEDURE.md), [matrix 22 NOT_RUN](../Boat/docs/BOAT_R30H_RF_TEST_MATRIX.csv), [event template](../Boat/docs/BOAT_R30H_RF_EVENTS_TEMPLATE.csv), [analyzer](../Boat/tools/analyze_r30h_rf_events.py). The R79 legacy ADS1115/separate-VM-VH power worksheet must not be used for physical wiring; active choices are R27 INA231 BUS-only and R29 one common 3S load bus.
