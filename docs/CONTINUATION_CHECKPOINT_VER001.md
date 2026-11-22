@@ -241,3 +241,7 @@ Added [10-net R27 INA231 battery harness override](../Boat/docs/BOAT_R27_INA231_
 **Current blockers, precisely stated:** all high-current conductor sizes, common input fuse, pack/BMS stall capability, motor and 6A coil pulsing current, ground return topology and startup transients still unmeasured; a 20A BMS is NOT an evaluated safety fuse. Existing physical driver requests distinct independent feedback contacts that are NOT provided by the shared-bus proposal; these remain false/unmet, not fabricated. INA231 remains `INA231_PHYSICAL_COMMISSIONED=false`, so live battery samples and actuator permission remain invalid. Boat VER014 / Remote VER028 frozen; sonar deferred.
 
 **Next:** verify R29 host+target CI, fix build failures, then further non-actuating integration tests. For eventual physical acceptance, a single common DC-rated master disconnection could be evaluated separately if approved, but no new safety part was selected or ordered by R29.
+
+### R29 final cross-module release and BOM consistency
+
+Extended the R29 scenario to cover a manual EKM release pulse, simultaneous second-release denial and both-radio loss **during** a pulse: the software stops/rejects further release and latches STOP. Backup-only radio cannot start a fresh release. Corrected the active purchase register to remove the outdated phrase "VH remains separate 3S pack"; EKM VH and MDD VM are now explicitly fed from a single 3S bus. No real coil, motor, BMS current or independent STOP hardware has been measured. GitHub Actions R29 integrated scenario result remains unverified.
