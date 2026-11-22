@@ -1,4 +1,4 @@
-"""R68 static documentation/commissioning guard only; no physical regulator test."""
+"""R68/R71 static rail contract only; no physical regulator test."""
 import csv
 from pathlib import Path
 import unittest
@@ -16,7 +16,7 @@ class R68PowerContract(unittest.TestCase):
             "BOAT_5V_MCU": ("Olimex", "DCDC6-16-TO5", "5.0"),
             "BOAT_5V_GATE": ("Pololu", "S13V20F5", "5.0"),
             "BOAT_3V3_E22": ("Pololu", "D24V10F3", "3.3"),
-            "BOAT_3V3_SENSORS": ("RECOM", "R-78E3.3-0.5", "3.3"),
+            "BOAT_3V3_SENSORS": ("Pololu", "D24V10F3", "3.3"),
         }
         self.assertEqual({r["Rail"] for r in rows}, set(expected))
         self.assertEqual({r["Exact_MPN"] for r in rows}, {x[1] for x in expected.values()})
@@ -26,7 +26,11 @@ class R68PowerContract(unittest.TestCase):
                     (r["Manufacturer"], r["Exact_MPN"], r["Output_V"]), expected[r["Rail"]]
                 )
                 self.assertEqual(r["Qty"], "1")
-                self.assertEqual(r["Supply_Audit_Status"], "R68_PROPOSED_NOT_OWNER_CONFIRMED")
+                if r["Rail"] in ("BOAT_3V3_E22", "BOAT_3V3_SENSORS"):
+                    self.assertEqual(r["Supply_Audit_Status"],
+                                     "R71_USER_PROPOSED_ENGINEERING_PREFERRED_NOT_LOCKED")
+                else:
+                    self.assertEqual(r["Supply_Audit_Status"], "R68_PROPOSED_NOT_OWNER_CONFIRMED")
                 self.assertLessEqual(float(r["Vin_Min_V"]), 9.0)
                 self.assertGreaterEqual(float(r["Vin_Max_V"]), 12.6)
         self.assertIn("EKM014 VL only", next(r["Loads"] for r in rows if r["Rail"] == "BOAT_5V_GATE"))
@@ -34,6 +38,12 @@ class R68PowerContract(unittest.TestCase):
         e22 = next(r for r in rows if r["Rail"] == "BOAT_3V3_E22")
         self.assertIn("E22-900T22S", e22["Loads"])
         self.assertNotIn("nRF", e22["Loads"])
+        self.assertNotIn("GY-91", e22["Loads"])
+        sensors = next(r for r in rows if r["Rail"] == "BOAT_3V3_SENSORS")
+        self.assertIn("GY-91", sensors["Loads"])
+        self.assertNotIn("E22", sensors["Loads"])
+        self.assertEqual(e22["Exact_MPN"], sensors["Exact_MPN"])
+        self.assertEqual(sum(r["Exact_MPN"] == "D24V10F3" for r in rows), 2)
         self.assertIn("Ardboard 1127", e22["Issue_Before_Purchase"])
 
     def test_safety_rails_are_distinct_and_not_commissioned(self):
@@ -62,12 +72,28 @@ class R68PowerContract(unittest.TestCase):
         register = ROOT / "docs/PROJECT_PURCHASE_REGISTER_R20.csv"
         with register.open(encoding="utf-8", newline="") as fh:
             rows = list(csv.DictReader(fh))
-        for part in ("DCDC6-16-TO5", "S13V20F5", "D24V10F3", "R-78E3.3-0.5"):
-            matching = [p for p in rows if p["Side"] == "Boat"
-                        and part in p["Exact_part"]]
-            self.assertEqual(len(matching), 1, part)
-            self.assertEqual(matching[0]["Selected_or_candidate"],
-                             "R68_PROPOSED_NOT_OWNER_CONFIRMED", part)
+        role_rows = {
+            row["Item"]: row for row in rows if row["Side"] == "Boat"
+        }
+        self.assertEqual(role_rows["E22 backup dedicated 3V3 power"]["Exact_part"],
+                         "Pololu D24V10F3 #2830")
+        self.assertEqual(role_rows["Sensor and I2C expansion 3V3 power"]["Exact_part"],
+                         "Pololu D24V10F3 #2830")
+        self.assertEqual(
+            role_rows["E22 backup dedicated 3V3 power"]["Selected_or_candidate"],
+            "R71_USER_PROPOSED_ENGINEERING_PREFERRED_NOT_LOCKED"
+        )
+        self.assertEqual(
+            role_rows["Sensor and I2C expansion 3V3 power"]["Selected_or_candidate"],
+            "R71_USER_PROPOSED_ENGINEERING_PREFERRED_NOT_LOCKED"
+        )
+        self.assertEqual(
+            role_rows["Alternative sensor 3V3 RECOM from R68"]["Selected_or_candidate"],
+            "R71_SUPERSEDED_CANDIDATE_NOT_SELECTED"
+        )
+        for item in ("Main controller 5V power", "Solenoid logic dedicated 5V VL power"):
+            self.assertEqual(role_rows[item]["Selected_or_candidate"],
+                             "R68_PROPOSED_NOT_OWNER_CONFIRMED")
 
 if __name__ == "__main__":
     unittest.main()
