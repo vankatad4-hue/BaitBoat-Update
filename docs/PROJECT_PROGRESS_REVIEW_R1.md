@@ -475,3 +475,11 @@ Procurement lock: **two identical EBYTE E22-900T22S UART SMD** backup LoRa modul
 - **TRACO TSR 2-2450** selected for dedicated EKM014 VL 5V logic rail (5V/2A, 6.5–36V input). EKM014 VH remains raw 3S and independent; VH must be >= VL. Pololu S13V20F5 superseded as active candidate.
 - Confirmed dual D24V10F3 3.3V rails unchanged. Created [R74 detailed review](../Boat/docs/BOAT_R74_5V_REGULATOR_SELECTION.md); updated power BOM, purchase register, 14-point NOT_RUN bench plan and host contract test. Farnell BG TSR listing showed 5,022 stock and €12.05 ex VAT at lookup.
 - Exact model choices are not purchases; SIP3 socket/harness, fuse, reverse polarity protection, EKM014 current/thermal, DCDC6 aggregate current and USB backfeed need physical qualification. No actuator commissioning or release. Boat VER014 / Remote VER028.
+
+
+## R75 — TSR module mounting and Boat hardware confirmation audit (2026-11-22)
+
+- Completed the design-level TSR socket/harness plan: MP70S3 1×3 precision socket candidate (pin fit unverified), Phoenix Contact 1757022/1926028 removable 3-pin pluggable terminal pair, SCHURTER 0001.2508 2.5A time-lag fuse candidate, Littelfuse 80000000005 holder candidate pending rating/wire review, and Olimex PWR-CABLE input pigtail.
+- Identified DCDC6's USB-A 5V/2A output as a wiring constraint: create a protected cable split for ESP32 + M100 PRO, keep nRF adapter outside the load budget until tested, and prevent PC USB 5V backfeed.
+- Created [R75 mounting/fuse implementation plan](../Boat/docs/BOAT_R75_TSR_SOCKET_HARNESS_AND_FUSE_PLAN.md), [remaining Boat hardware audit](../Boat/docs/BOAT_R75_HARDWARE_CONFIRMATION_AUDIT.md), and [11 NOT_RUN physical gates](../Boat/docs/BOAT_R75_HARDWARE_ACCEPTANCE.csv). Updated purchase register and added a static host CI contract.
+- **Still blocking physical prototype:** independent STOP/contactors/watchdog/manual reset, hardware one-hot bounded non-retriggerable coil controller, motor/coil current-zero, actual motor/solenoid/BMS measurements, M100 logic levels, E22 carrier, nRF module/adapter, complete fuse/wire/connector/environmental design. No hardware purchase or commissioning; Boat VER014 / Remote VER028 remain frozen.
