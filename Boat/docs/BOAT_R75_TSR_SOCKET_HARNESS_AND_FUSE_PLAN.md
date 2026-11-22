@@ -17,13 +17,18 @@ The 3S pack feeds EKM014 VH separately through an independent hardware load-disc
 
 ## 2. Removable SIP3 mounting candidate
 
-**econ connect MP70S3** is a mechanical candidate:
-- 1×3 female precision socket, 2.54mm pitch, 7mm stacking height.
-- Manufacturer listing: 3A nominal current, -40…+105°C, PPS housing, UL94 V-0, solder tails.
-- It is a PCB-mount socket; there is no verified off-the-shelf screw-terminal carrier for the TSR in this design.
-- The available manufacturer listing does **not** state the exact mating-pin acceptance tolerance for the TSR's 0.46×0.46mm square pins. Do not assume fit from pitch alone.
+**Primary socket candidate: BINDER MPE 006-1-003-D-B1STF-XS0**
+- 3-position single-row precision socket, 2.54mm pitch, 3A rated, 150VDC, 4-finger BeCu contact, UL94V-0, -55…+125°C.
+- Manufacturer's mating range explicitly includes square pins up to **0.25×0.45mm**. The TRACO TSR pin is **0.46×0.46mm nominal with ±0.1mm pin-dimension tolerance**. This is the closest documented socket candidate found, but the nominal TSR pin is 0.01mm larger than the socket's listed square-pin maximum. It is therefore **not yet a guaranteed fit**.
+- Exact supplier listing: Reichelt lists **MPE 006-1-003-D-B1STF-XS0** as a 3-pin 2.54mm socket; manufacturer page provides the 006-1 series mating dimensions. Obtain one sample and request manufacturer confirmation of the TRACO pin compatibility.
 
-**Required gate before purchase/lock:** obtain one MP70S3 sample and verify pin fit, insertion/withdrawal force, no contact damage, no intermittent contact after vibration, and contact resistance under the intended current. Do not force the TSR pins into a socket that is too tight or too loose. If it fails, find a precision machined SIP socket whose manufacturer explicitly documents the 0.46mm square pin compatibility.
+**Secondary candidate: econ connect MP70S3**
+- 1×3 female precision socket, 2.54mm pitch, 3A nominal, 7mm stacking height, PPS housing, UL94 V-0.
+- Conrad's listing identifies a 0.60mm round pin form; the manufacturer page does not publish a square-pin mating tolerance for the TSR's 0.46mm square pins. Keep it secondary until sample fit is proven.
+
+Both candidates are PCB-mount sockets with solder tails. There is no verified off-the-shelf screw-terminal carrier for the TSR in this design. No custom electrical PCB is permitted.
+
+**Required gate before purchase/lock:** test the MPE 006 sample first; check insertion/withdrawal force, contact damage, contact resistance and vibration stability. Do not force the TSR pins into a socket that is too tight or too loose. If the fit is not approved by the socket manufacturer or sample test, use direct-solder pigtails as a serviceable module replacement (desolder/replace the regulator) rather than claiming a plug-in socket.
 
 ## 3. Pigtail and locking/removable cable connection
 
