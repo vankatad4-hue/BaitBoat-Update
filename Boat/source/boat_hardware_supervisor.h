@@ -67,6 +67,14 @@ public:
  BoatActuatorOutput tick(const ExecInputs &in,uint32_t now,ExecOutput intent,const MissionNavigationResult &nav,bool missionActive,bool overrideActive,int16_t overrideLeft,int16_t overrideRight,uint32_t safetySampleAt){
   const BoatActuatorOutput off={0,0,-1};
   if(!configured_||stopLatched_||in.stopActive||!in.fix.batteryHealthy){stop();return off;}
+  // Never retain/replay a manual stick command after primary-link loss.
+  if(!in.primaryFresh){cancelManual();manualNeedsNeutral_=true;}
+  // Both authenticated radio paths stale: all motors and solenoids OFF.
+  // An interrupted release is latched because its physical completion is unknown.
+  if(!in.primaryFresh&&!in.backupFresh){
+   if(releaseBusy())stop();
+   return off;
+  }
   if(pulseActive_||awaitIdle_){
    cancelManual();
    if((manualRelease_?missionActive:!missionActive)||!in.primaryFresh||!in.stationary||!in.releaseInterlocks){
