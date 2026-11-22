@@ -30,7 +30,14 @@ assert "radio.sendHardwareTelemetry(safetyTelemetry);" in boat
 assert "application.attach(" not in boat
 assert "safetyObservations.snapshot(" in boat
 radio=read("Boat/source/boat_dual_radio_port.cpp")
-assert "if(!sessionReady()||!primaryFresh(millis()))return false;" in radio
+# R30G replaced inline optional TX with a bounded one-slot offer. Check the
+# session/primary eligibility at the offer, then authenticated primary send
+# after heartbeat/command/mission work, not an obsolete exact code line.
+assert "if(!sessionReady()||!primaryFresh(now))" in radio
+assert "if(status.kind==RADIO_PAYLOAD_SAFETY_DIAGNOSTIC)" in radio
+assert "optionalDiagnostics_.offer(payload,now)" in radio
+assert "optionalDiagnostics_.take(opportunity,optionalNow,optionalPayload)" in radio
+assert "radio_frameSeal(optional,key_)&&sendFrame(LINK_NRF_PRIMARY,optional)" in radio
 assert "radio_frameSeal(f,key_)" in radio and "sendFrame(LINK_NRF_PRIMARY,f)" in radio
 receiver=read("Remote/source/boat_radio.cpp")
 assert "radio_frameVerify(frame,g_authKey)" in receiver
