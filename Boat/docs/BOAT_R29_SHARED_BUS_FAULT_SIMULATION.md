@@ -31,3 +31,9 @@ Sources: [Cytron MDD20A product](https://www.cytron.io/c-industry/p-20amp-6v-30v
 ### Next
 
 Verify the R29 host Actions run and complete updated ESP32-S3 target compile. Continue non-actuating application-level radio/mission/failsafe fault simulations. For later physical prototyping measure selected 3S rail performance with a bench supply, first with motor/coil leads absent, and resolve common feed protection and actual STOP behavior without inventing independent contacts.
+
+## R29 integration regression and purchasing correction
+
+The integrated R29 host test additionally exercises **one-hot manual release 0**, rejects a concurrent second solenoid pulse, forces all release/motor requests OFF upon primary+backup loss *during that pulse*, requires latched STOP, and rejects initiating a release on backup-only coverage. These are only software request outputs; there is no EKM014 voltage or measured coil current.
+
+The active [R20 purchase register](../../docs/PROJECT_PURCHASE_REGISTER_R20.csv) now explicitly states that **MDD20A VM and EKM014 VH share one 3S4P bus** and removes an outdated note incorrectly calling VH a separate 3S pack. R29 static CI checks this wording as well as keeping all physical signoffs NOT_RUN. The independent STOP/cutoff feedback remains uncommissioned and does not become valid simply because only one battery is used.
