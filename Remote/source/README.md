@@ -12,4 +12,4 @@ Active Remote hardware decisions are in [Remote README](../README.md) and [Remot
 
 ## R79 Boat battery UI
 
-The Remote displays Boat voltage plus estimated percentage, not the Remote's own battery. Green is above 50%, yellow 21–50%, red 20% or lower or a Boat low-battery flag. Missing/stale data is shown as unavailable. Critical battery is shown as `КРИТ. БАТ. — STOP`, distinct from the low-battery `НИСКА БАТ. — RTH` warning. The Boat remains the safety authority and independently initiates RTH.
+The Remote displays Boat voltage plus estimated percentage, not the Remote's own battery. Green is above 50%, yellow 21–50%, red 20% or lower or a Boat low-battery flag. Missing/stale data is shown as unavailable. Critical battery is shown as `КРИТ. БАТ. — STOP`, distinct from the low-battery `НИСКА БАТ. — ЗАРЕДИ/СМЕНИ` warning (RTH appears only when Home return is actually reported). The Boat remains the safety authority and independently initiates RTH.
