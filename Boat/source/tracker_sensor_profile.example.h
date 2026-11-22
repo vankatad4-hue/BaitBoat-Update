@@ -14,6 +14,9 @@ inline TrackerSensorConfig trackerLocalProfile(){
  // The ADC fields below remain a DISABLED LEGACY ADS1115 diagnostic fixture;
  // tracker_sensor_port.cpp blocks ADS polling after R27 selection. Do not
  // sign this profile or physically connect the old battery divider.
+ c.ina231BoardAndWiringSigned=false; // R28: physical board/shunt evidence NOT RUN
+ c.ina231DmmCalibrationSigned=false; // R28: DMM calibration NOT RUN
+ c.ina231Address=boat_r27::I2C_CANDIDATE_ADDRESS; // 0x40 candidate only
  c.battery={false,BOAT_BATTERY_DIVIDER_RATIO,1.0,0.0,9000,13000};
  return c;
 }
