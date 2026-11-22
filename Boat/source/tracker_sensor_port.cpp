@@ -1,5 +1,6 @@
 #include "tracker_sensor_port.h"
 #include "ina231_voltage_contract_r27.h"
+#include "ina231_arduino_wire_r28.h"
 namespace{
  bool validPins(const TrackerSensorConfig &c){
   if(!c.pinAuditSigned||!(c.gnssBaud==9600||c.gnssBaud==115200)||(c.imuAddress!=0x68&&c.imuAddress!=0x69)||c.adcAddress<0x48||c.adcAddress>0x4b)return false;
@@ -42,6 +43,10 @@ bool TrackerSensorPort::begin(const TrackerSensorConfig &cfg){
  serial_.begin(cfg.gnssBaud,SERIAL_8N1,cfg.gnssRx,cfg.gnssTx);
  if(!wire_.begin(cfg.sda,cfg.scl,100000))return false;
  wire_.setTimeOut(10);
+ ina231Ready_=ina231Sampler_.begin(
+  boat_r27::INA231_PHYSICAL_COMMISSIONED && cfg.pinAuditSigned &&
+  cfg.ina231BoardAndWiringSigned && cfg.ina231DmmCalibrationSigned,
+  cfg.ina231Address);
  imuReady_=initializeImu();bmpReady_=initializeBmp();m100CompassReady_=initializeM100Compass();configured_=true;
  return true; // GNSS and ADC diagnostics remain possible if IMU not identified
 }
@@ -61,12 +66,18 @@ void TrackerSensorPort::pollImu(uint32_t now){
  if(headingValid_)headingAt_=now;
 }
 void TrackerSensorPort::pollAdc(uint32_t now){
- // R27: INA231 is selected for voltage-only sensing but not physically
- // commissioned. Legacy ADS1115 polling must NOT generate battery telemetry.
- // Real INA231 I2C acquisition will be implemented only after safe bench
- // validation, with new-conversion/quality gates. Fail closed until then.
+ // R28 selected INA231: the real TwoWire transport is integrated but
+ // cannot start while INA231_PHYSICAL_COMMISSIONED=false (R27/R28).
+ // The legacy ADS1115 fallback is unreachable while this module is selected.
  if(boat_r27::INA231_MODULE_SELECTED){
-  adcPending_=false;voltageValid_=false;return;
+  if(!ina231Ready_){adcPending_=false;voltageValid_=false;return;}
+  Ina231ArduinoWireR28 bus(wire_);
+  const auto status=ina231Sampler_.poll(bus,now);
+  const auto fresh=ina231Sampler_.snapshot(now);
+  voltageValid_=status!=boat_r28::PollResult::Failed && fresh.valid;
+  voltage_=voltageValid_?fresh.millivolts:0;
+  voltageAt_=fresh.acquiredAtMs;
+  return;
  }
  if(!adcPending_){
   adcAt_=now;adcPending_=writeAdc(0xc383);if(!adcPending_)voltageValid_=false;return;
