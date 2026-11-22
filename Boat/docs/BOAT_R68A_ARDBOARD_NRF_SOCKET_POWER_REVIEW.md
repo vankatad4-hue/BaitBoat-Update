@@ -58,3 +58,6 @@ Nominal AMS1117 chip datasheet current or thermal shutdown is **NOT** a legitima
 
 - [Ardboard adapter article 1127](https://www.ardboard.com/nrf24l01-socket-adapter) and [Ardboard long-range article 1037](https://www.ardboard.com/nRF24L01-long-range-tranceiver) consulted 2026-11-22.
 - [AMS1117 electrical characteristics](https://www.alldatasheet.com/html-pdf/205691/ADMOS/AMS1117-3.3/474/3/AMS1117-3.3.html), generic regulator electrical data, **not** the assembled adapter's guaranteed datasheet.
+
+## R73 5 V capacity change
+The shared provisional **Olimex 5 V 2 A** supply now also includes the **HGLRC M100 PRO GPS with its onboard QMC5883L** (complete assembly rated **3.6–5.5 V**). nRF adapter/ESP32/whole GPS aggregate startup draw, 5V cable drop, GNSS RF noise and I²C/UART high-level safety must be qualified before a single 5 V converter is accepted. The previous 3.3 V sensor-bus reference to `QMC` does not indicate separate QMC hardware. R73 notes: [R73](BOAT_R73_M100_PRO_INTEGRATED_COMPASS_POWER.md).
