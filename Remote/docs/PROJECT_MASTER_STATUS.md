@@ -699,3 +699,7 @@ The owner reconfirmed **1× EBYTE E22-900T22S UART SMD on Remote and 1× same ex
 - Boat status bit 5 remains low-battery/RTH; bit 7 now independently marks critical-battery STOP.
 - Remote battery indicator remains red for either state, but the warning text is distinct: `НИСКА БАТ. — RTH` versus `КРИТ. БАТ. — STOP`.
 - Remote mission preparation rejects stale/red/critical Boat battery telemetry. Boat firmware remains the final safety authority.
+
+### Red battery operator message refinement
+
+The main display uses `НИСКА БАТ. — ЗАРЕДИ/СМЕНИ` when red but the Boat is not reporting Home return; `НИСКА БАТ. — RTH; ЗАРЕДИ/СМЕНИ` only when the Boat reports return-to-home; and `КРИТИЧНА БАТЕРИЯ — STOP!` when the Boat reports critical cutoff. This avoids promising that Home diversion has begun merely because the voltage is low.
