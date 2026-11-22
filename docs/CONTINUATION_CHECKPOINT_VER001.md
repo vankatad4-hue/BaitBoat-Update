@@ -1,6 +1,6 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-22, **R30H-2 Boat-local RF trace and fault-timer simulation; R30H-3 next** (R78/R79 safety, R27 INA231, R29 common 3S bus; physical checks unsigned)  
+**Checkpoint:** 2026-11-22, **R30H-3 STOP exposure audit + Remote trace; R30H-4 next** (R78/R79 safety, R27 INA231, R29 common 3S bus; physical checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `hardware-ready-dual-radio-r1`
 
@@ -459,3 +459,27 @@ R30H артефакти:
 **Critical unresolved R30H-3 risk:** the E22 6000ms freshness means an actual cut immediately after a good E22 heartbeat can defer recognition of total link loss for up to ~6 seconds plus scheduler latency. The remote's 3-second E22 pacing may delay delivery of STOP; this has **not** been measured. No live propulsion is approved with these timers unreviewed. Need actual module IDs, checked 5V/3.3V logic, antenna/EU868/legal and *measured airtime*, authenticated RF-only pairing and a synchronized external scope/logic analyzer before changing the policy or approving a STOP time bound.
 
 **Next step R30H-3:** run physical board/carrier inspection and signoff, then RF-only synchronized link-loss/STOP captures with MDD20A VM/EKM014 VH disconnected; compare measured worst-case delays against a defined engineering safety acceptance limit, revise logic if necessary and rerun negative tests. No new custom PCB or module selections.
+
+## R30H-3 continuation — source-measured policy windows, Remote STOP queue trace, signed-RF blockers (2026-11-22)
+
+**Current engineering milestone committed; R30H-4 physical hardware is still required.** R30H-3 is strictly a **source-derived, synthetic 1ms phase sweep** and a new inactive Remote STOP observability path, not a physical radio test. Neither endpoints' control policy nor chosen modules were changed.
+
+### New authoritative files
+
+- [R30H-3 full engineer review](../Boat/docs/BOAT_R30H_3_RF_STOP_EXPOSURE_REVIEW.md) with calculated software-only STOP/RTH conditions, E22 airtime hypothetical pressure, and physical blocker decisions.
+- [R30H-3 16-gate RF/STOP acceptance matrix](../Boat/docs/BOAT_R30H_3_STOP_RF_ACCEPTANCE.csv): **16 NOT_RUN, no measured STOP max, no approved safety limit and no engineering signature**; R30H-1 has 22 module signoffs NOT_RUN, R30H has 22 RF scenarios NOT_RUN; R30A has 24 physical gates OPEN and prior 81 checks NOT_RUN.
+- [Source-synchronized deterministic simulator](../Boat/tools/simulate_r30h3_rf_timing.py) and [Python regression](../Boat/tests/test_r30h3_software_exposure.py): reads Boat nRF 250ms / E22 6000ms freshness, Remote 3000ms E22 STOP+heartbeat pacing and RTH 10000ms from last accepted Boat authenticated frame, then sweeps E22 phase exactly.
+- [Remote trace struct](../Remote/source/r30h3_stop_trace.h), [Remote source](../Remote/source/boat_radio.cpp) and [C++11 unit test](../Remote/tests/r30h3_remote_stop_trace_test.cpp): one 16-slot **REMOTE-LOCAL** record queue, labels STOP request, nRF driver admitted/rejected, E22 3-second deferred, E22 UART-buffer admitted/rejected. Driver-buffer admission is **not** RF over-air TX or Boat current-zero. `REMOTE_R30H3_STOP_TRACE_ENABLED=0` remains default and prevents debug traffic/overhead in normal builds. A read-only take function is available for a future non-actuating bench harness; no live module/RF output is enabled.
+- [R30H source preflight](../Boat/tools/verify_r30h_radio_preflight.py) + hostile mutation tests reject trace unlocking, unsigned board flags, early release, or fabricated R30H-3 physical acceptance; CI triggers for Boat/Remote shared simulator changes.
+
+### Confirmed CI and actual limitations
+
+- [Boat portable host #45054477765](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45054477765): **SUCCESS**, including R30H-3 Python 1ms phase sweep and fail-closed physical preflight.
+- [Remote portable host #45054477730](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45054477730): **SUCCESS**, including C++ Remote STOP trace ring and shared simulator.
+- [Remote Waveshare target #45054171585](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45054171585) remained **in progress** at the time of recording; do not call it PASS without completed CI. [Boat diagnostic + optional trace target #45052544986](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45052544986) previously **SUCCESS**. ZIP snapshots are uploaded by existing package Actions on source/docs commits with immutable versions unchanged.
+
+**Software-only findings (NOT measured physical limits):** At a STOP press just after a permitted E22 frame, Remote can hold it for 3000ms before the next permitted E22 transmission slot, plus unknown UART/RF/Boat output delay. For RF cut just after an authenticated E22 frame, Boat E22 may be marked fresh for up to 6000ms, first stale at 6001ms in a 1ms simulation; when E22 last RX age is 0–2999ms at cut, dual-link stale is modeled at 3002–6001ms (nRF at t=0). RTH remains conditional at last authenticated Boat RX +10000ms, independent of total-RF-cut start. If actual E22 airtime were 30ms/frame, hypothetical 1200 heartbeats/h would exhaust the provisional 36s/h software airtime budget **before any STOP**. True RF duty/EIRP/channel legality, UART/air delays, jitter and independent current-zero remain unverified and **cannot** be inferred from simulation.
+
+**Next R30H-4:** obtain exact board module revisions/photos and inspected carrier wiring, legal and measured E22 airtime, MCU 5V/3.3V signals, dual radio paired secure RF-only traffic, common-clock STOP/link-loss logs and a signed physical acceptance limit. Only then revise STOP priority/pacing or shorten freshness based on evidence; keep shared 3S MDD20A VM/EKM014 VH physically disconnected and independent STOP/current-zero blockers unresolved.
+
+**Release markers unchanged:** Boat VER014, Remote VER028; sonar unselected/deferred.
