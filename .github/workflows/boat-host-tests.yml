@@ -193,3 +193,5 @@ jobs:
         run: python3 -m unittest Boat/tests/test_r68a_nrf_adapter_power_contract.py -v
       - name: R73 M100 PRO built-in QMC5883L and 5V power contract
         run: python3 -m unittest Boat/tests/test_r73_m100_integrated_compass_power.py -v
+      - name: R75 TSR socket harness, fuse and Boat hardware confirmation plan
+        run: python3 -m unittest Boat/tests/test_r75_hardware_plan.py -v
