@@ -14,6 +14,8 @@ REQUIRED = (
     "Remote/source/sc16is750_bridge.cpp",
     "Remote/source/sc16is750_fifo_budget_r30h.h",
     "Remote/source/boat_radio.cpp",
+    "Remote/source/boat_radio.h",
+    "Remote/source/r30h3_stop_trace.h",
     "Remote/source/radio_hw_config.h",
     "Remote/source/e22_uart_link.cpp",
     "Remote/source/e22_uart_link.h",
@@ -33,6 +35,7 @@ LOCKED_MACROS = {
         "REMOTE_E22_BRIDGE_AUDIT_SIGNED",
         "REMOTE_E22_RF_INTEROPERABILITY_VERIFIED",
         "REMOTE_E22_RF_AIRTIME_AUDIT_SIGNED",
+        "REMOTE_R30H3_STOP_TRACE_ENABLED",
     ),
     "Boat/source/boat_radio_hw_config.h": (
         "BOAT_NRF_PIN_AUDIT_SIGNED",
@@ -81,6 +84,15 @@ def verify(source):
                  "REMOTE_E22_RF_AIRTIME_AUDIT_SIGNED &&"):
         need(remote, word)
     need(boat, "&& BOAT_E22_RF_AIRTIME_AUDIT_SIGNED")
+    need(remote, "remote_r30h3::E22_PACING_DEFERRED")
+    need(remote, "remote_r30h3::E22_UART_BUFFER_ADMITTED")
+    need(remote, "remote_r30h3::STOP_BUTTON_REQUEST")
+    need("Remote/source/boat_radio.h",
+         "boatRadio_takeR30H3StopTrace(remote_r30h3::Record &out)")
+    need("Remote/source/r30h3_stop_trace.h",
+         "static constexpr uint8_t CAPACITY=16")
+    if "Serial." in source[remote]:
+        errors.append("Remote R30H-3 must not print in the critical radio/control path")
     need("Boat/source/firmware/Flytec_Boat.ino",
          "static_assert(!boat_r30d::ACTUAL_READER_COMMISSIONED")
     need("Boat/source/firmware/Flytec_Boat.ino",
