@@ -5,6 +5,8 @@
 #include "e22_uart_board_port.h"
 #include "boat_radio_hw_config.h"
 #include "boat_r30h2_local_trace.h"
+#include "gnss_utc_sync.h"
+#include "radio_utc_time_v1.h"
 #include "radio_command_codec.h"
 #include "radio_key_store.h"
 #include "boat_radio_safety.h"
@@ -52,6 +54,9 @@ public:
     // For subtype 8 true means one bounded best-effort slot was offered,
     // NOT delivered, ACKed or permitted to change actuator state.
     bool sendHardwareTelemetry(const RadioDecodedPayload &status);
+    // Diagnostic UTC observation only: no link lease, ACK, navigation or
+    // actuator authorization. Sent best effort on primary nRF only.
+    void offerGnssUtc(const flytec_utc::Sample &utc){utcSource_=utc;}
     bool missionOverrideOutput(int16_t &left,int16_t &right)const;
     bool missionReleaseComplete(uint16_t transaction,uint16_t token,bool success);
     void update();
@@ -112,6 +117,9 @@ private:
     uint32_t lastControlRxMs_=0;
     bool lastControlRxValid_=false;
     bool havePrimaryHeartbeatSent_=false;
+    flytec_utc::Sample utcSource_{};
+    uint32_t lastUtcTxMs_=0;
+    bool utcEverSent_=false;
     bool missionInputs(ExecInputs &in,uint32_t now)const;
     void noteAuthenticatedRx(uint32_t now){lastAnyAuthenticatedRxMs_=now;haveAuthenticatedRx_=true;}
     bool maybeStartFailsafeReturnHome(uint32_t now);
