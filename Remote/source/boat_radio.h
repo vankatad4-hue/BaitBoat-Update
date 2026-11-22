@@ -4,6 +4,7 @@
 #include "boat_commands.h"
 #include "dual_radio_manager.h"
 #include "radio_ack_tracker.h"
+#include "r30h3_stop_trace.h"
 #include "mission_upload.h"
 #include "mission_control_wire.h"
 
@@ -48,6 +49,10 @@ bool boatRadio_primaryConnected();
 bool boatRadio_backupConnected();
 bool boatRadio_getCommandAck(uint16_t commandId,RadioCommandAckRecord &record);
 uint8_t boatRadio_pendingCommandAcks();
+// Read only the Remote-LOCAL STOP intent/queue/driver-buffer timeline.
+// false/0 when R30H-3 trace is disabled; cannot authorize control/ACK.
+bool boatRadio_takeR30H3StopTrace(remote_r30h3::Record &out);
+uint32_t boatRadio_r30h3TraceOverflows();
 
 // Hardware-driver integration hooks. A valid RX must pass frame validation and
 // HMAC authentication before reporting authenticated=true.
