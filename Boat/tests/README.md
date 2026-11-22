@@ -105,3 +105,9 @@ R77A also retains the authenticated session across ordinary RF silence so the ba
 - `tracker_sensors_test.cpp` now verifies the corrected 150kΩ/33kΩ shared divider value reconstructs a healthy 12.6V full pack without crossing the 3.0V ADS1115 code sanity limit; invalid code is rejected.
 - `boat_battery_policy_test.cpp` verifies the **first** invalid reading stops voltage authorization immediately; 1-second data-age invalidation is additional protection. Raw 9.9V critical STOP remains a separate immediate action.
 - These are host-only tests. Hardware ADC power sequencing and actual DMM measurements are explicitly **NOT_RUN**.
+
+### R22 separate ADS1115 sensor-only bring-up
+
+- `boat_ads1115_bench_math_test.cpp` verifies 3S full-charge and 10.8V thresholds with the R21 150kΩ/33kΩ ratio, plus zero/negative raw counts, bad pack voltage and ADC input above the firmware's 3.0V sanity bound.
+- `../tools/verify_ads1115_bench_isolation_r22.py` verifies sensor-only sketch GPIO audit lock and disallows actuator/radio APIs.
+- CI also builds the locked standalone ESP32-S3 Arduino sketch. A successful compiler test is not a DMM calibration, input back-power review or live sensor acceptance.
