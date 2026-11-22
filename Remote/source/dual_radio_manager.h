@@ -33,8 +33,6 @@ private:
     ManagedLink active_;
     ManagedState state_;
     uint32_t recoveryStartMs_;
-    uint32_t lastBackupControlMs_;
     uint8_t recoveryStreak_;
     static bool backupCommandAllowed(const BoatCommand &cmd);
-    static void limitBackupMotorCommand(BoatCommand &cmd);
 };
