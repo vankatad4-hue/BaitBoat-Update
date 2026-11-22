@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <cmath>
+#include "gnss_utc_sync.h"
 // HGLRC M100 PRO: UBX NAV-PVT (class 01, ID 07), 92-byte payload.
 // Bounded parser with checksum; does not accept NMEA as UBX.
 struct M100UbxFix {
@@ -10,6 +11,7 @@ struct M100UbxFix {
  uint8_t fixType=0,satellites=0;
  uint32_t at=0;
  bool positionValid=false,speedValid=false;
+ flytec_utc::Sample utc{};
 };
 class M100UbxNavPvt {
 public:
@@ -29,6 +31,7 @@ public:
  M100UbxFix snapshot(uint32_t now)const{
   M100UbxFix out=fix_;
   if((uint32_t)(now-out.at)>=2000U){out.positionValid=false;out.speedValid=false;}
+  if(!flytec_utc::fresh(out.utc,now))out.utc.valid=false;
   return out;
  }
 private:
@@ -44,11 +47,22 @@ private:
   // Require valid 3D fix and reasonable horizontal uncertainty (mm).
   if(fix<3||!(flags&1)||sv<4||lat>900000000||lat< -900000000||
      lon>1800000000||lon< -1800000000||hacc==0||hacc>100000U||groundSpeed<0){
-   fix_.positionValid=false;fix_.speedValid=false;fix_.at=now;return;
+   fix_.positionValid=false;fix_.speedValid=false;fix_.utc.valid=false;fix_.at=now;return;
   }
   fix_.latE7=lat;fix_.lonE7=lon;fix_.accuracyM=hacc/1000.0;
   fix_.speedCmS=(uint16_t)((uint32_t)groundSpeed/10U>65535U?65535U:(uint32_t)groundSpeed/10U);
   fix_.fixType=fix;fix_.satellites=sv;fix_.at=now;
   fix_.positionValid=fix_.speedValid=true;
+  // UBX NAV-PVT: year4, month6, day7, hour8, minute9, second10,
+  // valid11, tAcc12 (ns), nano16 (signed). Require validDate/Time/
+  // fullyResolved and tAcc<=250ms, plus the existing valid 3D position.
+  uint64_t ms=0;uint32_t accuracy=0;
+  const uint16_t year=(uint16_t)payload_[4]|((uint16_t)payload_[5]<<8);
+  fix_.utc.valid=flytec_utc::utcFromUbx(
+      year,payload_[6],payload_[7],payload_[8],payload_[9],payload_[10],
+      i32(16),u32(12),payload_[11],ms,accuracy);
+  fix_.utc.unixMs=fix_.utc.valid?ms:0;
+  fix_.utc.localMs=now;
+  fix_.utc.receiverTimeAccMs=fix_.utc.valid?accuracy:0;
  }
 };
