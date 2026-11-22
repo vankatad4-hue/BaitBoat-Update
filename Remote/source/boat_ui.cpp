@@ -8,6 +8,7 @@
 #include "lake_storage.h"
 #include "joystick.h"
 #include "boat_radio.h"
+#include "r30h7_utc_clock_ui.h"
 #include "boat_commands.h"
 #include "boat_telemetry.h"
 #include "release_button_guard.h"
@@ -39,6 +40,7 @@ static lv_obj_t *mapPanel;         // Map display panel.
 static lv_obj_t *sonarPanel;       // Sonar display panel.
 
 static lv_obj_t *connectionLabel;  // Radio status.
+static lv_obj_t *utcClockLabel;     // GPS UTC only, estimated; NOT STOP clock.
 static lv_obj_t *batteryLabel;     // Battery information.
 static lv_obj_t *weatherLabel;
 static lv_obj_t *modeLabel;        // Operating mode.
@@ -279,8 +281,15 @@ static void createHeader()
         headerPanel,
         "РАДИО: --",
         12,
-        17
+        25
     );
+    utcClockLabel = createLabel(
+        headerPanel,
+        "GPS UTC: --:--:--",
+        12,
+        1
+    );
+    lv_obj_set_style_text_color(utcClockLabel,COLOR_MUTED,LV_PART_MAIN);
 
     // Display boat battery information.
     batteryLabel = createLabel(
@@ -787,6 +796,16 @@ void updateBoatScreen(const BoatState &state)
         default: radioText = "РАДИО: ИЗКЛЮЧЕНО"; break;
     }
     lv_label_set_text(connectionLabel, radioText);
+    // Read-only UTC, even on Backup: never confuse HMAC UTC clock display
+    // with PPS / shared analyzer timing or physical STOP acceptance.
+    if(utcClockLabel){
+        const auto quality=boatRadio_utcQuality();
+        char timeText[48]{};
+        const bool coarse=flytec_r30h7::formatUtc(quality,timeText,sizeof(timeText));
+        lv_label_set_text(utcClockLabel,timeText);
+        lv_obj_set_style_text_color(utcClockLabel,
+            coarse?COLOR_TEXT:COLOR_MUTED,LV_PART_MAIN);
+    }
 
     // Boat battery is independent of the Remote's own battery. Percentage is
     // voltage-estimated by the Boat; never show stale or invented values.
