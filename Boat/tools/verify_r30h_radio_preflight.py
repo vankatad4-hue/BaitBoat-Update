@@ -19,6 +19,8 @@ REQUIRED = (
     "Remote/source/e22_uart_link.h",
     "Boat/source/boat_radio_hw_config.h",
     "Boat/source/boat_dual_radio_port.cpp",
+    "Boat/source/boat_dual_radio_port.h",
+    "Boat/source/boat_r30h2_local_trace.h",
     "Boat/source/e22_uart_link.cpp",
     "Boat/source/e22_uart_link.h",
     "Boat/source/firmware/Flytec_Boat.ino",
@@ -38,6 +40,7 @@ LOCKED_MACROS = {
         "BOAT_E22_UART_LOGIC_LEVELS_VERIFIED",
         "BOAT_E22_UART_PIN_AUDIT_SIGNED",
         "BOAT_E22_RF_AIRTIME_AUDIT_SIGNED",
+        "BOAT_R30H_LOCAL_TRACE_ENABLED",
     ),
 }
 
@@ -80,6 +83,20 @@ def verify(source):
     need(boat, "&& BOAT_E22_RF_AIRTIME_AUDIT_SIGNED")
     need("Boat/source/firmware/Flytec_Boat.ino",
          "static_assert(!boat_r30d::ACTUAL_READER_COMMISSIONED")
+    need("Boat/source/firmware/Flytec_Boat.ino",
+         "R30H2,BOAT_LOCAL,")
+    need("Boat/source/boat_dual_radio_port.h",
+         "bool takeR30HTrace(boat_r30h2::Record &out)")
+    need("Boat/source/boat_r30h2_local_trace.h",
+         "static constexpr uint8_t CAPACITY=32")
+    need("Boat/source/boat_dual_radio_port.cpp",
+         "boat_r30h2::STOP_AUTH_RECEIVED")
+    need("Boat/source/boat_dual_radio_port.cpp",
+         "boat_r30h2::BOTH_LINKS_STALE")
+    need("Boat/source/boat_dual_radio_port.cpp",
+         "boat_r30h2::RTH_LOCAL_ENTRY")
+    if "Serial." in source["Boat/source/boat_dual_radio_port.cpp"]:
+        errors.append("R30H-2 Serial I/O may not enter radio interrupt/safety path")
     if "application.attach(" in source["Boat/source/firmware/Flytec_Boat.ino"]:
         errors.append("R30H-1 must never attach a real BoatPhysicalDriver")
 
