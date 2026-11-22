@@ -10,6 +10,7 @@ on:
       - 'Boat/tests/**'
       - 'Boat/docs/BOAT_R25_POWER_LEVEL_EVIDENCE.csv'
       - 'Boat/docs/BOAT_R27_INA231_ACCEPTANCE.csv'
+      - 'Boat/docs/BOAT_R27_INA231_HARNESS_OVERRIDE.csv'
       - '.github/workflows/boat-host-tests.yml'
   pull_request:
     branches:
@@ -20,6 +21,7 @@ on:
       - 'Boat/tests/**'
       - 'Boat/docs/BOAT_R25_POWER_LEVEL_EVIDENCE.csv'
       - 'Boat/docs/BOAT_R27_INA231_ACCEPTANCE.csv'
+      - 'Boat/docs/BOAT_R27_INA231_HARNESS_OVERRIDE.csv'
       - '.github/workflows/boat-host-tests.yml'
 
 jobs:
@@ -235,6 +237,7 @@ jobs:
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/ina231_voltage_contract_r27_test.cpp -o /tmp/boat_r27_ina231
           /tmp/boat_r27_ina231
+          python3 Boat/tools/verify_r27_battery_selection.py
           grep -F 'INA231_PHYSICAL_COMMISSIONED=false' Boat/source/ina231_voltage_contract_r27.h
           grep -F 'if(boat_r27::INA231_MODULE_SELECTED)' Boat/source/tracker_sensor_port.cpp
           grep -F 'c.battery={false' Boat/source/tracker_sensor_profile.example.h
