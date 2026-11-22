@@ -513,3 +513,8 @@ The official DCDC6 page says it pairs with Olimex PWR-CABLE; the cable page list
 - Release intent/pulse interrupted by primary loss is aborted and never replayed. An active pulse is commanded OFF and STOP-latched. Explicit user-requested Home remains supported.
 - Added [R77 implementation report](../Boat/docs/BOAT_R77_DUAL_RADIO_WATCHDOG_IMPLEMENTATION.md) and host regression coverage.
 - **Scope limitation:** software watchdog runs on the main ESP32-S3; it is not an independent hardware cutoff. Frozen MCU/stuck GPIO/shorted driver remain unprotected. R65/R66/R17 physical safety components and acceptance remain unresolved. No new hardware or GPIO; Boat VER014 / Remote VER028 unchanged.
+
+
+### R77A — retain authenticated session during radio outage
+
+Removed ordinary 6.5-second inactivity session teardown from Boat and Remote. Radio watchdog still expires and commands STOP_ALL when both links go stale, but the current authenticated session/replay counters remain available so an E22 backup frame can restore the same session after a prolonged RF outage. Sequence-limit rekey and power-cycle still require the existing primary handshake. Added a Remote regression for recovery from LINK_NO_LINK to backup. No hardware or version change.
