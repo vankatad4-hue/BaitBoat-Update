@@ -5,6 +5,7 @@
 #include "dual_radio_manager.h"
 #include "radio_ack_tracker.h"
 #include "r30h3_stop_trace.h"
+#include "r30h6_utc_marker_policy.h"
 #include "mission_upload.h"
 #include "mission_control_wire.h"
 
@@ -45,6 +46,8 @@ void boatRadio_update();
 // R30H-5: estimated UTC from authenticated Boat GPS, only for UI/RTC.
 // This is NOT PPS, verified E2E STOP timing, radio lease or navigation safety.
 bool boatRadio_utcNow(uint64_t &unixMs);
+// Informational only. Coarse GPS UTC is NOT a shared physical stop-latency clock.
+flytec_r30h6::ClockReport boatRadio_utcQuality();
 bool boatRadio_isConnected();
 BoatRadioLink boatRadio_getActiveLink();
 BoatRadioState boatRadio_getState();
