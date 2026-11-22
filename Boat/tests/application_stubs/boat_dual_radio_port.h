@@ -11,6 +11,7 @@ struct FakeAck{uint32_t id;bool success;};
 class BoatDualRadioPort{
 public:
  bool primary=true,detached=false;uint32_t gen=1;
+ bool returnAllowed=false;unsigned returnRequests=0;
  MissionControlPhase phase=MC_IDLE;ExecOutput intent={INTENT_STOP,-1,0};
  MissionNavigationResult nav{};uint16_t tx=0;
  bool (*input)(ExecInputs &)=nullptr;bool (*gate)()=nullptr;
@@ -30,8 +31,9 @@ public:
  ExecOutput missionIntent()const{return intent;}
  MissionNavigationResult missionNavigation()const{return nav;}
  bool confirmManual(){return false;}
+ bool requestReturnHome(){++returnRequests;if(!returnAllowed)return false;detached=true;phase=MC_RETURNING;intent={INTENT_STOP,-1,0};return true;}
  bool missionOverrideOutput(int16_t &l,int16_t &r)const{l=r=0;return false;}
  bool missionReleaseComplete(uint16_t,uint16_t,bool){return true;}
- bool completeApplicationAction(const BoatCommand &c,uint32_t g,bool ok,uint8_t,uint8_t){if(g!=gen)return false;acks.push_back({c.commandId,ok});return true;}
+ bool completeApplicationAction(const BoatCommand &c,uint32_t g,bool ok,uint8_t,uint8_t,ManagedLink=LINK_NRF_PRIMARY){if(g!=gen)return false;acks.push_back({c.commandId,ok});return true;}
  bool sendHardwareTelemetry(const RadioDecodedPayload &d){if(!primary)return false;telemetry.push_back(d);return true;}
 };
