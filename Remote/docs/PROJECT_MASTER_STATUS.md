@@ -673,3 +673,12 @@ The owner supplied Ardboard **article 1127** nRF24 AMS1117-3.3 socket for **Boat
 
 ## R69 — matched E22-900T22S backup radio confirmed (2026-11-22)
 The owner reconfirmed **1× EBYTE E22-900T22S UART SMD on Remote and 1× same exact model on Boat**. Do not use the proposed E22-900T30S. Remote I²C-to-UART SC16IS750 path and Boat direct UART remain tentative pending real breakout compatibility, hardware 3.3V supplies and RF tests. EU868 regulatory configuration and LoRa STOP/Home-only limitations unchanged; Remote VER028 not advanced.
+
+
+## R78 — Remote target compilation completed (2026-11-22)
+
+- [Remote Waveshare ESP32-S3 target compile](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45004179977) completed successfully on commit `7d32cf7a8862b57348e835fa7e569d93716d3afd`.
+- The target job staged and compiled the complete Remote diagnostic/target sketch and uploaded firmware binary and compiler log artifacts.
+- Remote portable host tests also passed at run 45004179963.
+- R78 changes the Boat-side radio-loss policy and Boat-local Home NVS only; Remote source and Remote release version are unchanged.
+- Physical display, touch, SD, nRF24 and E22 tests remain pending on purchased hardware.
