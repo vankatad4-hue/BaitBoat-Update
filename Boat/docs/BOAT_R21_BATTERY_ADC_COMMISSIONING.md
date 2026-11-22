@@ -94,3 +94,7 @@ The [R22 isolated ADS1115 serial bench sketch](BOAT_R22_ADS1115_SENSOR_ONLY_BRIN
 ## R25 clarification — do not energize the sense line before sequencing validation
 
 **Safety clarification (2026-11-22):** The 150kΩ/33kΩ divider values solve the previous full-charge software scaling conflict only. They **do not** prove protection against input back-powering while ADS1115 VDD is absent or rising/falling. At 12.6V, a disconnected/unclamped divider predicts ~2.272V AIN0; the ADS1115 absolute maximum is VDD+0.3V. The original R21 ramp/check procedure must **not** be interpreted as permission to apply a knowingly over-limit source to an unpowered IC. Keep the 3S pack sense feed disconnected until a compliant power sequencing/protection design and safe verification method have been approved for the exact premade ADS1115 carrier. See [R25 preflight](BOAT_R25_POWER_LEVEL_PREFLIGHT.md) and [unsigned evidence worksheet](BOAT_R25_POWER_LEVEL_EVIDENCE.csv). No physical calibration has been performed.
+
+## R27 — R21 battery divider retired (2026-11-22)
+
+**Historical only:** R27 changes the selected Boat sensor from ADS1115 to **Ardboard INA231 product 1491** (BUS-voltage-only). Do not build the R21 150kΩ/33kΩ divider or apply R21 ADC AIN0 test procedure to the new INA231. See [selected INA231 wiring, R100 shunt exclusion, and 21 physical gates](BOAT_R27_INA231_SELECTED_VOLTAGE_ONLY.md). The original ADS1115 full-charge software calibration regression remains available as archived historical code evidence; it is not runtime authorization.
