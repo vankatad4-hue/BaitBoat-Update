@@ -159,3 +159,7 @@ Never parallel regulator outputs. Keep power grounds common where required for l
 - [HGLRC M100 PRO 5V/UBX/compass](https://www.hglrc.com/products/hglrc-m100-pro-gps)
 - [Cytron MDD20A motor logic and power constraints](https://my.cytron.io/sumo-robot/c-motor-driver/p-20amp-6v-30v-dc-motor-driver-2-channels)
 - [Electrokit EKM014 input logic/output connections](https://docs.electrokit.com/en/modules/EKM014/)
+
+## R23 physical acceptance record — unsigned
+
+A separate [R23 pin-by-pin electrical sign-off worksheet](BOAT_R23_GPIO_AND_LEVEL_SIGNOFF.csv) contains **18 MCU GPIO checks plus 14 module voltage/connector/safety checks**, all initially **NOT_RUN**. Record the actual DevKitC PCB revision, module/carrier revision, continuity and on/off logic levels in this sheet. An unfilled sheet is not proof of pin safety; it must be completed before a production GPIO audit can be signed.
