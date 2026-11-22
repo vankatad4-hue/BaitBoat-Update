@@ -540,3 +540,10 @@ Current hardware baseline and remaining decisions are consolidated in [BOAT_HARD
 - Remote displays Boat voltage/estimated percentage with green/yellow/red colors and Bulgarian recharge/RTH warnings. Stale telemetry is unavailable; mission preparation is blocked when stale or red.
 - The low-battery percentage is an estimate from a generic 3S voltage curve, not coulomb counting. Validate with the actual cells, load sag and calibrated divider.
 - Current CI evidence and remaining work are maintained in [the continuation checkpoint](CONTINUATION_CHECKPOINT_VER001.md). Physical tests have not been run; actual motors and solenoids remain disconnected until dummy-load acceptance.
+
+
+## R20 GPIO/header candidate and power correction (2026-11-22)
+
+The next-step GPIO audit has been completed as a **candidate** map, not a signed board-level wiring release. See [BOAT_GPIO_HEADER_MAP_R20.md](../Boat/docs/BOAT_GPIO_HEADER_MAP_R20.md) and [BOAT_R20_GPIO_RESOURCE_CROSSWALK.csv](../Boat/docs/BOAT_R20_GPIO_RESOURCE_CROSSWALK.csv). It reserves ESP32-S3 strapping, USB, memory and RGB LED pins; uses GPIO4/5 for M100 UART, GPIO7/8 for shared I²C, GPIO9–13 for nRF24 SPI, GPIO14–18 and GPIO6 for E22 UART/mode/reset, GPIO21 for nRF IRQ, and GPIO39/40 for MDD20A PWM. MCP23017 0x27 GPB0/1 are MDD20A direction; GPA0–3 are EKM014 IN1–4.
+
+Manufacturer review corrected the E22-900T22S VCC rail to 5V from DCDC6-16-TO5; its serial/control logic remains 3.3V TTL. D24V10F3 #1 is nRF24 PA/LNA; #2 is GY-91/ADS1115/MCP23017. Candidate GPIO macros remain unsigned and the sensor profile remains uncommissioned until the exact board revision is purchased and inspected.
