@@ -40,6 +40,9 @@ REQUIRED = (
     "Boat/docs/BOAT_R30H_4_CAPTURE_MANIFEST_TEMPLATE.json",
     "Boat/docs/BOAT_R30H_4_RF_ONLY_PROBE_CROSSWALK.csv",
     "Boat/docs/BOAT_R30H_7_GNSS_PPS_RF_CLOCK_SIGNOFF.csv",
+    "Boat/docs/BOAT_R30H_8_SHARED_CLOCK_CAPTURE_TEMPLATE.csv",
+    "Boat/docs/BOAT_R30H_8_SHARED_CLOCK_MANIFEST_TEMPLATE.json",
+    "Boat/docs/BOAT_R30H_8_CLOCK_ALIGNMENT_GATES.csv",
 )
 LOCKED_MACROS = {
     "Remote/source/radio_hw_config.h": (
@@ -206,6 +209,34 @@ def verify(source):
         if row.get("State")!="NOT_RUN" or any(row.get(k) for k in
            ("Observed","Artifact","Engineer_signoff")):
             errors.append("R30H-7 cannot claim physical GPS/PPS/clock-offset measurements")
+            break
+    # R30H-8: source repo contains only blank lab templates and unsigned
+    # physical PPS / dual-clock calibration gates. Signed evidence is a
+    # separately reviewed capture, never generated or accepted in CI.
+    r8_name="Boat/docs/BOAT_R30H_8_SHARED_CLOCK_CAPTURE_TEMPLATE.csv"
+    r8_reader=csv.DictReader(io.StringIO(source[r8_name]))
+    if not r8_reader.fieldnames or not {
+        "capture_id","trial_id","clock_domain","time_us","platform",
+        "event","utc_unix_ms","origin"}.issubset(r8_reader.fieldnames):
+        errors.append("R30H-8 PPS/UTC candidate template schema changed")
+    if list(r8_reader):
+        errors.append("R30H-8 committed PPS evidence template cannot contain physical/synthetic records")
+    try:
+        r8_manifest=json.loads(source["Boat/docs/BOAT_R30H_8_SHARED_CLOCK_MANIFEST_TEMPLATE.json"])
+        if (r8_manifest.get("schema")!="R30H8-1" or
+            r8_manifest.get("evidence_mode")!="UNSPECIFIED" or
+            r8_manifest.get("capture_sha256") or
+            (r8_manifest.get("pps") or {}).get("physical_pps_present") is not None):
+            errors.append("R30H-8 unsigned PPS capture manifest cannot be preapproved")
+    except (ValueError, TypeError, AttributeError):
+        errors.append("R30H-8 manifest must be valid unsigned JSON")
+    gates8=list(csv.DictReader(io.StringIO(source["Boat/docs/BOAT_R30H_8_CLOCK_ALIGNMENT_GATES.csv"])))
+    if len(gates8)!=8 or len({g.get("Gate_ID") for g in gates8})!=8:
+        errors.append("R30H-8 must retain eight distinct physical PPS/clock gates")
+    for gate8 in gates8:
+        if gate8.get("Status")!="NOT_RUN" or any(gate8.get(k) for k in
+            ("Observation","Evidence","Reviewer")):
+            errors.append("R30H-8 physical clock/marker acceptance cannot be fabricated")
             break
     matrix = list(csv.DictReader(io.StringIO(source["Boat/docs/BOAT_R30H_RF_TEST_MATRIX.csv"])))
     if len(matrix) != 22 or any(r["State"] != "NOT_RUN" for r in matrix):
