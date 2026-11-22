@@ -153,3 +153,6 @@ Intermediate early R30F CI runs failed because their respective commit snapshots
 
 **Next engineering step:** R30G — review rate limiting and bounded-queue/backpressure behavior of diagnostic packets during manual control and deliberate link loss, then regression-test no control-freshness or priority inversion. Physical radio acceptance and motor power remain blocked.
 
+## R30G — Boat diagnostic traffic cannot queue behind controls
+
+[Verified R30G design and tests](Boat/docs/BOAT_R30G_RADIO_DIAGNOSTIC_PRIORITY.md) add a one-slot, short-lived, primary-nRF-only optional diagnostic budget. Heartbeat, STOP/ACK, mission and radio-loss policy run before any diagnostic attempt; old optional observations are dropped instead of accumulating. [Boat host #45049989270](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45049989270) and [Boat ESP32-S3 target #45049610592](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45049610592) passed. Remote firmware, selected ONE common 3S4P battery bus, physically unsigned independent STOP and official Boat VER014 / Remote VER028 remain unchanged.
