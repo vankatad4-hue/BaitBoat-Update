@@ -31,7 +31,7 @@ jobs:
             Boat/source/radio_payload_encoder.cpp Boat/source/radio_payload_codec.cpp \
             Boat/tests/radio_payload_encoder_test.cpp -o /tmp/boat_payload_test
           /tmp/boat_payload_test
-      - name: Safety, deduplication and cross-radio policy
+      - name: Safety, deduplication, cross-radio and 10-second RTH policy
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I Boat/tests/stubs \
             Boat/source/boat_radio_safety.cpp Boat/tests/boat_radio_safety_test.cpp \
@@ -98,7 +98,7 @@ jobs:
           cp Remote/source/mission_control_client.h /tmp/flytec_mission_client/
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I/tmp/flytec_mission_client -IBoat/source Boat/source/mission_protocol.cpp Boat/tests/mission_transport_integration_test.cpp -o /tmp/boat_mission_integration
           /tmp/boat_mission_integration
-      - name: Autonomous return after radio session expiry
+      - name: R78 dual-radio STOP, 10-second Home return and recovery
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/source/mission_protocol.cpp Boat/tests/mission_link_loss_test.cpp -o /tmp/boat_link_loss
           /tmp/boat_link_loss
@@ -165,6 +165,10 @@ jobs:
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/heltec_sx1262_airtime_test.cpp -o /tmp/boat_sx1262_airtime
           /tmp/boat_sx1262_airtime
+      - name: R78 Boat Home NVS record CRC and coordinate validation
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/boat_home_point_record_test.cpp -o /tmp/boat_home_nvs_record
+          /tmp/boat_home_nvs_record
       - name: R61 guarded physical driver and calibration storage
         run: |
           g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/figure8_calibration_store_test.cpp -o /tmp/r61_cal_store
