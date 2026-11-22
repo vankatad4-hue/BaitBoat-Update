@@ -125,3 +125,9 @@ The manufacturer supports MDD20A 3.3V PWM/DIR control and EKM014 3.3V IN1–IN4 
 ## R26 procurement hold — INA226 not selected (2026-11-22)
 
 R20's ADS1115 0x48 remains the **selected but uncommissioned** battery-sensing module. R25 identified an unresolved VDD-relative power-off limit for the 150kΩ/33kΩ divider; do not connect 3S sense until a manufacturer-compliant power path is accepted. R26 compared TI INA226 VBUS-only as a proposed preassembled replacement that can handle VBUS while chip VS is off, but **NO change to the purchased BOM, module choice, breakout harness or firmware profile is authorized**. See [R26 INA226 candidate review](BOAT_R26_INA226_VOLTAGE_ONLY_REVIEW.md). High-current motor/solenoid paths also remain disconnected until independent safety hardware approval.
+
+## R29 active power authority — one shared 3S load bus (2026-11-22)
+
+**Superseding owner instruction:** use **one** 3S4P BMS-protected battery supply with a **single common 3S high-current distribution/return** connected in parallel to Cytron MDD20A `VM` and EKM014 `VH`. DO NOT construct separately switched/isolated motor and coil high-current buses from older R20/R23 drafts. This replaces only actuator power wiring, **not** the four preselected voltage-conversion regulators, since EKM014 still needs 5V `VL` logic and sensors/radios need 3.3V/5V. [R29 common-supply wiring and design checks](BOAT_R29_SHARED_BUS_FAULT_SIMULATION.md).
+
+No physical bus/protection device is installed or signed. The chosen 20A BMS, EKM014 factory 10A slow-blow fuse, unmeasured 550 motor stall, 6A class release coil, wire terminals and shared ground require actual test and safe upstream protection selection. Software motor/release exclusivity can prevent a *commanded* overlap but cannot independently disconnect a failed output. Existing independent safety contacts/feedback are unavailable: they stay rejected/uncommissioned. Boat VER014 / Remote VER028 unchanged.
