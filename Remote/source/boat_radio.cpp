@@ -296,8 +296,8 @@ void boatRadio_update() {
     // Link inactivity is supervised by DualRadioManager; do not wipe the
     // authenticated session merely because both RF paths were quiet. This
     // allows the backup E22 path to restore the same session after an outage.
-    // Sequence-limit rekey is deferred until the primary link is healthy.
-    if(g_session.established()&&!sessionReady()&&g_linkManager.primaryHealthy(now))resetSession(now);
+    // Sequence-limit rekey still uses the existing primary handshake.
+    if(g_session.established()&&!sessionReady())resetSession(now);
     if(g_session.timeout(now))resetSession(now);
     if(g_rootReady&&g_nrfReady&&!g_session.established()&&now-g_lastHandshakeTx>=500U){
         g_lastHandshakeTx=now;g_session.startRemote(radioPlatformNonce(),now);
