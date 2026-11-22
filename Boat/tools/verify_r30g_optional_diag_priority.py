@@ -51,7 +51,8 @@ direct=s.split("bool BoatDualRadioPort::sendHardwareTelemetry(",1)[1].split(
 assert "return radio_encodeTelemetryPayload(status,f.payload)&&radio_frameSeal(f,key_)&&sendFrame(LINK_NRF_PRIMARY,f);" in direct
 assert "sendMissionFeedback(controller_.status()" in update
 remote=read("Remote/source/boat_radio.cpp")
-assert "frame.payload[0]==radio_r30f::SUBTYPE)return;" in remote
+assert "frame.payload[0]==radio_r30f::SUBTYPE ||" in remote
+assert "frame.payload[0]==flytec_time::SUBTYPE" in remote
 assert remote.index("frame.payload[0]==radio_r30f::SUBTYPE")<remote.index(
     "g_linkManager.reportValidRx(link,true,now);")
 tel=read("Remote/source/boat_telemetry.cpp")
