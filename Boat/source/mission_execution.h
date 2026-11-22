@@ -11,13 +11,14 @@ struct ExecInputs{
  // Set only by the local Boat radio watchdog after the 10-second dual-link
  // loss threshold and a validated NVS Home point. Never supplied over radio.
  bool autonomousRth;
+ bool batteryLow;
 };
 struct ExecOutput{ExecIntent intent;int8_t channel;uint16_t token;};
 class MissionExecution{
 public:
  bool start(const MissionPlan &p,const ExecInputs &in,uint32_t now,bool authenticated){
   if(!authenticated||!in.primaryFresh||in.stopActive||!in.stationary||!in.releaseIdle||
-     !missionNavigation_evaluate(p,in.fix,false).valid||
+     in.batteryLow||!missionNavigation_evaluate(p,in.fix,false).valid||
      (phase_!=EXEC_IDLE&&phase_!=EXEC_COMPLETE&&phase_!=EXEC_ABORTED)||
      !p.transaction||p.transaction==lastTransaction_)return false;
   plan_=p;lastTransaction_=p.transaction;remaining_=p.releaseMask;phase_=EXEC_OUTBOUND;
@@ -27,7 +28,7 @@ public:
  // Irreversible diversion: discard all release work. Never travel with an
  // unconfirmed release pulse, invalid Home navigation or active STOP.
  bool divertHome(const ExecInputs &in){
-  if(phase_!=EXEC_OUTBOUND&&phase_!=EXEC_AT_TARGET&&phase_!=EXEC_RETURNING&&phase_!=EXEC_PAUSED)return false;
+  if(phase_!=EXEC_OUTBOUND&&phase_!=EXEC_AT_TARGET&&phase_!=EXEC_RETURNING&&phase_!=EXEC_PAUSED&&phase_!=EXEC_RELEASE_WAIT)return false;
   if(in.stopActive||!in.releaseIdle||!in.releaseInterlocks||!missionNavigation_evaluate(plan_,in.fix,true).valid){abort();return false;}
   remaining_=0;phase_=EXEC_RETURNING;return true;
  }
@@ -39,6 +40,7 @@ public:
  }
  bool resume(const ExecInputs &in,bool authenticated){
   if(!authenticated||phase_!=EXEC_PAUSED||!in.primaryFresh||in.stopActive||!in.stationary||
+      (in.batteryLow&&resumePhase_!=EXEC_RETURNING)||
      !in.releaseIdle||!missionNavigation_evaluate(plan_,in.fix,resumePhase_==EXEC_RETURNING).valid)return false;
   phase_=resumePhase_;return true;
  }
@@ -51,6 +53,7 @@ public:
   const ExecOutput stopped={INTENT_STOP,-1,0};
   if(phase_==EXEC_IDLE||phase_==EXEC_COMPLETE||phase_==EXEC_ABORTED)return stopped;
   if(in.stopActive){abort();return stopped;}
+  if(in.batteryLow&&phase_!=EXEC_RETURNING)return stopped;
 
   // A release already in progress is never replayed after primary-link loss.
   // Its bounded output is stopped by the actuator supervisor and the mission
