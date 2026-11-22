@@ -1,3 +1,5 @@
+> **2026-11-22 workflow update:** This R1 document records the earlier **parallel/experimental** migration. Since successful dual PlatformIO compilation (#45063024581), **VS Code + PlatformIO is the primary development build**. Arduino CLI is a secondary compatibility regression. All no-upload/actuator/RF/STOP locks remain active. For current instructions see [PLATFORMIO_PRIMARY_WORKFLOW_R30H10.md](PLATFORMIO_PRIMARY_WORKFLOW_R30H10.md); historic experimental language below is not the current workflow authority.
+
 # Flytec V080 — VS Code + PlatformIO migration R1
 
 **2026-11-22 — parallel VS Code + PlatformIO migration; both native PlatformIO target builds now PASS, while Arduino CLI remains the reference until explicit promotion after hardware commissioning.** This is not an ESP-IDF/CMake rewrite and does not change the firmware's radio, safety, map, GNSS UTC, joystick or LVGL logic. Existing Boat VER014 and Remote VER028 are unchanged; all physical RF/STOP/actuator checks remain unsigned.
