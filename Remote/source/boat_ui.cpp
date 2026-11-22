@@ -814,12 +814,22 @@ void updateBoatScreen(const BoatState &state)
     char safetyText[128];
     const char *stopText = state.emergencyStop ? (state.emergencyStopConfirmed ? "ПОТВЪРДИ" : "ЗАКЛЮЧЕН?") : (state.emergencyStopConfirmed ? "ИЗЧИСТЕН" : "UNKNOWN");
     const bool batteryMid=percentFresh&&telemetry.batteryPercent<=50&&!state.lowBattery;
-    const char *healthText = state.criticalBattery ? "КРИТ. БАТ. — STOP" :
-        (state.lowBattery ? "НИСКА БАТ. — RTH" :
-        (batteryMid ? "СРЕДНА БАТ. — ЗАРЕДИ" :
-        (state.failsafeActive ? "АВАР. РЕЖИМ" : (state.actuatorSafetyReady ? "ГОТОВО" : "БЛОКИРАНО"))));
-    snprintf(safetyText,sizeof(safetyText),"STOP:%s %s ACK:%u",stopText,healthText,(unsigned)boatRadio_pendingCommandAcks());
-    if (safetyStatusLabel) lv_label_set_text(safetyStatusLabel,safetyText);
+    const char *healthText = batteryMid ? "СРЕДНА БАТ. — ЗАРЕДИ" :
+        (state.failsafeActive ? "АВАР. РЕЖИМ" : (state.actuatorSafetyReady ? "ГОТОВО" : "БЛОКИРАНО"));
+    // A red voltage by itself does not prove that RTH has actually started.
+    // Keep the operator action visible in every red-battery state.
+    if(state.criticalBattery) snprintf(safetyText,sizeof(safetyText),"КРИТИЧНА БАТЕРИЯ — STOP!");
+    else if(state.lowBattery&&state.mode==MODE_RETURN_HOME)
+        snprintf(safetyText,sizeof(safetyText),"НИСКА БАТ. — RTH; ЗАРЕДИ/СМЕНИ");
+    else if(state.lowBattery)
+        snprintf(safetyText,sizeof(safetyText),"НИСКА БАТ. — ЗАРЕДИ/СМЕНИ");
+    else snprintf(safetyText,sizeof(safetyText),"STOP:%s %s ACK:%u",stopText,healthText,(unsigned)boatRadio_pendingCommandAcks());
+    if (safetyStatusLabel) {
+        lv_label_set_text(safetyStatusLabel,safetyText);
+        lv_obj_set_style_text_color(safetyStatusLabel,
+            (state.lowBattery||state.criticalBattery) ? COLOR_RED : (batteryMid ? COLOR_YELLOW : COLOR_MUTED),
+            LV_PART_MAIN);
+    }
 
     // Change STOP button text when emergency stop is active.
     if (state.emergencyStop)
