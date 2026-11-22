@@ -1,5 +1,8 @@
 # Flytec V080 Remote — active hardware and firmware
 
+> **R30H-10 development authority (2026-11-22):** **VS Code + PlatformIO is now PRIMARY** for Remote: `pio run -d Remote -e remote_waveshare_43_diagnostic` (from repository root). Arduino CLI remains a secondary regression. [Workflow](../docs/PLATFORMIO_PRIMARY_WORKFLOW_R30H10.md) and [physical signoff plan](../Boat/docs/BOAT_R30H_10_HARDWARE_ACCEPTANCE.md). **Upload remains denied.** The proposed nRF CE **GPIO6** conflicts with SD dummy-CS, and nRF CSN **GPIO15** conflicts with onboard RS485 TXD. RF/STOP/PPS remain unsigned; no change to VER028.
+
+
 **Selected controller:** Waveshare ESP32-S3-Touch-LCD-4.3 Standard, 800×480.  
 **UI:** LVGL 9.6, Bulgarian labels.  
 **Boat hardware baseline:** R20, documented in [Boat Hardware Selection R20](../Boat/docs/BOAT_HARDWARE_SELECTION_R20.md).  
