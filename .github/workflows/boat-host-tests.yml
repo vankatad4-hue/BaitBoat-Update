@@ -8,6 +8,7 @@ on:
       - 'Boat/source/**'
       - 'Boat/tools/**'
       - 'Boat/tests/**'
+      - 'Boat/docs/BOAT_R25_POWER_LEVEL_EVIDENCE.csv'
       - '.github/workflows/boat-host-tests.yml'
   pull_request:
     branches:
@@ -16,6 +17,7 @@ on:
       - 'Boat/source/**'
       - 'Boat/tools/**'
       - 'Boat/tests/**'
+      - 'Boat/docs/BOAT_R25_POWER_LEVEL_EVIDENCE.csv'
       - '.github/workflows/boat-host-tests.yml'
 
 jobs:
@@ -218,6 +220,10 @@ jobs:
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/boat_r24_mcp_joint_boot_test.cpp -o /tmp/boat_r24_mcp_boot
           /tmp/boat_r24_mcp_boot
+      - name: R25 isolated power and logic preflight worksheet stays unsigned
+        run: |
+          python3 Boat/tools/verify_r25_preflight.py --baseline
+          python3 -m unittest Boat/tests/test_r25_preflight.py -v
       - name: R66 COTS safety PLC capacity and external interlock acceptance oracle (host only)
         run: |
           python3 -m unittest Boat/tests/test_r66_safety_plc_budget.py -v
