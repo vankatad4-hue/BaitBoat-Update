@@ -27,3 +27,12 @@ The current firmware target is a diagnostic/non-actuating build. The [R20 GPIO/h
 - `../docs/BOAT_R22_ADS1115_SENSOR_ONLY_BRINGUP.md`: pin audit, 3.3V supply, ADS1115 input, serial capture and physical evidence procedure.
 
 The production Boat firmware is unchanged by this diagnostic sketch and remains non-actuating.
+
+## R23 pin and connection contract
+
+- `boat_r23_gpio_connection_contract.h`: 18 pinned J1/J3 candidates, reserved GPIO including 1.8V GPIO47/48, planned I²C addresses and physical-approval flags set **false**.
+- `../tools/verify_gpio_connections_r23.py`: verifies all 64 harness nets against the 44-position R20 Espressif header crosswalk, radio macros and locked output states.
+- `../tests/boat_r23_gpio_contract_test.cpp`: C++11 collision/reserved-pin/radio assignment regression.
+- [R23 full wiring design](../docs/BOAT_R23_GPIO_PINOUT_AND_HARNESSES.md).
+
+The `boat_radio_hw_config.h` numeric GPIOs are unchanged and remain audit-locked. `NRF24Link::begin()` already calls explicit `SPIClass::begin(sck, miso, mosi, csn)`, so the selected GPIO11/12/13 SPI route is not relying on board-default SPI pins. GNSS/I²C sensor profile and all physical actuator drivers remain uncommissioned.
