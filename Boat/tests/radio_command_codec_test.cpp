@@ -15,10 +15,10 @@ int main() {
   BoatCommand c={}; c.commandId=77; c.sequence=12; c.createdAtMs=100;
   c.type=CMD_MANUAL_MOTORS; c.mode=MODE_MANUAL; c.leftMotor=900; c.rightMotor=-900;
   assert(radio_encodeCommand(c,1,2,9,f,key));
-  assert(radio_decodeCommand(f,1,2,200,2500,true,out,key));
+  assert(!radio_decodeCommand(f,1,2,200,2500,true,out,key)); // backup has no steering lease
+  assert(radio_decodeCommand(f,1,2,200,2500,false,out,key)); // primary unaffected
   assert(out.createdAtMs==200); // local receive time, not sender uptime
-  assert(out.leftMotor==250 && out.rightMotor==-250); // backup throttle clamp
-  assert(radio_decodeCommand(f,1,2,200,2500,false,out,key)); // primary unrestricted by backup clamp
+  assert(out.leftMotor==900 && out.rightMotor==-900);
 
   c.type=CMD_CLEAR_STOP; c.activate=false;
   assert(radio_encodeCommand(c,1,2,9,f,key));
