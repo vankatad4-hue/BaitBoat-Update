@@ -73,3 +73,14 @@ BoatCrossRadioCommandDecision boatClassifyCrossRadioCommand(bool sequenceAccepte
 // Evaluates only; it does not drive motors or actuators. This is software
 // policy in the main controller, not an independent hardware safety channel.
 BoatFailsafeDecision boatEvaluateLinkFailsafe(const BoatLinkSafetyInputs &in);
+
+// The timeout is measured from the last accepted authenticated frame, not from
+// boot or from the point at which the slower backup freshness window expires.
+// Callers must separately validate Home NVS, local navigation and interlocks.
+inline bool boatRadioLossRthDue(bool bothLinksStale,bool missionEligible,
+                                bool homeStored,bool navigationSafe,bool haveAuthenticatedRx,
+                                uint32_t lastAuthenticatedRxMs,uint32_t nowMs,
+                                uint32_t timeoutMs=10000U){
+ return bothLinksStale&&missionEligible&&homeStored&&navigationSafe&&haveAuthenticatedRx&&
+        (uint32_t)(nowMs-lastAuthenticatedRxMs)>=timeoutMs;
+}
