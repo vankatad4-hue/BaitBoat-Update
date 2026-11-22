@@ -1,0 +1,25 @@
+Gate_ID,Domain,Acceptance_Requirement,Evidence_Class,State,Required_Evidence,Earliest_Phase
+G01,Hardware identification,Exact ESP32-S3 N32R16V and module revisions/photos,MODULE,OPEN,Receipt photos and silks,UNPOWERED
+G02,Connector pinout,M100 SH1.0 six-way physical contact orientation,MODULE,OPEN,Photo and power-off continuity,LOGIC
+G03,Logic safety,M100 5V TX/SDA/SCL levels <= ESP3V3 limit,ELECTRICAL,OPEN,DMM and oscilloscope capture,LOGIC
+G04,Logic safety,E22 factory carrier 26-pad mapping and TXD/AUX levels,ELECTRICAL,OPEN,Module photo and 5V to IO measurements,LOGIC
+G05,I2C integrity,MCP23017 pinout/address0x27 reset POR and 3V3 pull-ups,ELECTRICAL,OPEN,Scoped rails / register scan,LOGIC
+G06,I2C integrity,GY-91 genuine MPU9250 BMP280 addresses and 3V3,ELECTRICAL,OPEN,ID readbacks / meter,LOGIC
+G07,Battery sense,Ardboard 1491 INA231 BUS trace bypasses 0.1ohm R100,ELECTRICAL,OPEN,Continuity record and photo,LOGIC
+G08,Battery sense,Protected low-current battery BUS input 9-12.6V,ELECTRICAL,OPEN,Electrical check and meter,LOGIC
+G09,Battery sense,INA231 conversion-ready/fault and DMM thresholds calibrated,SOFTWARE_HARDWARE,OPEN,9.9/10.2/10.8/11.4/12.6V measurements,LOGIC
+G10,Power distribution,3S4P pack/BMS model charge and measured motor starting load,ELECTRICAL,OPEN,Cell/BMS record and peak log,ACTUATOR
+G11,Power distribution,One common 3S input fuse/bus conductor/connector/current ratings,ELECTRICAL,OPEN,DC fuse datasheet wiring dimensions thermal,ACTUATOR
+G12,Power distribution,Four selected 5V/3V3 regulator rail input output ripple and backfeed,ELECTRICAL,OPEN,Bench scope measurements,LOGIC
+G13,Emergency stop,Compatible rated shared-bus STOP and power-off on MCU hang,INDEPENDENT_SAFETY,OPEN,Independent physical test evidence,ACTUATOR
+G14,Actuator stuck ON,Verified output short/stuck-on shutdown/current limit,INDEPENDENT_SAFETY,OPEN,Measured forced fault evidence,ACTUATOR
+G15,Solenoid protection,One-hot nonretrigger pulse and measured current-zero feedback,INDEPENDENT_SAFETY,OPEN,All 4 coil dummy load scope traces,ACTUATOR
+G16,MDD20A,PWM39/40 safe boot brownout reset and direction wiring,ELECTRICAL,OPEN,Scoped GPIO and unpowered pin audit,ACTUATOR
+G17,Software commissioning,Real physical Boat HAL sample/apply/disable and STOP feedback,SOFTWARE_HARDWARE,OPEN,Target tests with driver default-deny until signoff,ACTUATOR
+G18,Pairing,Secure nRF/E22 on-device pairing and signed EU868 radio settings,SOFTWARE_HARDWARE,OPEN,Measured authenticated link and RF log,ACTUATOR
+G19,GNSS/Navigation,Actual M100 compass calibration geofence Home storage and 3m,SOFTWARE_HARDWARE,OPEN,GNSS track and signed Home record,WATER
+G20,Controls,Both motors stall PWM and MDD20A thermal under supply load,ELECTRICAL,OPEN,Scope current thermocouple log,ACTUATOR
+G21,Controls,All four EKM014 solenoid current/pulse mechanical release tests,ELECTRICAL,OPEN,Dummy-load evidence then witnessed cycle,ACTUATOR
+G22,Remote integration,Real Remote touchscreen joysticks buttons mission and safety commands,SOFTWARE_HARDWARE,OPEN,Mirrored radio/UART command and ACK log,ACTUATOR
+G23,Environmental,Water ingress recovery plan and antenna placement,MECHANICAL,OPEN,Physical inspection and controlled retrieval plan,WATER
+G24,Code release,Full application target compiles with actual commissioned interface,SOFTWARE_HARDWARE,OPEN,Firmware binary source hash workflow logs,ACTUATOR
