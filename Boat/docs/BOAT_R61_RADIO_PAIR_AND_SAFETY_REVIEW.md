@@ -1,5 +1,8 @@
 # R61 — matched backup radio and fail-closed output validation (2026-11-22)
 
+> **R63 safety supersession:** LoRa backup commands now permit only STOP and diversion of an already-active mission to validated Home. Backup manual steering is disabled until 200ms motor lease and EU868 airtime requirements can both be met and measured. Read [R63 report](../../docs/R63_BACKUP_CONTROL_AND_RTH_INTEGRATION.md).
+
+
 ## Correction to R60 radio candidate
 The existing Remote specification `Remote/docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R3.md` **already selects identical EBYTE E22-900T22S UART LoRa modules at both endpoints** (initial 868.125 MHz, 9600 8N1, 62.5kbps air, 32B subpackets, 10dBm power). E22-900T22D-V2.0 discussed in R60 is **not** a drop-in equivalent. Do not purchase mixed E22 variants and assume RF interoperability.
 
