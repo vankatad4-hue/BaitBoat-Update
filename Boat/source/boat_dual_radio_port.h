@@ -40,7 +40,7 @@ public:
     uint16_t missionTransaction()const{return controller_.status().transaction;}
     bool detachedReturnActive()const{return detachedReturn_;}
     MissionNavigationResult missionNavigation()const{ExecInputs in{};return missionInputs(in,millis())?controller_.navigation(in):MissionNavigationResult{};}
-    void localEmergencyStop(){const bool wasDetached=detachedReturn_;abortMission();detachedReturn_=false;if(wasDetached)controller_.resetSession();commandQueue_.clear();mission_.reset();}
+    void localEmergencyStop(){const bool wasDetached=detachedReturn_;abortMission();detachedReturn_=false;linkLossHold_=false;if(wasDetached)controller_.resetSession();commandQueue_.clear();mission_.reset();}
     bool confirmManual(){ExecInputs in{};return missionInputs(in,millis())&&controller_.confirmManual(in);}
     // Authenticated command intent only: never creates a new autonomous mission.
     // The existing, locally validated mission and Home are required.
@@ -79,6 +79,8 @@ private:
     MissionAssembler mission_;
     BoatMissionController controller_;
     MissionStickLease stickLease_;
+    BoatRadioWatchdog radioWatchdog_;
+    bool linkLossHold_=false;
     bool (*missionInput_)(ExecInputs &)=nullptr;
     ExecOutput missionIntent_={INTENT_STOP,-1,0};
     uint32_t lastMissionStatusMs_=0;
@@ -93,7 +95,7 @@ private:
     bool sessionStarted_;
     bool lastNrfRxValid_,lastBackupRxValid_;
     bool detachedReturn_=false;
-    void resetSession(bool preserveReturn=false);
+    void resetSession(bool preserveMission=false);
     bool sessionReady() const {return sessionStarted_&&txSequence_<RadioSessionCounter::REKEY_AT-1;}
     void receive(ManagedLink link,const RadioFrame &frame);
     bool enqueue(const BoatCommand &cmd,ManagedLink link,bool duplicate);
