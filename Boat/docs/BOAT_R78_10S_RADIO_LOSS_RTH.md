@@ -43,3 +43,8 @@ No additional hardware is introduced for this behavior; the storage uses the sel
 ## Safety boundary
 
 This remains a **software watchdog on the same ESP32-S3**. It is not a physically independent safety channel and cannot guarantee a cutoff if the MCU locks up, its power rail fails, or a driver output transistor fails. The user's no-new-hardware constraint is preserved: no separate PLC, contactor, watchdog module or custom PCB has been added. Actual motor and solenoid power must remain disconnected until the dummy-load bench procedure and physical wiring checks are complete.
+
+
+## Packaging evidence
+
+Boat and Remote project snapshots were rebuilt successfully at [package run 45006416675](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45006416675), commit `4b3bca5678a3b19e9e81d106df8e843a53de944c`. Artifacts: `Flytec_Boat_snapshot_ver014_4b3bca5678a3b19e9e81d106df8e843a53de944c`, `Flytec_Remote_snapshot_ver028_4b3bca5678a3b19e9e81d106df8e843a53de944c` and checksum bundle. The official version markers remain VER014/VER028; no release bump was made because physical acceptance is pending.
