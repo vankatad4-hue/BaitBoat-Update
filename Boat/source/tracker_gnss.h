@@ -20,6 +20,7 @@ public:
  flytec_utc::Sample utcSnapshot(uint32_t now)const{
   auto s=utc_;
   if(!rmcValid_||!positionValid_||!gsaValid_||fixType_!=3||
+     positionUtc_!=rmcUtc_||
      (uint32_t)(now-gsaAt_)>=2000U||(uint32_t)(now-positionAt_)>=2000U||
      !flytec_utc::fresh(s,now))s.valid=false;
   return s;
