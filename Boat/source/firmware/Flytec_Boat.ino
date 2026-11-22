@@ -12,6 +12,14 @@
 #include "figure8_calibration_nvs.h"
 #include "boat_home_point_nvs.h"
 #include "boat_endpoint_memory_gate.h"
+#include "boat_common_bus_readonly_port_r30d.h"
+
+// R30D: compile the prospective input-only common-bus feedback contract on
+// the real ESP32-S3 target without constructing a reader or touching GPIO.
+// These constants must stay locked until independent electrical acceptance.
+static_assert(!boat_r30d::ACTUAL_READER_COMMISSIONED &&
+              !boat_r30c::COMMON_BUS_HARDWARE_COMMISSIONED,
+              "R30D diagnostic build must not commission actuator power");
 #if __has_include("tracker_commissioned_config.h")
 #include "tracker_commissioned_config.h"
 static HardwareSerial gnssUart(2);
