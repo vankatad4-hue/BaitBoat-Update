@@ -85,7 +85,9 @@ int main(){
  output=sup.tick(in,now+2,idle,nav,false,false,0,0,now);
  zero(output);
  assert(!boatRadioLossRthDue(true,true,true,true,true,now,10999U));
- assert(boatRadioLossRthDue(true,true,true,true,true,now,11000U));
+ const bool locallyEligibleHome =
+     boatRadioLossRthDue(true,true,true,true,true,now,11000U);
+ assert(locallyEligibleHome);
  assert(!boatRadioLossRthDue(true,true,false,true,true,now,11000U));
  assert(!boatRadioLossRthDue(true,true,true,false,true,now,11000U));
  // Backup link may be alive but cannot revive a stale primary manual lease.
@@ -99,14 +101,17 @@ int main(){
  const ExecOutput goHome={INTENT_NAV_HOME,-1,0};
  auto expired=boatHardware_inputs(s,11000U,false);
  expired.primaryFresh=false;expired.backupFresh=false;
- expired.autonomousRth=true;
+ expired.autonomousRth=locallyEligibleHome;
  BoatActuatorSupervisor staleSup=armedFixture(s,now);
  zero(staleSup.tick(expired,11000U,goHome,nav,true,false,0,0,now));
  assert(staleSup.stopped());
  // A newer local safety sample is required for simulated RTH.
  s=sample(11000U);
  in=boatHardware_inputs(s,11000U,false);
- in.primaryFresh=false;in.backupFresh=false;in.autonomousRth=true;
+ in.primaryFresh=false;in.backupFresh=false;
+ in.autonomousRth=boatRadioLossRthDue(true,true,false,true,true,now,11000U);
+ zero(sup.tick(in,11000U,goHome,nav,true,false,0,0,11000U));
+ in.autonomousRth=locallyEligibleHome;
  output=sup.tick(in,11000U,goHome,nav,true,false,0,0,11000U);
  assert(output.releaseChannel==-1&&output.left>0&&output.right>0);
  assert(exclusiveActuatorRequest(output));
