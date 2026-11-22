@@ -986,7 +986,8 @@ Boat portable host tests PASS (run 45004175963); Remote portable host tests PASS
 ### Completed software/build gates
 - Remote target compilation PASS: run [45004179977](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45004179977), commit `7d32cf7a8862b57348e835fa7e569d93716d3afd`.
 - Boat diagnostic target compilation PASS: run [45005788272](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45005788272), commit `160c9b375c7117a10a2b670dca5f2ccad314b534`.
-- Boat portable host tests PASS: run [45005882433](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45005882433), including R78 radio-loss timer, Home record, mission and dummy-output application tests.
+- Boat portable host tests PASS: run [45006240407](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45006240407), including R78 Home record CRC, two-slot NVS adapter/power-cycle/corruption fallback, timer, mission, actuator and dummy-output application tests.
+- Boat/Remote project ZIP snapshots packaged: [run 45006240321](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45006240321), existing VER014/VER028 markers retained; no physical release bump.
 - Active Boat hardware selections and unresolved decisions: [BOAT_HARDWARE_SELECTION_R19.md](../Boat/docs/BOAT_HARDWARE_SELECTION_R19.md).
 - R78 radio-loss behavior: [BOAT_R78_10S_RADIO_LOSS_RTH.md](../Boat/docs/BOAT_R78_10S_RADIO_LOSS_RTH.md).
 - Prepared dummy-load procedure: [BOAT_R78_RADIO_LOSS_DUMMY_LOAD_BENCH_TEST.md](../Boat/docs/BOAT_R78_RADIO_LOSS_DUMMY_LOAD_BENCH_TEST.md).
