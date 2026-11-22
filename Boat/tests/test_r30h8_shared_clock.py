@@ -96,8 +96,9 @@ class TestR30H8(unittest.TestCase):
             p.write_text(rows().replace(
                 edge("T01",1200000,"REMOTE","REMOTE_RTC_SAMPLE_EDGE",EPOCH+201),
                 edge("T01",2000000,"REMOTE","REMOTE_RTC_SAMPLE_EDGE",EPOCH+201)),encoding="utf-8")
-            with self.assertRaisesRegex(ValueError,"out of order"):
-                mod.parse_csv(p)  # source capture edge order strictly enforced
+            trials,_,_=mod.parse_csv(p)
+            errors,_=mod.compute(trials)
+            self.assertTrue(any("outside anchored PPS second" in e for e in errors))
 
     def test_duplicate_sample_and_wrong_platform_rejected(self):
         with tempfile.TemporaryDirectory() as td:
