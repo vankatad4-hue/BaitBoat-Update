@@ -90,3 +90,12 @@ R77A also retains the authenticated session across ordinary RF silence so the ba
 - `mission_link_loss_test.cpp` verifies low battery holds outbound motion and permits only validated Home diversion.
 - `boat_application_low_battery_test.cpp` exercises the production application bridge with a simulated battery sample and dummy output; it checks Home-only navigation with all release outputs off.
 - Thresholds are commissioning defaults and require calibration with the actual pack and divider.
+
+
+## R79/R20 additional tests
+
+- `boat_battery_policy_test.cpp`: 3S estimate, filtering, warning bands, RTH latch, critical STOP and stale-sample fail-closed.
+- `boat_application_low_battery_test.cpp`: mission hold/diversion and critical-stop application bridge using simulated telemetry.
+- `ekm014_mcp23017_adapter_test.cpp`: MCP23017 GPA0–GPA3 one-hot EKM014 logical output, bank/address mapping, readback mismatch and fail-closed return semantics.
+- `mcp23017_direction_adapter_test.cpp`: R20 MCP23017 0x27 GPB0/GPB1 direction mapping.
+- `test_r65_pin_resources.py` now validates the R20 candidate crosswalk and unsigned status; the historical R65 crosswalk is not procurement authority.
