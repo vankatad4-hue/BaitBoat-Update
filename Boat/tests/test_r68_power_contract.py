@@ -37,7 +37,7 @@ class R68PowerContract(unittest.TestCase):
         for item in ("No cross-feed", "do NOT use an external 3.3 V regulator",
                      "three mutually exclusive supply options", "one 5 V injection path",
                      "MDD20A", "EKM014 VH", "not owner-confirmed",
-                     "No custom PCB", "no live GPIO"):
+                     "No custom electronic PCB", "no live GPIO"):
             self.assertIn(item.lower(), text.lower())
         radio = (ROOT / "Boat/source/boat_radio_hw_config.h").read_text(encoding="utf-8")
         for item in ("#define BOAT_NRF_PIN_AUDIT_SIGNED 0",
@@ -58,13 +58,12 @@ class R68PowerContract(unittest.TestCase):
         register = ROOT / "docs/PROJECT_PURCHASE_REGISTER_R20.csv"
         with register.open(encoding="utf-8", newline="") as fh:
             rows = list(csv.DictReader(fh))
-        statuses = {
-            p["Exact_part"].split(" ")[0]: p["Selected_or_candidate"]
-            for p in rows
-            if p["Side"] == "Boat"
-        }
         for part in ("DCDC6-16-TO5", "S13V20F5", "D24V10F3", "R-78E3.3-0.5"):
-            self.assertEqual(statuses.get(part), "R68_PROPOSED_NOT_OWNER_CONFIRMED", part)
+            matching = [p for p in rows if p["Side"] == "Boat"
+                        and part in p["Exact_part"]]
+            self.assertEqual(len(matching), 1, part)
+            self.assertEqual(matching[0]["Selected_or_candidate"],
+                             "R68_PROPOSED_NOT_OWNER_CONFIRMED", part)
 
 if __name__ == "__main__":
     unittest.main()
