@@ -28,6 +28,7 @@ REQUIRED = (
     "Boat/source/firmware/Flytec_Boat.ino",
     "Boat/docs/BOAT_R30H_1_RF_MODULE_SIGNOFF.csv",
     "Boat/docs/BOAT_R30H_RF_TEST_MATRIX.csv",
+    "Boat/docs/BOAT_R30H_3_STOP_RF_ACCEPTANCE.csv",
 )
 LOCKED_MACROS = {
     "Remote/source/radio_hw_config.h": (
@@ -138,6 +139,13 @@ def verify(source):
     for r in worksheet:
         if r.get("State") != "NOT_RUN" or r.get("Observed_or_measured") or r.get("Evidence_path") or r.get("Signoff_by"):
             errors.append(f"R30H-1 physical evidence was altered without physical approval: {r['Gate_ID']}")
+    h3 = list(csv.DictReader(io.StringIO(source["Boat/docs/BOAT_R30H_3_STOP_RF_ACCEPTANCE.csv"])))
+    if len(h3) != 16 or len({r["Gate_ID"] for r in h3}) != 16:
+        errors.append("R30H-3 STOP physical acceptance must retain 16 distinct gates")
+    for row in h3:
+        if row.get("Status") != "NOT_RUN" or any(row.get(c) for c in (
+            "Measured_max_ms", "Approved_limit_ms", "Evidence_link", "Engineering_signoff")):
+            errors.append(f"R30H-3 gate cannot be pre-approved: {row['Gate_ID']}")
     matrix = list(csv.DictReader(io.StringIO(source["Boat/docs/BOAT_R30H_RF_TEST_MATRIX.csv"])))
     if len(matrix) != 22 or any(r["State"] != "NOT_RUN" for r in matrix):
         errors.append("R30H physical test matrix must retain 22 NOT_RUN scenarios")
