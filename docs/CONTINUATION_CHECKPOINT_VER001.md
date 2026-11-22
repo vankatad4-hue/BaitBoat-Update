@@ -1,6 +1,6 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-22, **R30H-5 GPS UTC synchronization and R30H-6 coarse-time quality/unsigned marker policy; R30H-7 next** (R78/R79 safety, R27 INA231, R29 common 3S bus; physical checks unsigned)  
+**Checkpoint:** 2026-11-22, **R30H-7 GNSS UTC epoch/freshness hardening, R30H-8 physical clock characterization next** (R78/R79 safety, R27 INA231, R29 common 3S bus; physical checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `hardware-ready-dual-radio-r1`
 
@@ -513,3 +513,11 @@ R30H артефакти:
 **Fundamental clock distinction:** Both RTC/CLOCK_REALTIME wall clocks can converge to Boat UTC when actual GNSS/radio are present, but **neither ESP32's `millis()` nor hardware monotonic counters are stepped/synchronized**. They still govern nRF 250ms/E22 6000ms freshness, watchdog STOP and conditional RTH only >=10000ms since last accepted Boat authenticated packet. GNSS UART latency, radio transport delay, PPS and oscillator drift are *unmeasured*. This method is not a common physical microsecond reference and cannot replace an external single-clock logic analyzer for true STOP/current-zero end-to-end timing.
 
 **Safety status unchanged:** no paired physical RF modules, no independently signed STOP/current-zero or physical GPIO markers. R30H 22 RF scenarios NOT_RUN, R30H-1 22 module gates NOT_RUN, R30H-3 16 acceptance gates NOT_RUN, R30H-4 10 probes NOT_READY, R30A 24 physical readiness OPEN and previous 81 physical checks NOT_RUN. Official Boat VER014 / Remote VER028 unchanged; sonar unselected. **Next R30H-7:** inspect actual M100 PRO GNSS output baud/profile, PPS if physically available, capture authenticated RF-only UTC transfer and compare to external common-clock logic analyzer before any clock-error estimate, then finish STOP hardware acceptance prior to propulsion.
+
+## R30H-7 — GPS UTC consistency and physical PPS signoff gates (2026-11-22)
+
+[Engineering review](../Boat/docs/BOAT_R30H_7_GNSS_CLOCK_RECOVERY_REVIEW.md) and [12 unsigned real GNSS/PPS clock-offset tests](../Boat/docs/BOAT_R30H_7_GNSS_PPS_RF_CLOCK_SIGNOFF.csv) are committed. Boat NMEA UTC now requires **RMC date/UTC second equal to the valid GGA fix second**; unequal epochs refuse the wall-clock discipline even when a previous position remains fresh. New host regression verifies mismatch is denied and matching GGA restores qualification. Remote `boatRadio_utcNow()` now also refuses a stale authenticated nRF primary link, independent of any previously set RTC. Both ESP32 still synchronize **only CLOCK_REALTIME from GNSS**, not millis()/STOP/RTH timebase, and neither is PPS calibrated. There is no deployed GNSS or real RF timing measurement.
+
+Shared preflight and hostile tests verify epoch gating, primary freshness, identical UTC wire codec and no fabricated PPS data. [Remote host #45056804347](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45056804347) **SUCCESS** after static guard repair. [Boat host #45056804415](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45056804415) was in progress at last inspection; do not claim final compile/test success until checked.
+
+**Physical states unchanged:** R30H-7 12 GNSS/PPS gates NOT_RUN; R30H-4 10 probe mappings NOT_READY; R30H-3 16 STOP gates NOT_RUN; R30H-1 22 module signoffs NOT_RUN, original R30H 22 RF scenarios NOT_RUN; R30A independent current-zero safety gates OPEN. Official Boat VER014 / Remote VER028 frozen; no actuator authorization. **Next R30H-8:** inspect real GNSS UART mode/PPS pin/logic level, commission RF-only pairing and measure UTC phase / STOP latency against a single independent external clock before considering precise timestamp calibration.
