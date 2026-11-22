@@ -129,6 +129,26 @@ int main(){
  assert(sup.stopped());
  b=battery.update(false,0,8002U);
  assert(!b.valid && b.critical);
+ // One release at a time under a single common 3S supply.
+ // The "armed" supervisor is ONLY a host fixture that emits requests.
+ auto releaseSample=sample(12000U);
+ auto releaseIn=boatHardware_inputs(releaseSample,12000U,false);
+ releaseIn.primaryFresh=true;releaseIn.backupFresh=false;
+ BoatActuatorSupervisor releaseSup=armedFixture(releaseSample,12000U);
+ assert(releaseSup.beginManualRelease(71,0,releaseIn,12000U));
+ assert(!releaseSup.beginManualRelease(72,1,releaseIn,12000U));
+ auto releaseOutput=releaseSup.tick(releaseIn,12001U,idle,nav,false,false,0,0,12000U);
+ assert(releaseOutput.releaseChannel==0 && releaseOutput.left==0 && releaseOutput.right==0);
+ assert(exclusiveActuatorRequest(releaseOutput));
+ // Radio disappears DURING the simulated coil pulse: no replay, latched STOP.
+ releaseIn.primaryFresh=false;releaseIn.backupFresh=false;
+ zero(releaseSup.tick(releaseIn,12002U,idle,nav,false,false,0,0,12000U));
+ assert(releaseSup.stopped());
+ // A live LoRa backup does not authorize starting a new release.
+ auto backupIn=boatHardware_inputs(releaseSample,12000U,false);
+ backupIn.primaryFresh=false;backupIn.backupFresh=true;
+ BoatActuatorSupervisor backupSup=armedFixture(releaseSample,12000U);
+ assert(!backupSup.beginManualRelease(88,1,backupIn,12001U));
  // INA231 integration: real state machine, simulated conversion and NACK.
  BusStub io;boat_r28::VoltageSampler adc;
  assert(!adc.begin(false,0x40));
