@@ -664,3 +664,8 @@ The 3 s LoRa airtime pacing cannot maintain the Boat's ~200 ms manual motor comm
 
 - Boat independent preassembled safety controller capacity study and host-only reference tests: `Boat/docs/BOAT_R66_SAFETY_ARCHITECTURE_REVIEW.md`. A candidate Pilz B0 24V PLC cannot alone replace rated motor/coil power cutoffs and 24V outputs must never be directly wired to EKM014 3.3V logic. All safety hardware remains uncommissioned.
 - Remote Waveshare model, primary nRF, matched E22 UART selection, SD lake/waypoint design, and fail-closed release command policy unchanged. Do not bypass Boat physical release guards for UI demonstrations. Remote VER028 unchanged; no sonar firmware.
+
+
+## R68A cross-endpoint power note (2026-11-22)
+
+The owner supplied Ardboard **article 1127** nRF24 AMS1117-3.3 socket for **Boat** radio-power investigation. This is **not** confirmation of a Remote power architecture: Remote uses 1S4P and needs its own verified battery-to-5V adapter supply if this socket model is ever chosen there. No design/purchase change to Remote radio rails, LoRa or SD storage. Boat nRF adapter proposal is downstream of verified 5V, while E22 remains on an independent proposed 3.3V Pololu rail; all hardware and actuator safety gates remain uncommissioned. Remote VER028 unchanged.
