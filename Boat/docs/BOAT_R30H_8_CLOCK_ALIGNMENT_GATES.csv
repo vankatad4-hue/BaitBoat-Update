@@ -1,0 +1,9 @@
+Gate_ID,Requirement,Status,Observation,Evidence,Reviewer
+H8-01,Purchased M100 PRO PPS output presence and actual pinout/logic level,NOT_RUN,,,
+H8-02,PPS leading/trailing edge tied to correct UTC epoch by GNSS raw data,NOT_RUN,,,
+H8-03,Common external analyzer sample clock model/rate/calibration verified,NOT_RUN,,,
+H8-04,Boat ESP32-S3 RTC sample to physical marker latency measured and signed,NOT_RUN,,,
+H8-05,Remote Waveshare RTC sample to physical marker latency measured and signed,NOT_RUN,,,
+H8-06,Single-external-clock PPS+Boat+Remote recording source chain verified,NOT_RUN,,,
+H8-07,Clock offsets/drift with GNSS loss and authenticated RF recovery observed,NOT_RUN,,,
+H8-08,VM/VH disconnected and radio/legal/antenna/safety gates signed,NOT_RUN,,,
