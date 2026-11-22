@@ -94,5 +94,36 @@ int main(){
  const auto stillNoLink=radio.tick(rin,713,{INTENT_NAV_HOME,-1,0},radioHome,true,false,0,0,713);
  assert(stillNoLink.left==0&&stillNoLink.right==0&&stillNoLink.releaseChannel==-1);
 
- std::cout<<"Hardware sample validity, radio watchdog and release executor passed\n";
+ // R79: low battery interrupts an already-active release. A physical
+ // post-off idle/current-zero sample must be newer than the deenergizing tick.
+ BoatActuatorSupervisor low;
+ auto lowHw=sample(1000);
+ assert(low.configure({{100,150,200,250},400,3}));
+ assert(low.clearStop(lowHw,1000,true,true));
+ auto lin=boatHardware_inputs(lowHw,1000,false);lin.primaryFresh=true;
+ assert(low.beginRelease(3,1,0,lin,1001));
+ assert(low.tick(lin,1002,stop,nav,true,false,0,0,1002).releaseChannel==0);
+ lin.batteryLow=true;
+ assert(low.tick(lin,1003,stop,nav,true,false,0,0,1003).releaseChannel==-1);
+ assert(low.releaseBusy());
+ assert(low.tick(lin,1004,stop,nav,true,false,0,0,1003).releaseChannel==-1);
+ assert(low.releaseBusy()); // same safety sample cannot prove deenergization
+ assert(low.tick(lin,1005,stop,nav,true,false,0,0,1005).releaseChannel==-1);
+ assert(!low.releaseBusy());
+ auto cancelled=low.takeCompletion();assert(cancelled.valid&&!cancelled.success);
+ assert(!low.stopped());
+ assert(low.tick(lin,1006,{INTENT_NAV_HOME,-1,0},home,true,false,0,0,1006).left>0);
+
+ BoatActuatorSupervisor badFeedback;
+ assert(badFeedback.configure({{100,150,200,250},400,3}));
+ assert(badFeedback.clearStop(lowHw,1000,true,true));
+ auto bin=boatHardware_inputs(lowHw,1000,false);bin.primaryFresh=true;
+ assert(badFeedback.beginRelease(4,1,0,bin,1001));
+ bin.batteryLow=true;bin.releaseIdle=false;
+ assert(badFeedback.tick(bin,1002,stop,nav,true,false,0,0,1002).releaseChannel==-1);
+ assert(badFeedback.releaseBusy());
+ assert(badFeedback.tick(bin,1503,stop,nav,true,false,0,0,1503).releaseChannel==-1);
+ assert(badFeedback.stopped()); // missing physical zero feedback: STOP, not RTH
+
+ std::cout<<"Hardware sample validity, radio watchdog, battery release abort and release executor passed\n";
 }
