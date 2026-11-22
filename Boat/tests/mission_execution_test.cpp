@@ -22,7 +22,7 @@ int main(){
  in.fix.lonE7=0;assert(m.tick(in,10).intent==INTENT_STOP&&m.phase()==EXEC_COMPLETE);
  assert(!m.start(p,in,11,true));
  ++p.transaction;assert(m.start(p,in,12,true));
- in.primaryFresh=false;in.backupFresh=false;assert(m.tick(in,13).intent==INTENT_STOP&&m.phase()==EXEC_RETURNING);
+ in.primaryFresh=false;in.backupFresh=true;assert(m.tick(in,13).intent==INTENT_STOP&&m.phase()==EXEC_RETURNING);
  assert(m.tick(in,14).intent==INTENT_STOP&&m.phase()==EXEC_COMPLETE);
  ++p.transaction;in.primaryFresh=true;in.backupFresh=true;in.fix.lonE7=1000;
  assert(m.start(p,in,20,true));m.tick(in,21);r=m.tick(in,22);assert(r.intent==INTENT_RELEASE);
