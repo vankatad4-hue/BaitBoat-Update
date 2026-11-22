@@ -72,6 +72,11 @@ public:
          (uint32_t)(nowMs-lastRtcSetMs_)>=RTC_SET_INTERVAL_MS);
  }
  void markRtcSet(uint32_t nowMs){lastRtcSetMs_=nowMs;rtcSet_=true;}
+ // Read-only quality: local monotonic age of last source observation.
+ // No bound on UART transmission/RF transit delay without PPS/RTT.
+ uint32_t lastSampleAgeMs(uint32_t nowMs)const{
+  return haveFirst_?(uint32_t)(nowMs-lastLocal_):0xFFFFFFFFU;
+ }
  bool qualified()const{return qualified_;}
 private:
  uint64_t lastUnix_=0;
