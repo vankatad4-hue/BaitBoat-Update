@@ -10,10 +10,10 @@ The Boat reads its 3S battery pack using the existing I²C ADC acquisition path:
 
 - ADS1115 module at I²C address 0x48, AIN0.
 - Premade breakout powered at 3.3V.
-- Candidate divider: 100kΩ battery-positive to AIN0, 33kΩ AIN0 to ground, both 1%; 100nF AIN0-to-ground.
-- Divider ratio approximately 4.0303:1; 12.6V pack gives approximately 3.13V at AIN0.
+- **R21 active divider candidate:** 150kΩ switched/protected battery-positive to AIN0, 33kΩ AIN0-to-ground, both 1%, 100nF AIN0-to-ground. The original 100kΩ/33kΩ candidate is superseded.
+- **R21 ratio 5.54545:1; full-charge 12.6V gives 2.272V at AIN0.** [R21 ADC and power-sequencing acceptance](BOAT_R21_BATTERY_ADC_COMMISSIONING.md).
 - Candidate gain/offset is stored with the example profile uncommissioned. DMM calibration is mandatory before enabling the commissioned hardware profile.
-- A valid battery sample must be no older than 1,000ms. Missing, invalid or stale data fails closed and stops propulsion.
+- **An invalid ADC reading causes immediate STOP**, without reusing the previous reading. A previously valid sample that becomes older than 1,000ms also fails closed and stops propulsion.
 
 The ADS1115 was already expected by the Boat's sensor-port ADC code but was omitted from the previous parts register. R20 adds it explicitly. The physical-driver battery-health gate now derives sample validity from this fresh ADC sample rather than requiring a separate unselected battery comparator. It is not an independent cutoff or safety controller.
 
