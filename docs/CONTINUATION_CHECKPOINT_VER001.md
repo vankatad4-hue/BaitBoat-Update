@@ -169,3 +169,7 @@ No release version increment until target builds, host tests, physical commissio
 - **Next next action:** physical module purchase/identity and connector photos; sign actual J1/J3 positions; measure isolated 5V-powered M100 TX/SDA/SCL and E22 TXD/AUX; scan I²C modules one-at-a-time; confirm both Pololu and both 5V supplies, ADC sense 150k/33k, and physical shutdown sequencing using a current-limited source; then define approved keyed harness cable cavity maps and separately resolve independent hardware safety. **Do not energize MDD20A motor power or EKM014 VH**.
 
 Sonar remains deferred. All GPIO/RF/safety flags must remain zero/false until physical acceptance evidence exists.
+
+### R23 physical pin/sign-off worksheet
+
+[BOAT_R23_GPIO_AND_LEVEL_SIGNOFF.csv](../Boat/docs/BOAT_R23_GPIO_AND_LEVEL_SIGNOFF.csv) holds the 18 GPIO continuity/logic-level checks plus 14 module/power/safety checks (all **NOT_RUN**). Use it after purchasing parts; do not mark the design as electrically verified before recording actual measurements. Source and CI remain fail-closed.
