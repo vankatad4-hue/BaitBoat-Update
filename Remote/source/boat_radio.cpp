@@ -16,6 +16,11 @@
 #include "e22_uart_link.h"
 #include "nrf24_link.h"
 #include "radio_hw_config.h"
+#include "remote_r30h9_marker_config.h"
+#include "r30h9_marker_contract.h"
+// R30H-9: only read-only software events; do not turn Waveshare GPIO into probe output.
+static_assert(REMOTE_R30H9_MARKER_GPIO == -1 && REMOTE_R30H9_GPIO_OUTPUT_SIGNED == 0,
+              "Remote diagnostic marker must stay unwired and unsigned");
 #include "radio_utc_time_v1.h"
 #include <sys/time.h>
 #include <Wire.h>
