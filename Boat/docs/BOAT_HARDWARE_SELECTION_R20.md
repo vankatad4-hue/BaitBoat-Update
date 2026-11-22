@@ -112,3 +112,9 @@ See [BOAT_GPIO_HEADER_MAP_R20.md](BOAT_GPIO_HEADER_MAP_R20.md) and [BOAT_R20_GPI
 9. Perform physical RF, GNSS, power, actuator and controlled water acceptance.
 
 No physical result is inferred from CI. Sonar model selection remains deferred.
+
+## R23 physical connection design overlay
+
+The current R20-selected module list above remains in force. Its manufacturer-checked 18-pin ESP32-S3 assignment and 64 explicit wiring nets are published in [BOAT_R23_GPIO_PINOUT_AND_HARNESSES.md](BOAT_R23_GPIO_PINOUT_AND_HARNESSES.md) and [BOAT_R23_MODULE_CONNECTION_MATRIX.csv](BOAT_R23_MODULE_CONNECTION_MATRIX.csv). The [active purchase register](../../docs/PROJECT_PURCHASE_REGISTER_R20.csv) now reflects R20/R23 **nRF24 on Pololu D24V10F3 #1**, **GY91/ADS1115/MCP23017 on Pololu #2**, **E22 at regulated 5V**, and optional quantity-zero nRF24 socket adapter.
+
+The manufacturer supports MDD20A 3.3V PWM/DIR control and EKM014 3.3V IN1–IN4 with 5V VL; EKM014 VH must be >=VL and is not to be shorted to the 12.6V full-charge pack logic supply. The original 3S motor/solenoid high-current feeds remain physically unapproved. Check HGLRC M100 PRO UART and I²C output levels while powered at 5V before connecting to the ESP32-S3. This design is **not a completed wiring/physical safety acceptance**.
