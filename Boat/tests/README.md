@@ -55,3 +55,17 @@ g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/module_only_output_r1
 /tmp/module_only_r15
 ```
 The new `module-only-hardware-r15.yml` workflow runs these tests, separately from archived custom KiCad workflows. This checks manifest/wiring safety conditions and a software-only blocked-by-default module output gate; no physical module was connected.
+
+
+## R77 dual-radio watchdog regression
+
+The R77 host tests cover:
+- authenticated primary/backup freshness watchdog LOST/RESTORED transitions;
+- STOP_ALL on total link loss and no automatic RTH;
+- autonomous mission hold/resume when either radio returns;
+- backup-only navigation but primary-only irreversible releases;
+- abort/no replay for release intent/pulse after primary loss;
+- stale command queue purge while retaining emergency STOP;
+- neutral-before-manual recovery and all-off actuator requests.
+
+The full set is run by the Boat portable host tests workflow. These are software tests only; they do not prove physical output isolation or an independent hardware safety channel. See ../docs/BOAT_R77_DUAL_RADIO_WATCHDOG_IMPLEMENTATION.md.
