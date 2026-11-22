@@ -6,6 +6,8 @@
 
 **Revision note:** R79 battery bench document contains historical ADS1115 and separate motor/coil wiring; **do not build those portions**. Current authority is R27 Ardboard INA231 BUS-only and R29 ONE common 3S VM/VH bus, as consolidated by R30A. R79 remains useful only for battery/failsafe behavioral cases.
 
+**R30H-1 engineering update:** See [physical RF inspection and SC16IS750 TXLVL bridge repair](BOAT_R30H_1_RADIO_BRINGUP_AND_BRIDGE_FIX.md) and [22-item real module/antenna/power signoff worksheet](BOAT_R30H_1_RF_MODULE_SIGNOFF.csv). The previously provisional Remote radio initialization is now explicitly **locked** until board and modem/airtime audits; the Boat E22 radio also has a new airtime audit lock. Both 22-item signoff and existing 22-case R30H physical test matrix remain NOT_RUN. Host CI passing does not unlock either radio or the MDD20A/EKM014 actuators.
+
 ## 0. Критична граница: какво е и не е изпълнимо сега
 
 - **Без физически инсталирани и подписани модули няма резултати или реални времена.** Текущият `Boat/source/firmware/Flytec_Boat.ino` е **неактуиращ диагностичен target**: няма `BoatPhysicalDriver`, липсва реален STOP/coil-current reader, актуалните radio GPIO/PHY одобрения са 0. Затова нито STOP→изходи, нито действително RTH движение могат да се измерят с текущия готов firmware.
