@@ -98,6 +98,10 @@ jobs:
           cp Remote/source/mission_control_client.h /tmp/flytec_mission_client/
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I/tmp/flytec_mission_client -IBoat/source Boat/source/mission_protocol.cpp Boat/tests/mission_transport_integration_test.cpp -o /tmp/boat_mission_integration
           /tmp/boat_mission_integration
+      - name: R20 MCP23017 EKM014 one-hot output adapter
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/ekm014_mcp23017_adapter_test.cpp -o /tmp/ekm014_mcp_adapter
+          /tmp/ekm014_mcp_adapter
       - name: R79 3S battery estimate and mission RTH/critical STOP
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/boat_battery_policy_test.cpp -o /tmp/boat_battery_policy
