@@ -32,3 +32,11 @@ No physical safety part was chosen in R30D, no current sensor was purchased, and
 1. Run the new R30D C++17 host simulation, static contract audit and pinned ESP32-S3 diagnostic compiler workflow.
 2. Continue logic-only fault tests around separate origin timestamps and intentional I/O resets.
 3. Do not implement a write-capable high-current HAL until the single-bus independent STOP/contact and pulse/current-zero hardware have been physically specified, measured and approved.
+
+## R30D verified results — 2026-11-22
+
+- **ESP32-S3 target CI** [run 45044906755](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45044906755) completed **SUCCESS** on Boat firmware-source commit `b8340cb74ebd78261bca474b9285c7abea1219ca`. It compiled the selected non-actuating diagnostic application including the new R30D read-only header/static commissioning guards, the historical locked ADS1115 bench, and selected locked INA231 bench. No reader constructed or actuator GPIO configured.
+- **Boat host CI** [run 45045107306](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45045107306) completed **SUCCESS** on source-auditor correction `829bede975471a529103a41222e44a7da846f422`. The R30D simulated seven-source input test **PASS**, source-level no-write/unsigned gate audit **PASS**, and all existing Boat portable host tests **PASS**.
+- Earlier intermediate runs [45044974018](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45044974018) and [45045063567](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45045063567) failed **only** the static Python scanner: it mistook an explanatory comment `// Deliberately no write()` for an actual write API. The C++ fault test itself passed; the scanner now strips `//` comments before inspecting the concrete `ReadOnlySource` method declarations.
+- **No physical signoff:** `ACTUAL_READER_COMMISSIONED=false`, `COMMON_BUS_HARDWARE_COMMISSIONED=false`, `INA231_PHYSICAL_COMMISSIONED=false`, and shared-bus physical acceptance remain false. Both real motor and solenoid power paths are unwired and the actual Boat actuator HAL remains unattached. R30A 24 OPEN gates and prior 81 NOT_RUN checks unchanged. No release changes (Boat VER014, Remote VER028).
+
