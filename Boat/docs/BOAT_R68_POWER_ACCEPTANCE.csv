@@ -1,0 +1,13 @@
+Test_ID,Rail,Input_Condition,Required_Observation,State
+R68-P01,All,3S pack 12.6V and clean power-up,5V and 3V3 regulation; outputs initially OFF; no I2C backfeed,NOT_RUN
+R68-P02,All,3S pack 11.1V steady,Output voltage and high-current loop ripple; no crossfeed or resets,NOT_RUN
+R68-P03,All,3S pack 9.0V nominal low edge,Outputs within tolerance; battery brownout independent STOP; no auto-arm,NOT_RUN
+R68-P04,All,Pack sag below 9.0V at startup and load,Regulators brownout fail safe and no unexpected actuator enabled,NOT_RUN
+R68-P05,BOAT_5V_MCU,ESP32 boot and 5V load transient,5V droop and USB connection; never dual-source backfeed,NOT_RUN
+R68-P06,BOAT_5V_GATE,EKM014 VL 5V under pulse requests with VH disconnected,Driver supply current stable and 0 commanded pulse; no energization,NOT_RUN
+R68-P07,BOAT_3V3_RF,nRF PA transmit burst + E22 TX worst case simultaneous,3V3 current within measured module derated rating; RF stable/low noise,NOT_RUN
+R68-P08,BOAT_3V3_SENSORS,All sensor and Waveshare MCP I2C traffic,3V3 voltage in tolerance and 0x27 bus verified; no I2C pullup backfeed,NOT_RUN
+R68-P09,All,Disconnect MCU supply while sensors/expander remain powered,No phantom-powered ESP32 GPIO or unintended request inputs,NOT_RUN
+R68-P10,All,Reverse supply and fuse/disconnect fault bench test,Independent protected harness and safe cutoff; board damage prevented by approved protection,NOT_RUN
+R68-P11,All,Heat and waterproof enclosure simulated load,No thermal overload and stable output across practical temperatures,NOT_RUN
+R68-P12,All,Independent physical STOP with live dummy loads,Motor and EKM014 VH isolations actually interrupt while safety sensing remains active,NOT_RUN
