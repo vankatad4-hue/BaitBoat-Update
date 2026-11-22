@@ -48,18 +48,27 @@ int main(){
     assert(sends==3);
     assert(!mgr.send(stop,sendMock,6201)); // authenticated backup RX expired
     assert(sends==3);
+    mgr.tick(6201);
+    assert(mgr.state()==LINK_NO_LINK);
+    // A long total outage does not require a new RF module or a different
+    // manager: a fresh authenticated backup frame restores backup service.
+    mgr.reportValidRx(LINK_LORA_BACKUP,true,12000);
+    mgr.tick(12000);
+    assert(mgr.state()==LINK_BACKUP && mgr.active()==LINK_LORA_BACKUP);
+    assert(mgr.send(stop,sendMock,12001));
+    assert(sends==4 && lastLink==LINK_LORA_BACKUP);
 
     mgr.setTransportReady(LINK_NRF_PRIMARY,true);
-    mgr.reportValidRx(LINK_NRF_PRIMARY,true,7000);
-    mgr.tick(7000);
+    mgr.reportValidRx(LINK_NRF_PRIMARY,true,13000);
+    mgr.tick(13000);
     assert(mgr.state()==LINK_RECOVERY);
-    for(unsigned i=0;i<7;++i)mgr.reportValidRx(LINK_NRF_PRIMARY,true,8498);
-    mgr.tick(8498);
+    for(unsigned i=0;i<7;++i)mgr.reportValidRx(LINK_NRF_PRIMARY,true,14498);
+    mgr.tick(14498);
     assert(mgr.state()==LINK_RECOVERY);
-    mgr.reportValidRx(LINK_NRF_PRIMARY,true,8501);
-    mgr.tick(8501);
+    mgr.reportValidRx(LINK_NRF_PRIMARY,true,14501);
+    mgr.tick(14501);
     assert(mgr.state()==LINK_PRIMARY && mgr.active()==LINK_NRF_PRIMARY);
-    assert(mgr.send(steering,sendMock,8501)); // primary controls unaffected
-    assert(sends==4 && lastLink==LINK_NRF_PRIMARY &&
+    assert(mgr.send(steering,sendMock,14501)); // primary controls unaffected
+    assert(sends==5 && lastLink==LINK_NRF_PRIMARY &&
            lastCommand.leftMotor==900);
 }
