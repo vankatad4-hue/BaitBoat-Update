@@ -56,15 +56,25 @@ bool BoatDualRadioPort::requestReturnHome(){
  missionIntent_={INTENT_STOP,-1,0}; // one safe tick before Home navigation
  return true;
 }
-void BoatDualRadioPort::resetSession(bool preserveReturn){
+void BoatDualRadioPort::resetSession(bool preserveMission){
  ++generation_;releaseIdSeen_=false;
- ExecInputs in{};const bool ready=preserveReturn&&missionInputs(in,millis());
- detachedReturn_=ready&&controller_.divertHome(in,true);
- stickLease_.reset();missionIntent_={INTENT_STOP,-1,0};
- if(!detachedReturn_){abortMission();controller_.resetSession();}
+ const auto phase=controller_.status().phase;
+ const bool resumable=preserveMission&&
+   (phase==MC_OUTBOUND||phase==MC_RETURNING||phase==MC_PAUSED);
+ if(resumable){
+  // Keep only an already-running autonomous plan. Transport queues, stick
+  // leases and actuator requests are discarded; output remains STOP until a
+  // new authenticated heartbeat proves that a radio has returned.
+  linkLossHold_=true;stickLease_.reset();missionIntent_={INTENT_STOP,-1,0};
+ }else{
+  linkLossHold_=false;detachedReturn_=false;
+  abortMission();controller_.resetSession();stickLease_.reset();
+  missionIntent_={INTENT_STOP,-1,0};
+ }
  handshake_.reset();radioSession_wipe(key_,32);sessionStarted_=false;
  primarySeqGuard_.resetAfterHandshake();backupSeqGuard_.resetAfterHandshake();crossRadioSeqGuard_.resetAfterHandshake();
  lastNrfRxValid_=lastBackupRxValid_=false;commandQueue_.clear();mission_.reset();dedupe_.clear();txSequence_=0;
+ radioWatchdog_.reset();
 }
 bool BoatDualRadioPort::begin() {
  resetSession();nrfReady_=false;sx1262Ready_=false;authenticated_=radioKey_get(rootKey_);
@@ -88,18 +98,43 @@ bool BoatDualRadioPort::begin() {
 void BoatDualRadioPort::update() {
  const uint32_t now=millis();
  if(sessionStarted_&&(!sessionReady()||now-lastSessionRx_>=6500U))resetSession(true);
- if(handshake_.timeout(now))resetSession(detachedReturn_);
+ if(handshake_.timeout(now))resetSession(linkLossHold_||detachedReturn_);
+ // Primary-only actions and stick leases must never survive primary-link loss.
+ if(!primaryFresh(now)){
+  stickLease_.reset();
+  commandQueue_.discardLink((uint8_t)LINK_NRF_PRIMARY,true);
+ }
  if(!missionGate_||!missionGate_()||!primaryFresh(now))mission_.reset();
  if(nrfReady_){nrf_.update();RadioFrame f;while(nrf_.receiveFrame(f))receive(LINK_NRF_PRIMARY,f);}
  if(sx1262Ready_){e22_.update();RadioFrame f;while(e22_.receiveFrame(f))receive(LINK_LORA_BACKUP,f);}
+
+ const uint32_t safetyNow=millis();
+ const auto watchdogEvent=radioWatchdog_.update(primaryFresh(safetyNow),backupFresh(safetyNow));
+ if(watchdogEvent==BOAT_RADIO_WATCHDOG_LOST){
+  linkLossHold_=true;
+  commandQueue_.clearNonEmergency();
+  stickLease_.reset();
+  missionIntent_={INTENT_STOP,-1,0};
+ }else if(watchdogEvent==BOAT_RADIO_WATCHDOG_RESTORED){
+  // An authenticated fresh heartbeat/control frame has restored at least one
+  // link. The retained autonomous mission may now continue; stale manual
+  // commands and queued releases have already been discarded.
+  linkLossHold_=false;
+ }
+ if(!primaryFresh(safetyNow)){
+  stickLease_.reset();
+  controller_.cancelOverrideForLinkLoss();
+  commandQueue_.discardLink((uint8_t)LINK_NRF_PRIMARY,true);
+ }
+
  const auto progress=controller_.status();
  if(progress.transaction){
-   ExecInputs in{};const bool ready=missionInputs(in,now);
-   missionIntent_=controller_.tick(in,now,ready,stickLease_.neutral(progress.transaction,now));
+   ExecInputs in{};const bool ready=missionInputs(in,safetyNow);
+   missionIntent_=controller_.tick(in,safetyNow,ready,stickLease_.neutral(progress.transaction,safetyNow));
    int16_t left=0,right=0;
    if(controller_.temporaryOverrideConfirmed()&&!missionOverrideOutput(left,right))abortMission();
    if(detachedReturn_&&!controller_.diverted()){detachedReturn_=false;controller_.resetSession();missionIntent_={INTENT_STOP,-1,0};}
-   if(!detachedReturn_&&controller_.status().transaction&&now-lastMissionStatusMs_>=250U){lastMissionStatusMs_=now;sendMissionFeedback(controller_.status(),now);}
+   if(!detachedReturn_&&controller_.status().transaction&&safetyNow-lastMissionStatusMs_>=250U){lastMissionStatusMs_=safetyNow;sendMissionFeedback(controller_.status(),safetyNow);}
  }
  if(sessionReady()) {
    if(nrfReady_ && (uint32_t)(now-lastNrfHeartbeatTxMs_)>=100U) {lastNrfHeartbeatTxMs_=now;sendHeartbeat(LINK_NRF_PRIMARY,now);}
@@ -117,7 +152,8 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
      ++generation_;releaseIdSeen_=false;
      handshake_.frameKey(key_);sessionStarted_=true;lastSessionRx_=now;txSequence_=0;
      primarySeqGuard_.resetAfterHandshake();backupSeqGuard_.resetAfterHandshake();crossRadioSeqGuard_.resetAfterHandshake();
-     lastNrfRxValid_=lastBackupRxValid_=false;commandQueue_.clear();mission_.reset();dedupe_.clear();stickLease_.reset();if(!detachedReturn_){abortMission();controller_.resetSession();}
+     lastNrfRxValid_=lastBackupRxValid_=false;commandQueue_.clear();mission_.reset();dedupe_.clear();stickLease_.reset();radioWatchdog_.reset();
+     if(!detachedReturn_&&!linkLossHold_){abortMission();controller_.resetSession();}
    }
    RadioFrame ack;radio_frameInit(ack,(RadioMessageType)reply.type,BOAT_ID,REMOTE_ID,0,0,now,0);
    memcpy(ack.payload,reply.payload,8);if(radio_frameSeal(ack,rootKey_))nrf_.sendFrame(ack);
