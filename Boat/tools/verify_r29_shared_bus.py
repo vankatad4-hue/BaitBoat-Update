@@ -16,6 +16,9 @@ assert nets["MDD_MOTOR_VM"]["Source_Contact"]==nets["EKM_FET_VH"]["Source_Contac
 assert nets["MDD_MOTOR_GND"]["Source"]==nets["EKM_FET_GND"]["Source"]=="COMMON_3S_DISTRIBUTION"
 assert nets["INA231_BUS_SENSE"]["Source_Contact"]=="PROTECTED_LOW_CURRENT_SENSE"
 assert nets["EKM_LOGIC_VL"]["Voltage_Domain"]=="5V_LOGIC"
+purchase=get("docs/PROJECT_PURCHASE_REGISTER_R20.csv")
+assert "VH remains separate 3S pack" not in purchase
+assert "VH and Cytron MDD20A VM share the same common 3S4P battery distribution bus" in purchase
 code=get("Boat/source/boat_r29_shared_bus_contract.h")
 assert "SHARED_3S_PACK = true" in code
 assert "SEPARATE_MOTOR_SOLENOID_POWER = false" in code
