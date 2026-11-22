@@ -25,16 +25,15 @@ public:
  }
  bool save(const BoatHomePoint &input){
   if(!boatHomeCoordinatesValid(input.latE7,input.lonE7))return false;
-  BoatHomePoint a{},b{},active{};
+  BoatHomePoint a{},b{};
   const bool av=readSlot(0,a),bv=readSlot(1,b);
   uint8_t target=0;
   uint32_t next=1;
   if(av&&bv){
-   if(boatHomeSequenceNewer(a.sequence,b.sequence)){active=a;target=1;}
-   else {active=b;target=0;}
-   next=active.sequence+1U;
-  }else if(av){active=a;target=1;next=a.sequence+1U;}
-  else if(bv){active=b;target=0;next=b.sequence+1U;}
+   if(boatHomeSequenceNewer(a.sequence,b.sequence)){target=1;next=a.sequence+1U;}
+   else {target=0;next=b.sequence+1U;}
+  }else if(av){target=1;next=a.sequence+1U;}
+  else if(bv){target=0;next=b.sequence+1U;}
   if(!next)next=1;
   const BoatHomePoint value={input.latE7,input.lonE7,next};
   return writeSlot(target,value);
