@@ -132,3 +132,7 @@ The current `BoatPhysicalDriverAdapter` refuses to initialize unless the indepen
 - [Texas Instruments ADS1115 datasheet](https://www.ti.com/lit/ds/symlink/ads1115.pdf)
 
 Use the exact EBYTE E22-900T22S user manual for the purchased suffix/revision. Do not substitute an E22-900T22S1C or V2 pinout.
+
+## R21 ADC input/wiring revision
+
+The GPIO7/8 I²C candidate mapping remains unsigned. ADS1115 AIN0 now uses the superseding [R21 150kΩ/33kΩ battery divider](BOAT_R21_BATTERY_ADC_COMMISSIONING.md), not the original R20 100kΩ/33kΩ proposal. Validate the input relative to its 3.3V VDD during every power transition, including the unpowered state; PGA ±4.096V does not change the analog input absolute maximum rating.
