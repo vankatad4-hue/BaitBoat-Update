@@ -155,5 +155,20 @@ void loop(){
       (unsigned)localBytes[6],(unsigned)localBytes[7]);
  }
  application.tick(); // no commissioned driver attached: diagnostic only
+#if BOAT_R30H_LOCAL_TRACE_ENABLED
+ // R30H-2 ONLY: drain at most one bounded record per loop after RF/safety
+ // servicing. No Serial I/O occurs in authenticated receive/watchdog paths.
+ // These are Boat-local millis() and LOGICAL INTENTS, not current-zero proof.
+ if(Serial && Serial.availableForWrite()>=120){
+   boat_r30h2::Record ev{};
+   if(radio.takeR30HTrace(ev)){
+     Serial.printf("R30H2,BOAT_LOCAL,%lu,%lu,%s,%u,%u,%u,%lu,INTENT_ONLY\\n",
+       (unsigned long)ev.timestampMs,(unsigned long)ev.lastAcceptedRxMs,
+       boat_r30h2::label(ev.event),(unsigned)ev.link,
+       (unsigned)ev.freshMask,(unsigned)ev.commandId,
+       (unsigned long)radio.r30hTraceOverflows());
+   }
+ }
+#endif
  delay(1);
 }
