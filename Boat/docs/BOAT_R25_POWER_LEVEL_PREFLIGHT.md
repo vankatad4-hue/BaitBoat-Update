@@ -36,3 +36,7 @@ Manufacturer references: [TI ADS1115](https://www.ti.com/product/ADS1115), [Espr
 ## R26 candidate follow-up — approved hold remains (2026-11-22)
 
 R26 identifies TI's INA226 VBUS measurement architecture as a possible factory-assembled *replacement* for the ADS1115 divider, with the chip explicitly allowing bus voltage when unpowered. This does **not** authorize ADS1115 R21 wiring, alter R25's all-NOT_RUN measurement register, or commission any physical relay/motor/coil output. An exact INA226 breakout remains unselected and unverified: inspect VBUS/shunt routing, I²C supply-off SCL and address, and low-current ground before considering replacement. See [R26 design comparison](BOAT_R26_INA226_VOLTAGE_ONLY_REVIEW.md). 3S ADS1115 sense still disconnected.
+
+## R27 supersession — no active ADS1115 pack-sense wiring (2026-11-22)
+
+The R25 ADS1115 AIN0 power-off safety investigation remains valid historical evidence but **R27 selects a different voltage-only INA231 module**, Ardboard product 1491. The original R25 ADC-specific calibration and ramp checks apply to ADS1115 **only**, not INA231. Continue R25 low-voltage rail and actuator-startup physical acceptance. Current battery sense installation must follow [R27 active 21-point acceptance](BOAT_R27_INA231_ACCEPTANCE.csv), with protected low-current BUS pin and R100 shunt excluded from power path. No physical acceptance has been run.
