@@ -75,6 +75,15 @@ class CommonClockTests(unittest.TestCase):
                       edge(100,"STOP_BUTTON_EDGE","REMOTE","RISING")+
                       edge(200,"REMOTE_E22_UART_TX_START","REMOTE","FALLING",clock="LA2"))
 
+    def test_unsigned_switch_and_rf_fixture_edge_polarity_not_assumed(self):
+        records = self.read(HEADER +
+            edge(100, "STOP_BUTTON_EDGE", "REMOTE", "FALLING", case="H04") +
+            edge(200, "RF_CUT_TRIGGER", "RF_FIXTURE", "FALLING", case="H08", trial="T02"))
+        self.assertEqual(2, len(records))
+        with self.assertRaisesRegex(ValueError, "event/platform/edge"):
+            self.read(HEADER + edge(100, "REMOTE_E22_UART_TX_START",
+                                    "REMOTE", "RISING"))
+
     def test_reversed_edges_and_invalid_identity_rejected(self):
         with self.assertRaisesRegex(ValueError,"monotonically"):
             self.read(HEADER + edge(500,"STOP_BUTTON_EDGE","REMOTE","RISING")+
