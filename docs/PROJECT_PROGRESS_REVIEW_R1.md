@@ -518,3 +518,8 @@ The official DCDC6 page says it pairs with Olimex PWR-CABLE; the cable page list
 ### R77A — retain authenticated session during radio outage
 
 Removed ordinary 6.5-second inactivity session teardown from Boat and Remote. Radio watchdog still expires and commands STOP_ALL when both links go stale, but the current authenticated session/replay counters remain available so an E22 backup frame can restore the same session after a prolonged RF outage. Sequence-limit rekey and power-cycle still require the existing primary handshake. Added a Remote regression for recovery from LINK_NO_LINK to backup. No hardware or version change.
+
+
+### R77B — verification snapshot
+
+Boat host tests and Boat ESP32-S3 diagnostic compile passed; Remote host tests passed; Remote target compile was still in progress. Project ZIP packaging passed. No physical RF/actuator/safety acceptance has been run. The radio watchdog remains software-only and does not close independent hardware safety.
