@@ -7,8 +7,8 @@ enum BoatFailsafeDecision : uint8_t {
     // Compatibility alias for older callers; link loss now stops propulsion
     // and every solenoid output, not just the motors.
     BOAT_FS_STOP_PROPULSION = BOAT_FS_STOP_ALL,
-    // Retained for explicit, locally validated Home requests only. The radio
-    // watchdog never selects automatic Return-to-Home on link loss.
+    // Selected only after the 10-second dual-radio-loss gate and local
+    // Home/NAV/interlock validation; otherwise STOP_ALL remains active.
     BOAT_FS_RETURN_HOME
 };
 
@@ -18,9 +18,10 @@ enum BoatRadioWatchdogEvent : uint8_t {
     BOAT_RADIO_WATCHDOG_RESTORED
 };
 
-// R77 software watchdog over authenticated/fresh link status supplied by
+// R78 software watchdog over authenticated/fresh link status supplied by
 // the dual-radio session manager. Either fresh path is alive; both stale paths
-// require STOP_ALL. This is not an independent hardware power cutoff.
+// immediately require STOP_ALL. The separate 10-second RTH gate may later
+// authorize only Home navigation. This is not an independent hardware cutoff.
 class BoatRadioWatchdog {
 public:
     BoatRadioWatchdogEvent update(bool primaryFresh, bool backupFresh) {
@@ -72,6 +73,7 @@ BoatCrossRadioCommandDecision boatClassifyCrossRadioCommand(bool sequenceAccepte
 
 // Evaluates only; it does not drive motors or actuators. This is software
 // policy in the main controller, not an independent hardware safety channel.
+ // Stateless link decision remains STOP_ALL; timed RTH has separate gates.
 BoatFailsafeDecision boatEvaluateLinkFailsafe(const BoatLinkSafetyInputs &in);
 
 // The timeout is measured from the last accepted authenticated frame, not from
