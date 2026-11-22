@@ -127,6 +127,13 @@ jobs:
         run: |
           python3 Boat/tools/verify_r30h5_gps_time_isolation.py
           python3 -m unittest Boat/tests/test_r30h5_gps_time_isolation.py -v
+      - name: R30H-6 GPS clock quality and uncommissioned external marker policy
+        run: |
+          cmp Boat/source/r30h6_utc_marker_policy.h Remote/source/r30h6_utc_marker_policy.h
+          cmp Boat/source/radio_utc_time_v1.h Remote/source/radio_utc_time_v1.h
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
+            Remote/tests/r30h6_utc_marker_policy_test.cpp -o /tmp/remote_r30h6_utc
+          /tmp/remote_r30h6_utc
       - name: R30H-5 authenticated GPS UTC portable receiver discipline
         run: |
           cmp Boat/source/radio_utc_time_v1.h Remote/source/radio_utc_time_v1.h
