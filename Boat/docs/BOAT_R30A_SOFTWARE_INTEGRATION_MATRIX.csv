@@ -1,0 +1,18 @@
+ID,Subsystem,Implementation_Source,Current_Runtime_Status,Verification_Evidence,Unresolved_Integration,Documentation_State
+SW01,Boat firmware entrypoint,Boat/source/firmware/Flytec_Boat.ino,NON_ACTUATING_DIAGNOSTIC,ESP32S3_DIAGNOSTIC_BUILD_PASSED_R29A,No commissioned physical driver attached,IN_CODE_COMMENTS_AND_HANDOFF
+SW02,Main application loop,Boat/source/boat_application_port.cpp,PRESENT_BUT_DRIVER_UNATTACHED,HOST_SCENARIOS_R29A,Requires real physical sample/apply/disable HAL,INTERFACE_COMMENTED_IN_HEADER
+SW03,Primary and backup radio,Boat/source/boat_dual_radio_port.cpp,PIN_AUDITS_DEFAULT_OFF,HOST_SCENARIOS_R29A,"Hardware RF link, session keys and legal settings pending",RADIO_POLICY_DOCUMENTED
+SW04,Radio loss and 10-second conditional Home,Boat/source/boat_radio_safety.h,LOGIC_IMPLEMENTED,HOST_SCENARIOS_R29A,Physical authentic link freshness and safe route not proven,POLICY_COMMENTED
+SW05,"Battery thresholds, critical STOP and RTH",Boat/source/boat_battery_policy.h,LOGIC_IMPLEMENTED,HOST_SCENARIOS_R29A,Real calibrated voltage/pack under load pending,POLICY_COMMENTED
+SW06,INA231 BUS-only physical acquisition,Boat/source/ina231_arduino_wire_r28.h,TARGET_COMPILED_BUT_COMMISSIONING_OFF,R28_HOST_FAULT_SIM_AND_R29_TARGET,Ardboard BUS pad and 3.3V pinout/dmm unverified,R28_AND_R30A_HANDOFF
+SW07,"GNSS, QMC and GY-91",Boat/source/tracker_sensor_port.cpp,SENSOR_PROFILE_UNSIGNED,TARGET_DIAGNOSTIC_BUILD_PASSED_R29A,GNSS/cable/logic level/magnetometer calibration pending,SENSOR_INTERFACE_COMMENTS
+SW08,Stored Home point,Boat/source/boat_home_point_nvs.cpp,NVS_SOURCE_COMPILED,TARGET_DIAGNOSTIC_BUILD_PASSED_R29A,Actual NVS setup and coordinate field validation pending,R78_POLICY_DOCUMENTED
+SW09,Mission supervisor and one-at-a-time release plan,Boat/source/mission_execution.h,REQUEST_ONLY_NO_GPIO,HOST_SCENARIOS_R29A,Physical mission provider/real motor/releases not signed,MISSION_SOURCE_COMMENTS
+SW10,Motor driver stage,Boat/source/mdd20a_arduino_stage.cpp,UNASSIGNED_PHYSICAL_PROFILE,TARGET_DIAGNOSTIC_BUILD_PASSED_R29A,GPIO39/40 boot waveforms and real motor currents pending,R23_AND_R30A_HANDOFF
+SW11,EKM014 expander interface,Boat/source/ekm014_mcp23017_adapter.h,DESIGN_NO_LIVE_COIL,HOST_SIM_RELATED,Physical I2C levels onehot bounded pulse and post-pulse current zero pending,R24_AND_R30A_HANDOFF
+SW12,MCP23017 boot/reset audit,Boat/source/mcp23017_joint_boot_audit_r24.h,LOGIC_ONLY_AUDIT,R24_HOST_SIM_IN_HOST_CI,Readback cannot prove independent physical output zero,BOOT_AUDIT_DOCUMENTED
+SW13,Independent output driver/feedback,Boat/source/boat_physical_driver_adapter.h,FAIL_CLOSED_NOT_ATTACHED,R29_HOST_SAFETY_GATES,Independent physical STOP watchdog/output current/onehot feedback unavailable,R30A_READINESS_GATES
+SW14,Telemetry formatting,Boat/source/boat_hardware_telemetry.h,LOGIC_EXISTS_NO_REAL_BATTERY_DATA,HOST_AND_TARGET_DIAGNOSTIC,Real GPS/battery/radio packet reception not demonstrated,STATUS_DOCUMENTED
+SW15,Pairing key storage,Boat/source/radio_key_store.h,NO_ACTUAL_KEY_PROVISIONING,CODE_EXISTS_DIAGNOSTIC_TARGET,Secure authenticated physical pairing and anti-replay bench pending,SECURE_PAIR_PROVISIONING_DOC
+SW16,Shared 3S motor/release exclusivity,Boat/source/boat_r29_shared_bus_contract.h,LOGIC_ONLY_REJECT_CONFLICTS,R29_HOST_SCENARIOS_PASS,Motor stall current and shared input protection unmeasured,R29_AND_R30A_HANDOFF
+SW17,CHIRP sonar,NOT_IMPLEMENTED,DEFERRED_BY_OWNER,NO_ACCEPTANCE,"Sonar model, protocol and transducer undecided",DEFERRED_EXPLICITLY
