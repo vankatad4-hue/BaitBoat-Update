@@ -1,5 +1,8 @@
 # Flytec V080 Boat hardware selection — R20 baseline (R27 battery-sense successor)
 
+> **ACTIVE R30A OVERRIDE:** R20 is the historical parts-selection baseline. Assemble ONLY against [R30A effective wiring](BOAT_R30A_EFFECTIVE_ASSEMBLY_NETS.csv). Boat battery monitoring is **INA231 product 1491** (not ADS1115), and both motor **VM** and solenoid **VH** are proposed parallel connections on **ONE shared 3S4P pack bus**, not separately switched load supplies. Safety/fusing/current and actual module connector acceptance still OPEN. [Assembly handoff](BOAT_R30A_PROTOTYPE_ASSEMBLY_HANDOFF.md).
+
+
 Date: 2026-11-22  
 Branch: `hardware-ready-dual-radio-r1`  
 Status: active R20 module baseline, except **R27 replaces ADS1115 with Ardboard INA231 product 1491 for voltage-only sensing**. No parts purchased/commissioned. See [R27 manufacturer evidence and exact module wiring](BOAT_R27_INA231_SELECTED_VOLTAGE_ONLY.md).
