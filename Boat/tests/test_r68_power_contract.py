@@ -15,7 +15,7 @@ class R68PowerContract(unittest.TestCase):
         expected = {
             "BOAT_5V_MCU": ("Olimex", "DCDC6-16-TO5", "5.0"),
             "BOAT_5V_GATE": ("Pololu", "S13V20F5", "5.0"),
-            "BOAT_3V3_RF": ("Pololu", "D24V10F3", "3.3"),
+            "BOAT_3V3_E22": ("Pololu", "D24V10F3", "3.3"),
             "BOAT_3V3_SENSORS": ("RECOM", "R-78E3.3-0.5", "3.3"),
         }
         self.assertEqual({r["Rail"] for r in rows}, set(expected))
@@ -31,6 +31,10 @@ class R68PowerContract(unittest.TestCase):
                 self.assertGreaterEqual(float(r["Vin_Max_V"]), 12.6)
         self.assertIn("EKM014 VL only", next(r["Loads"] for r in rows if r["Rail"] == "BOAT_5V_GATE"))
         self.assertNotIn("ESP32", next(r["Loads"] for r in rows if r["Rail"] == "BOAT_3V3_SENSORS"))
+        e22 = next(r for r in rows if r["Rail"] == "BOAT_3V3_E22")
+        self.assertIn("E22-900T22S", e22["Loads"])
+        self.assertNotIn("nRF", e22["Loads"])
+        self.assertIn("Ardboard 1127", e22["Issue_Before_Purchase"])
 
     def test_safety_rails_are_distinct_and_not_commissioned(self):
         text = (ROOT / "Boat/docs/BOAT_R68_3V3_5V_REGULATOR_SELECTION.md").read_text(encoding="utf-8")
