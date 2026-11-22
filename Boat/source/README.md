@@ -93,3 +93,8 @@ The physically separate Cytron MDD20A drives two motors; manufactured Electrokit
 The current active R77 firmware policy uses the selected nRF24 primary and E22-900T22S backup freshness. Either authenticated fresh path keeps autonomous navigation alive; both stale paths command zero motor outputs and all solenoid channels OFF. Link loss holds an eligible mission; a fresh authenticated session resumes it. Manual steering and irreversible releases remain primary-only. Manual input requires neutral after primary loss. Release intent/pulse interrupted by primary loss aborts and cannot replay. Automatic RTH on link loss is removed; explicit Home remains.
 
 This is a software watchdog on the main ESP32-S3, not an independent hardware cutoff. The older R8 Heltec/SX1262 notes above are historical and do not supersede the active R75/R77 hardware status. No physical GPIO or output driver is commissioned. See ../docs/BOAT_R77_DUAL_RADIO_WATCHDOG_IMPLEMENTATION.md.
+
+
+### R77A — authenticated backup recovery
+
+Ordinary RF inactivity no longer tears down the Boat/Remote authenticated session after 6.5 seconds. The watchdog still stops all outputs when both links are stale, but a fresh authenticated E22 frame can restore the existing session after a long outage. Sequence-limit rekey or endpoint power-cycle still requires the primary nRF24 handshake. This changes no hardware and does not make the watchdog independent of the main MCU.
