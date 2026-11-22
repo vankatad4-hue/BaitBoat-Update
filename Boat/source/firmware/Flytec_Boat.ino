@@ -5,6 +5,8 @@
  * No motor/solenoid pins are configured. Do not connect actuator power.
  */
 #include <Arduino.h>
+#include <sys/time.h>
+#include "radio_utc_time_v1.h"
 #include "boat_dual_radio_port.h"
 #include "boat_application_port.h"
 #include "tracker_sensor_port.h"
@@ -25,6 +27,9 @@ static_assert(!boat_r30d::ACTUAL_READER_COMMISSIONED &&
 #include "tracker_commissioned_config.h"
 static HardwareSerial gnssUart(2);
 static TrackerSensorPort sensors(gnssUart,Wire);
+static flytec_time::Discipline gnssUtcClock;
+static uint32_t lastGpsUtcStamp=0;
+static bool haveGpsUtcStamp=false;
 static bool sensorsReady=false;
 static uint32_t lastReport=0,lastWeatherTx=0;
 static Figure8AutoState lastFigure8State=Figure8AutoState::IDLE;
@@ -94,6 +99,26 @@ void loop(){
    if(command=='x'){sensors.abortAutomaticFigure8();Serial.println("FIGURE8: aborted; no calibration applied.");}
   }
   const uint32_t now=millis();sensors.poll(now);
+  const auto utc=sensors.utcSnapshot(now);
+  // The sensor configuration is physically audited before begin().
+  // The received GNSS serial-time sample has no PPS; UTC is COARSE,
+  // NEVER a timestamp for physical RF/STOP end-to-end certification.
+  radio.offerGnssUtc(utc);
+  if(flytec_utc::fresh(utc,now)&&
+     (!haveGpsUtcStamp||utc.localMs!=lastGpsUtcStamp)){
+    haveGpsUtcStamp=true;lastGpsUtcStamp=utc.localMs;
+    uint64_t currentUtc=0;
+    if(flytec_utc::extrapolate(utc,now,currentUtc)&&
+       gnssUtcClock.observe(currentUtc,now)&&
+       gnssUtcClock.shouldSetRtc(now)&&
+       gnssUtcClock.utcNow(now,currentUtc)){
+      timeval tv{};tv.tv_sec=(time_t)(currentUtc/1000ULL);
+      tv.tv_usec=(suseconds_t)((currentUtc%1000ULL)*1000ULL);
+      // Only CLOCK_REALTIME is updated. millis()/radio lease/RTH remains
+      // monotonic and is deliberately NEVER synchronized or stepped.
+      if(settimeofday(&tv,nullptr)==0)gnssUtcClock.markRtcSet(now);
+    }
+  }
   const auto calState=sensors.automaticFigure8State();
   if(calState!=lastFigure8State){
    lastFigure8State=calState;
