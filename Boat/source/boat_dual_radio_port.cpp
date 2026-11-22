@@ -31,8 +31,19 @@ bool BoatDualRadioPort::missionReleaseComplete(uint16_t transaction,uint16_t tok
  return controller_.releaseComplete(transaction,token,success&&safe,safe);
 }
 bool BoatDualRadioPort::sendHardwareTelemetry(const RadioDecodedPayload &status){
- if(!sessionReady()||!primaryFresh(millis()))return false;
- RadioFrame f;radio_frameInit(f,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,++txSequence_,0,millis(),sessionEpoch_);
+ const uint32_t now=millis();
+ if(!sessionReady()||!primaryFresh(now)){
+  optionalDiagnostics_.discard();return false;
+ }
+ if(status.kind==RADIO_PAYLOAD_SAFETY_DIAGNOSTIC){
+  // R30G: strictly optional telemetry is a REPLACEABLE one-slot offer.
+  // Do not allocate a RadioFrame, advance sequence or occupy nRF TX here.
+  // The radio update() sends it only AFTER heartbeat/ACK/mission duties.
+  uint8_t payload[8]{};
+  if(!radio_encodeTelemetryPayload(status,payload))return false;
+  return optionalDiagnostics_.offer(payload,now);
+ }
+ RadioFrame f;radio_frameInit(f,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,++txSequence_,0,now,sessionEpoch_);
  return radio_encodeTelemetryPayload(status,f.payload)&&radio_frameSeal(f,key_)&&sendFrame(LINK_NRF_PRIMARY,f);
 }
 bool BoatDualRadioPort::sendMissionFeedback(const MissionControlFeedback &status,uint32_t now){
@@ -89,6 +100,10 @@ void BoatDualRadioPort::resetSession(bool preserveMission){
  handshake_.reset();radioSession_wipe(key_,32);sessionStarted_=false;
  primarySeqGuard_.resetAfterHandshake();backupSeqGuard_.resetAfterHandshake();crossRadioSeqGuard_.resetAfterHandshake();
  lastNrfRxValid_=lastBackupRxValid_=false;commandQueue_.clear();mission_.reset();dedupe_.clear();txSequence_=0;
+ // R30G: never carry a diagnostic offer or stale activity timestamp across
+ // authenticated session/key/epoch rollover.
+ optionalDiagnostics_.reset();lastControlRxValid_=false;
+ havePrimaryHeartbeatSent_=false;
  radioWatchdog_.reset();
 }
 bool BoatDualRadioPort::begin() {
@@ -157,8 +172,42 @@ void BoatDualRadioPort::update() {
  }
  maybeStartFailsafeReturnHome(safetyNow);
  if(sessionReady()) {
-   if(nrfReady_ && (uint32_t)(now-lastNrfHeartbeatTxMs_)>=100U) {lastNrfHeartbeatTxMs_=now;sendHeartbeat(LINK_NRF_PRIMARY,now);}
+   if(nrfReady_ && (uint32_t)(now-lastNrfHeartbeatTxMs_)>=100U) {
+     // A busy TX must not advance the heartbeat schedule. The next update
+     // retries the heartbeat before any R30G diagnostic opportunity.
+     if(sendHeartbeat(LINK_NRF_PRIMARY,now)){
+       lastNrfHeartbeatTxMs_=now;havePrimaryHeartbeatSent_=true;
+     }
+   }
    if(sx1262Ready_ && (uint32_t)(now-lastBackupHeartbeatTxMs_)>=3000U && (uint32_t)(now-lastBackupHeartbeatAttemptMs_)>=250U) {lastBackupHeartbeatAttemptMs_=now;if(sendHeartbeat(LINK_LORA_BACKUP,now))lastBackupHeartbeatTxMs_=now;}
+ }
+ // R30G optional diagnostic LAST: no queue of old payloads, no E22 path,
+ // never preempts TX, pending STOP/command, active mission or failsafe.
+ // Manual control activity blocks it until 250 ms after the last valid
+ // command/mission-sticks frame. This is intentionally lossy telemetry.
+ boat_r30g::Opportunity opportunity{};
+ opportunity.authenticatedSession=sessionReady();
+ opportunity.primaryFresh=primaryFresh(millis());
+ opportunity.txPending=nrf_.txPending();
+ opportunity.commandQueued=commandQueue_.size()!=0;
+ opportunity.activeMission=controller_.status().transaction!=0;
+ opportunity.failsafeOrLinkLoss=linkLossHold_||detachedReturn_||failsafeRthActive_;
+ opportunity.recentCommand=lastControlRxValid_ &&
+      (uint32_t)(millis()-lastControlRxMs_)<boat_r30g::MIN_IDLE_AFTER_COMMAND_MS;
+ opportunity.lastHeartbeatAtMs=lastNrfHeartbeatTxMs_;
+ opportunity.haveHeartbeat=havePrimaryHeartbeatSent_;
+ uint8_t optionalPayload[8]{};
+ const uint32_t optionalNow=millis();
+ if(optionalDiagnostics_.take(opportunity,optionalNow,optionalPayload)){
+   // The scheduler has ALREADY enforced heartbeat/command priority.
+   RadioFrame optional{};
+   radio_frameInit(optional,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,
+                   ++txSequence_,0,optionalNow,sessionEpoch_);
+   for(unsigned i=0;i<8;++i)optional.payload[i]=optionalPayload[i];
+   if(radio_frameSeal(optional,key_)&&sendFrame(LINK_NRF_PRIMARY,optional))
+     optionalDiagnostics_.sent(optionalNow);
+   else
+     optionalDiagnostics_.rejectedTx(); // no retries or priority inversion
  }
 }
 bool BoatDualRadioPort::maybeStartFailsafeReturnHome(uint32_t now){
@@ -202,6 +251,11 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  if(f.type!=RADIO_MSG_HEARTBEAT&&f.type!=RADIO_MSG_CONTROL&&f.type!=RADIO_MSG_ACTION&&f.type!=RADIO_MSG_MISSION_PREPARE&&f.type!=RADIO_MSG_MISSION_CONTROL&&f.type!=RADIO_MSG_MISSION_STICKS)return;
  RadioSessionCounter &linkGuard=link==LINK_NRF_PRIMARY?primarySeqGuard_:backupSeqGuard_;
  if(!linkGuard.accept(f.sequence))return;
+ // Conservative scheduling: even a later rejected authenticated control
+ // packet can suppress optional TX; it never grants actuator authority.
+ if(f.type!=RADIO_MSG_HEARTBEAT){
+   lastControlRxValid_=true;lastControlRxMs_=now;
+ }
  const bool crossSequenceAccepted=crossRadioSeqGuard_.accept(f.sequence);
  if(f.type==RADIO_MSG_HEARTBEAT){
    RadioDecodedPayload heartbeat{};if(!radio_decodeHeartbeatPayload(f.payload,heartbeat))return;
