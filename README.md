@@ -133,3 +133,7 @@ The Boat's [R30C physical feedback contract](Boat/docs/BOAT_R30C_ONE_BUS_SAFETY_
 ## R30E — local-only Boat safety fault telemetry
 
 The Boat now has documented [R30E local fault reasons and diagnostic envelope](Boat/docs/BOAT_R30E_LOCAL_FAULT_TELEMETRY.md), with a default-locked USB serial report and portable host tests for the read-only common-bus safety inputs. An actual hardware safety reader is still unselected; the report correctly states `NO_READER`, not healthy. This is **not** authenticated Remote RF telemetry or a safety-override command. Shared 3S motor/solenoid supply, unsigned physical interlocks, and version markers remain unchanged.
+
+## R30F — Boat ↔ Remote unverified safety diagnostic messages
+
+[New R30F protocol document](Boat/docs/BOAT_R30F_DIAGNOSTIC_WIRE_PROTOCOL.md). Boat and Remote now share a strict version-1 subtype-8 optional authenticated fault telemetry format, with no change to the established 32-byte radio frame or command types. Remote displays `ДИАГН.: НЕПОТВ.` independently of STOP and battery warnings, while rejecting diagnostic frames as proof of commissioned electrical safety or primary control-link freshness. Actual external STOP/watchdog/current-zero hardware remains unavailable; Boat reports `NO_READER` and retains all actuator locks. The one common 3S pack and Boat VER014 / Remote VER028 remain unchanged.
