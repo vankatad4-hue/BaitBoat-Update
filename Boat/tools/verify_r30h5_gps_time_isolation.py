@@ -75,7 +75,7 @@ def verify(source):
     for token in ("(uint32_t)(now-lastNrfRxMs_)<=250",
                   "(uint32_t)(now-lastBackupRxMs_)<=6000",
                   "lastAnyAuthenticatedRxMs_,now,10000U"):
-        if token not in boat:
+        if not re.search(re.escape(token)+r"(?![0-9])",boat):
             errors.append("radio freshness/RTH source timer changed unexpectedly")
     return errors
 def main():
