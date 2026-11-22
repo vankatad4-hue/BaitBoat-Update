@@ -1,5 +1,8 @@
 # Flytec V080 Boat — active hardware and firmware
 
+> **R30H-10 development authority (2026-11-22):** **VS Code + PlatformIO is now PRIMARY** for the Boat diagnostic build: `pio run -d Boat -e boat_n32r16v_diagnostic` (from repository root). Arduino CLI remains a secondary regression. [Workflow](../docs/PLATFORMIO_PRIMARY_WORKFLOW_R30H10.md), [physical procedure](docs/BOAT_R30H_10_HARDWARE_ACCEPTANCE.md), [18 unsigned gates](docs/BOAT_R30H_10_PHYSICAL_GATES.csv). **Uploading and actuator wiring remain blocked.** Real GPIO, radios, GPS/PPS and independent STOP/current-zero are NOT_RUN/BLOCKED; no change to VER014. Later sections with older status wording are historical.
+
+
 **Current assembly-design handoff:** [R30A prototype assembly, logic-only test and safety gates](docs/BOAT_R30A_PROTOTYPE_ASSEMBLY_HANDOFF.md).  
 **Effective wiring authority:** [R30A 73-net consolidated design](docs/BOAT_R30A_EFFECTIVE_ASSEMBLY_NETS.csv) with [24 open gates](docs/BOAT_R30A_READINESS_GATES.csv) and [17-item firmware integration inventory](docs/BOAT_R30A_SOFTWARE_INTEGRATION_MATRIX.csv).  
 **Historical BOM baseline:** [BOAT_HARDWARE_SELECTION_R20.md](docs/BOAT_HARDWARE_SELECTION_R20.md), superseded by R27 INA231 and R29 shared 3S bus. **Not a high-current wiring permit.**  
