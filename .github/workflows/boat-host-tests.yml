@@ -164,6 +164,12 @@ jobs:
           cp Boat/tests/application_stubs/boat_dual_radio_port.h /tmp/boat_app_test/
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I/tmp/boat_app_test -IBoat/source -IBoat/tests/stubs /tmp/boat_app_test/boat_application_port.cpp Boat/tests/boat_application_integration_test.cpp -o /tmp/boat_application
           /tmp/boat_application
+      - name: R30H-5 GNSS UTC calendar UBX/NMEA parser and authenticated clock discipline (no physical GPS)
+        run: |
+          cmp Boat/source/radio_utc_time_v1.h Remote/source/radio_utc_time_v1.h
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror \
+            Boat/tests/r30h5_gnss_utc_clock_test.cpp -o /tmp/boat_r30h5_utc
+          /tmp/boat_r30h5_utc
       - name: Tracker GNSS and calibrated sensor math
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/tracker_sensors_test.cpp -o /tmp/boat_tracker_sensors
