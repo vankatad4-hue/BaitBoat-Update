@@ -368,3 +368,9 @@ Engineering-only branch milestone; no official Remote/Boat package version bump.
 - Pilz B0 772100 has sufficient 20 input candidates but only four safe outputs; requires separate externally monitored motor and coil DC load cutoffs to meet six total physical functions. C0 772105 (8 inputs) and Omron G9SP-N10S (10 inputs) fall below current 18-input ledger. Pilz 772714 new revision only research; all need independent physical onehot pulse timing and 24V/3.3V factory level interface.
 - Added `Boat/tests/test_r66_safety_plc_budget.py` and `Boat/tests/test_r66_external_interlock_oracle.py` to Boat host CI. The latter models NOT-REAL hardware behavior and uses 40ms fixture duration; vendor and bench must establish actual safe coil pulse. GitHub Actions conclusion unverified at change time.
 - Purchase register includes 30W 24V rail and Pilz newer order number, both unapproved; GPIO and diagnostic build unchanged. Release markers Boat 014 / Remote 028 held; no sonar integration.
+
+
+## R67 — two additional Boat module selections (2026-11-22)
+- User confirmed 1× **GY-91 (MPU-9250 + BMP280)** and 1× **Waveshare MCP23017 IO Expansion Board SKU15391** as Boat model choices; supplier authenticity, physical pinout and on-hand stock unverified. Procurement register changed to owner-selected exact GY-91 device combo and exact Waveshare board; no custom PCB.
+- R67 new docs: `Boat/docs/BOAT_R67_GY91_MCP23017_SELECTION.md`, `Boat/docs/BOAT_R67_I2C_AND_EXPANDER_MAP.csv`. Hardware caution: Waveshare board **default I²C 0x27**, not 0x20 generic Adafruit default; no active GPIO pins changed.
+- The four expander outputs are *proposed request intents* only; no independent STOP or onehot non-retriggering EKM014 safety gate selected. Remote MCP23017 model remains a separate design item. No firmware changes, no parts reported purchased, no actuator power, **Boat VER014 / Remote VER028 unchanged**.
