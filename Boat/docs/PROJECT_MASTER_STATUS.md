@@ -517,3 +517,12 @@ User reaffirmed **EBYTE E22-900T22S UART SMD**, one module in Boat and one match
 - **3.3V remains unchanged:** 2× Pololu D24V10F3 #2830, one E22 only, one GY-91 + MCP23017 only.
 - Official [R74 technical and mounting review](BOAT_R74_5V_REGULATOR_SELECTION.md), updated [active power BOM](BOAT_R68_POWER_RAIL_BOM.csv), [14-point NOT_RUN acceptance plan](BOAT_R68_POWER_ACCEPTANCE.csv), [purchase register](../../docs/PROJECT_PURCHASE_REGISTER_R20.csv), and static [power contract test](../tests/test_r68_power_contract.py).
 - Exact parts are selected/confirmed, **not purchased or physically qualified**. TSR SIP3 socket/locking harness, fuses, reverse-polarity protection, DCDC6 2A combined load/USB backfeed, M100 IO levels, EKM014 VL current and independent VH cutoff still require bench checks. Boat VER014 / Remote VER028 unchanged.
+
+
+## R75 — TSR mounting and remaining Boat hardware audit (2026-11-22)
+
+- Added a no-custom-PCB SIP3 socket/pigtail plan: econ connect MP70S3 candidate (2.54mm, 3A; exact 0.46mm square TSR pin fit unverified) plus Phoenix Contact MSTB/MSTBA 3-pin pluggable terminal pair (1757022/1926028, 12A). Physical fit, retention, solder-pigtail strain relief and vibration test are pending.
+- Added **SCHURTER 0001.2508 2.5A time-lag 5×20mm 300VDC fuse candidate** to match TRACO's recommended 2.5A slow-blow input fuse. Littelfuse 80000000005 holder is only a candidate pending exact holder revision/current/DC/conductor fit verification; IP40, enclosure only.
+- Added Olimex PWR-CABLE 30cm AWG22 3A barrel input pigtail candidate for DCDC6. DCDC6 output is USB-A 5V/2A, so a cable-only protected split to ESP32 and M100 is still required; Ardboard nRF is excluded until load/thermal/noise tests.
+- New [R75 socket/harness/fuse plan](BOAT_R75_TSR_SOCKET_HARNESS_AND_FUSE_PLAN.md), [R75 full hardware confirmation audit](BOAT_R75_HARDWARE_CONFIRMATION_AUDIT.md), and [11 NOT_RUN physical acceptance gates](BOAT_R75_HARDWARE_ACCEPTANCE.csv). Purchase register and static host CI test updated.
+- **Major unresolved blockers:** independent physical STOP/contactor/watchdog/manual reset; factory-made four-way one-hot bounded non-retriggerable coil pulse controller; six independent current-zero checks; measured 550 motor and four coil currents/pulse limits; BMS actual current/sag; M100 signal levels; E22 carrier and nRF module/adapter qualification; fuses/wiring/waterproof mounting. No actuator commissioning or physical hardware acceptance. Boat VER014 / Remote VER028 unchanged.
