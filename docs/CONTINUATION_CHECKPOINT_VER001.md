@@ -1,6 +1,6 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-22, **R30H-3 STOP exposure audit + Remote trace; R30H-4 next** (R78/R79 safety, R27 INA231, R29 common 3S bus; physical checks unsigned)  
+**Checkpoint:** 2026-11-22, **R30H-4 single-clock bench-capture protocol and unsigned probes; R30H-5 next** (R78/R79 safety, R27 INA231, R29 common 3S bus; physical checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `hardware-ready-dual-radio-r1`
 
@@ -483,3 +483,19 @@ R30H артефакти:
 **Next R30H-4:** obtain exact board module revisions/photos and inspected carrier wiring, legal and measured E22 airtime, MCU 5V/3.3V signals, dual radio paired secure RF-only traffic, common-clock STOP/link-loss logs and a signed physical acceptance limit. Only then revise STOP priority/pacing or shorten freshness based on evidence; keep shared 3S MDD20A VM/EKM014 VH physically disconnected and independent STOP/current-zero blockers unresolved.
 
 **Release markers unchanged:** Boat VER014, Remote VER028; sonar unselected/deferred.
+
+## R30H-4 continuation — real RF-only common-clock evidence pipeline (2026-11-22)
+
+**R30H-4 software and documentation committed. Real physical measurements remain NOT_RUN.** Boat and Remote module GPIO/RF transmission flags are still 0; this work changes **no** live radio scheduling, failsafe STOP/RTH code, secrets, safety outputs or hardware selection. The normal diagnostic Boat firmware has no attached physical actuator driver. Boat VER014 / Remote VER028 remain frozen.
+
+**New files and authority:**
+
+- [RF-only external-clock engineering procedure](../Boat/docs/BOAT_R30H_4_EXTERNAL_CLOCK_RF_BENCH.md). Requires genuine inspected board/carrier/antennas, legally validated E22 RF airtime, safe 5V/3.3V signal levels, and **physical disconnection of MDD20A VM and EKM014 VH** from the single common 3S4P battery bus before RF-only capture. An antenna must not be removed while a PA transmitter is powered.
+- [Empty external-clock CSV](../Boat/docs/BOAT_R30H_4_LOGIC_CAPTURE_TEMPLATE.csv) and [unsigned JSON acquisition manifest](../Boat/docs/BOAT_R30H_4_CAPTURE_MANIFEST_TEMPLATE.json). An instrument must actually acquire one common clock over Remote STOP edge / Remote E22 UART or nRF CSN / Boat E22 UART or nRF IRQ / RF-cut trigger. Local Remote and Boat millis logs **cannot** be subtracted. Raw capture SHA256, module revisions, software commits, probe voltage evidence, instrument model/sampling, and disconnected VM/VH must be recorded independently of the code.
+- [Ten real channel/probe mappings](../Boat/docs/BOAT_R30H_4_RF_ONLY_PROBE_CROSSWALK.csv) are **10/10 NOT_READY**. STOP-button and RF-cut-trigger active edge polarities are **TO_VERIFY**, not guessed; Boat authenticated STOP, logical output, last accepted auth and RTH entry GPIO markers **do not exist/are not commissioned** today. UART and SPI activity alone cannot prove an authenticated STOP.
+- [Common-clock parser](../Boat/tools/analyze_r30h4_common_clock_capture.py), [host regressions](../Boat/tests/test_r30h4_common_clock_capture.py) and updated [unsigned preflight](../Boat/tools/verify_r30h_radio_preflight.py) + hostile tests. The parser checks schema, actual sample provenance, source clock, edge order, metadata digest and optional early-RTH marker consistency. **Exit 3 = empty NOT_RUN; exit 2 = invalid; exit 4 = even valid-looking external recording requires manual review (or synthetic noncertifiable). There is deliberately no exit 0/PASS.** This protects against accidentally accepting simulated or falsified physical data.
+- [Boat host CI #45055190262](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45055190262): **SUCCESS** and [Remote host CI #45055190268](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45055190268): **SUCCESS** for source/preflight/negative tests. A later change deliberately permits either STOP-button or RF-cut trigger polarity pending actual crosswalk: check [newest Boat host run](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45055302647) for its final outcome before signoff. Latest production Boat target [#45052544986](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45052544986) and Remote Waveshare [#45054171585](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45054171585) are **SUCCESS**; these precede R30H-4 host-only tool additions and do not validate new physical RF capture.
+
+**Hardware and physical safety still open:** original R30H 22 RF trial cases NOT_RUN; R30H-1 22 purchase/module signoffs NOT_RUN; R30H-3 16 physical STOP acceptance gates NOT_RUN; R30H-4 probe mappings 10 NOT_READY; R30A 24 assembly safety gates OPEN and prior 81 physical checks NOT_RUN. E22 backup STOP may be locally queued for up to 3000ms; dual-link loss may be recognized up to ~6000ms after last accepted E22 frame. These are software policy exposures, not approved or measured STOP limits. Conditional RTH remains last accepted authenticated Boat frame +10000ms, only for eligible active mission and valid local interlocks.
+
+**Next R30H-5:** engineer and static-test a *non-actuating, fail-closed* authenticated-event/testpoint marker interface, with no GPIO assigned or output physically wired until the exact boards are inspected. Then obtain real radio modules and safe common-clock RF-only measurements. No independent physical STOP hardware has been commissioned and no motor/solenoid outputs can be enabled. Sonar deferred.
