@@ -145,7 +145,7 @@ void loop(){
   radio.sendHardwareTelemetry(safetyTelemetry);
   // The D5 frame below remains USB-local, NOT the authenticated RF format.
   // It is never interpreted as a command or verified physical contact.
-  Serial.printf("R30E,LOCAL_ONLY,%s,flags=0x%04X,pack_mV=%u,seq=%u,changed=%u,outputs=LOCKED,frame=%02X%02X%02X%02X%02X%02X%02X%02X\\n",
+  Serial.printf("R30E,LOCAL_ONLY,%s,flags=0x%04X,pack_mV=%u,seq=%u,changed=%u,outputs=LOCKED,frame=%02X%02X%02X%02X%02X%02X%02X%02X\n",
       boat_r30e::label(status.reason),
       (unsigned)status.flags,(unsigned)status.millivolts,
       (unsigned)status.sequence,(unsigned)changed,
