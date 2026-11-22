@@ -161,3 +161,12 @@ Intermediate early R30F CI runs failed because their respective commit snapshots
 ## R30H actual RF latency acceptance preparation
 
 The [R30H RF measurement procedure](Boat/docs/BOAT_R30H_RF_LATENCY_BENCH_PROCEDURE.md), [22-case unsigned test matrix](Boat/docs/BOAT_R30H_RF_TEST_MATRIX.csv), [empty event CSV template](Boat/docs/BOAT_R30H_RF_EVENTS_TEMPLATE.csv), and [host-only timestamp analyzer](Boat/tools/analyze_r30h_rf_events.py) are ready. **No real-radio, STOP-current, or RTH timing was measured.** The nRF/E22 radios and independent common-3S physical STOP/interlock gates still need purchased-board signoff; motor VM and solenoid VH remain disconnected. Firmware release markers stay Boat VER014 and Remote VER028. See [continuation checkpoint](docs/CONTINUATION_CHECKPOINT_VER001.md) for remaining gates.
+
+
+## R30H-1 — actual radios: SC16IS750 FIFO repair and unsigned RF commissioning
+
+- [R30H-1 inspection and bridge-fix report](Boat/docs/BOAT_R30H_1_RADIO_BRINGUP_AND_BRIDGE_FIX.md) and [22 physical RF signoffs (NOT_RUN)](Boat/docs/BOAT_R30H_1_RF_MODULE_SIGNOFF.csv). [R30H STOP/10s RTH trials](Boat/docs/BOAT_R30H_RF_TEST_MATRIX.csv) remain 22 NOT_RUN.
+- **Fixed a real source defect:** Remote `SC16IS750Bridge::writeFifo()` previously computed `64 - TXLVL` despite NXP TXLVL reporting *free slots*, making an empty FIFO appear full. Corrected Remote TX writes and `flush()`, added pure 64-byte FIFO logic, host C++ regression and static negative tests.
+- **Fail-closed startup:** Remote primary nRF GPIO6/15 and SC16IS750/E22 now require signed PCB, carrier, RF-interop and airtime flags; Boat E22 adds a signed airtime gate. All new signoff flags remain `0`. E22 `EST_AIRTIME_MS=25` is explicitly *unmeasured*; do not treat 1% software counter as legal compliance. Existing R30A physical-actuator locks remain false.
+- [Boat host R30H-1 #45051432923](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45051432923) and [Remote host R30H-1 #45051429416](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45051429416) **SUCCESS** for source/CI regressions. Rebuilds after final header comments must be inspected separately; no physical pairing, scope measurements, STOP output time or real RTH was verified.
+- **Next:** Inspect purchased exact board and modem suffix revisions, scope UART TXLVL/9600-8N1 and TTL voltages, verify regulatory 868MHz airtime and profile readback; only then attempt RF-only authenticated pairing with all MDD20A VM/EKM014 VH disconnected. Boat VER014 and Remote VER028 unchanged; sonar deferred.
