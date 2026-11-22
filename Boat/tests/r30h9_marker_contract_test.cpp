@@ -2,6 +2,7 @@
 #include "../source/boat_r30h9_marker_config.h"
 #include <assert.h>
 #include <stdio.h>
+#include <initializer_list>
 
 int main() {
  using namespace flytec_r30h9;
