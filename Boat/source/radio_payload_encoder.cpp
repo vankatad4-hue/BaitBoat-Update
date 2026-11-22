@@ -46,8 +46,11 @@ bool radio_encodeTelemetryPayload(const RadioDecodedPayload &in, uint8_t out[8])
         out[5]=(uint8_t)(in.pressurePa>>16);out[6]=(uint8_t)(in.pressurePa>>24);return true;
     case RADIO_PAYLOAD_SAFETY_DIAGNOSTIC: {
         // Only telemetry bits; never encode STOP, ACK or a command.
-        const radio_r30f::Diagnostic d={in.diagnosticReason,
-            in.diagnosticFlags,in.diagnosticMillivolts,in.diagnosticSequence};
+        radio_r30f::Diagnostic d{};
+        d.reason=in.diagnosticReason;
+        d.flags=in.diagnosticFlags;
+        d.millivolts=in.diagnosticMillivolts;
+        d.sequence=in.diagnosticSequence;
         return radio_r30f::encode(d,out);
     }
     default:
