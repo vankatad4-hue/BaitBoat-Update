@@ -79,7 +79,7 @@ The Boat makes the decision locally; neither radio is required.
 - Remote indicator: green above 50%, yellow 21–50%, red at 20% or lower/Boat low flag; stale data is grey/unavailable. Critical battery has a separate `КРИТ. БАТ. — STOP` warning. New mission preparation is blocked on stale/red/critical telemetry.
 - Status bit 5 indicates low-battery/RTH; bit 7 indicates critical STOP.
 
-Voltage percentage is an estimate from a generic 3S Li-ion curve, not coulomb counting. Calibrate the 100kΩ/33kΩ ADS1115 divider against a DMM and validate thresholds under actual load and temperature.
+Voltage percentage is an estimate from a generic 3S Li-ion curve, not coulomb counting. Calibrate the R21 corrected 150kΩ/33kΩ ADS1115 divider against a DMM and validate thresholds under actual load and temperature.
 
 ## R78 radio-loss policy retained
 
@@ -113,7 +113,7 @@ The current `BoatPhysicalDriverAdapter` refuses to initialize unless the indepen
 
 1. Purchase/inspect the exact ESP32-S3-DevKitC-1-N32R16V revision; verify J1/J3 numbering and sign the candidate GPIO map.
 2. Verify exact E22-900T22S suffix/pad layout and use a premade carrier; verify M100 PRO connector pin labels and MCP23017 address straps.
-3. Calibrate ADS1115 divider against a DMM; enable the sensor profile only after gain/offset and freshness checks pass.
+3. Perform the [R21 150kΩ/33kΩ ADC/power-sequencing procedure](../Boat/docs/BOAT_R21_BATTERY_ADC_COMMISSIONING.md) and enter real measurements in the [R21 worksheet](../Boat/docs/BOAT_R21_ADC_CALIBRATION_WORKSHEET.csv); leave the sensor profile uncommissioned until all checks pass.
 4. Measure the DCDC6 5V, TSR 2-2450 and both D24V10F3 rails under simultaneous ESP32 boot, GNSS acquisition and nRF24/E22 transmission.
 5. Measure both 550 motor startup/stall current and each solenoid pulse current; calculate fuses, wires and connectors against the 20A BMS.
 6. Resolve physical STOP/watchdog/isolator/pulse-limiter/current-zero feedback. Until then the Boat physical driver remains intentionally uncommissioned.
@@ -134,3 +134,12 @@ The current `BoatPhysicalDriverAdapter` refuses to initialize unless the indepen
 R78/R79 watchdogs are software on the Boat ESP32-S3. ADS1115 is a measurement module, not an independent cutoff. Software cannot protect against MCU lockup, MCU power loss or a failed power transistor. Physical STOP, wiring protection and actual feedback must be validated separately.
 
 No release version increment until target builds, host tests, physical commissioning and acceptance records are complete.
+
+## R21 checkpoint — battery ADC full-charge correction
+
+- The old R20 100kΩ/33kΩ pack divider could produce 3.126V on ADS1115 AIN0 at a healthy full-charge 12.6V pack, while `carrierBatteryMv()` rejects ADC inputs greater than 3.0V. **Do not build the old divider.**
+- R21 candidate: **150kΩ top from switched/protected pack sense feed, 33kΩ bottom, 100nF filter**; ratio 5.54545. Nominal AIN0 at 12.6V is 2.272V. Firmware example uses shared `BOAT_BATTERY_DIVIDER_RATIO` and remains `commissioned=false`.
+- TI input limit relative to ADC VDD remains mandatory even during power-up/down. Same master switch is not enough to prove safe sequencing. Check for ADC back-powering with a scope before sensor commissioning.
+- Software now fails closed **on the first invalid ADC sample**, in addition to aging out a formerly good sample after 1000ms.
+- [R21 low-voltage commissioning](../Boat/docs/BOAT_R21_BATTERY_ADC_COMMISSIONING.md) and [blank test record](../Boat/docs/BOAT_R21_ADC_CALIBRATION_WORKSHEET.csv) are ready. R21 Boat host and ESP32-S3 **non-actuating diagnostic** compile passed on commit `bd4199585dbd0ec48b3c745aa8b35612aa78e8f4` (CI #45013257861 and #45013257742). No physical measurements have been performed. Remote host and Waveshare target compilation passed on commit `12c5cfd0b29ab641b0acc184e6160335efc6b0b3`.
+- **Next gate:** purchase/inspect actual board revisions, make DMM/scope recordings for voltage and rail sequencing, verify I²C bus address, then proceed to dummy-load-only tests. Physical STOP/watchdog/current-zero feedback remains unresolved. Boat VER014 / Remote VER028 unchanged.
