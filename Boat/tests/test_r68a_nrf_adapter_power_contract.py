@@ -18,14 +18,14 @@ class R68AArdboardAdapterContract(unittest.TestCase):
         adapter = [i for i in items if i["Side"] == "Boat"
                    and "Ardboard 24L01 board article 1127" in i["Exact_part"]]
         self.assertEqual(len(adapter), 1)
-        self.assertEqual(adapter[0]["Qty"], "1")
+        self.assertEqual(adapter[0]["Qty"], "0")
         self.assertEqual(adapter[0]["Selected_or_candidate"],
-                         "R68A_OWNER_PROPOSED_BENCH_QUALIFICATION_REQUIRED")
+                         "R23_OPTIONAL_SUPERSEDED_POWER_PATH")
         self.assertEqual(adapter[0]["Shop_URL"],
                          "https://www.ardboard.com/nrf24l01-socket-adapter")
-        self.assertIn("input vcc unspecified", adapter[0]["Purchase_gate"].lower())
+        self.assertIn("optional socket", adapter[0]["Purchase_gate"].lower())
 
-    def test_E22_has_own_dc_dc_and_nrf_is_on_5V_adapter(self):
+    def test_historical_r68_bom_remains_distinct_from_r23_approved_design(self):
         rails = {r["Rail"]: r for r in csv_rows("Boat/docs/BOAT_R68_POWER_RAIL_BOM.csv")}
         self.assertEqual(len(rails), 4)
         self.assertEqual(set(rails), {
@@ -37,6 +37,14 @@ class R68AArdboardAdapterContract(unittest.TestCase):
         self.assertNotIn("nRF", rails["BOAT_3V3_E22"]["Loads"])
         self.assertIn("Ardboard 1127", rails["BOAT_3V3_E22"]["Issue_Before_Purchase"])
         self.assertEqual(rails["BOAT_5V_MCU"]["Exact_MPN"], "DCDC6-16-TO5")
+        active = {r["Item"]: r for r in csv_rows("docs/PROJECT_PURCHASE_REGISTER_R20.csv")
+                  if r["Side"] == "Boat"}
+        self.assertEqual(active["nRF24 primary 3V3 power unit 1"]["Exact_part"],
+                         "Pololu D24V10F3 #2830")
+        self.assertIn("nRF24 PA/LNA", active["nRF24 primary 3V3 power unit 1"]["Purchase_gate"])
+        self.assertIn("E22 VCC supplied", active["nRF24 primary 3V3 power unit 1"]["Purchase_gate"])
+        self.assertIn("ADS1115", active["Sensor and I2C expansion 3V3 power"]["Purchase_gate"])
+        self.assertEqual(active["nRF24 local socket power adapter"]["Qty"], "0")
 
     def test_adapter_has_no_3S_direct_connection_or_certified_output_claim(self):
         review = (ROOT / "Boat/docs/BOAT_R68A_ARDBOARD_NRF_SOCKET_POWER_REVIEW.md").read_text(encoding="utf-8")
