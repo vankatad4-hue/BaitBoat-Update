@@ -735,3 +735,6 @@ Intermediate early R30F CI runs failed because their respective commit snapshots
 
 **Next engineering step:** R30G — review rate limiting and bounded-queue/backpressure behavior of diagnostic packets during manual control and deliberate link loss, then regression-test no control-freshness or priority inversion. Physical radio acceptance and motor power remain blocked.
 
+## R30G Boat-only optional diagnostic RF scheduling (2026-11-22)
+
+The Boat R30F optional primary-nRF diagnostic now uses a [single-slot low-priority 500ms cache and heartbeat-first send policy](../../Boat/docs/BOAT_R30G_RADIO_DIAGNOSTIC_PRIORITY.md). **No Remote executable source, authenticated frame format, safety state, session, status decoder, joystick, screen, or telemetry thresholds changed in R30G.** Optional Boat diagnostic loss is expected; Remote already expires its display-only `ДИАГН.: НЕПОТВ.` information at 6000ms and never treats it as authenticated motor/STOP safety permission. The earlier Remote host #45048847021 and Waveshare target #45048618202 passed. Physical radio range, real MDD20A/EKM014 safety and full Boat HAL remain uncommissioned; Remote VER028 / Boat VER014 frozen.
