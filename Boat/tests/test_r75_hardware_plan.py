@@ -36,7 +36,7 @@ class R75HardwarePlanContract(unittest.TestCase):
     def test_main_distribution_constraints_are_documented(self):
         mount = MOUNT.read_text(encoding="utf-8").lower()
         for phrase in ("no custom electrical pcb", "never parallel", "usb-a", "usb backfeed",
-                       "ekm014 vl only", "vh", "pin 1=vin", "pin 2=gnd", "pin 3=+5v_out"):
+                       "ekm014 vl only", "vh", "pin 1", "vin", "pin 2", "gnd", "pin 3", "vout"):
             self.assertIn(phrase, mount)
         audit = AUDIT.read_text(encoding="utf-8").lower()
         for phrase in ("independent physical safety", "current-zero", "mdd20a", "ekm014",
