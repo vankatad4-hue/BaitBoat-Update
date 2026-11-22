@@ -15,11 +15,11 @@ The Boat reads its 3S battery pack using the existing I²C ADC acquisition path:
 - Candidate gain/offset is stored with the example profile uncommissioned. DMM calibration is mandatory before enabling the commissioned hardware profile.
 - A valid battery sample must be no older than 1,000ms. Missing, invalid or stale data fails closed and stops propulsion.
 
-The ADS1115 was already expected by the Boat's sensor-port ADC code but was omitted from the previous parts register. R20 adds it explicitly. It is not an independent cutoff or safety controller.
+The ADS1115 was already expected by the Boat's sensor-port ADC code but was omitted from the previous parts register. R20 adds it explicitly. The physical-driver battery-health gate now derives sample validity from this fresh ADC sample rather than requiring a separate unselected battery comparator. It is not an independent cutoff or safety controller.
 
 ## Thresholds and timing
 
-The current R79 commissioning defaults for the 3S4P pack are:
+The current R79 commissioning defaults for the 3S4P pack are provisional and must be calibrated against the actual cell model and pack sag:
 
 | Pack voltage | State / action |
 |---|---|
@@ -47,7 +47,7 @@ Estimated percentage uses a generic 3S Li-ion voltage curve. It is not coulomb c
    - battery above critical threshold;
    - physical STOP released, watchdog healthy, release interlocks valid and all release channels idle.
 6. If any RTH gate fails, the application latches STOP. It does not continue outbound or guess a Home route.
-7. During low-battery RTH, only Home-navigation motor intent is allowed; every hopper and hook output remains OFF. The existing radio-loss policy can still allow local Home navigation if both radios subsequently fail.
+7. During low-battery RTH, only Home-navigation motor intent is allowed; every hopper and hook output remains OFF. If a release was active, the output is deenergized and RTH waits for physical release-idle/current-zero feedback; if the selected hardware cannot provide that feedback, remain STOP. The existing radio-loss policy can still allow local Home navigation if both radios subsequently fail.
 8. At Home, motors stop. The previous mission is not resumed.
 9. If no autonomous mission is active, low battery is displayed as a warning and the operator must manually return the boat. The Boat does not synthesize a mission from a Home coordinate alone.
 10. If battery reaches critical at any time, including during RTH, all motor and release outputs stop.
@@ -57,7 +57,7 @@ Estimated percentage uses a generic 3S Li-ion voltage curve. It is not coulomb c
 - Top-level Boat battery label shows voltage and estimated percentage.
 - Green: above 50%; yellow: 21–50%; red: 20% or lower or Boat low-battery status flag.
 - Yellow warning: `СРЕДНА БАТ. — ЗАРЕДИ`.
-- Red warning: `НИСКА БАТ. — RTH`. Critical battery has a separate status flag and displays `КРИТ. БАТ. — STOP`.
+- Red warning: `НИСКА БАТ. — RTH`. Critical battery sets the separate status flag bit 7 and displays `КРИТ. БАТ. — STOP` (low/RTH remains bit 5).
 - Stale/missing Boat battery telemetry shows `ЛОДКА: --` in muted grey.
 - Mission preparation is blocked if battery telemetry is stale or estimated charge is 20% or lower; the Boat independently enforces the red-battery gate.
 
