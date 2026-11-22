@@ -562,3 +562,11 @@ Manufacturer review corrected the E22-900T22S VCC rail to 5V from DCDC6-16-TO5; 
 - Portable host checks cover full 12.6V 3S charge, low/RTH threshold and invalid raw ranges, and a static check validates the default GPIO lockout and isolation from actuator APIs.
 - Boat host run #45021864048 succeeded; ESP32-S3 target run #45021889338 succeeded for both main diagnostic and separate locked ADC sketch. ZIP release packaging remains on the active branch; no official version promotion until physical acceptance.
 - Physical ADC power-on/off sequencing, DMM readings, actual chip identity and independent hardware STOP/feedback validation are NOT_RUN.
+
+## R23 GPIO connection plan and selected power synchronization (2026-11-22)
+
+- Manufacturer public DevKitC-1 J1/J3 header table supports all 18 distinct ESP32-S3 GPIO assignments in the existing R20 candidate; full net-by-net [R23 wire schedule](../Boat/docs/BOAT_R23_MODULE_CONNECTION_MATRIX.csv) contains **64 physical/logical proposed nets**. [R23 wiring guide](../Boat/docs/BOAT_R23_GPIO_PINOUT_AND_HARNESSES.md) documents exact E22 UART pads, M100/I²C levels pending, MCP23017 A0–A2 default-open address 0x27, nRF SPI, Cytron PWM/DIR and EKM014 3.3V-compatible controls.
+- High-risk GPIO47/48 on the WROOM-2-N32R16V are **1.8V**; reserved GPIO35–37 belong to octal flash/PSRAM; GPIO39/40 PWM outputs conflict with JTAG use. Reserved GPIO1/2/41/42 are explicitly UNWIRED, not fabricated independent safety contacts.
+- [Current R20 purchase register](PROJECT_PURCHASE_REGISTER_R20.csv) reconciled with R20/R23 allocation: D24V10F3 #1 nRF PA/LNA, #2 sensors/I²C/ADS1115, E22 VCC on main 5V DCDC; optional Ardboard nRF adapter not selected.
+- C++11 and Python R23 contract tests run in Boat host CI. The existing physical-driver and mission outputs remain **non-actuating and uncommissioned**; no live motor, solenoid, GNSS or I²C tests claimed.
+- Remaining key hardware blocker: exact purchased module pin order and levels (particularly M100 at 5V), power sequencing, independent physical STOP/watchdog/coil current-zero feedback. No new custom PCB. Boat VER014 / Remote VER028 unchanged.
