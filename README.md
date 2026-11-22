@@ -103,3 +103,5 @@ The [R26 INA226 voltage-only module review](Boat/docs/BOAT_R26_INA226_VOLTAGE_ON
 ## R27 active Boat battery sensor selection
 
 **Selected:** [Ardboard INA231 I²C product 1491](Boat/docs/BOAT_R27_INA231_SELECTED_VOLTAGE_ONLY.md), protected **VBUS-only 3S measurement**, NOT a series pack-current sensor. The physical Ardboard 0.1Ω shunt cannot be placed in the 20A motor/solenoid circuit. [21 physical acceptance checks](Boat/docs/BOAT_R27_INA231_ACCEPTANCE.csv) remain **NOT_RUN**. The retired ADS1115 polling path is software-blocked; real INA231 I²C acquisition awaits purchased-board inspection and bench tests. Until commissioned, no valid Boat battery safety sample exists and the Remote must show unknown rather than a fabricated charge level. Original versions Boat VER014 / Remote VER028 unchanged.
+
+The [R27 10-net wiring override](Boat/docs/BOAT_R27_INA231_HARNESS_OVERRIDE.csv) supersedes the old ADS1115 connections in the R23 wire matrix only for the battery sensor; all new INA231 nets remain unwired or deliberately no-connect until exact board inspection.
