@@ -711,3 +711,8 @@ Boat's selected battery-voltage module is now **Ardboard INA231 product 1491**, 
 ## R28 Boat sensor software boundary (2026-11-22)
 
 Boat's selected INA231 sensor now has a software-only triggered measurement state machine, I²C transport adapter, and integration into the Boat `TrackerSensorPort`, but `INA231_PHYSICAL_COMMISSIONED=false` and all local signoffs remain unset. The Boat must supply invalid/unavailable battery telemetry until physical signoff, so Remote's existing stale/missing Boat-battery warning and mission-preparation lock remain correct. No changes to Remote LVGL/SD/radio firmware, Remote physical casing or release version; **Remote VER028 / Boat VER014**.
+
+## R30A cross-endpoint Boat handoff (2026-11-22)
+
+The Boat has a [consolidated R30A design/assembly document](../../Boat/docs/BOAT_R30A_PROTOTYPE_ASSEMBLY_HANDOFF.md), [73-row power/signal netlist](../../Boat/docs/BOAT_R30A_EFFECTIVE_ASSEMBLY_NETS.csv) and [17-item Boat source integration inventory](../../Boat/docs/BOAT_R30A_SOFTWARE_INTEGRATION_MATRIX.csv). This changes **no** Remote MCU, joystick, button, SD, radio or UI source. Real Boat INA231 battery data remain uncommissioned/invalid and the Remote must keep its stale-battery warning and mission block. Both units still lack physical RF acceptance and pairing. Official Remote **VER028**, Boat **VER014** unchanged; sonar deferred.
+
