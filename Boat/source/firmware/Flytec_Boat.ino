@@ -10,6 +10,7 @@
 #include "tracker_sensor_port.h"
 #include "mdd20a_direct_profile.h"
 #include "figure8_calibration_nvs.h"
+#include "boat_home_point_nvs.h"
 #include "boat_endpoint_memory_gate.h"
 #if __has_include("tracker_commissioned_config.h")
 #include "tracker_commissioned_config.h"
@@ -21,6 +22,8 @@ static Figure8AutoState lastFigure8State=Figure8AutoState::IDLE;
 #endif
 static BoatDualRadioPort radio;
 static BoatApplicationPort application(radio);
+static BoatHomePointNvs homePointNvs;
+static bool homeStorageReady=false;
 // Read-only calibration inspection on the prototype diagnostic firmware.
 // This does not apply offsets or start automatic figure-eight motion.
 static Figure8CalibrationNvs calibrationNvs;
@@ -45,6 +48,15 @@ void setup(){
                  (unsigned long)stored.sequence);
   else Serial.println("Figure8 NVS: no valid record; calibration remains unavailable.");
  }else Serial.println("Figure8 NVS: unavailable; calibration remains unavailable.");
+ homeStorageReady=homePointNvs.begin();
+ if(homeStorageReady){
+  const BoatHomePointStore store={BoatHomePointNvs::loadBridge,BoatHomePointNvs::saveBridge};
+  radio.setHomePointStore(store);
+  BoatHomePoint storedHome{};
+  if(homePointNvs.load(storedHome))
+   Serial.printf("Boat Home NVS: valid latE7=%ld lonE7=%ld seq=%lu\\n",(long)storedHome.latE7,(long)storedHome.lonE7,(unsigned long)storedHome.sequence);
+  else Serial.println("Boat Home NVS: empty; Home will be saved and read back during mission preparation.");
+ }else Serial.println("Boat Home NVS: unavailable; mission preparation and automatic RTH remain disabled.");
  const auto motorProfile=mdd20aUnassignedProfile();
  if(!mdd20aDirectProfileValid(motorProfile,0))Serial.println("MDD20A direct GPIO profile unassigned; no motor outputs configured.");
  const bool ready=radio.begin();
