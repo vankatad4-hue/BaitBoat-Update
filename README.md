@@ -70,6 +70,6 @@ Both radio links lost: immediate STOP. After 10 seconds from the last accepted a
 
 Host tests and target builds are being run by GitHub Actions. A successful compile or host simulation does not prove physical sensor calibration, radio range, power integrity, motor-driver behavior or solenoid feedback.
 
-The selected parts are not yet physically commissioned. Actual motors and solenoids must remain disconnected until the dummy-load procedures pass. Boat VER014 and Remote VER028 remain the current version markers; no physical acceptance or release bump is implied.
+The selected parts are not yet physically commissioned. The candidate GPIO map is documented, but all pin-audit flags remain unsigned until the purchased board revision is checked. Actual motors and solenoids must remain disconnected until the dummy-load procedures pass. Boat VER014 and Remote VER028 remain the current version markers; no physical acceptance or release bump is implied.
 
 Sonar selection remains deferred.
