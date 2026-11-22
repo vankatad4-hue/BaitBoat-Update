@@ -90,7 +90,19 @@ bool boatCommands_setMode(BoatMode mode)
         return false;
     }
 
-    // Autonomous mode goes through the prepared mission protocol, not an ordinary mode frame.
+    // Home is an irreversible safety diversion for a previously started
+    // mission only. Boat validates its locally stored Home, GPS and STOP.
+    if(mode==MODE_RETURN_HOME){
+        const auto phase=boatRadio_missionPhase();
+        if((phase!=MC_OUTBOUND && phase!=MC_PAUSED &&
+            phase!=MC_RETURNING && phase!=MC_OVERRIDE_NEUTRAL &&
+            phase!=MC_OVERRIDE_ACTIVE) ||
+           !boatState.emergencyStopConfirmed || boatState.emergencyStop ||
+           boatState.failsafeActive)return false;
+        BoatCommand home={};home.type=CMD_SET_MODE;home.mode=MODE_RETURN_HOME;
+        return sendCommand(home);
+    }
+    // Other autonomous mode changes use the mission protocol.
     if(boatRadio_missionLocked())return mode==MODE_MANUAL?boatRadio_missionControl(MCTRL_SWITCH_MANUAL):mode==MODE_AUTOPILOT?boatRadio_missionControl(MCTRL_START):false;
     if (mode != MODE_MANUAL) return false;
     // Create the mode-change command.
