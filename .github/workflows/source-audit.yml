@@ -1,0 +1,26 @@
+name: Boat/Remote conservative source inventory (read-only)
+on:
+  push:
+    branches: [hardware-ready-dual-radio-r1]
+    paths:
+      - 'Boat/source/**'
+      - 'Remote/source/**'
+      - 'Boat/platformio.ini'
+      - '.github/workflows/boat-target-build.yml'
+      - 'Boat/tools/audit_source_inventory_r30h10.py'
+      - '.github/workflows/source-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read-only active/legacy include graph and compile guards
+        run: python3 Boat/tools/audit_source_inventory_r30h10.py --json /tmp/source-audit.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flytec-source-inventory-not-physical-acceptance
+          path: /tmp/source-audit.json
+          if-no-files-found: error
