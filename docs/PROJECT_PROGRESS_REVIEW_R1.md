@@ -535,7 +535,7 @@ Current hardware baseline and remaining decisions are consolidated in [BOAT_HARD
 ## R79/R20 current engineering state (2026-11-22)
 
 - Current Boat BOM: ESP32-S3-DevKitC-1-N32R16V, M100 PRO/QMC5883L, GY-91, nRF24, E22-900T22S, MCP23017, ADS1115 0x48, Cytron MDD20A, EKM014 and selected premade regulators.
-- ADS1115 battery sensing uses a candidate 100kΩ/33kΩ 1% divider and 100nF AIN0 filter. The sensor profile remains uncommissioned until DMM calibration and exact GPIO/header audit.
+- **R21 supersedes this R79 draft ADC divider:** the revised unsigned candidate is 150kΩ/33kΩ (1%, 100nF). The old divider caused a full-charge input to exceed the software's 3.0V ADC sanity gate. The sensor profile remains uncommissioned until DMM calibration and exact GPIO/header audit.
 - R79 low battery: yellow 10.8–11.4V; red at or below 10.8V; hold outbound mission movement immediately; after 3 seconds divert eligible active mission to validated Boat NVS Home. Critical STOP at 10.2V for 1 second or immediate at 9.9V. Stale ADC sample >1 second stops propulsion.
 - Remote displays Boat voltage/estimated percentage with green/yellow/red colors and Bulgarian recharge/RTH warnings. Stale telemetry is unavailable; mission preparation is blocked when stale or red.
 - The low-battery percentage is an estimate from a generic 3S voltage curve, not coulomb counting. Validate with the actual cells, load sag and calibrated divider.
@@ -547,3 +547,11 @@ Current hardware baseline and remaining decisions are consolidated in [BOAT_HARD
 The next-step GPIO audit has been completed as a **candidate** map, not a signed board-level wiring release. See [BOAT_GPIO_HEADER_MAP_R20.md](../Boat/docs/BOAT_GPIO_HEADER_MAP_R20.md) and [BOAT_R20_GPIO_RESOURCE_CROSSWALK.csv](../Boat/docs/BOAT_R20_GPIO_RESOURCE_CROSSWALK.csv). It reserves ESP32-S3 strapping, USB, memory and RGB LED pins; uses GPIO4/5 for M100 UART, GPIO7/8 for shared I²C, GPIO9–13 for nRF24 SPI, GPIO14–18 and GPIO6 for E22 UART/mode/reset, GPIO21 for nRF IRQ, and GPIO39/40 for MDD20A PWM. MCP23017 0x27 GPB0/1 are MDD20A direction; GPA0–3 are EKM014 IN1–4.
 
 Manufacturer review corrected the E22-900T22S VCC rail to 5V from DCDC6-16-TO5; its serial/control logic remains 3.3V TTL. D24V10F3 #1 is nRF24 PA/LNA; #2 is GY-91/ADS1115/MCP23017. Candidate GPIO macros remain unsigned and the sensor profile remains uncommissioned until the exact board revision is purchased and inspected.
+
+## R21 battery ADC engineering follow-up (2026-11-22)
+
+- Corrected 3S ADS1115 input from 100kΩ/33kΩ (12.6V → 3.126V AIN0, failing software sanity check) to 150kΩ/33kΩ (12.6V → 2.272V AIN0).
+- Code now invalidates Boat battery status immediately on any failed ADC conversion; no previous reading is reused as motor authorization after an invalid sample.
+- The candidate component values and shared divider constant are in `Boat/source/boat_battery_divider.h`; the sensor profile remains uncommissioned.
+- [R21 ADC wiring and electrical commissioning](../Boat/docs/BOAT_R21_BATTERY_ADC_COMMISSIONING.md), [blank lab worksheet](../Boat/docs/BOAT_R21_ADC_CALIBRATION_WORKSHEET.csv) and additional host tests are committed.
+- CI validated Boat host tests and diagnostic ESP32-S3 compilation on R21 code commit `bd4199585dbd0ec48b3c745aa8b35612aa78e8f4`. No physical sensor calibration, output commissioning or water acceptance has occurred.
