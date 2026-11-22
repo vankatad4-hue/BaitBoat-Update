@@ -214,6 +214,10 @@ jobs:
           python3 Boat/tools/verify_gpio_connections_r23.py
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/boat_r23_gpio_contract_test.cpp -o /tmp/boat_r23_gpio
           /tmp/boat_r23_gpio
+      - name: R24 shared MCP23017 startup-reset diagnostic output audit
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/boat_r24_mcp_joint_boot_test.cpp -o /tmp/boat_r24_mcp_boot
+          /tmp/boat_r24_mcp_boot
       - name: R66 COTS safety PLC capacity and external interlock acceptance oracle (host only)
         run: |
           python3 -m unittest Boat/tests/test_r66_safety_plc_budget.py -v
