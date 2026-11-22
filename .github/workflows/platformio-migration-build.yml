@@ -10,6 +10,8 @@ on:
       - 'Remote/source/**'
       - 'Remote/tools/generate_bg_font.sh'
       - 'Boat/tools/pio_deny_upload.py'
+      - 'Boat/tools/verify_r30h10_physical_lock.py'
+      - 'Boat/docs/BOAT_R30H_10_PHYSICAL_GATES.csv'
       - 'Remote/tools/pio_deny_upload.py'
       - 'Boat/source/boat_r30h9_marker_config.h'
       - 'Remote/source/remote_r30h9_marker_config.h'
@@ -46,6 +48,7 @@ jobs:
       - name: Prove safety gates remain locked in source
         run: |
           python Boat/tools/verify_r30h_radio_preflight.py
+          python Boat/tools/verify_r30h10_physical_lock.py
           grep -F '#define BOAT_NRF_PIN_AUDIT_SIGNED 0' Boat/source/boat_radio_hw_config.h
           grep -F '#define REMOTE_NRF_PIN_AUDIT_SIGNED 0' Remote/source/radio_hw_config.h
           grep -F '#define BOAT_R30H_LOCAL_TRACE_ENABLED 0' Boat/source/boat_radio_hw_config.h
