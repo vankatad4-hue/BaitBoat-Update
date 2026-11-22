@@ -1,4 +1,4 @@
-"""R68/R71 static rail contract only; no physical regulator test."""
+"""R68/R74 static rail contract only; no physical regulator test."""
 import csv
 from pathlib import Path
 import unittest
@@ -14,7 +14,7 @@ class R68PowerContract(unittest.TestCase):
         self.assertEqual(len(rows), 4)
         expected = {
             "BOAT_5V_MCU": ("Olimex", "DCDC6-16-TO5", "5.0"),
-            "BOAT_5V_GATE": ("Pololu", "S13V20F5", "5.0"),
+            "BOAT_5V_GATE": ("TRACO POWER", "TSR 2-2450", "5.0"),
             "BOAT_3V3_E22": ("Pololu", "D24V10F3", "3.3"),
             "BOAT_3V3_SENSORS": ("Pololu", "D24V10F3", "3.3"),
         }
@@ -26,14 +26,19 @@ class R68PowerContract(unittest.TestCase):
                     (r["Manufacturer"], r["Exact_MPN"], r["Output_V"]), expected[r["Rail"]]
                 )
                 self.assertEqual(r["Qty"], "1")
-                if r["Rail"] in ("BOAT_3V3_E22", "BOAT_3V3_SENSORS"):
-                    self.assertEqual(r["Supply_Audit_Status"],
-                                     "R72_OWNER_CONFIRMED_D24V10F3_NOT_PURCHASED")
-                else:
-                    self.assertEqual(r["Supply_Audit_Status"], "R68_PROPOSED_NOT_OWNER_CONFIRMED")
+                expected_status = {
+                    "BOAT_5V_MCU": "R74_OWNER_CONFIRMED_DCDC6_16_TO5_NOT_PURCHASED",
+                    "BOAT_5V_GATE": "R74_OWNER_SELECTED_TSR2_2450_NOT_PURCHASED",
+                    "BOAT_3V3_E22": "R72_OWNER_CONFIRMED_D24V10F3_NOT_PURCHASED",
+                    "BOAT_3V3_SENSORS": "R72_OWNER_CONFIRMED_D24V10F3_NOT_PURCHASED",
+                }
+                self.assertEqual(r["Supply_Audit_Status"], expected_status[r["Rail"]])
                 self.assertLessEqual(float(r["Vin_Min_V"]), 9.0)
                 self.assertGreaterEqual(float(r["Vin_Max_V"]), 12.6)
         self.assertIn("EKM014 VL only", next(r["Loads"] for r in rows if r["Rail"] == "BOAT_5V_GATE"))
+        self.assertIn("M100 PRO", next(r["Loads"] for r in rows if r["Rail"] == "BOAT_5V_MCU"))
+        self.assertIn("VH remains separate", next(r["Issue_Before_Purchase"] for r in rows if r["Rail"] == "BOAT_5V_GATE"))
+        self.assertIn("never parallel outputs", next(r["Issue_Before_Purchase"] for r in rows if r["Rail"] == "BOAT_5V_MCU"))
         self.assertNotIn("ESP32", next(r["Loads"] for r in rows if r["Rail"] == "BOAT_3V3_SENSORS"))
         e22 = next(r for r in rows if r["Rail"] == "BOAT_3V3_E22")
         self.assertIn("E22-900T22S", e22["Loads"])
@@ -91,9 +96,16 @@ class R68PowerContract(unittest.TestCase):
             role_rows["Alternative sensor 3V3 RECOM from R68"]["Selected_or_candidate"],
             "R71_SUPERSEDED_CANDIDATE_NOT_SELECTED"
         )
-        for item in ("Main controller 5V power", "Solenoid logic dedicated 5V VL power"):
-            self.assertEqual(role_rows[item]["Selected_or_candidate"],
-                             "R68_PROPOSED_NOT_OWNER_CONFIRMED")
+        self.assertEqual(role_rows["Main controller 5V power"]["Exact_part"],
+                         "Olimex DCDC6-16-TO5")
+        self.assertEqual(role_rows["Main controller 5V power"]["Selected_or_candidate"],
+                         "R74_OWNER_CONFIRMED_DCDC6_16_TO5_NOT_PURCHASED")
+        self.assertEqual(role_rows["Solenoid logic dedicated 5V VL power"]["Exact_part"],
+                         "TRACO Power TSR 2-2450")
+        self.assertEqual(role_rows["Solenoid logic dedicated 5V VL power"]["Selected_or_candidate"],
+                         "R74_OWNER_SELECTED_TSR2_2450_NOT_PURCHASED")
+        self.assertEqual(role_rows["Previous EKM014 VL regulator alternative"]["Selected_or_candidate"],
+                         "R74_SUPERSEDED_NOT_SELECTED")
 
 if __name__ == "__main__":
     unittest.main()
