@@ -1,3 +1,5 @@
+> **R30H-10 documentation/GPIO reconciliation (2026-11-22):** Boat version marker remains 014, Remote marker remains 028. [Packaging run #45066535756](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45066535756) completed for the GPIO source revision as a **development artifact**, not a certified immutable VER015/VER029. Neither marker was bumped; no firmware was uploaded or hardware approved. Current GPIO authority is [joint review](R30H_10_GPIO_RESOURCE_EVALUATION.md), and latest project authority is the [continuation checkpoint](CONTINUATION_CHECKPOINT_VER001.md). Independent STOP/current-zero and 18 unsigned physical gates still prohibit release promotion.
+
 # ZIP Build / Integrity Status — 2026-11-20 checkpoint
 
 ## Current package markers (not operational release approvals)

@@ -1,3 +1,5 @@
+> **Current R30H-10 GPIO resource note:** [Remote peripheral pin map](../docs/REMOTE_R30H_10_PIN_MAP.csv). nRF CE/CSN=-1/-1 deliberately unassigned in `radio_hw_config.h`; old GPIO6/15 choices are rejected. TF and nRF require safe SPI/CH422G EXIO4 CS arbitration; `NRF24Link` does not implement expander-driven CE/CSN. I²C8/9 is shared with touch, MCP23017 0x20/0x21, ADS1115 0x4A and SC16IS750 0x48. `r30h10_gpio_test_profile.h` is compile-time only. [GPIO preflight](../../Boat/tools/verify_r30h10_gpio_map.py) and [hard lock](../../Boat/tools/verify_r30h10_physical_lock.py) remain; Remote VER028, upload denied.
+
 # Remote source — current integration notes
 
 Active Remote hardware decisions are in [Remote README](../README.md) and [Remote master status](../docs/PROJECT_MASTER_STATUS.md). The older source inventory is archived at [Remote_source_README_pre_R79.md](../../docs/archive/2026-11-22/Remote_source_README_pre_R79.md).

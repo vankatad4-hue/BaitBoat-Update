@@ -1,8 +1,22 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-22, **VS Code + PlatformIO PRIMARY developer workflow; dual PlatformIO targets PASS; R30H-10 physical GPIO/RF/GNSS-PPS/independent STOP still NOT_RUN/BLOCKED** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
+**Checkpoint:** 2026-11-22, **VS Code + PlatformIO PRIMARY; R30H-10 provisional GPIO/SD/RF resource map synchronized; latest Boat PIO PASS, latest Remote PIO not yet confirmed; all physical GPIO/RF/GNSS-PPS/independent STOP NOT_RUN/BLOCKED** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `hardware-ready-dual-radio-r1`
+
+## Current read-first status — R30H-10 GPIO sync (2026-11-22)
+
+**Versions:** Boat `VER014`, Remote `VER028` remain unchanged; packaging is a development snapshot, not a signed firmware release. VS Code + PlatformIO is primary; Arduino reference CI is secondary.
+
+**R30H-10 GPIO decision:** [Boat candidate map](../Boat/docs/BOAT_R30H_10_PIN_MAP.csv) retains GNSS UART 4/5, I²C 7/8, nRF CSN9/CE10/SPI11–13/IRQ21, E22 6/14–18, and blocked motor PWM39/40; GPIO1/2/41/42 are safety-reserved. [Remote resource map](../Remote/docs/REMOTE_R30H_10_PIN_MAP.csv) retains I²C8/9, TF SPI11–13, external ADS1115 0x4A/MCP23017 0x20+0x21/SC16IS750 0x48. **Remote nRF CE/CSN are now deliberately `-1/-1`, not GPIO6/15** (SD dummy-CS and onboard RS485 conflicts); shared TF/CH422G EXIO4 SPI arbitration remains unresolved. No validated PPS pin on either endpoint (`-1`). [Engineering report](R30H_10_GPIO_RESOURCE_EVALUATION.md).
+
+**Checked development evidence (2026-11-22):** Boat and Remote portable host tests passed on GPIO commit `bb8daa2` ([Boat #45066383547](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45066383547), [Remote #45066383423](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45066383423)); source inventory passed after guard correction `c8ff6e9` ([#45066535687](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45066535687)). Boat PlatformIO target passed in [#45066383457](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45066383457); the Remote PlatformIO target was still executing at this review, so **no combined PASS is claimed for that GPIO revision**. Boat reference target passed [#45066383455](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45066383455).
+
+**Physical hardware status:** 18 R30H-10 gates remain unsigned (12 `NOT_RUN`, 6 `BLOCKED`); Independent STOP/current-zero, separate solenoid pulse limiter/watchdog, nRF/E22 acceptance, real GPS/PPS measurements, motor/coil power and firmware upload are **NOT approved**.
+
+**Next executable development step:** decide a safe Remote nRF CE/CSN implementation **without** GPIO6/15, then implement/review per-transaction TF SD CS and SPI arbitration. Validate with host and both target builds while RF remains OFF. **Next physical step**, only with purchased hardware: manufacturer SKU/header checks, voltage-level/I²C/TF-CS captures, and separately engineered independent STOP/current-zero dummy-load acceptance. No assumption of a physical PPS output on the M100 PRO six-wire harness.
+
+---
 
 Read this file first. It supersedes the earlier Heltec/central-carrier/PCB-era continuation text. Current hardware baseline is R20, superseded by R27 INA231 battery sensing and R29 one-common-3S-load-bus wiring; battery/radio failsafe authority remains R79.
 

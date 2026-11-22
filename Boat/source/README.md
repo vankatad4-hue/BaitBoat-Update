@@ -1,3 +1,5 @@
+> **Current R30H-10 GPIO resource note:** [Boat J1/J3 provisional pin map](../docs/BOAT_R30H_10_PIN_MAP.csv) is the test ledger. GNSS4/5, I²C7/8, nRF9/10/11/12/13/21, E22 6/14–18 remain candidate only; PWM39/40 output/driver unpowered; GPIO1/2/41/42 for future safety, PPS=-1; hardware STOP unresolved. `r30h10_gpio_test_profile.h` contains compile-time assertions only. [Source preflight](../tools/verify_r30h10_gpio_map.py) and [R30H-10 physical lock](../tools/verify_r30h10_physical_lock.py) both apply. Boat VER014, upload denied.
+
 # Boat source — current integration notes
 
 Active Boat hardware decisions are in [BOAT_HARDWARE_SELECTION_R20.md](../docs/BOAT_HARDWARE_SELECTION_R20.md). Older source inventory is archived at [Boat_source_README_pre_R79.md](../../docs/archive/2026-11-22/Boat_source_README_pre_R79.md).
