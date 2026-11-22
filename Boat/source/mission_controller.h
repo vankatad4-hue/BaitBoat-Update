@@ -33,7 +33,7 @@ public:
    ack={r.transaction,phase_,lastOp_,lastRequest_,lastResult_};return true;
   }
   bool accepted=false;
-  if(r.op==MCTRL_CANCEL){engine_.abort();phase_=MC_ABORTED;accepted=true;}
+  if(r.op==MCTRL_CANCEL&&!in.batteryLow){engine_.abort();phase_=MC_ABORTED;accepted=true;}
   else if(appReady&&in.primaryFresh&&!in.stopActive){
    switch(r.op){
    case MCTRL_START:
@@ -51,6 +51,7 @@ public:
     }
     break;
    case MCTRL_SWITCH_MANUAL:{
+    if(in.batteryLow&&phase_!=MC_RETURNING)break;
     const bool safeRthTakeover=!diverted_||
       (sticksNeutral&&in.stationary&&in.releaseIdle&&in.releaseInterlocks);
     if(safeRthTakeover&&

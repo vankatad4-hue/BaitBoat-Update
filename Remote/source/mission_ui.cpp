@@ -150,6 +150,7 @@ static void startMission(lv_event_t *e){
    (uint32_t)(batteryNow-telemetry.batteryPercentReceivedAtMs)<=1500U&&
    telemetry.batteryVoltageValid&&(uint32_t)(batteryNow-telemetry.batteryReceivedAtMs)<=5000U;
  if(!batteryFresh){setStatus("НЯМА АКТУАЛНИ ДАННИ ЗА БАТЕРИЯ");return;}
+ if(boatState.criticalBattery){setStatus("КРИТИЧНА БАТЕРИЯ — STOP");return;}
  if(boatState.lowBattery||telemetry.batteryPercent<=20){setStatus("НИСКА БАТЕРИЯ — МИСИЯТА Е БЛОКИРАНА");return;}
  if(!storageReady||!sdMissionAvailable()||selectedSlot<0||selectedSlot>=SLOT_COUNT||!slots[selectedSlot].valid||!homeValid){setStatus("НУЖНИ СА ТОЧКА И ДОМ");return;}
  const WaypointSlot &w=slots[selectedSlot];

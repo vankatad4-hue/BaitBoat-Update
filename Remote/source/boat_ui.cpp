@@ -772,7 +772,7 @@ void updateBoatScreen(const BoatState &state)
     if(percentFresh){
         if(voltageFresh)snprintf(batteryText,sizeof(batteryText),"ЛОДКА: %.1fV %d%%",telemetry.batteryVoltage,telemetry.batteryPercent);
         else snprintf(batteryText,sizeof(batteryText),"ЛОДКА: %d%%",telemetry.batteryPercent);
-        if(state.lowBattery||telemetry.batteryPercent<=20)batteryColor=COLOR_RED;
+        if(state.criticalBattery||state.lowBattery||telemetry.batteryPercent<=20)batteryColor=COLOR_RED;
         else if(telemetry.batteryPercent<=50)batteryColor=COLOR_YELLOW;
         else batteryColor=COLOR_GREEN;
     }else snprintf(batteryText,sizeof(batteryText),"ЛОДКА: --");
@@ -814,9 +814,10 @@ void updateBoatScreen(const BoatState &state)
     char safetyText[128];
     const char *stopText = state.emergencyStop ? (state.emergencyStopConfirmed ? "ПОТВЪРДИ" : "ЗАКЛЮЧЕН?") : (state.emergencyStopConfirmed ? "ИЗЧИСТЕН" : "UNKNOWN");
     const bool batteryMid=percentFresh&&telemetry.batteryPercent<=50&&!state.lowBattery;
-    const char *healthText = state.lowBattery ? "НИСКА БАТ. — RTH" :
+    const char *healthText = state.criticalBattery ? "КРИТ. БАТ. — STOP" :
+        (state.lowBattery ? "НИСКА БАТ. — RTH" :
         (batteryMid ? "СРЕДНА БАТ. — ЗАРЕДИ" :
-        (state.failsafeActive ? "АВАР. РЕЖИМ" : (state.actuatorSafetyReady ? "ГОТОВО" : "БЛОКИРАНО")));
+        (state.failsafeActive ? "АВАР. РЕЖИМ" : (state.actuatorSafetyReady ? "ГОТОВО" : "БЛОКИРАНО"))));
     snprintf(safetyText,sizeof(safetyText),"STOP:%s %s ACK:%u",stopText,healthText,(unsigned)boatRadio_pendingCommandAcks());
     if (safetyStatusLabel) lv_label_set_text(safetyStatusLabel,safetyText);
 

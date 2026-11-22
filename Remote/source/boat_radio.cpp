@@ -162,7 +162,7 @@ static bool missionPreparationSafe(){
     const bool batteryFresh=telemetry.batteryPercentValid&&
         (uint32_t)(now-telemetry.batteryPercentReceivedAtMs)<=1500U&&
         telemetry.batteryVoltageValid&&(uint32_t)(now-telemetry.batteryReceivedAtMs)<=5000U;
-    return batteryFresh&&telemetry.batteryPercent>20&&!boatState.lowBattery&&
+    return batteryFresh&&telemetry.batteryPercent>20&&!boatState.lowBattery&&!boatState.criticalBattery&&
            g_begun && g_nrfReady && g_session.established() &&
            g_linkManager.active()==LINK_NRF_PRIMARY && g_linkManager.primaryHealthy(millis()) &&
            boatState.radioConnected && boatState.mode==MODE_MANUAL &&
