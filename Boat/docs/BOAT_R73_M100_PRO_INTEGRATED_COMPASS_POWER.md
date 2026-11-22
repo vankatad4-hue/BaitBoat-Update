@@ -39,3 +39,8 @@ Per manufacturer, M100 PRO **VCC input 3.6–5.5 V**. A 3.3 V D24V10F3 output is
 6. Confirm independent STOP/watchdog DC-rated cutoff and solenoid pulse interlocks before any actuator power.
 
 **No new hardware purchase, no 5 V regulator owner lock, no commissioned GPIO/motor/coil driver, no release bump. Boat VER014 / Remote VER028 unchanged.**
+
+
+## R74 — M100 PRO 5V source now selected
+
+Owner confirmed **Olimex DCDC6-16-TO5** as main 5V converter (one unit initially). The full M100 PRO with integrated QMC5883L is included on this 5V rail alongside ESP32-S3. Second DCDC6 only if measured combined load/EMI warrants a separately conditioned branch. The dedicated EKM014 VL supply is now TRACO TSR 2-2450, not connected to M100 or MCU 5V output. M100 UART/I2C 3.3V logic level proof still pending. See [R74](BOAT_R74_5V_REGULATOR_SELECTION.md).
