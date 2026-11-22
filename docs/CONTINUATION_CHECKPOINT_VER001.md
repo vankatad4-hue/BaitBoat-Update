@@ -291,3 +291,10 @@ Extended the R29 scenario to cover a manual EKM release pulse, simultaneous seco
 **No hardware authority change:** single shared 3S4P battery pack powers MDD20A VM and EKM014 VH in parallel when eventually approved. No second battery, isolated motor/coil rails or new hardware selected. Physical independent STOP, conductor/fuse/BMS measured-current sizing, release pulse feedback and full physical HAL remain unresolved. R30A 24 gates OPEN; R23/R25/R27 81 physical checks NOT_RUN; INA231_PHYSICAL_COMMISSIONED remains false. Boat VER014 / Remote VER028 frozen. Sonar deferred.
 
 **Next:** reconcile single-common-bus STOP/feedback expectations with the existing physical-driver contact gate on paper (do not invent contacts), then continue the target-build audit and testable sensor/radio fault scenarios while awaiting actual modules.
+
+## R30B final verified CI (2026-11-22)
+
+- [Boat ESP32-S3 target #45043490121](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45043490121), source commit `7f5e2e11222c2b859113b5a4b8e610a5cd8ac016`: **SUCCESS**. Full non-actuating `Flytec_Boat.ino` diagnostic, historical locked ADS1115 bench and selected locked R30A INA231 bench all compiled; upload-artifact steps successful. No live motor/solenoid outputs.
+- [Boat host #45043597807](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45043597807), documentation commit `eb461d416db71fb2ca1d258553cf4adc7747791d`: **SUCCESS**, including R29 shared-bus fault simulation, R30A 73-net/24-readiness-gate consistency and R30B brownout/stale voltage tests + source-guard assertions.
+- No Boat executable source changed after `7f5e2e` before these reviews. Firmware physical commissioning remains **DISABLED**, R30A 24 hardware gates OPEN and R23/R25/R27 physical tests **81 NOT_RUN**. These successes establish reproducible **software/locked-target readiness**, not proof of a safely energizable Boat or a working RF/autopilot/actuator assembly.
+
