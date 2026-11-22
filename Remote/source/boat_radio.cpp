@@ -120,12 +120,18 @@ bool boatRadio_begin() {
     g_lastPrimaryHeartbeat=g_lastBackupTxMs=g_lastBackupTxAttemptMs=0;g_backupTxSent=false;
     resetSession(millis());g_missionUpload=MissionUpload{};
 
-    // Display/SD setup initializes shared SPI/I2C. nRF CE/CSN pins are provisional.
-    g_nrfReady=g_nrf.begin(true);
+    // R30H-1: do not drive provisional Waveshare CE/CSN until exact PCB and
+    // shared peripherals are inspected and the pin/level audit is signed.
+    g_nrfReady=REMOTE_NRF_PIN_AUDIT_SIGNED && g_nrf.begin(true);
     g_linkManager.setTransportReady(LINK_NRF_PRIMARY,g_nrfReady);
 
-    // SC16IS750 I2C bridge at 0x48 provides the E22 UART without using GPIO15/16.
-    if(g_uartBridge.begin(9600) && g_lora.configureEU868TestProfile()) {
+    // E22 is also locked until the exact 0x48 carrier/clock/TTL wiring, matched
+    // module register readbacks, legal channel/antenna and *measured* airtime
+    // budget are signed. The old 25ms estimate is NOT RF certification.
+    if(REMOTE_E22_BRIDGE_AUDIT_SIGNED &&
+       REMOTE_E22_RF_INTEROPERABILITY_VERIFIED &&
+       REMOTE_E22_RF_AIRTIME_AUDIT_SIGNED &&
+       g_uartBridge.begin(9600) && g_lora.configureEU868TestProfile()) {
         g_loraConfigured=true;
         g_linkManager.setTransportReady(LINK_LORA_BACKUP,true);
     } else {
