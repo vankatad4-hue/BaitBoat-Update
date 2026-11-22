@@ -437,3 +437,11 @@ R30H артефакти:
 - **No scope changes:** Boat ESP32-S3-DevKitC-1, Remote Waveshare 4.3 Standard, nRF PA/LNA primary, E22 UART backup, one shared Boat 3S4P VM/VH bus, INA231 BUS-only sensor and sonar-deferred architecture retained. High-current MDD20A VM/EKM014 VH, real motors, all 4 release coils remain OFF/disconnected. Independent hardware STOP, current-zero, one-hot limiter and R30A physical gates remain uncommissioned. Official **Boat VER014 / Remote VER028** unchanged.
 
 **Next step R30H-2:** physical SKU photos and manufacturer pin/cable audit, measure SC16IS750 TXLVL empty=64 and real 32-byte UART TX, 5V E22/3.3V IO, nRF 3.3V peak, E22 RF carrier readback and *measured* airtime/regulatory duty; only after those signoffs enable guarded **RF-only** authenticated pairing and record synchronized STOP/dual-link timestamps with actuator power disconnected. A code compile is NOT live-RF/STOP/RTH acceptance.
+
+
+### R30H-1 updated build and snapshot evidence
+
+- **Boat host [#45051466076](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45051466076): SUCCESS** and **Remote host [#45051469104](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45051469104): SUCCESS**, including R30H-1 static gates and SC16IS750 64-byte TXLVL regression.
+- **Boat ESP32-S3 diagnostic target [#45051466029](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45051466029): SUCCESS**, the actual Boat E22 airtime-lock header included.
+- **Remote Waveshare target [#45051469146](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45051469146)** was still compiling at last inspection; do not claim success until completed.
+- **Latest updated Boat+Remote source snapshot ZIP workflow [#45051628618](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45051628618): SUCCESS**. Its immutable-release workflow intentionally publishes snapshots as artifacts without bumping Remote/releases/VERSION or Boat/releases/VERSION; **no official VER029 / VER015 promoted**.
