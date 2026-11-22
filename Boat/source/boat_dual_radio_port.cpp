@@ -97,7 +97,11 @@ bool BoatDualRadioPort::begin() {
 }
 void BoatDualRadioPort::update() {
  const uint32_t now=millis();
- if(sessionStarted_&&(!sessionReady()||now-lastSessionRx_>=6500U))resetSession(true);
+ // Radio inactivity is handled by BoatRadioWatchdog, not by tearing down
+ // the authenticated session. Keeping the session lets the backup E22 link
+ // recover after a long RF outage without requiring the primary radio.
+ // Sequence-limit rekey is deferred until primary is fresh.
+ if(sessionStarted_&&!sessionReady()&&primaryFresh(now))resetSession(true);
  if(handshake_.timeout(now))resetSession(linkLossHold_||detachedReturn_);
  // Primary-only actions and stick leases must never survive primary-link loss.
  if(!primaryFresh(now)){
