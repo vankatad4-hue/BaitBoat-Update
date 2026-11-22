@@ -461,3 +461,9 @@ Procurement lock: **two identical EBYTE E22-900T22S UART SMD** backup LoRa modul
 
 - **Confirmed by owner:** **2× Pololu D24V10F3 #2830** (Boat only), one dedicated to **E22-900T22S**, one dedicated to **GY-91/QMC5883L/Waveshare MCP23017 SKU15391**; both remain unpurchased. R71 preferred proposal upgraded to selected hardware; old RECOM sensor regulator remains unselected alternative.
 - Updated [purchase register](PROJECT_PURCHASE_REGISTER_R20.csv), [power BOM](../Boat/docs/BOAT_R68_POWER_RAIL_BOM.csv), [detailed R71 review with R72 confirmation](../Boat/docs/BOAT_R71_DUAL_D24V10F3_3V3_RAIL_REVIEW.md) and static test. No radio/actuator wiring approval, no verified power/ripple/thermal testing; E22 factory-made carrier and physically independent STOP/solenoid interlock unresolved. Boat VER014, Remote VER028 frozen.
+
+
+## R73 — integrated compass corrected in parts and power BOM (2026-11-22)
+
+- Owner confirmed M100 PRO's QMC5883L is **on the GNSS PCB**. Official HGLRC listing corroborates QMC5883L and **3.6–5.5V M100 module VIN**, so the full assembly is proposed for **Olimex 5V**, not Pololu D24V10F3 3.3V sensor rail. No separate QMC hardware purchase. Still measure M100 UART/I²C IO levels/pull-ups for ESP32 3.3V safety and full 5V source load.
+- The two locked Pololu 3.3V supplies remain: #1 E22 LoRa, #2 GY-91 + Waveshare MCP23017. Updated [R73 note](../Boat/docs/BOAT_R73_M100_PRO_INTEGRATED_COMPASS_POWER.md), [R67 I²C map](../Boat/docs/BOAT_R67_I2C_AND_EXPANDER_MAP.csv), active [power CSV](../Boat/docs/BOAT_R68_POWER_RAIL_BOM.csv), purchase register and static CI test. No physical hardware testing or release (Boat VER014 / Remote VER028).
