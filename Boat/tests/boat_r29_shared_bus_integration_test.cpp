@@ -93,12 +93,21 @@ int main(){
  in.backupFresh=true;
  output=sup.tick(in,now+3,idle,nav,false,false,0,0,now);
  zero(output);
- // Local validated Home ONLY after 10s: simulated navigation command,
- // never a GPIO output or mission-release permission.
+ // Local validated Home ONLY after 10s: expired local safety samples
+ // must NOT be reused even when Home/navigation would otherwise be valid.
  assert(link.update(false,false)==BOAT_RADIO_WATCHDOG_LOST);
- in.backupFresh=false;in.autonomousRth=true;
  const ExecOutput goHome={INTENT_NAV_HOME,-1,0};
- output=sup.tick(in,11000U,goHome,nav,true,false,0,0,now);
+ auto expired=boatHardware_inputs(s,11000U,false);
+ expired.primaryFresh=false;expired.backupFresh=false;
+ expired.autonomousRth=true;
+ BoatActuatorSupervisor staleSup=armedFixture(s,now);
+ zero(staleSup.tick(expired,11000U,goHome,nav,true,false,0,0,now));
+ assert(staleSup.stopped());
+ // A newer local safety sample is required for simulated RTH.
+ s=sample(11000U);
+ in=boatHardware_inputs(s,11000U,false);
+ in.primaryFresh=false;in.backupFresh=false;in.autonomousRth=true;
+ output=sup.tick(in,11000U,goHome,nav,true,false,0,0,11000U);
  assert(output.releaseChannel==-1&&output.left>0&&output.right>0);
  assert(exclusiveActuatorRequest(output));
  // Unsafe navigation/fault blocks that simulated route; no release replay.
