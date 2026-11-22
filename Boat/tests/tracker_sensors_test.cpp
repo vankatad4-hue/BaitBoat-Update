@@ -1,5 +1,6 @@
 #include "../source/tracker_gnss.h"
 #include "../source/carrier_sensor_math.h"
+#include "../source/boat_battery_divider.h"
 #include <cassert>
 #include <cstdio>
 #include <string>
@@ -25,6 +26,16 @@ int main(){
  double heading=0;assert(carrierHeading({0,0,-1},{0,-40,20},c,heading)&&std::fabs(heading-90)<1e-8);
  assert(!carrierHeading({0,0,-1},{0,-100,20},c,heading));
  c.commissioned=false;assert(!carrierHeading({0,0,-1},{0,-40,20},c,heading));
+ // The old 100k/33k divider exceeded the production 3.0V ADC-input
+ // validity gate at 12.6V. The 150k/33k R21 divider stays below it.
+ assert(boatBatteryDividerInputVolts(12.6)>2.2&&boatBatteryDividerInputVolts(12.6)<2.3);
+ assert(boatBatteryDividerInputVolts(13.0)<3.0);
+ CarrierBatteryCalibration commissioned={true,BOAT_BATTERY_DIVIDER_RATIO,1,0,9000,13000};
+ uint16_t fullChargeMv=0;
+ const int16_t fullAdc=(int16_t)(boatBatteryDividerInputVolts(12.6)*1000.0/0.125+0.5);
+ assert(carrierBatteryMv(fullAdc,commissioned,fullChargeMv));
+ assert(fullChargeMv>=12598&&fullChargeMv<=12602);
+ assert(!carrierBatteryMv(0,commissioned,fullChargeMv)); // open/short ADC STOP
  CarrierBatteryCalibration b={true,5.7,1,0,8000,14000};uint16_t mv=0;
  assert(carrierBatteryMv(17684,b,mv)&&mv>=12599&&mv<=12601);
  assert(!carrierBatteryMv(-1,b,mv));b.commissioned=false;assert(!carrierBatteryMv(17684,b,mv));

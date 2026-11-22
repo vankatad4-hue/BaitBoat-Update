@@ -15,7 +15,11 @@ public:
  static const uint16_t YELLOW_MV=11400U,RTH_MV=10800U,CRITICAL_MV=10200U,IMMEDIATE_STOP_MV=9900U;
  static const uint32_t RTH_CONFIRM_MS=3000U,CRITICAL_CONFIRM_MS=1000U,MAX_SAMPLE_AGE_MS=1000U;
  BoatBatterySnapshot update(bool valid,uint16_t raw,uint32_t now){
-  if(!valid||raw<9000U||raw>13000U)return snapshot(now);
+  // A failed/implausible ADC conversion must fail closed on *this* tick.
+  // Do not use the last good sample for motor authorization even if it is
+  // younger than MAX_SAMPLE_AGE_MS. The latched alert state is preserved.
+  if(!valid||raw<9000U||raw>13000U){sampleOK_=false;return snapshot(now);}
+  sampleOK_=true;
   if(!initialized_){filtered_=raw;initialized_=true;}else filtered_=(uint16_t)(((uint32_t)filtered_*3U+raw+2U)/4U);
   last_=now;
   // An abrupt pack collapse must bypass the smoothing filter. In particular,
@@ -29,15 +33,15 @@ public:
   return snapshot(now);
  }
  BoatBatterySnapshot snapshot(uint32_t now)const{
-  BoatBatterySnapshot s{};s.valid=initialized_&&(uint32_t)(now-last_)<=MAX_SAMPLE_AGE_MS;
+  BoatBatterySnapshot s{};s.valid=sampleOK_&&initialized_&&(uint32_t)(now-last_)<=MAX_SAMPLE_AGE_MS;
   s.millivolts=s.valid?filtered_:0;s.percent=s.valid?boatBatteryEstimatePercent(filtered_):255;
   s.critical=critical_;s.rthRequested=rth_&&!critical_;s.lowWarning=s.valid&&(filtered_<=RTH_MV||rth_||critical_);
-  if(!s.valid)s.band=BOAT_BATTERY_UNKNOWN;else if(critical_)s.band=BOAT_BATTERY_CRITICAL;
+  if(critical_)s.band=BOAT_BATTERY_CRITICAL;else if(!s.valid)s.band=BOAT_BATTERY_UNKNOWN;
   else if(rth_||filtered_<=RTH_MV)s.band=BOAT_BATTERY_RED;else if(filtered_<=YELLOW_MV)s.band=BOAT_BATTERY_YELLOW;else s.band=BOAT_BATTERY_GREEN;
   return s;
  }
- void reset(){initialized_=lowTiming_=criticalTiming_=rth_=critical_=false;filtered_=0;last_=lowSince_=criticalSince_=0;}
+ void reset(){sampleOK_=initialized_=lowTiming_=criticalTiming_=rth_=critical_=false;filtered_=0;last_=lowSince_=criticalSince_=0;}
 private:
  uint16_t filtered_=0;uint32_t last_=0,lowSince_=0,criticalSince_=0;
- bool initialized_=false,lowTiming_=false,criticalTiming_=false,rth_=false,critical_=false;
+ bool sampleOK_=false,initialized_=false,lowTiming_=false,criticalTiming_=false,rth_=false,critical_=false;
 };

@@ -16,5 +16,10 @@ int main(){
  m.reset();s=m.update(true,12000,0);assert(s.valid);
  s=m.snapshot(1001);assert(!s.valid&&s.percent==255&&s.band==BOAT_BATTERY_UNKNOWN);
  s=m.update(false,0,1002);assert(!s.valid);
+ m.reset();s=m.update(true,12000,100);assert(s.valid);
+ s=m.update(false,0,101);assert(!s.valid&&s.band==BOAT_BATTERY_UNKNOWN&&s.percent==255);
+ s=m.update(true,12000,102);assert(s.valid&&s.band==BOAT_BATTERY_GREEN);
+ s=m.update(true,8000,103);assert(!s.valid); // out of range is immediate invalid
+ s=m.update(true,14000,104);assert(!s.valid);
  std::cout<<"3S battery estimate, warning, RTH latch and critical STOP passed\n";
 }
