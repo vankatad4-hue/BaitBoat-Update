@@ -65,6 +65,12 @@ Estimated percentage uses a generic 3S Li-ion voltage curve. It is not coulomb c
 
 This is a local software policy on the Boat ESP32-S3, using a premade voltage ADC module. It is not a separate hardware cutoff and cannot protect against MCU lockup, loss of the MCU rail or failed motor-driver transistors. The existing independent physical STOP/watchdog/driver feedback wiring must be verified during commissioning.
 
+### Latest interrupted-release protection
+
+A red battery detected while a release is active immediately commands the EKM014 output OFF. The supervisor still advances its post-off validation while outbound motion is held: a strictly newer independent coil-current-zero sample permits safe Home diversion, whereas missing feedback for 500ms latches STOP. This was added after uncovering a state-machine corner case that previously left the release-idle gate permanently pending. A regression test covers both verified feedback and timeout-to-STOP.
+
+A raw voltage sample at or below 9.9V bypasses the low-pass smoothing filter to ensure immediate STOP on sudden pack collapse; a 12.6V → 9.8V step has a regression test.
+
 ## Validation
 
 - Portable battery policy tests cover percentage curve, filtering, yellow/red bands, 3-second RTH latch, critical STOP and stale-sample behavior.
