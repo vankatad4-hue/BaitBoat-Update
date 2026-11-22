@@ -41,6 +41,11 @@ class TestR30HPreflight(unittest.TestCase):
                      "#define BOAT_R30H_LOCAL_TRACE_ENABLED 0",
                      "#define BOAT_R30H_LOCAL_TRACE_ENABLED 1")
 
+    def test_fail_if_remote_r30h3_trace_unlocked(self):
+        self.hostile("Remote/source/radio_hw_config.h",
+                     "#define REMOTE_R30H3_STOP_TRACE_ENABLED 0",
+                     "#define REMOTE_R30H3_STOP_TRACE_ENABLED 1")
+
     def test_fail_if_e22_profiles_diverge(self):
         self.hostile("Remote/source/e22_uart_link.cpp",
                      "0x67,0xC3,0x12", "0x67,0xC3,0x13")
