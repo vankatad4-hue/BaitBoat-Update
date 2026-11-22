@@ -20,3 +20,7 @@ GitHub Actions PlatformIO run [#45059667477](https://github.com/vankatad4-hue/Ba
 ## Follow-up safe UI correction
 
 The main screen's duplicated SD label selection was inverted for `sdCardReady=true`. It now uses `Remote/source/ui_sd_status.h`, a pure side-effect-free helper shared across GPS-fix/no-fix display paths and checked by `Remote/tests/ui_sd_status_test.cpp` in Remote portable CI. This does not modify storage mounting, file writes, map indexing or safety rules.
+
+## Additional pin safety audit
+
+Confirmed a previously underdocumented **Remote GPIO6 collision**: `displayPort_mountSD()` uses it for Arduino SD dummy CS while `radio_hw_config.h` proposes nRF CE on the same wire, and Waveshare labels it Sensor AD. The SD implementation now takes its dummy pin value from a single named macro, not two magic numbers. A conditional compile-time `#error` forbids signing the nRF audit flag while SD dummy CS and nRF CE remain equal. This is a safety guard, **not a pin reassignment**. GPIO15/nRF CSN versus RS485 TXD remains a second unsigned physical conflict. RF-only hardware must not be connected/energized until both are resolved.

@@ -19,3 +19,7 @@ The Remote displays Boat voltage plus estimated percentage, not the Remote's own
 The non-actuating, explicitly labeled DEMO sonar illustration in `boat_ui.cpp` uses integer LVGL 9.6 point coordinates instead of narrowing float initializers. This repairs the known Remote PlatformIO compiler error without changing sonar, timing, STOP/RTH, radio security, or source-of-truth Arduino behavior. A complete fresh PlatformIO and Arduino target CI result is required before calling either build verified.
 
 The portable SD status helper (`ui_sd_status.h`) now distinguishes **no mounted TF card**, **mounted card without offline map**, and **ready offline map**; all four combinations are covered by a C++11 host regression. The previous duplicated conditional incorrectly reported “НЯМА SD КАРТА” while the card was mounted.
+
+## RF/TF pin collision — explicit unsigned gate
+
+`display_port.cpp` uses GPIO6 as an Arduino SD dummy chip-select, while the provisional `radio_hw_config.h` uses GPIO6 for nRF24 CE. This is a physical collision even if Sensor AD is not connected. A compile-time gate prevents `REMOTE_NRF_PIN_AUDIT_SIGNED=1` while these assignments overlap; no replacement pin has been selected without inspection of the actual Waveshare Standard PCB and card/RS485 schematics. All radio physical commissioning remains forbidden.

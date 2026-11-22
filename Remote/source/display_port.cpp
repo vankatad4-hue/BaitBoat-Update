@@ -2,7 +2,8 @@
 // Hardware initialisation follows the uploaded official Waveshare Arduino example.
 // LVGL registration below targets LVGL 9.6.x APIs (not the demo's LVGL 8 port).
 
-#include "display_port.h"                         // Public adapter interface.
+#include "display_port.h"
+#include "radio_hw_config.h"                         // Public adapter interface.
 #include <Arduino.h>                               // Arduino runtime and millis().
 #include <lvgl.h>                                  // LVGL 9.6 public API.
 #include <esp_display_panel.hpp>                  // Waveshare/Espressif board, LCD and touch classes.
@@ -131,14 +132,14 @@ static bool displayPort_mountSD()
     }
 
     expander->digitalWrite(4, LOW);                 // Assert physical TF-card CS via CH422G EXIO4 (active low).
-    pinMode(6, OUTPUT);                            // GPIO6 is an unused dummy CS for Arduino's SD library.
-    digitalWrite(6, HIGH);                         // Keep the dummy pin inactive; real CS is EXIO4.
+    pinMode(REMOTE_SD_DUMMY_CSN_PIN, OUTPUT);       // TEMPORARY SD dummy CS; conflicts with provisional nRF CE.
+    digitalWrite(REMOTE_SD_DUMMY_CSN_PIN, HIGH);    // Keep the dummy inactive; real TF CS is EXIO4.
     SPI.setHwCs(false);                            // Disable hardware-controlled CS on this SPI bus.
     SPI.begin(12, 13, 11, -1);                     // Configure SCK=12, MISO=13, MOSI=11, no native CS.
 
-    // The SD library still requires a GPIO CS argument; GPIO6 is only a dummy.
+    // The SD library still requires a GPIO CS argument; GPIO6 is temporarily used.
     // The physical card remains selected through CH422G EXIO4, as required by Waveshare.
-    if (!SD.begin(6, SPI, 4000000))                 // Mount the card at a conservative 4 MHz SPI clock.
+    if (!SD.begin(REMOTE_SD_DUMMY_CSN_PIN, SPI, 4000000))                 // Mount the card at a conservative 4 MHz SPI clock.
     {
         Serial.println("SD: TF card mount failed or no card is inserted."); // Storage is optional at startup.
         return false;                              // Continue running the display without map storage.
