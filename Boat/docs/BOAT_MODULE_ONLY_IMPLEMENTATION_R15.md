@@ -5,7 +5,7 @@
 
 > **R18 HISTORICAL UPDATE:** The old 77×79mm/30mm carrier note is superseded by the distributed-module decision and then by the active R19 BOM above. Do not treat this R18 note as a current procurement or mechanical constraint. The current modular installation plan is R18; the current component list is R19.
 
-> **R18 ACTIVE:** Historical 77×79mm/30mm carrier measurements DO NOT LIMIT selectable premade modules; modules may be mounted separately along hull. Manufacturer-supplied or factory-produced electronic modules only, no custom PCB. [Distributed mounting details](BOAT_DISTRIBUTED_MODULE_INSTALLATION_R18.md) · [approved purchasing register](../../docs/VERIFIED_ELECTRONICS_SOURCING_R18.csv).
+> **R18 MODULAR INSTALLATION POLICY (still active):** The old 77×79mm/30mm carrier envelope is retired; selected premade modules may be mounted separately along the hull. Manufacturer-supplied or factory-produced electronic modules only, no custom PCB. The R18 sourcing register is historical; the active BOM is R19. [Distributed mounting details](BOAT_DISTRIBUTED_MODULE_INSTALLATION_R18.md).
 **Status:** Active architecture plan; no assembled electrical harness, no qualified STOP interlock
 
 ## Modules / supplies
