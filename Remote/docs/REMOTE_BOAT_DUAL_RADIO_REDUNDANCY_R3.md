@@ -1,5 +1,8 @@
 # Dual-radio pairing and antenna decision R3
 
+> **R63 ACTIVE POLICY (2026-11-22):** Backup E22 is **STOP / return-to-previously-started-safe-Home mission only**. Manual backup steering is deliberately disabled: 3-second LoRa airtime pacing cannot maintain the Boat 200ms motor lease. Previous backup steering references below are historical. See [R63 integration review](../../docs/R63_BACKUP_CONTROL_AND_RTH_INTEGRATION.md). Neither backup radio nor return-to-home is physically validated.
+
+
 ## Pairing
 The initial backup link uses identical EBYTE E22-900T22S UART LoRa modules at remote and boat. The Heltec Tracker candidate's integrated SX1262 remains unused because raw SX1262/E22 interoperability was not proven.
 
