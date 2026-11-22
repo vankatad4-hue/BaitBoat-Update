@@ -16,30 +16,26 @@ This repository contains the Boat controller, handheld Remote, firmware, hardwar
 
 Older Heltec Wireless Tracker/SX1262 and central-carrier-PCB documents are archived. The active design uses ready-made modules and removable wiring; no custom PCB is required.
 
-## VS Code + PlatformIO (parallel migration)
+## VS Code + PlatformIO — primary development environment (R30H-10)
 
-The complete Boat and Remote source trees now have experimental, **no-flash**
-PlatformIO configurations alongside their existing Arduino CLI builds:
+**From 2026-11-22, VS Code + PlatformIO is the primary IDE/build/CI path for Boat and Remote.** Both real source trees compiled in [PlatformIO GitHub Actions #45063024581](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45063024581). Arduino CLI is retained as a **secondary compatibility regression**; its older ESP32 Arduino core is not the primary development toolchain.
 
-- [Boat/platformio.ini](Boat/platformio.ini) — ESP32-S3 DevKitC-1 N32R16V, 32 MB OPI flash / 16 MB OPI PSRAM.
-- [Remote/platformio.ini](Remote/platformio.ini) — Waveshare ESP32-S3-Touch-LCD-4.3 Standard, 16 MB flash / OPI PSRAM, LVGL 9.6.0.
-- [Full Windows VS Code instructions](docs/PLATFORMIO_VSCODE_MIGRATION_R1.md), [multi-folder workspace](Flytec_V080.code-workspace) and [experimental GitHub compile workflow](.github/workflows/platformio-migration-build.yml).
+- [Primary PlatformIO workflow and Windows commands](docs/PLATFORMIO_PRIMARY_WORKFLOW_R30H10.md), [multi-folder VS Code workspace](Flytec_V080.code-workspace).
+- [Boat PlatformIO configuration](Boat/platformio.ini): ESP32-S3-DevKitC-1 N32R16V, 32 MB OPI flash / 16 MB OPI PSRAM.
+- [Remote PlatformIO configuration](Remote/platformio.ini): Waveshare ESP32-S3-Touch-LCD-4.3 Standard, 16 MB QIO flash / OPI PSRAM, LVGL 9.6.0.
+- [Primary compile CI](.github/workflows/platformio-migration-build.yml), [historical parallel-migration troubleshooting guide](docs/PLATFORMIO_VSCODE_MIGRATION_R1.md).
+- [R30H-10 physical test protocol](Boat/docs/BOAT_R30H_10_HARDWARE_ACCEPTANCE.md) and [18 unsigned physical acceptance gates](Boat/docs/BOAT_R30H_10_PHYSICAL_GATES.csv).
 
-To compile from a PlatformIO terminal without flashing:
+Build from a VS Code / PlatformIO terminal (compile-only):
 
 ```powershell
 pio run -d Boat -e boat_n32r16v_diagnostic
 pio run -d Remote -e remote_waveshare_43_diagnostic
 ```
 
-The original `.ino` files remain the one source of truth and are included once by
-PlatformIO-only entry-point adapters. `pio run --target upload` is blocked by the
-custom upload command on both endpoints until actual hardware acceptance.
-The PIO platform (espressif32 8.0.0 / Arduino ESP32 core 3.3.12) is newer than
-the authoritative Arduino CLI reference (3.0.2), so both full target builds
-must pass before replacing that reference workflow. This change **does not**
-commission RF electronics, open GPIO audit flags, attach motor/solenoid
-drivers or promote Boat VER014 / Remote VER028.
+Boat uses one guarded PlatformIO entry adapter for its nested sketch; Remote compiles its root `.ino` **once** and does not use a second adapter. `espressif32 @ 8.0.0` includes Arduino-ESP32 core 3.3.12. The former Arduino CLI core 3.0.2 remains a comparison for regressions. 
+
+**Strict hardware separation:** both PlatformIO upload actions remain blocked; source RF/marker flags stay 0/-1; Remote GPIO6 (nRF CE / SD dummy-CS) and GPIO15 (nRF CSN / RS485) remain unsigned physical conflicts. Never connect MDD20A VM or EKM014 VH for RF-only tests. Real RF, GNSS/PPS, GPIO levels and the **independent physical STOP/current-zero** hardware have **not passed physical acceptance**. Boat VER014 / Remote VER028 unchanged. No successful compile unlocks actuators or release firmware.
 
 ## Boat hardware baseline
 
