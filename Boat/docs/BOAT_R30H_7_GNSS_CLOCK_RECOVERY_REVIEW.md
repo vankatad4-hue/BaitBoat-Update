@@ -29,3 +29,11 @@
 The R30H-7 12 physical time gates, R30H-4 10 analyzer probes, R30H-3 16 STOP acceptance gates, R30H-1 22 RF module gates and original R30H 22 RF cases remain unverified; R30A independent STOP and solenoid current-zero hardware gating remain OPEN. Current E22 STOP pacing (3s) and backup freshness (6s) remain **unmeasured physical latency risks**. Boat VER014 / Remote VER028 remain frozen. Sonar selection deferred.
 
 **Next engineering phase R30H-8:** obtain real module/antenna/logic-voltage/PPS provenance, perform RF-only common-clock characterization and use verified observations to decide whether a physical PPS/clock-offset calibration module is warranted. Do not claim actual synchronization accuracy or safe physical STOP latency from software simulations.
+
+## R30H-7 Remote UI feedback (verified in host tests)
+
+The existing authenticated-only `boatRadio_utcQuality()` is now consumed by `Remote/source/boat_ui.cpp`. A read-only line in the handheld header shows `GPS UTC: hh:mm:ss ~` while the Boat-origin time source is qualified, and `GPS UTC: --:--:--` when unavailable, stale, unpaired or primary-radio quality is lost. The trailing `~` explicitly means **coarse / uncalibrated transport latency**, not a synchronized physical stopwatch. The visible time is UTC, not Bulgarian local EET/EEST, so no daylight-saving assumption is hidden in the telemetry protocol.
+
+A portable, allocation-free formatting helper `Remote/source/r30h7_utc_clock_ui.h` and `Remote/tests/r30h7_utc_clock_ui_test.cpp` reject invalid quality, stale samples, impossible UNIX timestamps, incorrectly asserted physical-certification flags, and undersized label buffers. [Remote host #45056813182](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45056813182) **SUCCESS** with the new R30H-7 label test. [Boat host #45056804415](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45056804415) **SUCCESS** with R30H-7 NMEA matching-epoch and physical-gate checks.
+
+The Remote ESP32-S3 full target compile of the newly changed UI must be confirmed separately; a host formatter test alone cannot prove LVGL layout and actual display visibility. No GNSS, RF or physical clock-offset test has been performed, and every one of the twelve R30H-7 physical signoffs remains `NOT_RUN`.
