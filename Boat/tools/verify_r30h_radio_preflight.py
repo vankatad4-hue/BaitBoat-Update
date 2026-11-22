@@ -123,7 +123,7 @@ def verify(source):
         errors.append("R30H-2 Serial I/O may not enter radio interrupt/safety path")
     # R30H-7: GPS UTC must never become STOP/RTH or a fabricated
     # physical common-clock reference; GNSS date must match position epoch.
-    need("Boat/source/tracker_gnss.h", "positionUtc_!=rmcUtc_")
+    need("Boat/source/tracker_gnss.h", "positionUtc_!=rmcUtc_||\n     (uint32_t)(now-gsaAt_)")
     need("Remote/source/boat_radio.cpp",
          "g_linkManager.primaryHealthy(at)&&")
     need("Boat/source/firmware/Flytec_Boat.ino", "settimeofday(&tv,nullptr)")
