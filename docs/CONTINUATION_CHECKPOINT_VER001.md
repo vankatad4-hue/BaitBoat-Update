@@ -979,3 +979,36 @@ The authenticated session is now retained across ordinary RF inactivity on both 
 ### R77B — verification snapshot
 
 Boat portable host tests PASS (run 45004175963); Remote portable host tests PASS (run 45004179963); Boat ESP32-S3 diagnostic target compile PASS (run 45004173232); project ZIP packaging PASS (run 45004459053). Remote Waveshare target compile remains IN_PROGRESS at run 45004179977. No physical RF, motor, solenoid or independent hardware safety acceptance has been performed. Next step is to complete the Remote target compile, then prepare dummy-load radio watchdog commissioning; live actuator power remains blocked by the unresolved independent hardware safety stack.
+
+
+## R78 continuation update — 2026-11-22
+
+### Completed software/build gates
+- Remote target compilation PASS: run [45004179977](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45004179977), commit `7d32cf7a8862b57348e835fa7e569d93716d3afd`.
+- Boat diagnostic target compilation PASS: run [45005788272](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45005788272), commit `160c9b375c7117a10a2b670dca5f2ccad314b534`.
+- Boat portable host tests PASS: run [45005882433](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45005882433), including R78 radio-loss timer, Home record, mission and dummy-output application tests.
+- Active Boat hardware selections and unresolved decisions: [BOAT_HARDWARE_SELECTION_R19.md](../Boat/docs/BOAT_HARDWARE_SELECTION_R19.md).
+- R78 radio-loss behavior: [BOAT_R78_10S_RADIO_LOSS_RTH.md](../Boat/docs/BOAT_R78_10S_RADIO_LOSS_RTH.md).
+- Prepared dummy-load procedure: [BOAT_R78_RADIO_LOSS_DUMMY_LOAD_BENCH_TEST.md](../Boat/docs/BOAT_R78_RADIO_LOSS_DUMMY_LOAD_BENCH_TEST.md).
+
+### Authoritative radio-loss behavior
+- Either radio fresh: existing authority rules remain; primary nRF24 is required for manual control and releases; backup E22 supports eligible autonomous navigation only.
+- Both radios stale: immediate STOP of manual motors and all solenoids.
+- At 10,000 ms from the last accepted authenticated frame: RTH only if active mission, matching CRC-valid Boat NVS Home, fresh GNSS/heading, healthy battery/geofence and local STOP/release interlocks are valid.
+- If any gate fails: remain STOP.
+- During detached RTH: only local Home motor navigation is permitted; solenoids remain OFF.
+- Recovery before timeout resumes the held mission after authentication and neutral-stick qualification. Recovery after RTH begins does not resume the old outbound route; RTH continues until Home or explicit primary manual takeover with fresh neutral sticks and stationary/idle interlocks.
+- Home is copied from the authenticated mission plan into a two-slot CRC-verified Boat NVS record during mission preparation. The active mission itself is not persisted or resumed after power-cycle.
+
+### Remaining work / hard limits
+1. Finish Boat GPIO/header pin map for the exact ESP32-S3-DevKitC-1-N32R16V board and sign all UART/SPI/I2C/PWM/DIR/EKM014 connections.
+2. Confirm nRF24 carrier/supply/decoupling, E22 UART logic levels/antenna/channel and EU radio settings on the exact purchased modules.
+3. Measure rail current/ripple/thermal behavior for DCDC6-16-TO5, both D24V10F3 rails and TSR 2-2450; decide on the optional second DCDC6 only from measured results.
+4. Calculate fuses, wire gauges and connector ratings from measured two-motor startup/stall current and solenoid pulse current; check against the 20A BMS.
+5. Complete sensor placement and compare/calibrate M100 PRO QMC5883L and GY-91 magnetometer.
+6. Run the R78 dummy-load bench test on assembled hardware. Actual motors and solenoids must remain disconnected until all dummy-load gates pass.
+7. Perform physical RF/GNSS, module power, MDD20A, EKM014 and water tests. Do not claim physical acceptance from CI.
+8. Sonar remains unselected and deferred.
+
+### Constraint
+No new hardware elements or custom PCBs have been added for R78. The 10-second watchdog/RTH policy is software on the same ESP32-S3; it is not a physically independent safety cutoff. No separate PLC, contactor, hardware watchdog or pulse-interlock module is authorized under the current no-new-elements instruction. Boat VER014 and Remote VER028 remain held; no physical acceptance or release-version increment.
