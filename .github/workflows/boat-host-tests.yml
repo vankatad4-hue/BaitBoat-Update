@@ -189,3 +189,5 @@ jobs:
           python3 -m unittest Boat/tests/test_r66_external_interlock_oracle.py -v
       - name: R68 proposed power rail inventory and non-actuating sourcing gate
         run: python3 -m unittest Boat/tests/test_r68_power_contract.py -v
+      - name: R68A Ardboard nRF socket power versus E22 regulator and safety contract
+        run: python3 -m unittest Boat/tests/test_r68a_nrf_adapter_power_contract.py -v
