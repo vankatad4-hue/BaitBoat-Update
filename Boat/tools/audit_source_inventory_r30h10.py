@@ -60,7 +60,11 @@ def check_guards():
         'rm /tmp/FlytecBoatR30H2Trace/heltec_sx1262_link.cpp' not in arduino,
         '#define REMOTE_NRF_PIN_AUDIT_SIGNED 0' in remote,
         '#define REMOTE_SD_DUMMY_CSN_PIN 6' in remote,
-        '#error "REMOTE nRF CE conflicts' in remote,
+        '#define REMOTE_NRF_CE_PIN   (-1)' in remote,
+        '#define REMOTE_NRF_CSN_PIN  (-1)' in remote,
+        '#define REMOTE_R30H10_REJECTED_CE_GPIO 6' in remote,
+        '#define REMOTE_R30H10_REJECTED_CSN_GPIO 15' in remote,
+        '#error "R30H-10: no approved direct nRF' in remote,
         'SD.begin(REMOTE_SD_DUMMY_CSN_PIN, SPI, 4000000)' in sd,
     )
     if not all(required):
