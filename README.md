@@ -109,3 +109,9 @@ The [R27 10-net wiring override](Boat/docs/BOAT_R27_INA231_HARNESS_OVERRIDE.csv)
 ## R28 logic-only prototype integration
 
 Added [R28 INA231 acquisition and fault-simulation package](Boat/docs/BOAT_R28_INA231_LOGIC_SIMULATION.md): new-conversion `0x4122` BUS-only triggered measurement, CVRF check, 40ms timeout, staleness and I²C error rejection, Arduino `TwoWire` framing and Boat sensor interface integration. Local portable host tests passed; the exact latest Boat target/Actions results are not independently verified. The global hardware-commissioning flag, local pin/board/calibration flags and actuator output gates all remain OFF. No actual sensor or propulsion hardware has been commissioned. Boat VER014 / Remote VER028 frozen.
+
+## R29 one common Boat power bus
+
+**Owner-confirmed topology:** Both MDD20A motor power `VM` and EKM014 solenoid FET power `VH` connect to **one common 3S4P battery power bus and return** (parallel loads), **not separately isolated or independently switched motor/solenoid supplies**. EKM014 `VL` is still regulated 5V because it is a different logic voltage, derived from that same pack. [R29 eight-net wiring override](Boat/docs/BOAT_R29_SHARED_3S_BUS_CONNECTIONS.csv) and [integrated fault simulation](Boat/docs/BOAT_R29_SHARED_BUS_FAULT_SIMULATION.md) supersede old separate actuator power wording. No high-current wiring, common fuse, independent STOP/feedback or measured motor/coil currents are approved yet; the shared 20A BMS cannot by itself certify startup/stall current safety.
+
+R29 adds host-only tests for R78 radio loss/conditional RTH, R79 battery critical STOP, R28 INA231 acquisition failure, invalid nav/stale safety, and one-hot software output shapes. Real physical driver commissioning remains false and Boot/Remote versions remain 014/028. New R29 GitHub CI status still unverified.
