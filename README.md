@@ -73,3 +73,7 @@ Host tests and target builds are being run by GitHub Actions. A successful compi
 The selected parts are not yet physically commissioned. The candidate GPIO map is documented, but all pin-audit flags remain unsigned until the purchased board revision is checked. Actual motors and solenoids must remain disconnected until the dummy-load procedures pass. Boat VER014 and Remote VER028 remain the current version markers; no physical acceptance or release bump is implied.
 
 Sonar selection remains deferred.
+
+## R22 isolated Boat battery-sensor bench
+
+The [R22 ADS1115 battery bench sketch](Boat/hardware_test/ADS1115_Battery_Bench/ADS1115_Battery_Bench.ino) is built **separately from the Boat actuator firmware**. It is GPIO locked by default. Following a real physical pin/power audit, a private local header may enable I²C readout of ADS1115 raw codes and an uncalibrated pack-voltage estimate as serial CSV. It imports no radio, motor or solenoid code and grants **no safety authority**. See [R22 sensor commissioning instructions](Boat/docs/BOAT_R22_ADS1115_SENSOR_ONLY_BRINGUP.md). Both the Boat host tests and the main+locked-bench ESP32-S3 target compilation passed. Physical testing remains NOT_RUN.
