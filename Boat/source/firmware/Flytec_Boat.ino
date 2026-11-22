@@ -13,6 +13,7 @@
 #include "boat_home_point_nvs.h"
 #include "boat_endpoint_memory_gate.h"
 #include "boat_common_bus_readonly_port_r30d.h"
+#include "boat_r30e_fault_status.h"
 
 // R30D: compile the prospective input-only common-bus feedback contract on
 // the real ESP32-S3 target without constructing a reader or touching GPIO.
@@ -28,6 +29,13 @@ static bool sensorsReady=false;
 static uint32_t lastReport=0,lastWeatherTx=0;
 static Figure8AutoState lastFigure8State=Figure8AutoState::IDLE;
 #endif
+// R30E local diagnostic telemetry ONLY. There is no selected physical
+// safety-input reader, so this always reports NO_READER/UNVERIFIED, never an
+// invented good contact or an authenticated radio telemetry payload.
+static boat_r30d::ReadOnlyCommonBusPort safetyObservations;
+static boat_r30e::ChangeTracker safetyFaultTransitions;
+static uint32_t lastSafetyReportAt=0;
+static uint8_t safetyDiagnosticSequence=0;
 static BoatDualRadioPort radio;
 static BoatApplicationPort application(radio);
 static BoatHomePointNvs homePointNvs;
@@ -110,6 +118,26 @@ void loop(){
   }
  }
  #endif
+ // R30E: emit a diagnostic-only record through USB serial; no safety
+ // hardware is installed or read, and NO RF/actuator output uses this data.
+ // A future inspected reader would populate safetyObservations without
+ // changing the rule that an observation cannot commission its own source.
+ const uint32_t diagnosticNow=millis();
+ if((uint32_t)(diagnosticNow-lastSafetyReportAt)>=2000U){
+  lastSafetyReportAt=diagnosticNow;
+  const auto cap=safetyObservations.snapshot(diagnosticNow);
+  const auto status=boat_r30e::makeStatus(
+      cap,diagnosticNow,++safetyDiagnosticSequence);
+  const bool changed=safetyFaultTransitions.observe(status);
+  uint8_t localBytes[8]{};
+  boat_r30e::encodeLocal(status,localBytes);
+  // This format is local only. It is not RADIO_PAYLOAD_STATUS or a Remote
+  // command; the Remote protocol is intentionally unchanged.
+  Serial.printf("R30E,LOCAL_ONLY,%s,flags=0x%04X,pack_mV=%u,seq=%u,changed=%u,outputs=LOCKED\\n",
+      boat_r30e::label(status.reason),
+      (unsigned)status.flags,(unsigned)status.millivolts,
+      (unsigned)status.sequence,(unsigned)changed);
+ }
  application.tick(); // no commissioned driver attached: diagnostic only
  delay(1);
 }
