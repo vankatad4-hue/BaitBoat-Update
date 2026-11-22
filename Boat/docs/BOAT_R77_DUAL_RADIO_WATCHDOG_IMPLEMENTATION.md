@@ -21,7 +21,7 @@
 - Primary nRF24 freshness: <=250 ms since the last accepted authenticated frame.
 - Backup E22 freshness: <=6000 ms since the last accepted authenticated frame.
 - Mission manual-stick lease: <200 ms.
-- Radio session inactivity/re-handshake threshold: 6500 ms.
+- No ordinary radio-inactivity session teardown; the authenticated session/replay counters remain available across RF silence. Sequence-limit rekey or endpoint power-cycle still uses the existing primary nRF24 handshake.
 
 The software watchdog is alive when **either** authenticated link is fresh. Total link loss is declared only when both freshness checks fail. The 6-second backup freshness window reflects the current low-rate backup link; it is not a certified safety response time. Manual steering remains primary-only.
 
