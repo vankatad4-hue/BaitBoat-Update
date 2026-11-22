@@ -60,6 +60,7 @@ void BoatApplicationPort::tick(){
  }
  in=boatHardware_inputs(sample_,millis(),executor_.stopped());
  in.primaryFresh=radio_.primaryFresh(millis());in.backupFresh=radio_.backupFresh(millis());
+ in.autonomousRth=radio_.failsafeReturnHomeActive();
  BoatCommand cmd{};bool duplicate=false;ManagedLink link=LINK_NONE;
  while(radio_.takeCommand(cmd,duplicate,link)){
   if(cmd.type==CMD_EMERGENCY_STOP){fault();return;}
@@ -89,6 +90,7 @@ void BoatApplicationPort::tick(){
    executor_.manual(cmd.leftMotor,cmd.rightMotor,cmd.createdAtMs,link==LINK_NRF_PRIMARY&&in.primaryFresh);
   if(cmd.type>=CMD_RELEASE_HOPPER_LEFT&&cmd.type<=CMD_RELEASE_HOOK_RIGHT){
    in=boatHardware_inputs(sample_,millis(),executor_.stopped());in.primaryFresh=radio_.primaryFresh(millis());
+   in.autonomousRth=radio_.failsafeReturnHomeActive();
    const bool allowed=manualMode&&!manualPending_&&link==LINK_NRF_PRIMARY&&cmd.activate&&
      executor_.beginManualRelease((uint16_t)cmd.commandId,(int8_t)(cmd.type-CMD_RELEASE_HOPPER_LEFT),in,millis());
    if(allowed){manualRelease_=cmd;manualPending_=true;}
@@ -97,6 +99,7 @@ void BoatApplicationPort::tick(){
  }
  in=boatHardware_inputs(sample_,millis(),executor_.stopped());
  in.primaryFresh=radio_.primaryFresh(millis());in.backupFresh=radio_.backupFresh(millis());
+ in.autonomousRth=radio_.failsafeReturnHomeActive();
  if(radio_.missionPhase()==MC_MANUAL_REQUESTED){executor_.cancelManual();radio_.confirmManual();}
  const auto phase=radio_.missionPhase();
  const bool missionActive=phase>=MC_PREPARED&&phase<=MC_RETURNING;
