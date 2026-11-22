@@ -163,3 +163,10 @@ Never parallel regulator outputs. Keep power grounds common where required for l
 ## R23 physical acceptance record — unsigned
 
 A separate [R23 pin-by-pin electrical sign-off worksheet](BOAT_R23_GPIO_AND_LEVEL_SIGNOFF.csv) contains **18 MCU GPIO checks plus 14 module voltage/connector/safety checks**, all initially **NOT_RUN**. Record the actual DevKitC PCB revision, module/carrier revision, continuity and on/off logic levels in this sheet. An unfilled sheet is not proof of pin safety; it must be completed before a production GPIO audit can be signed.
+
+### R23 CI closure (2026-11-22)
+
+- [Boat host tests #45033370079](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45033370079): **PASSED** for R23 pin collision, 64-net wiring consistency, radio GPIO flags, historical-power/R23 current purchase register alignment, and the existing Boat safety tests.
+- [Boat ESP32-S3 diagnostic target build #45033247797](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45033247797): **PASSED**; output remains locked/non-actuating.
+- [Module-only and fail-closed hardware gate #45033496173](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45033496173): **PASSED** for current R23 README/procurement documentation.
+- Physical acceptance still **NOT_RUN** for every [R23 GPIO and level worksheet](BOAT_R23_GPIO_AND_LEVEL_SIGNOFF.csv) row. No GPIO sign-off flag or power-output hardware acceptance was changed.
