@@ -816,3 +816,11 @@ User explicitly requires **NO manual driving** for compass calibration. Added po
 3. Validate end-to-end RTH and authenticated RF from actual hardware, ensure backup LoRa duty-cycle persistence and timely application ACK/STOP semantics; the current STOP/Home-only backup cannot replace the primary joystick link.
 4. Implement and commission the physical Boat MDD20A/EKM014 HAL with true current feedback and power isolation, autonomous GPS calibration with Remote Start/Abort, Remote SD map data persistence and real mission override before on-water tests.
 5. Publish subsequent official release ZIPs only after all target builds, hardware acceptance and water tests pass.
+
+
+## R64 — R63 target-build results verified (2026-11-22)
+
+- **PASS** Remote Waveshare target compile: [GitHub Actions 44991021855](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/44991021855), compile job completed successfully.
+- **PASS** Boat selected ESP32-S3-DevKitC-1-N32R16V **non-actuating diagnostic** target compile: [GitHub Actions 44991310465](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/44991310465), compile job completed successfully. These settle the two pending R63 target compile results, **not** physical integration.
+- Focused review of Boat application/dual-radio port, radio safety, Remote manager and integration test found no grounds to authorize live outputs. Documentation-only review; no firmware source modifications were made and no additional build claimed.
+- Detailed continuation: [R64 build and hardware gate report](R64_BUILD_VERIFICATION_AND_HARDWARE_GATE.md). Next: procure/verify independent preassembled STOP, DC cutoff, 3S watchdog/brownout, non-retriggering coil pulse interlocks, contact/current feedback and E22 carrier; then physically map connectors and implement a commissioned HAL behind safety checks. No custom electronic PCBs, no Boat SD; sonar held. **Boat VER014 / Remote VER028 unchanged.**
