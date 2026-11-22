@@ -1,3 +1,5 @@
+> **SUPERSEDED BY R20:** This R65 pin-budget study is historical. Use [BOAT_GPIO_HEADER_MAP_R20.md](BOAT_GPIO_HEADER_MAP_R20.md) and [BOAT_R20_GPIO_RESOURCE_CROSSWALK.csv](BOAT_R20_GPIO_RESOURCE_CROSSWALK.csv) for the current candidate mapping. Physical STOP, watchdog, independent pulse-limiter and coil-current-zero feedback remain unresolved and must not be bypassed.
+
 # R65 — Module-only safety procurement and N32R16V pin-budget feasibility
 
 **Date:** 2026-11-22. **Status:** verified manufacturer specifications + **UNCOMMISSIONED pin proposals**; no physical actuator or controller setup.
