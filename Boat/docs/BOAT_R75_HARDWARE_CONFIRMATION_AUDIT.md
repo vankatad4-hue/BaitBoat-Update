@@ -41,7 +41,7 @@ Status meanings:
 | Rail / source | Current decision | What remains to confirm |
 |---|---|---|
 | Battery | Existing 3S4P 18650 pack, reported 20A BMS | Confirm cell model/health/matching, pack capacity, BMS continuous/peak current and trip behavior, cell/busbar temperature, voltage sag, actual low-voltage cutoff and connector. The “20A” rating is not yet a measured pack capability. |
-| Main 5V | 1× Olimex DCDC6-16-TO5 selected | Its 5V/2A USB-A output must supply ESP32 + full M100 PRO through a protected cable split. Measure startup and RF bursts. PWR-CABLE input polarity/current and branch fuse still need installation. |
+| Main 5V | 1× Olimex DCDC6-16-TO5 selected | Its 5V/2A USB-A output must supply ESP32 + full M100 PRO through a protected cable split. Measure startup and RF bursts. PWR-CABLE is a female-barrel pigtail; the Olimex listing conflicts on 2.1mm versus 2.5mm inner diameter, so verify actual fit and center-positive polarity against the board schematic. Input branch fuse and wiring still need installation. |
 | EKM014 VL 5V | 1× TRACO TSR 2-2450 selected | MP70S3 sample fit, Phoenix plug/header pigtail, fuse holder and final conductor coordination. Measure ripple, transient, current and hot-enclosure temperature. |
 | 3V3 LoRa | 1× Pololu D24V10F3 #2830 owner-confirmed | E22 carrier VCC and 3.3V load/thermal tests; dedicated fused input. |
 | 3V3 sensors | 1× Pololu D24V10F3 #2830 owner-confirmed | GY-91 + MCP23017 total current, sensor noise, I²C pullups and power-sequence/backfeed. Keep separate from LoRa output. |
