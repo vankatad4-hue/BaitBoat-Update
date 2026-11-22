@@ -3,6 +3,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <cmath>
+#include "gnss_utc_sync.h"
 // UC6580 NMEA reader: bounded buffer, checksum, same UTC epoch for
 // GGA/RMC/GST, recent GSA fix dimension. No HDOP-to-metres fabrication.
 struct TrackerFix{int32_t latE7,lonE7;double estimatedAccuracyM;uint16_t speedCmS;uint8_t fixType,satellites;uint32_t at;bool positionValid,speedValid;};
@@ -16,6 +17,13 @@ public:
   if(c<32||c>126||length_>=sizeof(line_)-1){collect_=false;return;}
   line_[length_++]=c;
  }
+ flytec_utc::Sample utcSnapshot(uint32_t now)const{
+  auto s=utc_;
+  if(!rmcValid_||!positionValid_||!gsaValid_||fixType_!=3||
+     (uint32_t)(now-gsaAt_)>=2000U||(uint32_t)(now-positionAt_)>=2000U||
+     !flytec_utc::fresh(s,now))s.valid=false;
+  return s;
+ }
  TrackerFix snapshot(uint32_t now)const{
   TrackerFix out{};out.at=positionAt_;out.latE7=lat_;out.lonE7=lon_;out.satellites=sats_;
   out.fixType=gsaValid_&&now-gsaAt_<2000U?fixType_:0;
@@ -27,6 +35,7 @@ private:
  bool positionValid_=false,rmcValid_=false,gstValid_=false,gsaValid_=false,positionSeen_=false,rmcSeen_=false,gstSeen_=false;
  uint32_t positionUtc_=0,rmcUtc_=0,gstUtc_=0,positionAt_=0,rmcAt_=0,gstAt_=0,gsaAt_=0;
  uint8_t fixType_=0,sats_=0;int32_t lat_=0,lon_=0;double accuracy_=0;uint16_t speed_=0;
+ flytec_utc::Sample utc_{};
  static int hex(char c){return c>='0'&&c<='9'?c-'0':c>='A'&&c<='F'?c-'A'+10:c>='a'&&c<='f'?c-'a'+10:-1;}
  static bool number(const char *s,double &v){
   if(!s||!*s)return false;
@@ -64,9 +73,18 @@ private:
    if(n<3||!number(f[2],d)||d!=3){gsaValid_=false;return;}
    gsaValid_=true;fixType_=3;gsaAt_=now;
   }else if(!strcmp(kind,"RMC")){
-   if(n<8||!utc(f[1],epoch)||strcmp(f[2],"A")||!number(f[7],d)||d<0||d>194.0){rmcValid_=false;return;}
+   if(n<10||!utc(f[1],epoch)||strcmp(f[2],"A")||!number(f[7],d)||d<0||d>194.0){
+    rmcValid_=false;utc_.valid=false;return;
+   }
+   uint64_t unixMs=0;
+   if(!flytec_utc::utcFromNmeaDate(f[9],epoch,unixMs)){
+    rmcValid_=false;utc_.valid=false;return;
+   }
    if(rmcSeen_&&rmcUtc_==epoch)return;
    rmcSeen_=rmcValid_=true;rmcUtc_=epoch;rmcAt_=now;speed_=(uint16_t)std::llround(d*51.444444);
+   // NMEA sentence-end timestamp: serial buffering latency unknown and
+   // no PPS anchor. Time is COARSE only and NOT stop-latency evidence.
+   utc_.unixMs=unixMs;utc_.localMs=now;utc_.receiverTimeAccMs=1000U;utc_.valid=true;
   }else if(!strcmp(kind,"GST")){
    double latSigma,lonSigma;
    if(n<9||!utc(f[1],epoch)||!number(f[6],latSigma)||!number(f[7],lonSigma)||latSigma<=0||lonSigma<=0){gstValid_=false;return;}
