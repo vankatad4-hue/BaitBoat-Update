@@ -27,6 +27,7 @@ private:
  BoatPhysicalDriver driver_{};
  BoatActuatorSupervisor executor_;
  BoatHardwareSample sample_{};
+ BoatBatteryMonitor batteryMonitor_{};
  bool attached_=false,sampleOK_=false;
  uint16_t releaseTransaction_=0;
  uint32_t lastStatusAt_=0,lastDataAt_=0,generation_=0;

@@ -8,6 +8,9 @@ inline TrackerSensorConfig trackerLocalProfile(){
  c.gnssRx=c.gnssTx=c.sda=c.scl=-1;
  c.gnssBaud=115200; // HGLRC M100 PRO manufacturer default UBX NAV-PVT; verify physical output
  c.imuAddress=0x68;c.adcAddress=0x48;
- c.heading.commissioned=false;c.battery.commissioned=false;
+ c.heading.commissioned=false;
+ // ADS1115 AIN0 divider candidate: 100k BAT+ to AIN0, 33k AIN0 to GND
+ // (ratio 4.0303), 100nF AIN0-to-GND. Calibrate against a DMM before enabling.
+ c.battery={false,4.0303030303,1.0,0.0,9000,12600};
  return c;
 }

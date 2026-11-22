@@ -41,11 +41,12 @@ public:
     uint16_t missionTransaction()const{return controller_.status().transaction;}
     bool detachedReturnActive()const{return detachedReturn_;}
     MissionNavigationResult missionNavigation()const{ExecInputs in{};return missionInputs(in,millis())?controller_.navigation(in):MissionNavigationResult{};}
-    void localEmergencyStop(){const bool wasDetached=detachedReturn_;abortMission();detachedReturn_=false;linkLossHold_=false;if(wasDetached)controller_.resetSession();commandQueue_.clear();mission_.reset();}
+    void localEmergencyStop(){const bool wasDetached=detachedReturn_;abortMission();detachedReturn_=false;failsafeRthActive_=false;linkLossHold_=false;if(wasDetached)controller_.resetSession();commandQueue_.clear();mission_.reset();}
     bool confirmManual(){ExecInputs in{};return missionInputs(in,millis())&&controller_.confirmManual(in);}
     // Authenticated command intent only: never creates a new autonomous mission.
     // The existing, locally validated mission and Home are required.
     bool requestReturnHome();
+    bool requestLowBatteryReturnHome();
     bool sendHardwareTelemetry(const RadioDecodedPayload &status);
     bool missionOverrideOutput(int16_t &left,int16_t &right)const;
     bool missionReleaseComplete(uint16_t transaction,uint16_t token,bool success);

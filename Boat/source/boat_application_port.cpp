@@ -16,7 +16,8 @@ bool BoatApplicationPort::readMission(ExecInputs &in){
 bool BoatApplicationPort::prepareGate(){
  if(!active_||!active_->sampleOK_)return false;
  const auto in=boatHardware_inputs(active_->sample_,millis(),false);
- return active_->executor_.stopped()&&!in.stopActive&&in.stationary&&in.releaseIdle&&in.releaseInterlocks&&in.fix.batteryHealthy;
+ return active_->executor_.stopped()&&!in.stopActive&&in.stationary&&in.releaseIdle&&in.releaseInterlocks&&
+        in.fix.batteryHealthy&&active_->sample_.batteryBand<BOAT_BATTERY_RED;
 }
 void BoatApplicationPort::finishManual(bool success){
  if(!manualPending_)return;
@@ -43,9 +44,21 @@ void BoatApplicationPort::tick(){
  sample_={};sampleOK_=driver_.read(sample_);
  if(!sampleOK_){fault();radio_.update();radio_.sendHardwareTelemetry(boatHardware_status({},millis(),true,MC_ABORTED,false,false));return;}
  const uint32_t now=millis();
+ const bool physicalBatteryHealthy=sample_.batteryHealthy;
+ const bool batterySampleFresh=sample_.voltageValid&&(uint32_t)(now-sample_.batteryAt)<=BoatBatteryMonitor::MAX_SAMPLE_AGE_MS;
+ const BoatBatterySnapshot battery=batteryMonitor_.update(batterySampleFresh,sample_.batteryMillivolts,now);
+ sample_.batteryBand=battery.band;sample_.batteryPercent=battery.percent;sample_.batteryRthRequested=battery.rthRequested;
+ sample_.batteryHealthy=physicalBatteryHealthy&&battery.valid&&!battery.critical;
+ sample_.fix.batteryHealthy=sample_.batteryHealthy;
  auto in=boatHardware_inputs(sample_,now,executor_.stopped());
  if(!sample_.physicalStopReleased||!sample_.watchdogReady||!in.fix.batteryHealthy){fault();radio_.update();radio_.sendHardwareTelemetry(boatHardware_status(sample_,millis(),true,MC_ABORTED,false,radio_.primaryFresh(millis())));return;}
  radio_.update();
+ const MissionControlPhase batteryPhase=radio_.missionPhase();
+ const bool batteryMission=batteryPhase==MC_OUTBOUND||batteryPhase==MC_PAUSED||batteryPhase==MC_RETURNING||batteryPhase==MC_OVERRIDE_NEUTRAL||batteryPhase==MC_OVERRIDE_ACTIVE||batteryPhase==MC_RELEASING;
+ if(sample_.batteryRthRequested&&batteryMission&&batteryPhase!=MC_RETURNING){
+  if(batteryPhase==MC_RELEASING&&executor_.releaseBusy())executor_.cancelReleaseForFailsafe(now);
+  else if(!executor_.releaseBusy()&&in.releaseIdle&&!radio_.requestLowBatteryReturnHome()){fault();return;}
+ }
  if(generation_!=radio_.sessionGeneration()){
   // A normal radio re-handshake must not permanently fault the physical
   // driver: the radio watchdog has already commanded zero outputs. An
@@ -117,8 +130,12 @@ void BoatApplicationPort::tick(){
  const auto out=executor_.tick(in,millis(),intent,radio_.missionNavigation(),missionActive,overrideActive,left,right,sample_.safetyAt);
  if(!driver_.apply(out,100)){fault();return;}
  const auto completion=executor_.takeCompletion();
- if(completion.valid){if(manualPending_)finishManual(completion.success);else radio_.missionReleaseComplete(completion.transaction,completion.token,completion.success);}
+ if(completion.valid){if(manualPending_)finishManual(completion.success);else if(!sample_.batteryRthRequested)radio_.missionReleaseComplete(completion.transaction,completion.token,completion.success);}
  if(manualPending_&&executor_.stopped())finishManual(false);
+ if(sample_.batteryRthRequested&&batteryMission&&radio_.missionPhase()!=MC_RETURNING&&!executor_.releaseBusy()&&
+    boatHardware_inputs(sample_,millis(),executor_.stopped()).releaseIdle){
+  if(!radio_.requestLowBatteryReturnHome()){fault();return;}
+ }
  if(millis()-lastDataAt_>=500U){lastDataAt_=millis();publishData(lastDataAt_);}
  if(millis()-lastStatusAt_>=200U){lastStatusAt_=millis();radio_.sendHardwareTelemetry(boatHardware_status(sample_,lastStatusAt_,executor_.stopped(),radio_.missionPhase(),radio_.detachedReturnActive(),radio_.primaryFresh(lastStatusAt_)));}
 }

@@ -40,6 +40,18 @@ bool BoatDualRadioPort::sendMissionFeedback(const MissionControlFeedback &status
  RadioFrame f;radio_frameInit(f,RADIO_MSG_MISSION_FEEDBACK,BOAT_ID,REMOTE_ID,++txSequence_,status.transaction,now,sessionEpoch_);
  return missionFeedbackEncode(status,f.payload)&&radio_frameSeal(f,key_)&&sendFrame(LINK_NRF_PRIMARY,f);
 }
+bool BoatDualRadioPort::requestLowBatteryReturnHome(){
+ const auto phase=controller_.status().phase;
+ if(failsafeRthActive_||detachedReturn_||phase==MC_RETURNING||!controller_.canDivertHome())return false;
+ BoatHomePoint home{};
+ if(!homePointStore_.load||!homePointStore_.load(home)||!boatHomePointValid(home)||!controller_.homeMatches(home.latE7,home.lonE7))return false;
+ ExecInputs in{};
+ if(!missionInputs(in,millis())||in.stopActive||!in.batteryLow||!in.releaseIdle||!in.releaseInterlocks||!controller_.homeNavigationValid(in))return false;
+ if(!controller_.divertHome(in,true))return false;
+ failsafeRthActive_=true;detachedReturn_=true;linkLossHold_=false;stickLease_.reset();
+ missionIntent_={INTENT_STOP,-1,0};
+ return true;
+}
 bool BoatDualRadioPort::requestReturnHome(){
  // Explicit Home still requires a locally stored Home record matching the
  // prepared plan. No new mission may be created by a backup radio command.
