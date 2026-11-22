@@ -1,6 +1,6 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-22, **R30H-1 RF-only bench preflight / SC16IS750 bridge correction** (R78/R79 safety, R27 INA231, R29 common 3S bus; physical checks unsigned)  
+**Checkpoint:** 2026-11-22, **R30H-2 Boat-local RF trace and fault-timer simulation; R30H-3 next** (R78/R79 safety, R27 INA231, R29 common 3S bus; physical checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `hardware-ready-dual-radio-r1`
 
@@ -445,3 +445,17 @@ R30H артефакти:
 - **Boat ESP32-S3 diagnostic target [#45051466029](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45051466029): SUCCESS**, the actual Boat E22 airtime-lock header included.
 - **Remote Waveshare target [#45051469146](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45051469146)** was still compiling at last inspection; do not claim success until completed.
 - **Latest updated Boat+Remote source snapshot ZIP workflow [#45051628618](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45051628618): SUCCESS**. Its immutable-release workflow intentionally publishes snapshots as artifacts without bumping Remote/releases/VERSION or Boat/releases/VERSION; **no official VER029 / VER015 promoted**.
+
+## R30H-2 checkpoint — bounded safety trace and dual-link timing simulation (2026-11-22)
+
+**Work committed to `hardware-ready-dual-radio-r1`:**
+
+- [R30H-2 engineering report](../Boat/docs/BOAT_R30H_2_LOCAL_TRACE_AND_SIMULATION.md) documents the new bounded event recorder `Boat/source/boat_r30h2_local_trace.h`, instrumented `BoatDualRadioPort`, and non-actuating Boat diagnostic USB output. Its optional compile flag `BOAT_R30H_LOCAL_TRACE_ENABLED=0` remains **disabled in the default source**. It never sends RF packets, drives motors/solenoids, changes authentication or confirms physical STOP.
+- `Boat/tests/boat_r30h2_local_trace_test.cpp` and `Boat/tests/test_r30h2_boat_local_trace.py` cover 32-slot ring integrity, overflow, matching authenticated STOP to logical STOP intent, wraparound timestamp handling, 250/6000ms freshness boundary and 10,000ms conditional RTH refusal before threshold. `Boat/tools/analyze_r30h2_boat_local_trace.py` reads source-local event lines and never labels them RF E2E or physical current-zero evidence. Blank logs remain NOT_RUN.
+- The standalone Boat target CI now compiles **both** the normal uncommissioned diagnostic firmware and an isolated USB trace build with RF/audited module flags **still zero**. This is compilation only; never an approved production image or commissioned radio.
+- [Boat host CI #45052442054](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45052442054): SUCCESS for initial R30H-2 C++/Python logic. [Boat host #45052521183](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45052521183): SUCCESS after USB serial line delimiter fix. The optional target-build CI was in progress at last check and is not represented as PASS yet.
+- **Unchanged:** both endpoint HMAC/session/sequence/replay controls; 250ms primary and 6000ms backup freshness, RTH at >=10000ms **from the last accepted authenticated Boat packet**, only with eligible mission/Home/navigation/interlocks; R30G optional diagnostic traffic priority; R27 voltage-only INA231 and R29 one common 3S4P VM/VH battery bus. R30A physical STOP/feedback and current-zero interlocks remain unsigned. Both 22-item R30H/R30H-1 physical test matrices remain NOT_RUN. Boat VER014 / Remote VER028 frozen; sonar deferred.
+
+**Critical unresolved R30H-3 risk:** the E22 6000ms freshness means an actual cut immediately after a good E22 heartbeat can defer recognition of total link loss for up to ~6 seconds plus scheduler latency. The remote's 3-second E22 pacing may delay delivery of STOP; this has **not** been measured. No live propulsion is approved with these timers unreviewed. Need actual module IDs, checked 5V/3.3V logic, antenna/EU868/legal and *measured airtime*, authenticated RF-only pairing and a synchronized external scope/logic analyzer before changing the policy or approving a STOP time bound.
+
+**Next step R30H-3:** run physical board/carrier inspection and signoff, then RF-only synchronized link-loss/STOP captures with MDD20A VM/EKM014 VH disconnected; compare measured worst-case delays against a defined engineering safety acceptance limit, revise logic if necessary and rerun negative tests. No new custom PCB or module selections.
