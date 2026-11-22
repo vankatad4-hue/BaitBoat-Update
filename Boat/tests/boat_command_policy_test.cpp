@@ -37,6 +37,12 @@ int main() {
   assert(boatPolicyApply(c,true,i,s,o)==BOAT_POLICY_REJECTED_SAFETY);
   assert(o.leftMotor==0 && o.rightMotor==0);
   i=ready();
+  // A backup Home request is not permission to invent a mission or Home plan.
+  c=command(CMD_SET_MODE);c.mode=MODE_RETURN_HOME;
+  i.primaryLinkFresh=false;i.backupLinkFresh=true;
+  assert(boatPolicyApply(c,true,i,s,o)==BOAT_POLICY_REJECTED_SAFETY);
+  assert(!o.requestReturnHome && !s.missionActive);
+  i=ready();
 
   c=command(CMD_SET_MODE);c.mode=MODE_AUTOPILOT;
   i.gnssFresh=false;
