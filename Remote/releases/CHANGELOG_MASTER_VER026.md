@@ -392,3 +392,9 @@ Engineering-only branch milestone; no official Remote/Boat package version bump.
 
 - Owner explicitly **confirmed 2× Pololu D24V10F3 #2830**, *Boat only*: one independent 3.3 V output for E22-900T22S and one for GY-91/QMC5883L/Waveshare MCP23017 expansion. R71 proposal status superseded and canonical purchase register/power rail BOM updated to `R72_OWNER_CONFIRMED_D24V10F3_NOT_PURCHASED`. RECOM 3.3 V sensor candidate remains unselected.
 - Independent power inputs/outputs, fused reverse protection, local decoupling, measured ripple/hot operation, ready-made E22 carrier and power sequencing still require qualification; no wiring/actuator enable, no parts purchased, no release bump. Boat VER014 / Remote VER028 unchanged.
+
+
+## R73 — M100 PRO includes QMC5883L; corrected 5V vs 3.3V source (2026-11-22)
+
+- Confirmed with HGLRC: selected Boat HGLRC M100 PRO GNSS assembly includes QMC5883L and requires 3.6–5.5V module input. No separate compass purchase. Its UART GNSS/I²C compass are separately addressed signals within the same assembly; before connecting ESP32-S3 3.3V pins, validate all output and SDA/SCL pull-up voltage when module is fed 5V. Premade appropriate level shifter if necessary.
+- R72 2× owner-confirmed Pololu D24V10F3 unchanged: one E22 backup and the other GY-91 + Waveshare MCP23017 only; GPS moved to proposed Olimex 5V alongside ESP32 and conditional nRF adapter (2A load requalification pending). Added `Boat/docs/BOAT_R73_M100_PRO_INTEGRATED_COMPASS_POWER.md`, updated wiring and power BOM/purchase register, and CI static contract. No physical approval or firmware change; Boat VER014 and Remote VER028 unchanged.
