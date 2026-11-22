@@ -624,3 +624,12 @@ Removed the 6.5-second idle-session teardown on both Boat and Remote. Radio watc
 - The unsigned example sensor profile now imports `BOAT_BATTERY_DIVIDER_RATIO`; its `commissioned=false` gate is retained. Never sign the pin audit or enable physical output merely because a build succeeds.
 - An invalid ADC reading now makes the battery monitor invalid immediately rather than reusing a prior reading younger than 1000ms. A stale reading remains an independent STOP condition.
 - R21 read-only power/ADC commissioning procedure and [blank DMM/oscilloscope worksheet](BOAT_R21_ADC_CALIBRATION_WORKSHEET.csv) are published. Physical ADC VDD-versus-AIN0 sequencing and independent STOP/current-zero feedback are unresolved.
+
+## R22 isolated ADS1115 readout and GPIO lockout (2026-11-22)
+
+- Independent standalone `Boat/hardware_test/ADS1115_Battery_Bench/ADS1115_Battery_Bench.ino` added; it uses only ADS1115 I²C serial diagnostics, with **no** nRF24/E22, MDD20A, EKM014 or Boat mission dependencies.
+- GPIO audit is **locked off by default**; only a private, physically audited local config can enable candidate SDA8/SCL7. R20 production pin mapping remains unsigned.
+- ADC raw conversion runs AIN0 single-shot ±4.096V at 128SPS, returns timestamped raw code, measured input estimate and pack estimate as explicitly `UNCOMMISSIONED` CSV; 0x48 address ACK alone cannot prove the device is ADS1115 rather than ADS1015.
+- Host math and sketch isolation checks and standalone ESP32-S3 target compilation passed; evidence is [R22 bench procedure](BOAT_R22_ADS1115_SENSOR_ONLY_BRINGUP.md).
+- Physical bring-up, regulator ripple/thermal, VDD/AIN0 power sequencing, exact board pinout, DMM ADC calibration, radio and dummy-load acceptance remain NOT_RUN; no motor/solenoid power commissioned.
+- Official versions remain Boat VER014 and Remote VER028.
