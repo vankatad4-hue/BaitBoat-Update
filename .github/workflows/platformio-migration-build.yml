@@ -1,0 +1,75 @@
+name: PlatformIO migration compile (experimental, no flashing)
+
+on:
+  push:
+    branches: [hardware-ready-dual-radio-r1]
+    paths:
+      - 'Boat/platformio.ini'
+      - 'Boat/source/**'
+      - 'Remote/platformio.ini'
+      - 'Remote/source/**'
+      - 'Remote/tools/generate_bg_font.sh'
+      - '.github/workflows/platformio-migration-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: platformio-migration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compile:
+    name: ${{ matrix.endpoint }} PlatformIO target (experimental)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - endpoint: Boat
+            environment: boat_n32r16v_diagnostic
+          - endpoint: Remote
+            environment: remote_waveshare_43_diagnostic
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install PlatformIO CLI
+        run: python -m pip install 'platformio>=6.1.18,<7'
+      - name: Prove safety gates remain locked in source
+        run: |
+          python Boat/tools/verify_r30h_radio_preflight.py
+          grep -F '#define BOAT_NRF_PIN_AUDIT_SIGNED 0' Boat/source/boat_radio_hw_config.h
+          grep -F '#define REMOTE_NRF_PIN_AUDIT_SIGNED 0' Remote/source/radio_hw_config.h
+          grep -F '#define BOAT_R30H_LOCAL_TRACE_ENABLED 0' Boat/source/boat_radio_hw_config.h
+          grep -F '#define REMOTE_R30H3_STOP_TRACE_ENABLED 0' Remote/source/radio_hw_config.h
+      - name: Install Node for licensed Bulgarian font (Remote only)
+        if: matrix.endpoint == 'Remote'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate the same licensed Bulgarian LVGL resource as Arduino CLI
+        if: matrix.endpoint == 'Remote'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-dejavu-core
+          bash Remote/tools/generate_bg_font.sh
+          cp out/ui-font/flytec_bg_14.c out/ui-font/flytec_bg_14.generated.h Remote/source/
+          test -s Remote/source/flytec_bg_14.c
+          test -s Remote/source/flytec_bg_14.generated.h
+      - name: Build PlatformIO firmware without uploading
+        run: |
+          set -o pipefail
+          pio --version
+          pio run -d ${{ matrix.endpoint }} -e ${{ matrix.environment }} \
+            2>&1 | tee /tmp/platformio-${{ matrix.endpoint }}.log
+      - name: Save experimental build log only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: platformio-${{ matrix.endpoint }}-migration-log
+          path: /tmp/platformio-${{ matrix.endpoint }}.log
+          if-no-files-found: ignore
