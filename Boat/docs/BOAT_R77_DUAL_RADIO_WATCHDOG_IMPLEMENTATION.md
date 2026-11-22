@@ -76,4 +76,7 @@ Therefore this R77 change implements the requested **radio-loss watchdog behavio
 - No new hardware elements added; no GPIO assignments or BOM changes.
 - No radio, motor or solenoid hardware was physically tested.
 - Boat VER014 and Remote VER028 remain unchanged; official releases remain withheld pending target and physical acceptance.
-- Next: verify host workflow and diagnostic target compile, then bench-test radio timeout/recovery with dummy loads only after the physical output interface is commissioned.
+- Boat portable host tests: PASS ([run 45004175963](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45004175963)); Remote portable host tests: PASS ([run 45004179963](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45004179963)).
+- Boat ESP32-S3 diagnostic target compile: PASS ([run 45004173232](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45004173232)). This is compile evidence, not physical hardware validation.
+- Remote Waveshare ESP32-S3 target compile: still running ([run 45004179977](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45004179977)) at the time of this update. Project ZIP packaging: PASS ([run 45004459053](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45004459053)).
+- Next: complete the Remote target compile, then bench-test radio timeout/recovery with dummy loads only after the physical output interface is commissioned.
