@@ -87,7 +87,7 @@ int main(){
  // mission. Manual takeover needs primary radio, neutral sticks and a
  // stationary/idle boat.
  BoatMissionController c4;
- rthIn={{0,1000,1,270,true,true,true,true},false,true,true,true,true,true,false};
+ rthIn={{0,1000,1,270,true,true,true,true},false,true,true,true,true,true,false,false};
  start(c4,p,rthIn);
  assert(c4.tick(rthIn,500,true,true).intent==INTENT_NAV_TARGET);
  assert(c4.divertHome(rthIn,true));
@@ -99,7 +99,7 @@ int main(){
 
  // Invalid Home navigation cannot be used to authorize detached RTH.
  BoatMissionController c5;
- rthIn={{0,1000,1,270,true,true,true,true},false,true,true,true,true,true,false};
+ rthIn={{0,1000,1,270,true,true,true,true},false,true,true,true,true,true,false,false};
  start(c5,p,rthIn);
  rthIn.fix.headingValid=false;
  assert(!c5.divertHome(rthIn,true));
@@ -108,7 +108,7 @@ int main(){
  // R79: low battery holds outbound motion, then a validated Home diversion
  // cancels the remaining target/release sequence.
  BoatMissionController c6;
- ExecInputs lowIn={{0,1000,1,270,true,true,true,true},false,true,true,true,true,true,false,false,false};
+ ExecInputs lowIn={{0,1000,1,270,true,true,true,true},false,true,true,true,true,true,false,false};
  start(c6,p,lowIn);
  assert(c6.tick(lowIn,600,true,true).intent==INTENT_NAV_TARGET);
  lowIn.batteryLow=true;
