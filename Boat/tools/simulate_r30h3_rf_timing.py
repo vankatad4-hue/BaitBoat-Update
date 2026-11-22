@@ -45,7 +45,7 @@ def load_policy(root=ROOT):
     primary = number(r"primaryFresh\(uint32_t now\)const\{[^\n]*<=\s*(\d+)U?;", boat, "Boat nRF freshness")
     backup = number(r"backupFresh\(uint32_t now\)const\{[^\n]*<=\s*(\d+)U?;", boat, "Boat E22 freshness")
     pace = number(r"g_backupTxSent&&now-g_lastBackupTxMs<(\d+)U", remote, "Remote STOP E22 pacing")
-    if not re.search(r"g_stopPending=true;return true;", remote):
+    if len(re.findall(r"g_pendingStop=command;\s*g_stopPending=true;", remote)) < 2:
         raise ValueError("Remote STOP pending semantics changed: review in source")
     if not re.search(r"if\(g_stopPending\)", remote):
         raise ValueError("Remote STOP is no longer prioritized before backup heartbeat")
@@ -88,7 +88,7 @@ def remote_stop_wait_ms(last_e22_tx, requested_at, pace):
 def exposure(policy):
     """1ms phase sweep, synthetic no-jitter timers; not physical time."""
     stops = [remote_stop_wait_ms(0, phase, policy.e22_pace_ms)
-             for phase in range(policy.e22_pace_ms)]
+             for phase in range(policy.e22_pace_ms + 1)]
     # RF cut at t=0; latest valid E22 was 0..(pace-1) ms earlier.
     stale_e22 = [first_stale_ms(-age, policy.e22_fresh_ms)
                  for age in range(policy.e22_pace_ms)]
@@ -97,7 +97,7 @@ def exposure(policy):
     return {
         "scenario": "DETERMINISTIC_SOFTWARE_ONLY_NO_RF",
         "remote_e22_stop_queue_wait_ms": {"min": min(stops), "max": max(stops),
-                                           "examples": {"just_after_tx": stops[0], "just_before_next_slot": stops[-1]}},
+                                           "examples": {"just_after_tx": stops[0], "just_before_next_slot": stops[-2], "at_next_slot": stops[-1]}},
         "both_links_stale_after_cut_ms": {"min": min(both_stale), "max": max(both_stale)},
         "nrf_only_first_stale_after_cut_ms": first_stale_ms(0, policy.nrf_fresh_ms),
         "e22_only_first_stale_after_cut_ms": first_stale_ms(0, policy.e22_fresh_ms),
