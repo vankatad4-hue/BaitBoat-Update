@@ -1,12 +1,13 @@
 #pragma once
-// R36 architecture migration: external nRF24 primary + E22 UART backup.
-// This is an uncommissioned configuration. DO NOT initialize a Tracker SX1262.
-#define BOAT_NRF_CE_PIN (-1)
-#define BOAT_NRF_CSN_PIN (-1)
+// R20 candidate mapping for ESP32-S3-DevKitC-1-N32R16V.
+// Pin audit flags intentionally remain 0: board revision and harness not physically signed.
+#define BOAT_NRF_CE_PIN 10
+#define BOAT_NRF_CSN_PIN 9
 #define BOAT_NRF_CHANNEL 76
-#define BOAT_NRF_SCK_PIN (-1)
-#define BOAT_NRF_MISO_PIN (-1)
-#define BOAT_NRF_MOSI_PIN (-1)
+#define BOAT_NRF_SCK_PIN 12
+#define BOAT_NRF_MISO_PIN 13
+#define BOAT_NRF_MOSI_PIN 11
+#define BOAT_NRF_IRQ_PIN 21
 #define BOAT_NRF_PIN_AUDIT_SIGNED 0
 #define BOAT_SX1262_BOARD_AUDIT_SIGNED 0
 #define BOAT_SX1262_PEER_PHY_VERIFIED 0
@@ -19,11 +20,12 @@
 #define BOAT_SX1262_BUSY (-1)
 #define BOAT_SX1262_DIO1 (-1)
 #define BOAT_E22_UART_SELECTED 1
-#define BOAT_E22_UART_PIN_TX (-1)
-#define BOAT_E22_UART_PIN_RX (-1)
-#define BOAT_E22_UART_PIN_M0 (-1)
-#define BOAT_E22_UART_PIN_M1 (-1)
-#define BOAT_E22_UART_PIN_AUX (-1)
+#define BOAT_E22_UART_PIN_TX 17
+#define BOAT_E22_UART_PIN_RX 18
+#define BOAT_E22_UART_PIN_M0 15
+#define BOAT_E22_UART_PIN_M1 16
+#define BOAT_E22_UART_PIN_AUX 14
+#define BOAT_E22_UART_PIN_NRST 6
 #define BOAT_E22_UART_RF_INTEROPERABILITY_VERIFIED 0
 #define BOAT_E22_UART_LOGIC_LEVELS_VERIFIED 0
 #define BOAT_E22_UART_PIN_AUDIT_SIGNED 0
