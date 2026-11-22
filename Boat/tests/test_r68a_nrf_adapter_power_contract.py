@@ -23,7 +23,7 @@ class R68AArdboardAdapterContract(unittest.TestCase):
                          "R68A_OWNER_PROPOSED_BENCH_QUALIFICATION_REQUIRED")
         self.assertEqual(adapter[0]["Shop_URL"],
                          "https://www.ardboard.com/nrf24l01-socket-adapter")
-        self.assertIn("input VCC unspecified", adapter[0]["Purchase_gate"].lower())
+        self.assertIn("input vcc unspecified", adapter[0]["Purchase_gate"].lower())
 
     def test_E22_has_own_dc_dc_and_nrf_is_on_5V_adapter(self):
         rails = {r["Rail"]: r for r in csv_rows("Boat/docs/BOAT_R68_POWER_RAIL_BOM.csv")}
