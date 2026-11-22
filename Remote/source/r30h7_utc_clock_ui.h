@@ -15,8 +15,8 @@ inline bool formatUtc(const flytec_r30h6::ClockReport &report,
     report.traceReferenceCertified||report.rfEndToEndStopClock||
     report.unixMs<flytec_time::MIN_MS||report.unixMs>=flytec_time::MAX_MS ||
     report.ageMs>flytec_time::DISCIPLINE_MAX_AGE_MS){
-  const int n=snprintf(out,capacity,"GPS UTC: --:--:--");
-  return n>=0 && (size_t)n<capacity && false;
+  (void)snprintf(out,capacity,"GPS UTC: --:--:--");
+  return false;
  }
  const uint32_t secondsOfDay=(uint32_t)((report.unixMs/1000ULL)%86400ULL);
  const unsigned hh=(unsigned)(secondsOfDay/3600U);
