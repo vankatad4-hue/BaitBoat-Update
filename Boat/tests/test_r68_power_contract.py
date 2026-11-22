@@ -28,7 +28,7 @@ class R68PowerContract(unittest.TestCase):
                 self.assertEqual(r["Qty"], "1")
                 if r["Rail"] in ("BOAT_3V3_E22", "BOAT_3V3_SENSORS"):
                     self.assertEqual(r["Supply_Audit_Status"],
-                                     "R71_USER_PROPOSED_ENGINEERING_PREFERRED_NOT_LOCKED")
+                                     "R72_OWNER_CONFIRMED_D24V10F3_NOT_PURCHASED")
                 else:
                     self.assertEqual(r["Supply_Audit_Status"], "R68_PROPOSED_NOT_OWNER_CONFIRMED")
                 self.assertLessEqual(float(r["Vin_Min_V"]), 9.0)
@@ -68,7 +68,7 @@ class R68PowerContract(unittest.TestCase):
         self.assertEqual(len(tests), 12)
         self.assertTrue(all(t["State"] == "NOT_RUN" for t in tests))
 
-    def test_purchase_register_proposal_not_owner_selected(self):
+    def test_purchase_register_owner_confirmed_two_independent_3v3_rails(self):
         register = ROOT / "docs/PROJECT_PURCHASE_REGISTER_R20.csv"
         with register.open(encoding="utf-8", newline="") as fh:
             rows = list(csv.DictReader(fh))
@@ -81,11 +81,11 @@ class R68PowerContract(unittest.TestCase):
                          "Pololu D24V10F3 #2830")
         self.assertEqual(
             role_rows["E22 backup dedicated 3V3 power"]["Selected_or_candidate"],
-            "R71_USER_PROPOSED_ENGINEERING_PREFERRED_NOT_LOCKED"
+            "R72_OWNER_CONFIRMED_D24V10F3_NOT_PURCHASED"
         )
         self.assertEqual(
             role_rows["Sensor and I2C expansion 3V3 power"]["Selected_or_candidate"],
-            "R71_USER_PROPOSED_ENGINEERING_PREFERRED_NOT_LOCKED"
+            "R72_OWNER_CONFIRMED_D24V10F3_NOT_PURCHASED"
         )
         self.assertEqual(
             role_rows["Alternative sensor 3V3 RECOM from R68"]["Selected_or_candidate"],
