@@ -327,6 +327,14 @@ jobs:
           python3 -m unittest Boat/tests/test_r30h_event_analyzer.py -v
           python3 Boat/tools/analyze_r30h_rf_events.py Boat/docs/BOAT_R30H_RF_EVENTS_TEMPLATE.csv > /tmp/r30h_empty.txt || test "$?" -eq 3
           grep -F "NOT_RUN: empty evidence CSV" /tmp/r30h_empty.txt
+      - name: R30H-4 common-clock analyzer and physical evidence provenance (no-RF)
+        run: |
+          python3 -m unittest Boat/tests/test_r30h4_common_clock_capture.py -v
+          python3 Boat/tools/analyze_r30h4_common_clock_capture.py \
+            Boat/docs/BOAT_R30H_4_LOGIC_CAPTURE_TEMPLATE.csv \
+            Boat/docs/BOAT_R30H_4_CAPTURE_MANIFEST_TEMPLATE.json \
+            > /tmp/r30h4_empty.log || test "$?" -eq 3
+          grep -F "NOT_RUN: no external logic-analyzer edges" /tmp/r30h4_empty.log
       - name: R30H-3 worst-case software-only E22 STOP and link-loss phase sweep
         run: |
           python3 -m unittest Boat/tests/test_r30h3_software_exposure.py -v
