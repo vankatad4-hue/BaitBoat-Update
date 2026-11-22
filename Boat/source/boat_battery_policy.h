@@ -5,7 +5,8 @@ struct BoatBatterySnapshot { bool valid; uint16_t millivolts; uint8_t percent; B
 inline uint8_t boatBatteryEstimatePercent(uint16_t mv){
  static const uint16_t v[]={9900,10200,10500,10800,11100,11400,11700,12000,12300,12600};
  static const uint8_t p[]={0,5,10,20,35,50,65,80,90,100};
- if(mv<=v[0])return 0; if(mv>=v[9])return 100;
+ if(mv<=v[0])return 0;
+ if(mv>=v[9])return 100;
  for(uint8_t i=1;i<10;++i)if(mv<=v[i])return (uint8_t)(p[i-1]+((uint32_t)(mv-v[i-1])*(p[i]-p[i-1]))/(v[i]-v[i-1]));
  return 100;
 }
