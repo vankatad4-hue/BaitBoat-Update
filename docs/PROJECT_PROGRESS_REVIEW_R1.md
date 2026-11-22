@@ -483,3 +483,9 @@ Procurement lock: **two identical EBYTE E22-900T22S UART SMD** backup LoRa modul
 - Identified DCDC6's USB-A 5V/2A output as a wiring constraint: create a protected cable split for ESP32 + M100 PRO, keep nRF adapter outside the load budget until tested, and prevent PC USB 5V backfeed.
 - Created [R75 mounting/fuse implementation plan](../Boat/docs/BOAT_R75_TSR_SOCKET_HARNESS_AND_FUSE_PLAN.md), [remaining Boat hardware audit](../Boat/docs/BOAT_R75_HARDWARE_CONFIRMATION_AUDIT.md), and [11 NOT_RUN physical gates](../Boat/docs/BOAT_R75_HARDWARE_ACCEPTANCE.csv). Updated purchase register and added a static host CI contract.
 - **Still blocking physical prototype:** independent STOP/contactors/watchdog/manual reset, hardware one-hot bounded non-retriggerable coil controller, motor/coil current-zero, actual motor/solenoid/BMS measurements, M100 logic levels, E22 carrier, nRF module/adapter, complete fuse/wire/connector/environmental design. No hardware purchase or commissioning; Boat VER014 / Remote VER028 remain frozen.
+
+
+## R75A — SIP3 socket fit qualification refinement
+
+- Promoted **BINDER MPE 006-1-003-D-B1STF-XS0** to primary dimensioned socket candidate. Its square-pin limit is 0.25×0.45mm; TRACO TSR pins are 0.46×0.46mm nominal ±0.1mm, so sample fit and manufacturer confirmation are mandatory.
+- Demoted econ connect MP70S3 to secondary due absent square-pin mating specification. Direct-solder pigtail is fallback if socket compatibility cannot be proven. Updated purchase register, R75 technical plan, hardware audit, physical acceptance CSV and static CI contract. No purchase or fit test.
