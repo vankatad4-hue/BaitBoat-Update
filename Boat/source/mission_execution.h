@@ -62,7 +62,8 @@ public:
   }
 
   // No authenticated fresh radio on either path: hold mission state and ask
-  // for zero motor/coil outputs. A fresh link later resumes this same phase.
+  // for zero motor/coil outputs. Only a local RTH authorization permits the
+  // returning phase to navigate without radio; it can never release a coil.
   if(!in.primaryFresh&&!in.backupFresh&&!(in.autonomousRth&&phase_==EXEC_RETURNING))return stopped;
 
   const bool navHome=phase_==EXEC_RETURNING||(phase_==EXEC_PAUSED&&resumePhase_==EXEC_RETURNING);
