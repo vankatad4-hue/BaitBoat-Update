@@ -19,6 +19,7 @@ on:
       - 'Boat/docs/BOAT_R30C_ONE_BUS_SAFETY_FEEDBACK_CONTRACT.md'
       - 'Boat/docs/BOAT_R30D_READONLY_FEEDBACK_SIMULATION.md'
       - 'Boat/docs/BOAT_R30E_LOCAL_FAULT_TELEMETRY.md'
+      - 'Boat/docs/BOAT_R30F_DIAGNOSTIC_WIRE_PROTOCOL.md'
       - 'Boat/hardware_test/INA231_Battery_Bench/**'
       - '.github/workflows/boat-host-tests.yml'
   pull_request:
@@ -39,6 +40,7 @@ on:
       - 'Boat/docs/BOAT_R30C_ONE_BUS_SAFETY_FEEDBACK_CONTRACT.md'
       - 'Boat/docs/BOAT_R30D_READONLY_FEEDBACK_SIMULATION.md'
       - 'Boat/docs/BOAT_R30E_LOCAL_FAULT_TELEMETRY.md'
+      - 'Boat/docs/BOAT_R30F_DIAGNOSTIC_WIRE_PROTOCOL.md'
       - 'Boat/hardware_test/INA231_Battery_Bench/**'
       - '.github/workflows/boat-host-tests.yml'
 
@@ -304,6 +306,14 @@ jobs:
             Boat/tests/boat_r30e_fault_status_test.cpp -o /tmp/boat_r30e_faults
           /tmp/boat_r30e_faults
           python3 Boat/tools/verify_r30e_fault_status.py
+      - name: R30F Boat diagnostic subtype-8 strict wire compatibility
+        run: |
+          cmp Boat/source/radio_safety_diagnostic_v1.h Remote/source/radio_safety_diagnostic_v1.h
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I Boat/source \
+            Boat/source/radio_payload_codec.cpp Boat/source/radio_payload_encoder.cpp \
+            Boat/tests/r30f_optional_safety_diag_codec_test.cpp -o /tmp/r30f_boat_codec
+          /tmp/r30f_boat_codec
+          python3 Boat/tools/verify_r30f_diagnostic_protocol.py
       - name: R66 COTS safety PLC capacity and external interlock acceptance oracle (host only)
         run: |
           python3 -m unittest Boat/tests/test_r66_safety_plc_budget.py -v
