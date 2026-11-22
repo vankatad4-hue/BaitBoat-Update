@@ -58,6 +58,20 @@ class TestR30HPreflight(unittest.TestCase):
         self.hostile("Boat/docs/BOAT_R30H_1_RF_MODULE_SIGNOFF.csv",
                      "NOT_RUN,,,", "PASS,dummy,not_verified,")
 
+    def test_r30h4_fake_manifest_cannot_be_approved(self):
+        self.hostile("Boat/docs/BOAT_R30H_4_CAPTURE_MANIFEST_TEMPLATE.json",
+                     '"evidence_mode": "UNSPECIFIED"',
+                     '"evidence_mode": "HARDWARE_OBSERVATION"')
+
+    def test_r30h4_probe_cannot_be_signed(self):
+        self.hostile("Boat/docs/BOAT_R30H_4_RF_ONLY_PROBE_CROSSWALK.csv",
+                     "NOT_READY,,,,,", "PASS,not_verified,3.3,0.0,none,none")
+
+    def test_r30h4_authoritative_raw_capture_cannot_be_fabricated(self):
+        self.hostile("Boat/docs/BOAT_R30H_4_LOGIC_CAPTURE_TEMPLATE.csv",
+                     "time_us,platform,event,edge,origin,notes\n",
+                     "time_us,platform,event,edge,origin,notes\nC01,T01,H05,FAKE,100,REMOTE,STOP_BUTTON_EDGE,RISING,EXTERNAL_ANALYZER,dummy\n")
+
     def test_fail_if_motor_driver_attaches(self):
         self.hostile("Boat/source/firmware/Flytec_Boat.ino",
                      "const bool ready=radio.begin();",
