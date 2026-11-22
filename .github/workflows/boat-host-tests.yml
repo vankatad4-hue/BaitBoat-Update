@@ -17,6 +17,7 @@ on:
       - 'Boat/docs/BOAT_R30A_SOFTWARE_INTEGRATION_MATRIX.csv'
       - 'Boat/docs/BOAT_R30A_PROTOTYPE_ASSEMBLY_HANDOFF.md'
       - 'Boat/docs/BOAT_R30C_ONE_BUS_SAFETY_FEEDBACK_CONTRACT.md'
+      - 'Boat/docs/BOAT_R30D_READONLY_FEEDBACK_SIMULATION.md'
       - 'Boat/hardware_test/INA231_Battery_Bench/**'
       - '.github/workflows/boat-host-tests.yml'
   pull_request:
@@ -35,6 +36,7 @@ on:
       - 'Boat/docs/BOAT_R30A_SOFTWARE_INTEGRATION_MATRIX.csv'
       - 'Boat/docs/BOAT_R30A_PROTOTYPE_ASSEMBLY_HANDOFF.md'
       - 'Boat/docs/BOAT_R30C_ONE_BUS_SAFETY_FEEDBACK_CONTRACT.md'
+      - 'Boat/docs/BOAT_R30D_READONLY_FEEDBACK_SIMULATION.md'
       - 'Boat/hardware_test/INA231_Battery_Bench/**'
       - '.github/workflows/boat-host-tests.yml'
 
@@ -287,6 +289,13 @@ jobs:
             -o /tmp/boat_r30c_common_bus
           /tmp/boat_r30c_common_bus
           python3 Boat/tools/verify_r30c_common_bus_contract.py
+      - name: R30D read-only common 3S input provenance freshness and hardware lock simulations
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -I Boat/tests/stubs \
+            Boat/tests/boat_r30d_common_bus_readonly_faults_test.cpp \
+            -o /tmp/boat_r30d_readonly
+          /tmp/boat_r30d_readonly
+          python3 Boat/tools/verify_r30d_readonly_feedback.py
       - name: R66 COTS safety PLC capacity and external interlock acceptance oracle (host only)
         run: |
           python3 -m unittest Boat/tests/test_r66_safety_plc_budget.py -v
