@@ -18,7 +18,7 @@ Status: active procurement authority; selected parts are not yet purchased/commi
 | Battery voltage ADC | ADS1115 16-bit breakout, I²C 0x48 | Required to complete the existing firmware ADC path; not yet purchased |
 | Motor driver | Cytron MDD20A dual channel | Selected |
 | Four-channel release driver | EKM014 | Selected |
-| Main 5V rail | Olimex DCDC6-16-TO5 | Selected; one fitted, second optional only if measurements justify |
+| Main 5V rail | Olimex DCDC6-16-TO5 | Selected; powers ESP32-S3, M100 PRO and E22-900T22S VCC; one fitted, second optional only if measurements justify |
 | EKM014 logic rail | TRACO TSR 2-2450 | Selected |
 | 3.3V RF rail | Pololu D24V10F3 #2830 unit 1 | nRF24L01+ PA/LNA |
 | 3.3V sensor/I/O rail | Pololu D24V10F3 #2830 unit 2 | GY-91, ADS1115, MCP23017 |
@@ -35,7 +35,7 @@ The ADS1115 was already assumed by the Boat's I²C ADC acquisition code at addre
 - Divider ratio: approximately 4.0303:1. At 12.6V pack voltage, ADS1115 AIN0 is approximately 3.13V.
 - ADS1115 input configuration remains ±4.096V, single-shot AIN0-to-GND, 128SPS; supply and I²C pull-ups must be 3.3V.
 - Firmware example stores the candidate ratio with `commissioned=false`. Do not enable the commissioned profile until actual ADC readings are checked against a calibrated DMM at several pack voltages and under representative load.
-- Final I²C GPIO pins remain part of the outstanding ESP32-S3 header audit.
+- Candidate I²C pins are GPIO7 (SCL) and GPIO8 (SDA) per [R20 GPIO/header map](BOAT_GPIO_HEADER_MAP_R20.md); remain unsigned until the exact board revision is inspected.
 
 ## Battery protection policy — software R79
 
@@ -69,6 +69,8 @@ Full behavior: [BOAT_R79_LOW_BATTERY_FAILSAFE.md](BOAT_R79_LOW_BATTERY_FAILSAFE.
 
 ## Power distribution
 
+E22-900T22S VCC is allocated to the 5V DCDC6 main rail for rated RF output power; UART/control logic remains 3.3V TTL. D24V10F3 unit 1 is reserved for nRF24 PA/LNA and unit 2 for GY-91/ADS1115/MCP23017.
+
 | Rail | Source | Loads |
 |---|---|---|
 | 5V main logic/GNSS/RF | 1× DCDC6-16-TO5 (5V/2A) | ESP32-S3 board, M100 PRO and E22-900T22S VCC; validate combined peak current/noise |
@@ -90,6 +92,10 @@ Do not parallel regulator outputs. Confirm nRF24 PA/LNA supply filtering against
 ## GPIO/header map
 
 The unsigned candidate pin allocation is documented in [BOAT_GPIO_HEADER_MAP_R20.md](BOAT_GPIO_HEADER_MAP_R20.md). Firmware pin-audit flags remain false until the exact purchased board revision is verified.
+
+## GPIO/header map
+
+See [BOAT_GPIO_HEADER_MAP_R20.md](BOAT_GPIO_HEADER_MAP_R20.md) and [BOAT_R20_GPIO_RESOURCE_CROSSWALK.csv](BOAT_R20_GPIO_RESOURCE_CROSSWALK.csv). The candidate mapping is not signed; the board has not been purchased and pin-audit flags remain 0.
 
 ## Remaining hardware decisions and acceptance
 
