@@ -102,6 +102,8 @@ def main():
     print('PASS: static inventory; no physical approval or release.')
     print('Source files:', len(src), 'Build roots:', len(roots),
           'review-only headers:', len(report['review_candidate_headers']))
+    for candidate in report['review_candidate_headers']:
+        print('REVIEW_ONLY:', candidate)
     return 0
 
 if __name__ == '__main__':
