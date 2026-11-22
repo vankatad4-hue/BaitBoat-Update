@@ -86,3 +86,7 @@ At 16.0V with top −1% and bottom +1%, AIN0 would be approximately 2.933V. This
 Sources: [TI ADS1115](https://www.ti.com/product/ADS1115), [Espressif DevKitC-1 v1.1](https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-devkitc-1/user_guide_v1.1.html), [Electrokit EKM014](https://docs.electrokit.com/en/modules/EKM014/).
 
 No physical DMM/scope reading, dummy-load test or water test has been performed. **Boat VER014 and Remote VER028 remain frozen.**
+
+## R22 companion diagnostics (subsequent software work)
+
+The [R22 isolated ADS1115 serial bench sketch](BOAT_R22_ADS1115_SENSOR_ONLY_BRINGUP.md) can produce actual raw ADC codes **only after the physical GPIO and voltage-sequencing checks**. Its default build performs no I²C initialization; it is not integrated into the Boat's output-authorization path. Store the physical DMM and scope measurements in the R21 worksheet; a plausible uncalibrated serial value is never sufficient to commission the sensor or propulsion.
