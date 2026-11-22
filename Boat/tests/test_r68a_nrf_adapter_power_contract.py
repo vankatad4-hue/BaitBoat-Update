@@ -43,7 +43,9 @@ class R68AArdboardAdapterContract(unittest.TestCase):
                          "Pololu D24V10F3 #2830")
         self.assertIn("nRF24 PA/LNA", active["nRF24 primary 3V3 power unit 1"]["Purchase_gate"])
         self.assertIn("E22 VCC supplied", active["nRF24 primary 3V3 power unit 1"]["Purchase_gate"])
-        self.assertIn("ADS1115", active["Sensor and I2C expansion 3V3 power"]["Purchase_gate"])
+        self.assertIn("INA231", active["Sensor and I2C expansion 3V3 power"]["Purchase_gate"])
+        self.assertEqual(active["Battery voltage-only I2C sensor"]["Selected_or_candidate"],
+                         "R27_SELECTED_EXACT_ARDBOARD1491_NOT_PURCHASED")
         self.assertEqual(active["nRF24 local socket power adapter"]["Qty"], "0")
 
     def test_adapter_has_no_3S_direct_connection_or_certified_output_claim(self):
