@@ -1,0 +1,13 @@
+Gate_ID,Component,Physical_question,State,Observed,Artifact,Engineer_signoff
+H7-01,HGLRC M100 PRO,Exact PCB revision and GNSS chip from photographs,NOT_RUN,,,
+H7-02,HGLRC M100 PRO,Operating UART baud and output NMEA or UBX profile observed on analyzer,NOT_RUN,,,
+H7-03,HGLRC M100 PRO,3D GNSS fix and UTC date consistency from real raw packet,NOT_RUN,,,
+H7-04,HGLRC M100 PRO,UBX NAV PVT time accuracy or NMEA UTC confidence measured,NOT_RUN,,,
+H7-05,HGLRC M100 PRO,Independent physical PPS output present or absent from pinout and continuity test,NOT_RUN,,,
+H7-06,Boat ESP32-S3,PPS pin mapping and boot strapping conflict audit if PPS exists,NOT_RUN,,,
+H7-07,Boat ESP32-S3,PPS observed relative to UTC sentence epoch with ONE external clock,NOT_RUN,,,
+H7-08,Remote Waveshare,External PPS/reference pin audit without display or radio conflicts if needed,NOT_RUN,,,
+H7-09,nRF24 pair,Actual authenticated subtype9 GNSS UTC transfer and buffer delay measured,NOT_RUN,,,
+H7-10,Boat+Remote,Clock offset and drift measured against a single external common-clock instrument,NOT_RUN,,,
+H7-11,Boat+Remote,UTC loss/recovery rollover/backwards step behavior on real boards,NOT_RUN,,,
+H7-12,Safety,Confirmed STOP watchdog RTH leases unchanged by settimeofday on actual boards,NOT_RUN,,,
