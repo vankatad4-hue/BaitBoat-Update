@@ -26,3 +26,7 @@
 4. Keep **MDD20A/EKM014 physically powerless** pending independent emergency STOP, contactors, watchdog, current-zero and one-shot interlock verification, plus all R66 dummy-load acceptance tests.
 
 **Release hold:** firmware and GPIO commissioning flags unchanged; diagnostic Boat target remains non-actuating. Official **Boat VER014 / Remote VER028** unchanged. No CHIRP sonar purchase or implementation.
+
+## R73 correction: QMC5883L is on M100 PRO GPS module
+
+HGLRC confirms that the **M100 PRO assembly includes onboard QMC5883L**, and its complete module needs **3.6–5.5 V**, therefore use **proposed 5 V GNSS supply**. Above historical R67 phrasing `plus separate HGLRC M100 compass` means a physically separate **GPS assembly**, not a separate QMC5883L PCB. No extra compass module quantity or 3.3 V sensor-rail current. GY-91 plus Waveshare MCP23017 remain on their own owner-confirmed D24V10F3 3.3 V rail. The I²C QMC remains in bus topology, but check SDA/SCL pull-up voltage and GPS UART output before joining 3.3 V GPIO. See [R73](BOAT_R73_M100_PRO_INTEGRATED_COMPASS_POWER.md).
