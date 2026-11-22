@@ -26,7 +26,7 @@ Older Heltec Wireless Tracker/SX1262 and central-carrier-PCB documents are archi
 | Primary radio | nRF24L01+ PA/LNA |
 | Backup radio | EBYTE E22-900T22S |
 | I/O expansion | MCP23017 |
-| Battery voltage ADC | ADS1115 module, I²C address 0x48, 3.3V |
+| Battery voltage sensor | **Ardboard INA231 product 1491, BUS-only**, 3.3V, 0x40 candidate |
 | Motor driver | Cytron MDD20A dual channel |
 | Four-channel release driver | EKM014 |
 | Main 5V rail | Olimex DCDC6-16-TO5 |
@@ -34,7 +34,7 @@ Older Heltec Wireless Tracker/SX1262 and central-carrier-PCB documents are archi
 | Sensor/RF 3.3V rails | 2× Pololu D24V10F3 #2830 |
 | Boat battery | 3S4P 18650 Li-ion, 11.1V nominal, ~10Ah, 20A BMS |
 
-Battery sensing uses a premade ADS1115 breakout and the **R21 corrected 150kΩ/33kΩ 1% divider** with 100nF input filtering. The 100kΩ/33kΩ R20 candidate failed the full-charge ADC input sanity limit. Check unpowered input/power sequencing and calibrate against a DMM; see [R21 sensor commissioning](Boat/docs/BOAT_R21_BATTERY_ADC_COMMISSIONING.md).
+**R27 current selection:** Boat battery sensing uses **Ardboard INA231 product 1491 in VBUS-only mode**, separate from the 20A current path. Never connect the board's 0.1Ω R100 shunt in series with the battery or motor loads. Battery sense and all actuator supplies remain uncommissioned/disconnected until actual PCB/pin validation. See [R27 selection and acceptance](Boat/docs/BOAT_R27_INA231_SELECTED_VOLTAGE_ONLY.md). The former ADS1115 divider/R21 documents are historical.
 
 ## Remote hardware baseline
 
@@ -80,7 +80,7 @@ The [R22 ADS1115 battery bench sketch](Boat/hardware_test/ADS1115_Battery_Bench/
 
 ## R23 Boat GPIO and modular wiring authority
 
-[**R23 manufacturer-header GPIO and connection guide**](Boat/docs/BOAT_R23_GPIO_PINOUT_AND_HARNESSES.md) is the current physical-wiring *design* reference, with the [64-net CSV harness schedule](Boat/docs/BOAT_R23_MODULE_CONNECTION_MATRIX.csv). It confirms the **18 distinct DevKitC-1 GPIO/header positions**, 0x27 Waveshare MCP23017 address jumper expectation, E22-900T22S 26-pad mapping, 3.3V nRF24 supply, 3.3V-safe EKM014 control inputs, and selected four regulator rail roles. [The current R20 purchase register](docs/PROJECT_PURCHASE_REGISTER_R20.csv) has been reconciled: Pololu D24V10F3 #1 supplies nRF24; #2 supplies GY-91/ADS1115/MCP23017; E22 pad25 is supplied from main 5V. The optional Ardboard nRF socket adapter is **not** an alternative approved 5V power path.
+[**R23 manufacturer-header GPIO and connection guide**](Boat/docs/BOAT_R23_GPIO_PINOUT_AND_HARNESSES.md) is the current physical-wiring *design* reference, with the [64-net CSV harness schedule](Boat/docs/BOAT_R23_MODULE_CONNECTION_MATRIX.csv). It confirms the **18 distinct DevKitC-1 GPIO/header positions**, 0x27 Waveshare MCP23017 address jumper expectation, E22-900T22S 26-pad mapping, 3.3V nRF24 supply, 3.3V-safe EKM014 control inputs, and selected four regulator rail roles. [The current R20 purchase register](docs/PROJECT_PURCHASE_REGISTER_R20.csv) has been reconciled: Pololu D24V10F3 #1 supplies nRF24; #2 supplies GY-91/INA231/MCP23017; E22 pad25 is supplied from main 5V. The optional Ardboard nRF socket adapter is **not** an alternative approved 5V power path.
 
 The actual purchased PCB revision and headers, M100 PRO 5V-powered UART/I²C signal levels, E22 TXD/AUX levels, RF carriers, independent STOP/watchdog/current-zero hardware, battery ADC calibration and output dummy-load acceptance remain **unverified**. Firmware safety flags remain off and high-current motor/solenoid inputs must stay disconnected.
 
