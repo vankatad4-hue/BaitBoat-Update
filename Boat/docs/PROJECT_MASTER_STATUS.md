@@ -584,3 +584,17 @@ Removed the 6.5-second idle-session teardown on both Boat and Remote. Radio watc
 - Remote Waveshare ESP32-S3 target compile was still IN_PROGRESS at run 45004179977 when recorded.
 - Project ZIP packaging PASS: run 45004459053.
 - Physical RF, motor, solenoid and safety-chain tests remain NOT_RUN; no live outputs authorized.
+
+
+### R78 / R19 — current radio-loss policy and Boat hardware baseline (2026-11-22)
+
+- Active hardware selection is consolidated in [BOAT_HARDWARE_SELECTION_R19.md](BOAT_HARDWARE_SELECTION_R19.md). It supersedes the Heltec Wireless Tracker / integrated SX1262 and older regulator candidates in R15/R18.
+- Selected baseline: ESP32-S3-DevKitC-1-N32R16V, HGLRC M100 PRO with QMC5883L, GY-91, nRF24L01+ PA/LNA, E22-900T22S, MCP23017, Cytron MDD20A, EKM014, DCDC6-16-TO5, 2× D24V10F3 #2830 and TRACO TSR 2-2450. Parts remain unpurchased/uncommissioned.
+- R78 adds Boat-local two-slot CRC-verified Home NVS. Mission preparation saves the Home coordinate from the authenticated mission plan and verifies read-back before acknowledging preparation.
+- Both radios stale: STOP all outputs immediately. At 10,000 ms from the last accepted authenticated frame, local RTH may start only if the active mission, matching Boat NVS Home, navigation, battery, geofence and local safety interlocks all validate. Without those gates, remain STOP.
+- During detached RTH, only local Home-navigation motor output is allowed; all solenoid outputs remain OFF. Recovery before threshold resumes the held mission; after RTH starts, it remains RTH until Home or explicit primary manual takeover with neutral sticks and stationary/idle interlocks.
+- Host tests PASS: [run 45005882433](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45005882433), including R78 Home-record CRC, timer, mission, actuator and application-bridge simulations.
+- Boat ESP32-S3 N32R16V diagnostic target compile PASS: [run 45005788272](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45005788272). This is a non-actuating diagnostic firmware build, not physical acceptance.
+- Remote Waveshare target compile PASS: [run 45004179977](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45004179977). Remote source was not changed by R78.
+- Dummy-load bench procedure prepared: [BOAT_R78_RADIO_LOSS_DUMMY_LOAD_BENCH_TEST.md](BOAT_R78_RADIO_LOSS_DUMMY_LOAD_BENCH_TEST.md). No physical bench test has been run; actual motors and solenoids remain disconnected.
+- No additional hardware elements were introduced, honoring the user's constraint. The watchdog remains software-only on the ESP32-S3 and is not an independent physical cutoff. No release version bump or physical acceptance is authorized.
