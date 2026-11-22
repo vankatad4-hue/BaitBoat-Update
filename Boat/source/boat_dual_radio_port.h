@@ -42,6 +42,9 @@ public:
     MissionNavigationResult missionNavigation()const{ExecInputs in{};return missionInputs(in,millis())?controller_.navigation(in):MissionNavigationResult{};}
     void localEmergencyStop(){const bool wasDetached=detachedReturn_;abortMission();detachedReturn_=false;if(wasDetached)controller_.resetSession();commandQueue_.clear();mission_.reset();}
     bool confirmManual(){ExecInputs in{};return missionInputs(in,millis())&&controller_.confirmManual(in);}
+    // Authenticated command intent only: never creates a new autonomous mission.
+    // The existing, locally validated mission and Home are required.
+    bool requestReturnHome();
     bool sendHardwareTelemetry(const RadioDecodedPayload &status);
     bool missionOverrideOutput(int16_t &left,int16_t &right)const;
     bool missionReleaseComplete(uint16_t transaction,uint16_t token,bool success);
@@ -51,7 +54,7 @@ public:
     bool sendFrame(ManagedLink link,const RadioFrame &frame);
     bool sendHeartbeat(ManagedLink link,uint32_t nowMs);
     uint32_t sessionGeneration()const{return generation_;}
-    bool completeApplicationAction(const BoatCommand &cmd,uint32_t generation,bool success,uint8_t stopState,uint8_t interlocks);
+    bool completeApplicationAction(const BoatCommand &cmd,uint32_t generation,bool success,uint8_t stopState,uint8_t interlocks,ManagedLink replyLink=LINK_NRF_PRIMARY);
     bool sessionEstablished() const { return sessionStarted_; }
     bool primaryReady() const { return nrfReady_; }
     bool backupReady() const { return sx1262Ready_; }
