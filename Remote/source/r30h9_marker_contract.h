@@ -33,7 +33,9 @@ public:
  static constexpr uint8_t CAPACITY=16;
  bool push(Endpoint endpoint,Event ev,uint32_t millisNow,uint16_t id=0) {
   if(size_==CAPACITY){++dropped_;return false;}
-  records_[tail_]={millisNow,id,ev,Evidence::SOFTWARE_LOCAL_UNCERTIFIED,endpoint};
+  Record &slot=records_[tail_];
+  slot.localMonotonicMs=millisNow;slot.commandId=id;slot.event=ev;
+  slot.evidence=Evidence::SOFTWARE_LOCAL_UNCERTIFIED;slot.endpoint=endpoint;
   tail_=(uint8_t)((tail_+1U)%CAPACITY);++size_;return true;
  }
  bool pop(Record &r){
