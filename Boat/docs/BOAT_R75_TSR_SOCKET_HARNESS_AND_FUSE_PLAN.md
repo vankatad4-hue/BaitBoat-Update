@@ -58,7 +58,7 @@ The selected **Olimex DCDC6-16-TO5** is 6–16V input and 5V/2A output. Its conn
 - input: standard Olimex barrel jack; the manufacturer's schematic marks center-positive polarity. The matching PWR-CABLE is a female DC connector pigtail. Olimex's cable page conflicts on the inner diameter (2.1mm in its description and 2.5mm elsewhere), so physically verify the actual connector fit and polarity before connection;
 - output: USB-A host connector, 5V up to 2A.
 
-The manufacturer's **PWR-CABLE** is a 30cm female DC barrel-connector pigtail to wire leads, AWG22 / 0.35mm², listed 3A. The connector ID discrepancy (2.1mm versus 2.5mm in the same product listing) must be physically checked against the DCDC6 before use.
+The manufacturer's **PWR-CABLE** is a 30cm female DC barrel-connector pigtail to wire leads, AWG22 / 0.35mm², listed 3A at 12V. The DCDC6 input accepts 6–16V, but the boat's 3S pack reaches 12.6V; verify the cable/connector voltage rating at 12.6V and the connector ID discrepancy (2.1mm versus 2.5mm in the same product listing) before use. The manufacturer's page says this cable pairs with DCDC6, but physical fit and polarity still need checking.
 
 **Important:** DCDC6 has no 5V screw-terminal output. A cable-only 5V split harness is required to supply:
 - ESP32-S3 DevKitC-1 5V input; and
