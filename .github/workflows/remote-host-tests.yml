@@ -102,3 +102,8 @@ jobs:
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/stubs -IRemote/source \
             Remote/source/dual_radio_manager.cpp Remote/tests/dual_radio_manager_r62_test.cpp -o /tmp/remote_dual_radio_r62
           /tmp/remote_dual_radio_r62
+      - name: R63 Remote backup LoRa command policy decoding
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/stubs -IRemote/source \
+            Remote/source/radio_command_codec.cpp Remote/tests/radio_command_backup_r63_test.cpp -o /tmp/remote_r63_backup
+          /tmp/remote_r63_backup
