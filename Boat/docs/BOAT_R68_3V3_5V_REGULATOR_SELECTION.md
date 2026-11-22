@@ -3,6 +3,8 @@
 **Date:** 2026-11-22 | **Status:** ENGINEERING SHORTLIST, NOT OWNER CONFIRMED / NOT PURCHASED / NOT COMMISSIONED.
 **R68A nRF power supersession:** The owner proposed the **Ardboard 1127 socket adapter**, which has its own AMS1117-3.3. See [R68A source audit](BOAT_R68A_ARDBOARD_NRF_SOCKET_POWER_REVIEW.md). The adapter will be evaluated from a filtered *regulated 5 V spur*, not 3S battery or 3.3 V rail. Pololu D24V10F3 is now proposed for **E22 backup alone**, conditional on the SMD carrier. The Ardboard regulator's input specification and assembled thermal/ripple capability are **NOT manufacturer-verified**; not approved to energize a PA/LNA module yet.
 
+**R71 active proposal supersedes R68 sensor supply row:** The user proposed and engineering accepted **2× Pololu D24V10F3 #2830**, with **separate isolated-from-each-other 3.3 V outputs**: one for E22 and one for **GY-91/QMC5883L/Waveshare MCP23017 SKU15391**. The prior `RECOM R-78E3.3-0.5` sensor rail in the historical R68 table and R68 diagram below is **NO LONGER the preferred proposal**; it remains an unselected alternative. Authoritative updated active BOM: [R68/R71 rail BOM](BOAT_R68_POWER_RAIL_BOM.csv) and [R71 compatibility/qualification](BOAT_R71_DUAL_D24V10F3_3V3_RAIL_REVIEW.md). Neither Pololu module is yet finally owner-locked, purchased or physically powered. 3.3 V is not galvanic isolation: both branches share a suitable common logic GND. **Never join their VOUT pins.**
+
 No custom electronic PCB designs. All four converters must be commercial, preassembled modules with verified detachable harness/approved header adapters. **No actuator power or GPIO output enable authorized.**
 
 ## Upstream assumptions
