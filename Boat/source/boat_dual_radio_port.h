@@ -9,6 +9,7 @@
 #include "boat_radio_safety.h"
 #include "boat_home_point_record.h"
 #include "radio_payload_encoder.h"
+#include "boat_r30g_optional_diag_budget.h"
 #include "boat_command_queue.h"
 #include "mission_wire.h"
 #include "mission_controller.h"
@@ -47,6 +48,8 @@ public:
     // The existing, locally validated mission and Home are required.
     bool requestReturnHome();
     bool requestLowBatteryReturnHome();
+    // For subtype 8 true means one bounded best-effort slot was offered,
+    // NOT delivered, ACKed or permitted to change actuator state.
     bool sendHardwareTelemetry(const RadioDecodedPayload &status);
     bool missionOverrideOutput(int16_t &left,int16_t &right)const;
     bool missionReleaseComplete(uint16_t transaction,uint16_t token,bool success);
@@ -92,6 +95,12 @@ private:
     bool (*missionInput_)(ExecInputs &)=nullptr;
     ExecOutput missionIntent_={INTENT_STOP,-1,0};
     uint32_t lastMissionStatusMs_=0;
+    // R30G single best-effort diagnostic slot. STOP/ACK/heartbeat/mission
+    // always precede optional telemetry. Never extend command leases.
+    boat_r30g::OptionalDiagnosticBudget optionalDiagnostics_{};
+    uint32_t lastControlRxMs_=0;
+    bool lastControlRxValid_=false;
+    bool havePrimaryHeartbeatSent_=false;
     bool missionInputs(ExecInputs &in,uint32_t now)const;
     void noteAuthenticatedRx(uint32_t now){lastAnyAuthenticatedRxMs_=now;haveAuthenticatedRx_=true;}
     bool maybeStartFailsafeReturnHome(uint32_t now);
