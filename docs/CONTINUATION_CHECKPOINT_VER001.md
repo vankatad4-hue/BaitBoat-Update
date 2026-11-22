@@ -121,6 +121,14 @@ The current `BoatPhysicalDriverAdapter` refuses to initialize unless the indepen
 8. Only after all bench gates pass, connect real motors/solenoids and perform controlled water acceptance.
 9. Sonar remains deferred until model selection.
 
+## Latest R79 code and CI verification update (2026-11-22)
+
+- The battery monitor now checks **raw** 3S pack voltage for an immediate critical event before smoothing; a 12.6V → 9.8V sudden collapse is covered by a regression test.
+- The Boat actuator supervisor now **deenergizes an active hopper/hook release immediately** when a running mission hits low battery, without permanently blocking Home diversion. It verifies a newer physical release-idle/current-zero sample before releasing the RTH gate; after 500ms without confirmation it latches STOP.
+- The Remote red warning explicitly instructs `ЗАРЕДИ/СМЕНИ` (recharge/replace), and appends RTH **only after** the Boat reports return-to-home mode. Critical voltage displays a distinct STOP warning.
+- Boat portable host tests passed with this interrupted-release fix (GitHub Actions run 45012211843). Remote portable host tests passed with the enhanced warning (run 45012139922). Both target builds require a final result check after their latest edits; neither target compile constitutes physical acceptance.
+- The E22-900T22S 5V rail is the **selected typical-voltage design**, not the only voltage the manufacturer permits. Keep the 5V main regulator current/ripple check and 3.3V TTL signal limits.
+
 ## Safety boundary
 
 R78/R79 watchdogs are software on the Boat ESP32-S3. ADS1115 is a measurement module, not an independent cutoff. Software cannot protect against MCU lockup, MCU power loss or a failed power transistor. Physical STOP, wiring protection and actual feedback must be validated separately.
