@@ -538,3 +538,8 @@ User reaffirmed **EBYTE E22-900T22S UART SMD**, one module in Boat and one match
 ## R75B — DCDC6 input connector clarification
 
 Olimex explicitly says DCDC6-16-TO5 pairs with its PWR-CABLE, but the PWR-CABLE page describes a female barrel pigtail and contains an inner-diameter discrepancy (2.1mm in the connector description versus 2.5mm elsewhere). DCDC6 schematic shows center-positive input. Treat PWR-CABLE as a candidate only until physical connector fit and polarity are verified; retain branch fuse and keyed wire termination as open items. R75 plan, audit, checkpoint and purchase register updated.
+
+
+## R75C — DCDC6 cable 3S full-charge voltage check
+
+The DCDC6 accepts 6–16V, while Olimex lists PWR-CABLE as 12V/3A. A 3S pack reaches 12.6V. The PWR-CABLE page also conflicts on 2.1mm vs 2.5mm barrel inner diameter. The cable is still a candidate: verify its voltage suitability at 12.6V, actual connector fit and center-positive polarity before use. DCDC6 schematic confirms center-positive input; branch fuse/wire coordination remains open.
