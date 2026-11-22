@@ -32,6 +32,12 @@ public:
  bool begin(const TrackerSensorConfig &cfg);
  void poll(uint32_t now);
  void copySensors(BoatHardwareSample &sample,uint32_t now)const;
+ // Fresh receiver UTC, separate from position/actuator safety. No PPS.
+ flytec_utc::Sample utcSnapshot(uint32_t now)const{
+  if(!configured_)return {};
+  return cfg_.gnssBaud==115200?
+      m100Ubx_.snapshot(now).utc:gnss_.utcSnapshot(now);
+ }
  bool imuReady()const{return imuReady_;}
  bool m100CompassReady()const{return m100CompassReady_;}
  bool startAutomaticFigure8(uint32_t now){return autoFigure8_.start(now,imuReady_,m100CompassReady_);}
