@@ -8,7 +8,7 @@ import re
 from collections import defaultdict
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-INCLUDE = re.compile(r'^\\s*#\\s*include\\s*"([^"]+)"', re.M)
+INCLUDE = re.compile(r'^\s*#\s*include\s*"([^"]+)"', re.M)
 EXT = {'.h', '.cpp', '.c', '.ino'}
 
 def rel(p):
@@ -98,7 +98,7 @@ def main():
         },
     }
     args.json.parent.mkdir(parents=True, exist_ok=True)
-    args.json.write_text(json.dumps(report, indent=2, ensure_ascii=False)+'\\n', encoding='utf-8')
+    args.json.write_text(json.dumps(report, indent=2, ensure_ascii=False)+'\n', encoding='utf-8')
     print('PASS: static inventory; no physical approval or release.')
     print('Source files:', len(src), 'Build roots:', len(roots),
           'review-only headers:', len(report['review_candidate_headers']))
