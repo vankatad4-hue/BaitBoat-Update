@@ -66,7 +66,12 @@ def parse_csv(path):
                                              ("platform", "event", "edge", "origin")]
             if not capture or not trial or not case or not clock:
                 raise ValueError(f"line {lineno}: missing capture/trial/case/clock")
-            if (platform, edge) != ALLOWED_EVENTS.get(event):
+            expected = ALLOWED_EVENTS.get(event)
+            # STOP switch and RF-cut fixture polarity are unknown until their
+            # actual PCB/fixture crosswalk is signed; either observed edge is
+            # allowed, but it must be identified by one external instrument.
+            variable_edge = event in ("STOP_BUTTON_EDGE", "RF_CUT_TRIGGER")
+            if expected is None or platform != expected[0] or (edge not in ("RISING", "FALLING") if variable_edge else edge != expected[1]):
                 raise ValueError(f"line {lineno}: invalid event/platform/edge: {event}")
             if origin not in {"EXTERNAL_ANALYZER", "SYNTHETIC"}:
                 raise ValueError(f"line {lineno}: USB_LOCAL or unknown origin cannot establish E2E clock")
