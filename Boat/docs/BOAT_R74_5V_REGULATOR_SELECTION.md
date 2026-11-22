@@ -61,3 +61,13 @@ DCDC6-16-TO5 is a 6–16V input, 5V/2A output module with barrel input and USB-A
 8. For DCDC6, test ESP32 + M100 PRO + conditional nRF adapter aggregate startup/radio load and USB backfeed; add second unit only if evidence requires it.
 
 **No hardware purchased or powered. No GPIO/motor/solenoid commissioning. No release ZIP or version bump. Boat VER014 / Remote VER028 remain unchanged.**
+
+
+## R75 — socket, connector and fuse implementation plan (2026-11-22)
+
+- Mechanical SIP3 candidate: **econ connect MP70S3**, 1×3 precision socket, 2.54mm pitch, 3A nominal. The manufacturer listing does not state the exact mating tolerance for the TSR's 0.46mm square pins; sample fit and vibration/contact-resistance test are mandatory before purchase lock.
+- Removable 3-wire pigtail candidate: **Phoenix Contact MSTB 2,5/3-ST-5,08 (1757022)** screw-terminal cable plug + **MSTBA 2,5/3-G-5,08-RN (1926028)** 3-position male THT header. 12A rated, 5.08mm pitch; solder header tails to supported pigtails, no custom PCB. Check exact mating/retention and enclosure fit.
+- Fuse candidate matching TRACO recommendation: **SCHURTER 0001.2508**, 2.5A time-lag 5×20mm ceramic, 250VAC/300VDC. Fuse holder not yet selected; Littelfuse 80000000005 is only a candidate pending exact DC rating, current revision, conductor and terminal review; IP40 means enclosure-only.
+- Main DCDC6 input pigtail candidate: **Olimex PWR-CABLE**, 30cm AWG22/0.35mm², 3A, 5.5×2.1mm barrel plug. DCDC6 output remains USB-A 5V/2A; an assembled cable-only split is needed for ESP32 + M100. Ardboard nRF adapter is excluded until the combined 2A load/thermal/noise tests pass. No simultaneous PC USB and external 5V unless power-blocked/data-only cable is verified.
+- Full pinout, distribution diagram, protection notes and bench gates: [R75 TSR socket/harness/fuse plan](BOAT_R75_TSR_SOCKET_HARNESS_AND_FUSE_PLAN.md). Full boat hardware confirmation status: [R75 audit](BOAT_R75_HARDWARE_CONFIRMATION_AUDIT.md). Physical acceptance matrix: [R75 NOT_RUN tests](BOAT_R75_HARDWARE_ACCEPTANCE.csv).
+- Purchase register and static CI updated. All R75 mechanical/fuse parts are candidates, not owner-confirmed purchases. No hardware powered or actuator enabled; Boat VER014 / Remote VER028 unchanged.
