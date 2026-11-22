@@ -3,7 +3,10 @@
 #include "ina231_arduino_wire_r28.h"
 namespace{
  bool validPins(const TrackerSensorConfig &c){
-  if(!c.pinAuditSigned||!(c.gnssBaud==9600||c.gnssBaud==115200)||(c.imuAddress!=0x68&&c.imuAddress!=0x69)||c.adcAddress<0x48||c.adcAddress>0x4b)return false;
+  if(!c.pinAuditSigned||!(c.gnssBaud==9600||c.gnssBaud==115200)||(c.imuAddress!=0x68&&c.imuAddress!=0x69)||
+     (boat_r27::INA231_MODULE_SELECTED ?
+       c.ina231Address!=boat_r27::I2C_CANDIDATE_ADDRESS :
+       (c.adcAddress<0x48||c.adcAddress>0x4b)))return false;
   int pins[]={c.gnssRx,c.gnssTx,c.sda,c.scl};
   for(unsigned i=0;i<4;++i){if(pins[i]<0||pins[i]>48)return false;for(unsigned j=0;j<i;++j)if(pins[i]==pins[j])return false;}
   return true;
