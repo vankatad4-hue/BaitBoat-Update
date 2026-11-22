@@ -125,3 +125,7 @@ The current [R30A Boat assembly and physical-test handoff](Boat/docs/BOAT_R30A_P
 ## R30B shared 3S application power-fault guard
 
 [Boat R30B brownout/freshness testing](Boat/docs/BOAT_R30B_SHARED_SUPPLY_FAULT_SIMULATION.md) now covers an application-integrated local battery-evidence veto for shared-bus power faults, INA231 staleness, missing conversions and critical battery. [Boat host CI](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45043490071) passed. The physical driver, independent STOP, actual wiring/connector current ratings and full operational Boat firmware are **not** commissioned. Releases remain Boat VER014 / Remote VER028.
+
+## R30C one shared 3S supply — physical safety feedback pending
+
+The Boat's [R30C physical feedback contract](Boat/docs/BOAT_R30C_ONE_BUS_SAFETY_FEEDBACK_CONTRACT.md) identifies a remaining mismatch between legacy dual-contactor firmware assumptions and the selected ONE 3S4P pack shared by Cytron MDD20A VM and EKM014 VH. R30C defines a software-only review contract for ONE common DC-rated disconnect and separate hardwired STOP/watchdog/current-zero/coil limiting functions, without adding or energizing hardware. `COMMON_BUS_HARDWARE_COMMISSIONED=false` preserves the output lock, and all physical approval gates remain OPEN.
