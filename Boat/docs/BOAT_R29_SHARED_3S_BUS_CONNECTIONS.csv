@@ -1,0 +1,9 @@
+Circuit_ID,Net,Source,Source_Contact,Destination,Destination_Contact,Voltage_Domain,Connection_Status,Acceptance_Notes
+COMMON_3S,PACK_COMMON_POS,3S4P_PACK_BMS,PACK_POS,COMMON_3S_DISTRIBUTION,POS,3S_9V_TO_12V6,UNWIRED_PENDING,One shared high-current supply for both loads; common feed wiring fuse and BMS measured-current acceptance required
+COMMON_3S,PACK_COMMON_NEG,3S4P_PACK_BMS,PACK_NEG,COMMON_3S_DISTRIBUTION,NEG,3S_RETURN,UNWIRED_PENDING,One common high-current return distribution with star-like connections; prevent high-current return through logic conductors
+COMMON_3S,MDD_MOTOR_VM,COMMON_3S_DISTRIBUTION,POS,CYTRON_MDD20A,VM,COMMON_3S,UNWIRED_PENDING,Parallel tap from common battery bus; no motor-only battery separate supply or switch
+COMMON_3S,MDD_MOTOR_GND,COMMON_3S_DISTRIBUTION,NEG,CYTRON_MDD20A,POWER_NEG,COMMON_3S_RETURN,UNWIRED_PENDING,Observe MDD20A manufacturer terminal names and polarity before real hookup
+COMMON_3S,EKM_FET_VH,COMMON_3S_DISTRIBUTION,POS,ELECTROKIT_EKM014,VH,COMMON_3S,UNWIRED_PENDING,Parallel tap from common battery bus not from MDD board terminal; VH must remain >= VL regulated 5V
+COMMON_3S,EKM_FET_GND,COMMON_3S_DISTRIBUTION,NEG,ELECTROKIT_EKM014,GND,COMMON_3S_RETURN,UNWIRED_PENDING,Existing factory 10A slow blow VH fuse is not independent coil pulse protection
+COMMON_3S,INA231_BUS_SENSE,COMMON_3S_DISTRIBUTION,PROTECTED_LOW_CURRENT_SENSE,ARDBOARD_INA231_1491,BUS,LOW_CURRENT_ANALOG_3S,UNWIRED_PENDING,Low-current voltage sensing only; 0.1ohm shunt never in motor or coil power path
+COMMON_3S,EKM_LOGIC_VL,TSR_2_2450,REGULATED_5V,ELECTROKIT_EKM014,VL,5V_LOGIC,UNWIRED_PENDING,5V logical input remains separate regulated voltage but powered ultimately from same 3S battery
