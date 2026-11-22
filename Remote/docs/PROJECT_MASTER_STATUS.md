@@ -681,4 +681,5 @@ The owner reconfirmed **1× EBYTE E22-900T22S UART SMD on Remote and 1× same ex
 - The target job staged and compiled the complete Remote diagnostic/target sketch and uploaded firmware binary and compiler log artifacts.
 - Remote portable host tests also passed at run 45004179963.
 - R78 changes the Boat-side radio-loss policy and Boat-local Home NVS only; Remote source and Remote release version are unchanged.
+- Boat/Remote ZIP snapshots were packaged successfully with existing VER014/VER028 markers in [run 45006240321](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45006240321).
 - Physical display, touch, SD, nRF24 and E22 tests remain pending on purchased hardware.
