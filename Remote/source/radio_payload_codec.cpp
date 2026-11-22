@@ -1,4 +1,5 @@
 #include "radio_payload_codec.h"
+#include "radio_safety_diagnostic_v1.h"
 #include <string.h>
 
 static uint16_t readU16LE(const uint8_t *p) {
@@ -72,6 +73,19 @@ bool radio_decodeTelemetryPayload(const uint8_t p[8], RadioDecodedPayload &out) 
         out.pressurePa=(uint32_t)p[3]|((uint32_t)p[4]<<8)|((uint32_t)p[5]<<16)|((uint32_t)p[6]<<24);
         if(out.temperatureCentiC < -4000 || out.temperatureCentiC > 8500 || out.pressurePa < 30000 || out.pressurePa > 120000){resetOut(out);return false;}
         return true;
+    case 8: {
+        // Optional R30F diagnostic. Authenticated RadioFrame checks belong to
+        // the transport; observing this subtype NEVER confirms STOP or motor
+        // readiness. Reject older-version or falsely commissioned payloads.
+        radio_r30f::Diagnostic diagnostic{};
+        if(!radio_r30f::decode(p,diagnostic)) {resetOut(out);return false;}
+        out.kind=RADIO_PAYLOAD_SAFETY_DIAGNOSTIC;
+        out.diagnosticReason=diagnostic.reason;
+        out.diagnosticFlags=diagnostic.flags;
+        out.diagnosticMillivolts=diagnostic.millivolts;
+        out.diagnosticSequence=diagnostic.sequence;
+        return true;
+    }
     default: resetOut(out); return false;
     }
 }
