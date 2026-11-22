@@ -8,7 +8,7 @@ static int8_t coilOutput=-1;
 static int16_t leftOutput=0,rightOutput=0;
 static unsigned cutCount=0;
 static bool sample(BoatHardwareSample &s,BoatSafetyContacts &c,Ekm014Feedback &f){
- s={};
+ s={};s.voltageValid=true;s.batteryAt=clockMs;s.batteryMillivolts=12000;s.batteryHealthy=true;
  c={stopClosed,true,true,true,contactZero,true,true,true,clockMs};
  f={true,true,senseZero,true,feedbackAt?feedbackAt:clockMs};
  return true;
