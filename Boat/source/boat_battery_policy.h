@@ -18,7 +18,10 @@ public:
   if(!valid||raw<9000U||raw>13000U)return snapshot(now);
   if(!initialized_){filtered_=raw;initialized_=true;}else filtered_=(uint16_t)(((uint32_t)filtered_*3U+raw+2U)/4U);
   last_=now;
-  if(filtered_<=IMMEDIATE_STOP_MV){critical_=true;criticalTiming_=false;}
+  // An abrupt pack collapse must bypass the smoothing filter. In particular,
+  // a 12.6V -> 9.8V step must STOP on the very first valid ADC reading.
+  if(raw<=IMMEDIATE_STOP_MV){critical_=true;criticalTiming_=false;}
+  else if(filtered_<=IMMEDIATE_STOP_MV){critical_=true;criticalTiming_=false;}
   else if(filtered_<=CRITICAL_MV){if(!criticalTiming_){criticalTiming_=true;criticalSince_=now;}if((uint32_t)(now-criticalSince_)>=CRITICAL_CONFIRM_MS)critical_=true;}
   else if(filtered_>CRITICAL_MV+200U)criticalTiming_=false;
   if(filtered_<=RTH_MV){if(!lowTiming_){lowTiming_=true;lowSince_=now;}if((uint32_t)(now-lowSince_)>=RTH_CONFIRM_MS)rth_=true;}
