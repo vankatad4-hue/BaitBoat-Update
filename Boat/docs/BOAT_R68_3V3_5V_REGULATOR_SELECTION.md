@@ -35,10 +35,11 @@ Boat pack: 3S4P Li-ion, nominal 11.1 V, fully charged ~12.6 V, nominal low opera
     ESP32-S3 DevKitC        EKM014 driver       nRF PA/LNA
     onboard 3V3 LDO         *VL only*           E22-900T22S
                |
-               +--------- RECOM R-78E3.3-0.5
-                          3.3 V sensor bus, 0.5A
-                                  |
-                       GY-91 + QMC + Waveshare 15391
+               |
+               +--------------------- RECOM R-78E3.3-0.5
+                                     3.3 V sensor bus, 0.5A
+                                            |
+                                 GY-91 + QMC + Waveshare 15391
 
   Separate fused, hardware-interlocked high-current load branches:
   PACK -> independently verified STOP / DC contactors -> MDD20A MOTOR
