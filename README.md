@@ -34,7 +34,7 @@ Older Heltec Wireless Tracker/SX1262 and central-carrier-PCB documents are archi
 | Sensor/RF 3.3V rails | 2× Pololu D24V10F3 #2830 |
 | Boat battery | 3S4P 18650 Li-ion, 11.1V nominal, ~10Ah, 20A BMS |
 
-Battery sensing uses a premade ADS1115 breakout and a 100kΩ/33kΩ 1% divider with 100nF input filtering. Exact divider gain/offset and ADC wiring remain to be calibrated against a DMM on the assembled boat.
+Battery sensing uses a premade ADS1115 breakout and the **R21 corrected 150kΩ/33kΩ 1% divider** with 100nF input filtering. The 100kΩ/33kΩ R20 candidate failed the full-charge ADC input sanity limit. Check unpowered input/power sequencing and calibrate against a DMM; see [R21 sensor commissioning](Boat/docs/BOAT_R21_BATTERY_ADC_COMMISSIONING.md).
 
 ## Remote hardware baseline
 
@@ -55,7 +55,7 @@ The Boat measures its own 3S pack locally; radio connectivity is not required fo
 - At or below 10.8V for 3 seconds: red; hold outbound mission motion and initiate validated Home diversion.
 - At or below 10.2V for 1 second: critical STOP.
 - At or below 9.9V: immediate critical STOP.
-- A stale/invalid battery sample (older than 1 second) is fail-closed and stops propulsion.
+- **An invalid sample stops propulsion immediately**; a previously valid sample older than one second also fails closed.
 - If an autonomous mission is active, low battery cancels the outbound target and remaining release sequence, then returns Home only with valid Boat NVS Home, navigation and local safety interlocks.
 - If no autonomous mission is active, the Remote warns and manual return remains the operator's responsibility. A new mission is blocked at red.
 - All hopper and hook outputs remain OFF during battery RTH. Critical battery overrides RTH and stops all outputs.
