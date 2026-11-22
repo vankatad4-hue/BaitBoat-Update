@@ -31,6 +31,11 @@ int main() {
   in.nrfValidFresh=true;
   assert(boatEvaluateLinkFailsafe(in)==BOAT_FS_NONE); // valid link suppresses link-loss action
   in.nrfValidFresh=false; in.loraValidFresh=true;
-  assert(boatEvaluateLinkFailsafe(in)==BOAT_FS_NONE);
+  // Backup alone cannot supervise 200ms manual motor leases.
+  assert(boatEvaluateLinkFailsafe(in)==BOAT_FS_STOP_PROPULSION);
+  in.autonomousMissionActive=true;in.batteryHealthy=true;
+  assert(boatEvaluateLinkFailsafe(in)==BOAT_FS_RETURN_HOME);
+  in.geofenceValid=false;
+  assert(boatEvaluateLinkFailsafe(in)==BOAT_FS_STOP_PROPULSION);
   return 0;
 }
