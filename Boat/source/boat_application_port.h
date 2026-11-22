@@ -1,7 +1,8 @@
 #pragma once
 #include "boat_hardware_supervisor.h"
 #include "boat_dual_radio_port.h"
-// R15: hardware port uses ONLY ready-made Heltec, MDD20A, EKM014 and
+// Current modular Boat uses ready-made ESP32-S3-DevKitC-1-N32R16V,
+// MDD20A, EKM014 and
 // independently reviewed commercial safety modules with removable harnesses.
 // No custom carrier PCB or live output pins exist in the default build.
 // Driver contract: the installed module-specific port must obtain real local
