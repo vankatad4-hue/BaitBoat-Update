@@ -122,3 +122,6 @@ The current [R30A Boat assembly and physical-test handoff](Boat/docs/BOAT_R30A_P
 
 **Boundary:** This is documentation for procurement, unpowered inspection/assembly planning and later logic-only testing after real PCB/rail signoff. It is **not** a released powered motor/coil design, and the default `Flytec_Boat.ino` is still a non-actuating diagnostic. The one 3S BMS supply, power wiring ratings, independent failsafe hardware, release current feedback and complete installed HAL remain unverified. Boat VER014 / Remote VER028 unchanged.
 
+## R30B shared 3S application power-fault guard
+
+[Boat R30B brownout/freshness testing](Boat/docs/BOAT_R30B_SHARED_SUPPLY_FAULT_SIMULATION.md) now covers an application-integrated local battery-evidence veto for shared-bus power faults, INA231 staleness, missing conversions and critical battery. [Boat host CI](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45043490071) passed. The physical driver, independent STOP, actual wiring/connector current ratings and full operational Boat firmware are **not** commissioned. Releases remain Boat VER014 / Remote VER028.
