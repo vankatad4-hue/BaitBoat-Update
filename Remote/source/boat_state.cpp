@@ -41,4 +41,7 @@ void initialiseBoatState()
     boatState.emergencyStop = true;
     boatState.emergencyStopConfirmed = false;
     boatState.actuatorSafetyReady = false;
+    boatState.diagnosticFresh = false;
+    boatState.diagnosticReason = 0;
+    boatState.diagnosticFlags = 0;
 }
