@@ -83,3 +83,10 @@ Removing EKM014 VL *alone* is NOT an independently demonstrated coil cutoff if a
 - Do not enable Heltec actuator pins, motor/coil power, or Remote release action because of module research. 3S actual power and waterproofing remain unverified.
 - No custom PCB designs, no RP2040, no rudder, no Boat E22; integrated SX1262 disabled until LoRa matching; sonar model undecided and **not implemented**.
 - Official Remote VER028 / Boat VER014 markers unchanged until physical acceptance.
+
+
+## R77 no-new-hardware radio watchdog update
+
+The requested radio-loss behavior is now implemented in Boat/Remote firmware using the existing nRF24 and E22 links: both stale -> all motor/solenoid requests OFF; fresh authenticated link -> eligible autonomous navigation resumes; manual steering and releases remain primary-only; interrupted release is aborted and never replayed. Session keys/replay counters persist across ordinary RF silence so backup can recover after a long outage.
+
+This is software behavior only. It does not replace C1/C2 independent DC power isolation, C3 hardware one-hot bounded pulse controller, physical STOP, feedback, watchdog or current-zero acceptance. Those physical items remain unresolved and live motor/coil power remains prohibited. See [R77 implementation](BOAT_R77_DUAL_RADIO_WATCHDOG_IMPLEMENTATION.md).
