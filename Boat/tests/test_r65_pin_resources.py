@@ -98,7 +98,7 @@ class BoatR20PinResources(unittest.TestCase):
         adapter = (ROOT / "Boat/source/ekm014_mcp23017_adapter.h").read_text()
         physical = (ROOT / "Boat/source/boat_physical_driver_adapter.h").read_text()
         self.assertIn("MCP23017 GPA0", doc)
-        self.assertIn("does not replace the independent pulse guard", adapter)
+        self.assertIn("does NOT replace Ekm014PulseGuard", adapter)
         self.assertIn("independentHardwareCommissioned", physical)
 
     def test_hardware_still_uncommissioned(self):
