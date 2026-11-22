@@ -293,7 +293,11 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame){
 void boatRadio_update() {
     if(!g_begun) return;
     const uint32_t now=millis();
-    if(g_session.established()&&(!sessionReady()||now-g_lastSessionRx>=6500U))resetSession(now);
+    // Link inactivity is supervised by DualRadioManager; do not wipe the
+    // authenticated session merely because both RF paths were quiet. This
+    // allows the backup E22 path to restore the same session after an outage.
+    // Sequence-limit rekey is deferred until the primary link is healthy.
+    if(g_session.established()&&!sessionReady()&&g_linkManager.primaryHealthy(now))resetSession(now);
     if(g_session.timeout(now))resetSession(now);
     if(g_rootReady&&g_nrfReady&&!g_session.established()&&now-g_lastHandshakeTx>=500U){
         g_lastHandshakeTx=now;g_session.startRemote(radioPlatformNonce(),now);
