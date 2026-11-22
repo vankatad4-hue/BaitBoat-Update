@@ -5,7 +5,7 @@ uint32_t fakeNow=0;
 static BoatActuatorOutput output={0,0,-1};
 static bool readSample(BoatHardwareSample &s){
  s={{422000000,275000000,1.25,90,true,true,true,true},fakeNow,fakeNow,fakeNow,
-    true,true,true,true,true,true,true,true,false,false,70,3,8,10700,0,fakeNow,fakeNow,true,true};
+    true,true,true,true,true,true,true,true,false,false,70,3,8,10700,0,fakeNow,fakeNow,true,true,BOAT_BATTERY_UNKNOWN,false};
  return true;
 }
 static bool apply(const BoatActuatorOutput &o,uint16_t lease){assert(lease==100);output=o;return true;}
