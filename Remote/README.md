@@ -17,7 +17,7 @@
 The Remote's Boat-battery indicator is independent of the Remote's own battery. It displays Boat voltage and estimated percentage:
 - Green: above 50%.
 - Yellow: 21–50%, with `СРЕДНА БАТ. — ЗАРЕДИ`.
-- Red: 20% or lower or the Boat's low-battery status flag, with `НИСКА БАТ. — RTH`; critical voltage displays `КРИТ. БАТ. — STOP`.
+- Red: 20% or lower or the Boat's low-battery status flag, with `НИСКА БАТ. — ЗАРЕДИ/СМЕНИ` (RTH is added only when the Boat reports Home return); critical voltage displays `КРИТ. БАТ. — STOP`.
 - Stale or missing Boat telemetry: `ЛОДКА: --`, muted grey.
 
 Mission preparation is blocked if Boat battery telemetry is stale or estimated charge is 20% or lower. The Boat independently enforces its own low-battery gate and RTH; the Remote is not the safety authority.
