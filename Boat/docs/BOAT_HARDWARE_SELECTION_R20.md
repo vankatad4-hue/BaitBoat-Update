@@ -1,8 +1,8 @@
-# Flytec V080 Boat hardware selection — R20
+# Flytec V080 Boat hardware selection — R20 baseline (R27 battery-sense successor)
 
 Date: 2026-11-22  
 Branch: `hardware-ready-dual-radio-r1`  
-Status: active procurement authority; selected parts are not yet purchased/commissioned. R20 supersedes R19 and the archived Heltec/SX1262 candidate records.
+Status: active R20 module baseline, except **R27 replaces ADS1115 with Ardboard INA231 product 1491 for voltage-only sensing**. No parts purchased/commissioned. See [R27 manufacturer evidence and exact module wiring](BOAT_R27_INA231_SELECTED_VOLTAGE_ONLY.md).
 
 ## Active selected modules
 
@@ -15,16 +15,19 @@ Status: active procurement authority; selected parts are not yet purchased/commi
 | Primary radio | nRF24L01+ PA/LNA | Selected |
 | Backup radio | EBYTE E22-900T22S | Selected |
 | I²C I/O expansion | MCP23017 | Selected |
-| Battery voltage ADC | ADS1115 16-bit breakout, I²C 0x48 | Required to complete the existing firmware ADC path; not yet purchased |
+| **Boat battery voltage sensor** | **Ardboard INA231 I²C, product 1491, BUS-only, address 0x40 candidate** | **R27 selected / unpurchased / uncommissioned; never series-wire its R100 0.1Ω shunt in the 20A pack circuit** |
 | Motor driver | Cytron MDD20A dual channel | Selected |
 | Four-channel release driver | EKM014 | Selected |
 | Main 5V rail | Olimex DCDC6-16-TO5 | Selected; powers ESP32-S3, M100 PRO and E22-900T22S VCC; one fitted, second optional only if measurements justify |
 | EKM014 logic rail | TRACO TSR 2-2450 | Selected |
 | 3.3V RF rail | Pololu D24V10F3 #2830 unit 1 | nRF24L01+ PA/LNA |
-| 3.3V sensor/I/O rail | Pololu D24V10F3 #2830 unit 2 | GY-91, ADS1115, MCP23017 |
+| 3.3V sensor/I/O rail | Pololu D24V10F3 #2830 unit 2 | GY-91, **INA231**, MCP23017 |
 | Battery | 3S4P 18650 Li-ion, 11.1V nominal, ~10Ah, 20A BMS | Existing design baseline |
 
 The ADS1115 was already assumed by the Boat's I²C ADC acquisition code at address 0x48 but was omitted from R19's parts table. R20 makes that module explicit. It is a measurement module, not a separate safety controller or power cutoff.
+
+
+> **R27 ACTIVE SELECTION OVERRIDE:** The sections below describing ADS1115 AIN0 and R21 150kΩ/33kΩ are retained solely as historical engineering context. **Do not buy or wire ADS1115 or the 150kΩ/33kΩ divider for the active Boat battery sensor.** Selected module is Ardboard INA231 product 1491 operated in BUS-voltage-only mode, with **3S sense lead disconnected until physical inspection** and all commissioning flags false. The original ADS1115 acquisition code has been blocked. [R27 selection and safe wiring](BOAT_R27_INA231_SELECTED_VOLTAGE_ONLY.md).
 
 ## Battery voltage input
 
