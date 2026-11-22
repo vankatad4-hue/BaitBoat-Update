@@ -241,6 +241,10 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
      handshake_.frameKey(key_);sessionStarted_=true;lastSessionRx_=now;txSequence_=0;
      primarySeqGuard_.resetAfterHandshake();backupSeqGuard_.resetAfterHandshake();crossRadioSeqGuard_.resetAfterHandshake();
      lastNrfRxValid_=lastBackupRxValid_=false;haveAuthenticatedRx_=false;lastAnyAuthenticatedRxMs_=0;commandQueue_.clear();mission_.reset();dedupe_.clear();stickLease_.reset();radioWatchdog_.reset();
+     // New authenticated epoch: discard any optional diagnostic from the
+     // previous key/session and require a new successful primary heartbeat.
+     optionalDiagnostics_.reset();lastControlRxValid_=false;
+     havePrimaryHeartbeatSent_=false;
      if(!detachedReturn_&&!linkLossHold_){abortMission();controller_.resetSession();}
    }
    RadioFrame ack;radio_frameInit(ack,(RadioMessageType)reply.type,BOAT_ID,REMOTE_ID,0,0,now,0);
