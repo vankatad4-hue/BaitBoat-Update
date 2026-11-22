@@ -1,0 +1,19 @@
+Test_ID,Stimulus,Expected_Physical_Safety_Behavior,Required_Measurement,Evidence,Status
+R66-T01,Pack power-up with all requests LOW,Both DC load branches remain open and all EKM014 outputs OFF until valid manual local reset,Contactor branch voltage+four coil currents,NONE,NOT_RUN
+R66-T02,Pack power-up with one coil request stuck HIGH,No pulse and no reset auto-arm,Four coil currents+request voltage,NONE,NOT_RUN
+R66-T03,Pack power-up with two or more requests HIGH,All outputs remain OFF and fault indication persists,Current on every coil branch,NONE,NOT_RUN
+R66-T04,Qualified physical local reset after all requests LOW and current-zero,Only permission to arm; no output pulse on reset,Current trace plus reset edge,NONE,NOT_RUN
+R66-T05,Individual request 1 only,At most one pulse; waveform less than manufacturer-qualified Tmax,IN1 and coil1 current vs time,NONE,NOT_RUN
+R66-T06,Individual request 2 only,At most one pulse; waveform less than manufacturer-qualified Tmax,IN2 and coil2 current vs time,NONE,NOT_RUN
+R66-T07,Individual request 3 only,At most one pulse; waveform less than manufacturer-qualified Tmax,IN3 and coil3 current vs time,NONE,NOT_RUN
+R66-T08,Individual request 4 only,At most one pulse; waveform less than manufacturer-qualified Tmax,IN4 and coil4 current vs time,NONE,NOT_RUN
+R66-T09,Request remains HIGH longer than pulse deadline,Single bounded event; output stays OFF until all requests LOW and zero-current qualification,Coil current and gate scope trace,NONE,NOT_RUN
+R66-T10,Overlapping requests during pulse,Immediate bounded inhibit; no second channel energizes,All coil currents timing,NONE,NOT_RUN
+R66-T11,Loss of heartbeat / MCU freeze,Independent physical branch disconnect; no automatic restart,Watchdog relay timing+contactor aux and load rail,NONE,NOT_RUN
+R66-T12,Open physical STOP channel A then B separately,All motor and coil power isolated; manual fault reset required,Contactors feedback+rail decay+motor/coil currents,NONE,NOT_RUN
+R66-T13,3S sag beneath converter input minimum (less than 9V),Fail-OFF despite regulator dropout/auto-restart,Pack+24V+5V+contactor coil waveform,NONE,NOT_RUN
+R66-T14,Forced contactor auxiliary open or welded-main fault simulation,Fault latch prevents rearm; load isolation claim only if separate rated protective mechanism demonstrably interrupts,Real independent contact feedback+main terminal voltages,NONE,NOT_RUN
+R66-T15,Current-zero remains FALSE after pulse,All new release requests inhibited; no motor output until physical current-zero verified,Six independent current-zero sensors,NONE,NOT_RUN
+R66-T16,Short circuit or 24V->3.3V interface open/stuck high,No uncontrolled EKM014 pulse; fault containment must be demonstrated by rated modules,Gate high level and actual coil currents,NONE,NOT_RUN
+R66-T17,STOP while both motors drawing maximum known test current,Independently rated motor power disconnect without welded contacts or unsafe flyback,Motor current start/stall+contactor DC interrupt data,NONE,NOT_RUN
+R66-T18,Water ingress/condensation/vibration test on separated module enclosures,No unexpected motion/release; electrical modules protected within rated environment,Ingress indicators+voltage+contact feedback,NONE,NOT_RUN
