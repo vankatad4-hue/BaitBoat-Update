@@ -609,3 +609,11 @@ Removed the 6.5-second idle-session teardown on both Boat and Remote. Radio watc
 - Remote battery telemetry is independent of Remote battery: voltage and estimated percentage, green/yellow/red, Bulgarian recharge/RTH warnings, grey unavailable on stale data. Mission preparation is blocked on stale or red telemetry, with Boat-side enforcement as final authority.
 - Detailed implementation: [BOAT_R79_LOW_BATTERY_FAILSAFE.md](BOAT_R79_LOW_BATTERY_FAILSAFE.md); physical procedure: [BOAT_R79_LOW_BATTERY_BENCH_TEST.md](BOAT_R79_LOW_BATTERY_BENCH_TEST.md).
 - R79 software is committed; physical ADS1115 calibration, GPIO map, radio/driver wiring and dummy-load tests remain pending. No actual motors or solenoids are to be connected until the dummy-load gates pass.
+
+
+### R20 GPIO and power allocation follow-up (2026-11-22)
+
+- Candidate ESP32-S3-DevKitC-1-N32R16V pin/header allocation is documented in [BOAT_GPIO_HEADER_MAP_R20.md](BOAT_GPIO_HEADER_MAP_R20.md) and [BOAT_R20_GPIO_RESOURCE_CROSSWALK.csv](BOAT_R20_GPIO_RESOURCE_CROSSWALK.csv). Firmware pins are candidate values only; audit flags remain 0 until the exact purchased board revision is inspected.
+- Corrected E22-900T22S supply: 5V VCC from DCDC6-16-TO5 main 5V/2A rail; UART/control signals remain 3.3V TTL. D24V10F3 #1 is nRF24 PA/LNA; D24V10F3 #2 is GY-91/ADS1115/MCP23017.
+- MCP23017 address 0x27 candidate: GPA0–GPA3 to EKM014 IN1–IN4; GPB0–GPB1 to MDD20A DIR1/DIR2. The host-tested adapter readback is not coil-current feedback and does not replace the independent pulse guard.
+- The physical-driver battery-health validity now derives from the fresh ADS1115 sample; no separate battery-comparator module is required. Independent STOP/watchdog/pulse-limiter/current-zero feedback remains a separate uncommissioned gate.
