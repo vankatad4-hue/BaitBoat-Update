@@ -27,6 +27,7 @@ int main(){
  assert(s.tick(in,404,stop,nav,true,false,0,0,404).releaseChannel==-1);
  done=s.takeCompletion();assert(done.valid&&!done.success);
  assert(s.stopped());hw=sample(404);assert(s.clearStop(hw,404,true,true));
+ in.primaryFresh=true;in.backupFresh=false; // restore the simulated primary radio
  MissionNavigationResult home={true,false,15,90,0};
  assert(s.tick(in,405,{INTENT_NAV_HOME,-1,0},home,true,false,0,0,405).left==400);
  // Autopilot turns with unequal forward thrust, without any rudder or
