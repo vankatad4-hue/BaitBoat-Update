@@ -352,6 +352,14 @@ jobs:
             Boat/docs/BOAT_R30H_8_SHARED_CLOCK_MANIFEST_TEMPLATE.json \
             > /tmp/r30h8_blank.log || test "$?" -eq 3
           grep -F "R30H-8 NOT_RUN" /tmp/r30h8_blank.log
+      - name: R30H-9 Boat/Remote no-GPIO diagnostic marker + hostile unsigned physical probe preflight
+        run: |
+          cmp Boat/source/r30h9_marker_contract.h Remote/source/r30h9_marker_contract.h
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IBoat/source \
+            Boat/tests/r30h9_marker_contract_test.cpp -o /tmp/boat_r30h9_marker
+          /tmp/boat_r30h9_marker
+          python3 Boat/tools/verify_r30h9_marker_preflight.py
+          python3 -m unittest Boat/tests/test_r30h9_marker_preflight.py -v
       - name: R30H-4 common-clock analyzer and physical evidence provenance (no-RF)
         run: |
           python3 -m unittest Boat/tests/test_r30h4_common_clock_capture.py -v
