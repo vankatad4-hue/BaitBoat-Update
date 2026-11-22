@@ -41,7 +41,8 @@ assert "radio_frameSeal(optional,key_)&&sendFrame(LINK_NRF_PRIMARY,optional)" in
 assert "radio_frameSeal(f,key_)" in radio and "sendFrame(LINK_NRF_PRIMARY,f)" in radio
 receiver=read("Remote/source/boat_radio.cpp")
 assert "radio_frameVerify(frame,g_authKey)" in receiver
-assert "frame.payload[0]==radio_r30f::SUBTYPE)return;" in receiver
+assert "frame.payload[0]==radio_r30f::SUBTYPE ||" in receiver
+assert "frame.payload[0]==flytec_time::SUBTYPE" in receiver
 assert receiver.index("frame.payload[0]==radio_r30f::SUBTYPE")<receiver.index(
         "g_linkManager.reportValidRx(link,true,now);")
 telemetry=read("Remote/source/boat_telemetry.cpp")
