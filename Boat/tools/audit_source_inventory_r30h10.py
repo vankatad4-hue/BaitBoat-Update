@@ -76,16 +76,22 @@ def main():
         for folder in ('tests', 'hardware_test'):
             for p in (ROOT / section / folder).rglob('*'):
                 if p.is_file() and p.suffix in EXT:
-                    included_by_tests.update(INCLUDE.findall(p.read_text(encoding='utf-8')))
+                    included_by_tests.update(pathlib.PurePosixPath(name).name for name in
+                                             INCLUDE.findall(p.read_text(encoding='utf-8')))
     hashes = defaultdict(list)
     for p in src:
         hashes[hashlib.sha256(p.read_bytes()).hexdigest()].append(rel(p))
-    unused = [p for p in src if p.suffix == '.h' and p not in used]
+    # Headers consumed indirectly by LVGL/ESP panel build macros are NOT dead code.
+    external_config = {'Remote/source/lv_conf.h',
+                       'Remote/source/esp_panel_board_custom_conf.h'}
+    unused = [p for p in src if p.suffix == '.h' and p not in used
+              and rel(p) not in external_config]
     report = {
         'evidence': 'STATIC_SOURCE_ONLY_NOT_PHYSICAL',
         'source_files': len(src),
         'active_compile_roots': len(roots),
         'reachable_files': len(used),
+        'externally_consumed_configuration_headers': sorted(external_config),
         'test_only_headers': [rel(p) for p in unused if p.name in included_by_tests],
         'review_candidate_headers': [rel(p) for p in unused if p.name not in included_by_tests],
         'duplicate_identical_source_groups_retained': [x for x in hashes.values() if len(x)>1],
