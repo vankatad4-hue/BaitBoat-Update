@@ -89,3 +89,11 @@ The **historical R23 pin and signal baseline** is [R23 GPIO pinout/harnesses](do
 ## R30E — local fault diagnosis without actuator power
 
 [Boat R30E report](docs/BOAT_R30E_LOCAL_FAULT_TELEMETRY.md). Non-actuating `Flytec_Boat.ino` now reports **NO_READER / UNVERIFIED / outputs=LOCKED** in a two-second USB Serial diagnostic, plus a versioned local 8-byte hex record. Actual R30D hardware safety inputs are unselected, so the code cannot claim measured STOP/watchdog/current-zero evidence. No Remote RF protocol or hardware module changed. Physical commissioning flags remain false and Boat VER014 / Remote VER028 unchanged.
+
+## R30E CI — independently observed PASS (2026-11-22)
+
+- [Boat host run **45047481082**](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45047481082), code/workflow commit `bed9ce336beb6bf32f4ccf84ab6e1f463de90fad`: **SUCCESS**. The new C++17 `boat_r30e_fault_status_test.cpp` passed (all fault-code priorities, local 8-byte envelope, event tracking and permanently locked physical driver). The static `verify_r30e_fault_status.py` audit and all other Boat regression steps passed.
+- [Boat ESP32-S3 target run **45047413922**](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45047413922), latest executable-source commit `7f21a574a7bb21c3b8b277022d3915ecff104697`: **SUCCESS**. The non-actuating `Flytec_Boat.ino` including R30E local Serial telemetry compiled; the locked INA231 and historical locked ADS1115 bench sketches compiled; artifact steps completed.
+- [Post-documentation Boat host run **45047573473**](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45047573473), documentation commit `d129e71b4c90221671e15c1a0b2d8e0317693308`: **SUCCESS**. Confirms documentation-triggered host suite still passed. No Boat executable source changed after `7f21a574`.
+- R30E's actual on-target expected diagnostic line is **`NO_READER / UNVERIFIED / outputs=LOCKED`** because the physical reader was not selected or attached. The tests do **NOT** certify real safety feedback or live Remote telemetry. The D5 diagnostic envelope remains USB local-only and not an authenticated radio command/payload. The 24 physical design gates remain OPEN, 81 older physical checks NOT_RUN; single common 3S VM/VH architecture and Boat VER014 / Remote VER028 unchanged.
+
