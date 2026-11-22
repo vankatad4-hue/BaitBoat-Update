@@ -19,7 +19,7 @@ The 3S pack feeds EKM014 VH separately through an independent hardware load-disc
 
 **Primary socket candidate: BINDER MPE 006-1-003-D-B1STF-XS0**
 - 3-position single-row precision socket, 2.54mm pitch, 3A rated, 150VDC, 4-finger BeCu contact, UL94V-0, -55…+125°C.
-- Manufacturer's mating range explicitly includes square pins up to **0.25×0.45mm**. The TRACO TSR pin is **0.46×0.46mm nominal with ±0.1mm pin-dimension tolerance**. This is the closest documented socket candidate found, but the nominal TSR pin is 0.01mm larger than the socket's listed square-pin maximum. It is therefore **not yet a guaranteed fit**.
+- Manufacturer specifies a square mating-pin size of **0.25×0.45mm** (and round pins Ø0.40–0.56mm). The TRACO TSR pin is **0.46×0.46mm nominal with ±0.1mm pin-dimension tolerance**. This is the closest documented socket candidate found, but the nominal TSR pin is 0.01mm larger than the socket's listed square-pin size. It is therefore **not yet a guaranteed fit**.
 - Exact supplier listing: Reichelt lists **MPE 006-1-003-D-B1STF-XS0** as a 3-pin 2.54mm socket; manufacturer page provides the 006-1 series mating dimensions. Obtain one sample and request manufacturer confirmation of the TRACO pin compatibility.
 
 **Secondary candidate: econ connect MP70S3**
