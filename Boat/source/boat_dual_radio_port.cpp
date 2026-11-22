@@ -40,6 +40,22 @@ bool BoatDualRadioPort::sendMissionFeedback(const MissionControlFeedback &status
  RadioFrame f;radio_frameInit(f,RADIO_MSG_MISSION_FEEDBACK,BOAT_ID,REMOTE_ID,++txSequence_,status.transaction,now,sessionEpoch_);
  return missionFeedbackEncode(status,f.payload)&&radio_frameSeal(f,key_)&&sendFrame(LINK_NRF_PRIMARY,f);
 }
+bool BoatDualRadioPort::requestReturnHome(){
+ // No new mission may be created by a backup radio command. An active plan,
+ // good local navigation/safety data and complete coil deenergization are
+ // all required. Physical driver HAL still owns the independent STOP.
+ const auto phase=controller_.status().phase;
+ if(!sessionReady()||detachedReturn_||
+    (phase!=MC_OUTBOUND&&phase!=MC_PAUSED&&phase!=MC_RETURNING&&
+     phase!=MC_OVERRIDE_NEUTRAL&&phase!=MC_OVERRIDE_ACTIVE))return false;
+ ExecInputs in{};
+ if(!missionInputs(in,millis())||in.stopActive||!in.releaseIdle||
+    (!in.primaryFresh&&!in.backupFresh))return false;
+ if(!controller_.divertHome(in,true))return false;
+ detachedReturn_=true;stickLease_.reset();
+ missionIntent_={INTENT_STOP,-1,0}; // one safe tick before Home navigation
+ return true;
+}
 void BoatDualRadioPort::resetSession(bool preserveReturn){
  ++generation_;releaseIdSeen_=false;
  ExecInputs in{};const bool ready=preserveReturn&&missionInputs(in,millis());
@@ -176,7 +192,9 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
    return;
  }
  const auto phase=controller_.status().phase;
- if(detachedReturn_||(phase>=MC_PREPARED&&phase<=MC_RETURNING&&!(phase==MC_PREPARED&&cmd.type==CMD_CLEAR_STOP))){if(cmd.type!=CMD_MANUAL_MOTORS)sendCommandAck(link,cmd,RADIO_ACK_REJECTED_SAFETY,2,0,now);return;}
+ const bool homeRequest=cmd.type==CMD_SET_MODE&&cmd.mode==MODE_RETURN_HOME;
+ if(detachedReturn_||(phase>=MC_PREPARED&&phase<=MC_RETURNING&&
+    !(phase==MC_PREPARED&&cmd.type==CMD_CLEAR_STOP)&&!homeRequest)){if(cmd.type!=CMD_MANUAL_MOTORS)sendCommandAck(link,cmd,RADIO_ACK_REJECTED_SAFETY,2,0,now);return;}
  if(dedupe_.hasExecuted(f.sourceId,f.sessionEpoch,id)) {
    sendCommandAck(link,cmd,RADIO_ACK_DUPLICATE,0,0,now);return;
  }
@@ -217,10 +235,10 @@ bool BoatDualRadioPort::takeCommand(BoatCommand &cmd,bool &duplicate,ManagedLink
  }
  return false;
 }
-bool BoatDualRadioPort::completeApplicationAction(const BoatCommand &cmd,uint32_t generation,bool success,uint8_t stopState,uint8_t interlocks){
+bool BoatDualRadioPort::completeApplicationAction(const BoatCommand &cmd,uint32_t generation,bool success,uint8_t stopState,uint8_t interlocks,ManagedLink replyLink){
  if(generation!=generation_||!sessionReady())return false;
  if(success)dedupe_.markExecuted(REMOTE_ID,sessionEpoch_,(uint16_t)cmd.commandId);
- return sendCommandAck(LINK_NRF_PRIMARY,cmd,success?RADIO_ACK_EXECUTED:RADIO_ACK_REJECTED_SAFETY,stopState,interlocks,millis());
+ return sendCommandAck(replyLink,cmd,success?RADIO_ACK_EXECUTED:RADIO_ACK_REJECTED_SAFETY,stopState,interlocks,millis());
 }
 void BoatDualRadioPort::markActionExecuted(uint8_t sender,uint8_t epoch,uint16_t commandId) {
  dedupe_.markExecuted(sender,epoch,commandId);
