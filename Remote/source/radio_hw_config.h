@@ -16,3 +16,5 @@
 #define REMOTE_E22_BRIDGE_AUDIT_SIGNED 0
 #define REMOTE_E22_RF_INTEROPERABILITY_VERIFIED 0
 #define REMOTE_E22_RF_AIRTIME_AUDIT_SIGNED 0
+// R30H-3 optional diagnostic-only Remote STOP timing trace; default disabled.
+#define REMOTE_R30H3_STOP_TRACE_ENABLED 0
