@@ -143,3 +143,16 @@ No release version increment until target builds, host tests, physical commissio
 - Software now fails closed **on the first invalid ADC sample**, in addition to aging out a formerly good sample after 1000ms.
 - [R21 low-voltage commissioning](../Boat/docs/BOAT_R21_BATTERY_ADC_COMMISSIONING.md) and [blank test record](../Boat/docs/BOAT_R21_ADC_CALIBRATION_WORKSHEET.csv) are ready. R21 Boat host and ESP32-S3 **non-actuating diagnostic** compile passed on commit `bd4199585dbd0ec48b3c745aa8b35612aa78e8f4` (CI #45013257861 and #45013257742). No physical measurements have been performed. Remote host and Waveshare target compilation passed on commit `12c5cfd0b29ab641b0acc184e6160335efc6b0b3`.
 - **Next gate:** purchase/inspect actual board revisions, make DMM/scope recordings for voltage and rail sequencing, verify I²C bus address, then proceed to dummy-load-only tests. Physical STOP/watchdog/current-zero feedback remains unresolved. Boat VER014 / Remote VER028 unchanged.
+
+## R22 continuation — isolated ADS1115 bench firmware (2026-11-22)
+
+**Committed:** independent sensor-only [R22 ADS1115 serial bench](../Boat/hardware_test/ADS1115_Battery_Bench/ADS1115_Battery_Bench.ino) with default-off audited GPIO gate; private local config example, read-only raw-to-mV decoder, portable host tests, source isolation verification, and a separate target compile stage. It does **not** import Boat mission/radio/actuator code or authorize motor, solenoid or RTH operation. No physical ADC readings have been performed.
+
+- [R22 sensor-only hardware bring-up](../Boat/docs/BOAT_R22_ADS1115_SENSOR_ONLY_BRINGUP.md)
+- [R21 uncommissioned 150kΩ / 33kΩ divider design](../Boat/docs/BOAT_R21_BATTERY_ADC_COMMISSIONING.md)
+- [Blank voltage/DMM/oscilloscope record](../Boat/docs/BOAT_R21_ADC_CALIBRATION_WORKSHEET.csv)
+- Boat host CI passed on `97b6a54e9562c4c2fd683bb399847d946930a61e`; [run #45021864048](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45021864048).
+- Main Boat and separate locked R22 bench ESP32-S3 target compilation passed on `94750bb58ea5bbb9a501a82f4a78d03cd4824138`; [run #45021889338](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45021889338).
+- The first host run immediately after adding the new CI check was transiently failing because its checker file had not yet been committed; the later complete R22 host run is passing.
+
+**Next physical gate:** purchase/inspect the exact DevKitC-1-N32R16V revision and ADS1115 carrier; verify 3.3V regulator and pullups, GPIO header, sensor ground, divider 150k/33k, and AIN0 versus VDD through power-up/down with a scope. Record DMM and serial raw ADC codes at 9.0–12.6V into the blank R21 sheet. Only then privately enable I²C bench reads. No motor/solenoid supply connected; independent STOP/watchdog/coil current-zero physical hardware remains uncommissioned. Versions Boat VER014 / Remote VER028 remain unchanged.
