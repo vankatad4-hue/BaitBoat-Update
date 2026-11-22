@@ -1,3 +1,5 @@
+> **R20 ACTIVE BOM:** Use [BOAT_HARDWARE_SELECTION_R20.md](BOAT_HARDWARE_SELECTION_R20.md) for the current ESP32-S3 DevKitC, M100 PRO, GY-91, radios, ADS1115 battery ADC, MDD20A, EKM014 and regulators. The distributed-module/no-custom-PCB mounting principle remains active; R18's old Heltec and safety-contactor candidates are historical, not procurement authority.
+
 # R18 — Distributed, prefabricated Boat module placement
 
 > **R19 ACTIVE BOM:** Use [BOAT_HARDWARE_SELECTION_R19.md](BOAT_HARDWARE_SELECTION_R19.md) for the current ESP32-S3-DevKitC-1-N32R16V, M100 PRO, GY-91, nRF24, E22-900T22S, MDD20A, EKM014 and selected regulators. The older Heltec/SX1262 power table is historical, not procurement authority.

@@ -1,3 +1,5 @@
+> **R20 PROCUREMENT AUTHORITY:** The active Boat BOM, battery-sensing module and power-rail allocation are in [BOAT_HARDWARE_SELECTION_R20.md](BOAT_HARDWARE_SELECTION_R20.md). This R15 document is historical for its Heltec/older regulator candidate table; do not order from that table. The no-custom-PCB and ready-made-module-only policy remains active.
+
 # R15 — Boat premade-modules-only implementation plan
 
 > **R19 PROCUREMENT AUTHORITY:** The active Boat BOM and power-rail allocation are now in [BOAT_HARDWARE_SELECTION_R19.md](BOAT_HARDWARE_SELECTION_R19.md). This R15 document is historical for the Heltec/older regulator candidate list; do not order components from its superseded table. Keep the no-custom-PCB and ready-made-module-only constraint.

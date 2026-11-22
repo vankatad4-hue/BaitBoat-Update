@@ -1,3 +1,5 @@
+> **SUPERSEDED BY R20:** This R19 table is retained as a historical snapshot. Use [BOAT_HARDWARE_SELECTION_R20.md](BOAT_HARDWARE_SELECTION_R20.md) as the only current Boat procurement and battery-sensing authority. R20 explicitly adds the ADS1115 0x48 battery-voltage module and the R79 battery thresholds.
+
 # Flytec V080 Boat hardware selection — R19
 
 Date: 2026-11-22  
