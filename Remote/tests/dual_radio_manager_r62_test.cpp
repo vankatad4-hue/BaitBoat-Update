@@ -1,16 +1,15 @@
 #include <cassert>
 #include "../source/dual_radio_manager.h"
-static bool transmitOK=false;
+static bool transmitOK=true;
 static ManagedLink lastLink=LINK_NONE;
 static BoatCommand lastCommand{};
-static unsigned sendCalls=0;
+static unsigned sends=0;
 static bool sendMock(ManagedLink link,const BoatCommand &cmd){
-    ++sendCalls;lastLink=link;lastCommand=cmd;return transmitOK;
+    ++sends; lastLink=link; lastCommand=cmd; return transmitOK;
 }
 int main(){
     DualRadioManager mgr;
     mgr.begin(0);
-    // Invalid identifiers must not accidentally mark backup transport healthy.
     mgr.setTransportReady(LINK_NONE,true);
     mgr.reportValidRx(LINK_NONE,true,100);
     mgr.reportFailure(LINK_NONE);
@@ -18,32 +17,38 @@ int main(){
     assert(mgr.state()==LINK_NO_LINK);
     assert(!mgr.backupHealthy(100));
 
-    // Force authenticated backup as the only available link.
     mgr.setTransportReady(LINK_LORA_BACKUP,true);
     mgr.reportValidRx(LINK_LORA_BACKUP,true,200);
     mgr.tick(200);
     assert(mgr.state()==LINK_BACKUP && mgr.active()==LINK_LORA_BACKUP);
     BoatCommand steering{};
     steering.type=CMD_MANUAL_MOTORS;
-    steering.leftMotor=900;
-    steering.rightMotor=-900;
-    assert(!mgr.send(steering,sendMock,3000)); // simulated UART failure
-    assert(sendCalls==1 && lastLink==LINK_LORA_BACKUP);
-    assert(lastCommand.leftMotor==250 && lastCommand.rightMotor==-250);
-    transmitOK=true;
-    assert(mgr.send(steering,sendMock,3001)); // retry allowed after failure
-    assert(sendCalls==2);
-    assert(!mgr.send(steering,sendMock,3002)); // sent command is paced
-    assert(sendCalls==2);
-    assert(mgr.send(steering,sendMock,6001)); // 3 seconds have elapsed
-    assert(sendCalls==3);
-    assert(!mgr.send(steering,sendMock,6201)); // no fresh authenticated backup RX
-    assert(sendCalls==3);
+    steering.leftMotor=900; steering.rightMotor=-900;
+    assert(!mgr.send(steering,sendMock,3000)); // LoRa pacing cannot meet 200ms lease
+    assert(sends==0);
     BoatCommand release{};
-    release.type=CMD_RELEASE_HOOK_LEFT;release.activate=true;
-    assert(!mgr.send(release,sendMock,6002)); // no releases on backup
+    release.type=CMD_RELEASE_HOOK_LEFT; release.activate=true;
+    assert(!mgr.send(release,sendMock,3001));
+    assert(sends==0);
+    BoatCommand stop{};
+    stop.type=CMD_EMERGENCY_STOP;
+    transmitOK=false;
+    assert(!mgr.send(stop,sendMock,3002)); // actual send failure is never success
+    assert(sends==1);
+    transmitOK=true;
+    assert(mgr.send(stop,sendMock,3003));
+    assert(sends==2 && lastLink==LINK_LORA_BACKUP &&
+           lastCommand.type==CMD_EMERGENCY_STOP);
+    BoatCommand home{};
+    home.type=CMD_SET_MODE; home.mode=MODE_RETURN_HOME;
+    assert(mgr.send(home,sendMock,3004));
+    assert(sends==3);
+    home.mode=MODE_AUTOPILOT;
+    assert(!mgr.send(home,sendMock,3005));
+    assert(sends==3);
+    assert(!mgr.send(stop,sendMock,6201)); // authenticated backup RX expired
+    assert(sends==3);
 
-    // A healthy primary requires the authenticated recovery streak and holdoff.
     mgr.setTransportReady(LINK_NRF_PRIMARY,true);
     mgr.reportValidRx(LINK_NRF_PRIMARY,true,7000);
     mgr.tick(7000);
@@ -53,6 +58,8 @@ int main(){
     assert(mgr.state()==LINK_RECOVERY);
     mgr.reportValidRx(LINK_NRF_PRIMARY,true,8501);
     mgr.tick(8501);
-    assert(mgr.state()==LINK_PRIMARY);
-    assert(mgr.active()==LINK_NRF_PRIMARY);
+    assert(mgr.state()==LINK_PRIMARY && mgr.active()==LINK_NRF_PRIMARY);
+    assert(mgr.send(steering,sendMock,8501)); // primary controls unaffected
+    assert(sends==4 && lastLink==LINK_NRF_PRIMARY &&
+           lastCommand.leftMotor==900);
 }
