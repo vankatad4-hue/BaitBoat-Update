@@ -44,6 +44,14 @@ int main(){
  assert(r.returnRequests==2 && r.detached);
  r.primary=true;r.backup=false;r.returnAllowed=false;
  r.detached=false;r.phase=MC_IDLE;r.tx=0;
+ // R78: the production application bridge passes the local, validated
+ // failsafe-Home authorization to the actuator supervisor. With both radios
+ // absent, only the Home intent may produce dummy motor output; coils stay OFF.
+ r.phase=MC_RETURNING;r.tx=42;r.intent={INTENT_NAV_HOME,-1,0};
+ r.nav={true,false,15,90,0};r.primary=false;r.backup=false;r.failsafeRth=true;
+ at(a,7);assert(output.left>0&&output.right>0&&output.releaseChannel==-1);
+ r.failsafeRth=false;r.primary=true;r.phase=MC_IDLE;r.tx=0;r.intent={INTENT_STOP,-1,0};
+ at(a,8);assert(output.left==0&&output.right==0&&output.releaseChannel==-1);
  unsigned id=3;
  for(int c=0;c<4;++c){
   fakeNow+=10;request(r,(BoatCommandType)(CMD_RELEASE_HOPPER_LEFT+c),id++);
