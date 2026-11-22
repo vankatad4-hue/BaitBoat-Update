@@ -45,7 +45,10 @@ BoatPolicyResult boatPolicyApply(const BoatCommand &cmd,bool backup,
             state.mode=MODE_AUTOPILOT;state.missionActive=true;return BOAT_POLICY_ACCEPTED;
         }
         if(cmd.mode==MODE_RETURN_HOME) {
-            if((backup?!in.backupLinkFresh:!in.primaryLinkFresh) || !navReady(in))
+            // A mode byte must never create an autonomous mission from scratch.
+            // Only the locally verified, already-active mission may divert Home.
+            if(!state.missionActive ||
+               (backup?!in.backupLinkFresh:!in.primaryLinkFresh) || !navReady(in))
                 return BOAT_POLICY_REJECTED_SAFETY;
             state.mode=MODE_RETURN_HOME;state.missionActive=true;out.requestReturnHome=true;
             return BOAT_POLICY_ACCEPTED;
