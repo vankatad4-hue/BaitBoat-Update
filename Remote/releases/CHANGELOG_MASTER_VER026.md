@@ -353,3 +353,11 @@ Engineering-only branch milestone; no official Remote/Boat package version bump.
 - Boat codec and command policy reject backup manual commands and no-plan Home. Link-loss, mission controller and execution policies now divert Home on loss of the authenticated primary even when backup heartbeats remain; otherwise STOP. Added `BoatDualRadioPort::requestReturnHome`, Boat application's CMD_SET_MODE handling and an ACK on the originating radio. No actuator wiring/permission; no manual backup steering commissioned.
 - Verified host CI: Remote 44991125196 PASS, Boat 44991241882 PASS. Latest target compilation still requires confirmation. Source and limitations: `docs/R63_BACKUP_CONTROL_AND_RTH_INTEGRATION.md`.
 - Safety chain, ready-made E22 carrier, RF compliance, real GPS/physical safety, 3S battery/current measurements and water acceptance remain outstanding. No sonar work; Remote SD only. Official Boat VER014 / Remote VER028 unchanged.
+
+
+## R65 (development documentation and CI pin-resource guard only; 2026-11-22)
+- Verified previous R63 endpoint target compiles were successful in R64; continued to safety module procurement and selected N32R16V pin resource crosswalk R65.
+- New `Boat/docs/BOAT_R65_SAFETY_AND_PIN_BUDGET.md`, `Boat/docs/BOAT_R65_ESP32S3_PIN_RESOURCE_CROSSWALK.csv`; 44 manufacturer header positions and 22 tentative nonconflicting 3.3V roles. Excluded GPIO35–37 memory, GPIO47/48 1.8V and board-revision RGB LED/straps/USB.
+- R65 regression `Boat/tests/test_r65_pin_resources.py` wired into Boat host CI, guarding candidate CSV and still-unassigned GPIO in non-actuating diagnostic firmware. Repository-contents check passed; **CI outcome not yet confirmed** at update time.
+- R65 review added research-only candidates Brentek P8D-ISM5 watchdog, Pilz 772100 optional safety controller and Bulgarian-listed Mean Well DDR-15G-24 supply to canonical purchase register. Duelco NST-3.2 and Albright SW60 retain candidate status; none approved as complete interlock. The factory EKM014 shared VH fuse is 10A slow-blow; four requests require independent onehot/no-repeat hardware, not software-only GPIO.
+- **No firmware operational release, no purchasing, no powered output, no sonar integration.** Remote VER028 / Boat VER014 unchanged.
