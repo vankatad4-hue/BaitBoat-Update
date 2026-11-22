@@ -56,6 +56,7 @@ enum class Result : uint8_t {
 struct Capture {
  Result result = Result::NEVER_READ;
  boat_r30c::CommonBusFeedback feedback{};
+ RawFrame raw{}; // visible only to diagnostics; never a signed safety contact
  uint32_t capturedAtMs = 0;
  bool observed = false;
  // No physical commissioning can be inferred from an observation frame.
@@ -96,6 +97,7 @@ public:
       frame.battery.millivolts>13000U)
     return deny(Result::INVALID_BATTERY);
 
+  latest_.raw=frame; // preserve limiter observation without commissioning it
   auto &f=latest_.feedback;
   f.stopCircuitHealthy=frame.stop.asserted;
   f.independentlySupervisedWatchdogHealthy=frame.watchdog.asserted;
