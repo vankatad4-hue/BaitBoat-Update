@@ -64,6 +64,7 @@ void telemetryApplyToBoatState(BoatState &s,uint32_t now){
  s.sonarActive=sonarFresh&&(telemetry.sonarHealth==1||telemetry.sonarHealth==2);
  s.motorLeftActive=statusFresh&&(telemetry.safetyFlags&(1U<<1))!=0;s.motorRightActive=statusFresh&&(telemetry.safetyFlags&(1U<<2))!=0;
  s.lowBattery=statusFresh&&(telemetry.safetyFlags&(1U<<5))!=0;
+ s.criticalBattery=statusFresh&&(telemetry.safetyFlags&(1U<<7))!=0;
  s.failsafeActive=statusFresh&&((telemetry.safetyFlags&(1U<<6))!=0||telemetry.reportedMode==3);
  if(statusFresh&&telemetry.reportedMode<=2)s.mode=(BoatMode)telemetry.reportedMode;
  if(statusFresh&&telemetry.stopState<=1&&telemetry.statusPrimary){s.emergencyStop=telemetry.stopState==1;s.emergencyStopConfirmed=true;}else s.emergencyStopConfirmed=false;

@@ -33,7 +33,8 @@ struct BoatState
     bool weatherValid;int16_t temperatureCentiC;uint32_t pressurePa;
     bool sonarActive;      // Sonar operating status.
     bool headingValid;     // Heading valid only when fresh status/nav flags agree.
-    bool lowBattery;       // Boat-reported low battery flag.
+    bool lowBattery;       // Boat-reported low battery/RTH flag.
+    bool criticalBattery;  // Boat-reported critical battery STOP flag.
     bool failsafeActive;  // Boat-reported failsafe flag/mode.
 
     bool sdCardReady;      // True when the remote TF card is mounted.

@@ -37,7 +37,7 @@ bool radio_decodeTelemetryPayload(const uint8_t p[8], RadioDecodedPayload &out) 
     resetOut(out); out.subtype=p[0];
     switch(p[0]) {
     case 1:
-        if(p[1]>4 || p[2]>2 || (p[3]&0x80U)!=0 || (p[4]>100 && p[4]!=255) || p[7]!=0) { resetOut(out); return false; }
+        if(p[1]>4 || p[2]>2 || (p[4]>100 && p[4]!=255) || p[7]!=0) { resetOut(out); return false; }
         out.kind=RADIO_PAYLOAD_STATUS; out.boatMode=p[1]; out.stopState=p[2]; out.safetyFlags=p[3];
         out.batteryPercent=p[4]; out.gpsFixType=p[5]; out.satellites=p[6]; return true;
     case 2:
