@@ -39,6 +39,7 @@ REQUIRED = (
     "Boat/docs/BOAT_R30H_4_LOGIC_CAPTURE_TEMPLATE.csv",
     "Boat/docs/BOAT_R30H_4_CAPTURE_MANIFEST_TEMPLATE.json",
     "Boat/docs/BOAT_R30H_4_RF_ONLY_PROBE_CROSSWALK.csv",
+    "Boat/docs/BOAT_R30H_7_GNSS_PPS_RF_CLOCK_SIGNOFF.csv",
 )
 LOCKED_MACROS = {
     "Remote/source/radio_hw_config.h": (
@@ -197,6 +198,14 @@ def verify(source):
         if probe.get("Physical_mapping_state")!="NOT_READY" or any(probe.get(field) for field in
              ("Verified_testpoint","Measured_logic_high_V","Measured_logic_low_V","Evidence","Engineer_signoff")):
             errors.append("R30H-4 probe cannot be signed without genuine physical inspection")
+            break
+    h7 = list(csv.DictReader(io.StringIO(source["Boat/docs/BOAT_R30H_7_GNSS_PPS_RF_CLOCK_SIGNOFF.csv"])))
+    if len(h7)!=12 or len({row.get("Gate_ID") for row in h7})!=12:
+        errors.append("R30H-7 must keep twelve distinct GNSS/PPS physical acceptance gates")
+    for row in h7:
+        if row.get("State")!="NOT_RUN" or any(row.get(k) for k in
+           ("Observed","Artifact","Engineer_signoff")):
+            errors.append("R30H-7 cannot claim physical GPS/PPS/clock-offset measurements")
             break
     matrix = list(csv.DictReader(io.StringIO(source["Boat/docs/BOAT_R30H_RF_TEST_MATRIX.csv"])))
     if len(matrix) != 22 or any(r["State"] != "NOT_RUN" for r in matrix):
