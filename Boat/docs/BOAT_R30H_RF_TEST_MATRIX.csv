@@ -1,0 +1,23 @@
+Case_ID,Phase,Transport,Scenario,Expected_Behavior,Minimum_Trials,State,Evidence,Gate
+H01,RF_ONLY,NRF,Primary authenticated handshake and telemetry,Valid HMAC session and 100ms heartbeat reception,30,NOT_RUN,,R23_R25_RADIO
+H02,RF_ONLY,E22,Backup peer PHY and 3000ms heartbeat,Validated EU868 E22 pairing and authenticated backup-only freshness,30,NOT_RUN,,R23_R25_RADIO
+H03,RF_ONLY,DUAL,Both radios available,Concurrent heartbeat with no false session reset,30,NOT_RUN,,R23_R25_RADIO
+H04,RF_ONLY,NRF,STOP primary,Record INPUT_STOP AUTH_STOP_RX and STOP_INTENT separately,30,NOT_RUN,,INSTRUMENTED_RUNTIME
+H05,RF_ONLY,E22,STOP on backup with nRF absent,Record E22 pacing queue and authenticated STOP reception,30,NOT_RUN,,INSTRUMENTED_RUNTIME
+H06,RF_ONLY,DUAL,STOP with both radios healthy,Measure fastest permitted stop and ACK distinct from physical current,30,NOT_RUN,,INSTRUMENTED_RUNTIME
+H07,RF_ONLY,NRF,STOP during optional diagnostic contention,No diagnostic priority inversion and no stale control freshness,30,NOT_RUN,,INSTRUMENTED_RUNTIME
+H08,LOGIC_ONLY,DUAL,Physical RF cut while both links fresh,Measure RF_BLOCKED to BOTH_STALE and OUTPUT_OFF separately,30,NOT_RUN,,SIMULATED_ACTUATORS
+H09,LOGIC_ONLY,NRF,Primary loss while backup stays fresh,No manual or release authority from E22 while autonomous hold policy retained,30,NOT_RUN,,SIMULATED_ACTUATORS
+H10,LOGIC_ONLY,E22,Backup loss while primary stays fresh,No false total loss and primary manual semantics retained,30,NOT_RUN,,SIMULATED_ACTUATORS
+H11,LOGIC_ONLY,DUAL,Total loss valid running mission and matching Home,STOP at BOTH_STALE and no RTH before 10000ms from LAST_AUTH_RX then Home only,30,NOT_RUN,,SIMULATED_ACTUATORS
+H12,LOGIC_ONLY,DUAL,Total loss no running mission,No synthetic RTH and LOGICAL_OUTPUT_OFF,5,NOT_RUN,,SIMULATED_ACTUATORS
+H13,LOGIC_ONLY,DUAL,Total loss stale or invalid Home,No RTH and LOGICAL_OUTPUT_OFF,5,NOT_RUN,,SIMULATED_ACTUATORS
+H14,LOGIC_ONLY,DUAL,Total loss bad GNSS heading or geofence,No RTH and LOGICAL_OUTPUT_OFF,5,NOT_RUN,,SIMULATED_ACTUATORS
+H15,LOGIC_ONLY,DUAL,Total loss critical battery or INA231 error,No RTH and fail closed,5,NOT_RUN,,SIMULATED_ACTUATORS
+H16,LOGIC_ONLY,DUAL,Total loss active release and missing current zero,Release OFF and no RTH without newer physical feedback,5,NOT_RUN,,SIMULATED_ACTUATORS
+H17,LOGIC_ONLY,DUAL,Recovery before 10000ms,Authenticated eligible mission resume only with safety gates and no replay,30,NOT_RUN,,SIMULATED_ACTUATORS
+H18,LOGIC_ONLY,DUAL,Recovery after detached RTH,No outbound resume or stale release; explicit neutral primary takeover,30,NOT_RUN,,SIMULATED_ACTUATORS
+H19,RF_ONLY,DUAL,Bad HMAC replay or wrong epoch,Ignore packet and cannot refresh control freshness,30,NOT_RUN,,R23_R25_RADIO
+H20,RF_ONLY,DUAL,Repeated power and RF loss,No false authentication or R30F STOP ACK and no diagnostic safety override,30,NOT_RUN,,R23_R25_RADIO
+H21,DUMMY_LOAD,DUAL,Real approved safe-current STOP and radio-loss timing,Measure DUMMY_CURRENT_ZERO and one-hot releases only after independent signoff,30,NOT_RUN,,ALL_R30A_PHYSICAL_GATES
+H22,DUMMY_LOAD,DUAL,Approved RTH with dummy loads,Only Home propulsion and zero release current under every interlock,30,NOT_RUN,,ALL_R30A_PHYSICAL_GATES
