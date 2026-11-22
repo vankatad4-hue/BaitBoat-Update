@@ -183,3 +183,7 @@ jobs:
           /tmp/r62_memory_gate
       - name: R65 selected ESP32-S3 pin-resource, safety-hold and module-only candidate crosswalk
         run: python3 -m unittest Boat/tests/test_r65_pin_resources.py -v
+      - name: R66 COTS safety PLC capacity and external interlock acceptance oracle (host only)
+        run: |
+          python3 -m unittest Boat/tests/test_r66_safety_plc_budget.py -v
+          python3 -m unittest Boat/tests/test_r66_external_interlock_oracle.py -v
