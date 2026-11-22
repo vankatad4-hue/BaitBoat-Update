@@ -158,3 +158,8 @@ Owner decision replaces ALL historical custom electronic PCB designs (Boat and R
 - [Bench acceptance](../../docs/MODULE_ONLY_ACCEPTANCE_R15.md)
 
 The physically separate Cytron MDD20A drives two motors; manufactured Electrokit EKM014 is the **candidate** 4-coil driver, no custom FET PCB. Hardware STOP, 3S DC-rated cutoff, POR/onehot/timer, current-zero and final GPIO are unselected and not wired. No actuator power, sonar still unselected. Remote VER028/Boat VER014 held.
+
+
+## R77 — dual-radio watchdog recovery
+
+Boat and Remote retain the authenticated session across ordinary RF inactivity. The Boat firmware commands all motor and solenoid outputs OFF when both authenticated link freshness windows expire, holds eligible autonomous mission state, and resumes it when a fresh authenticated frame returns on either radio. Manual control and irreversible releases remain primary-only; an interrupted release is never replayed. The Remote dual-radio manager returns from LINK_NO_LINK to backup mode when fresh authenticated E22 traffic resumes. Sequence-limit rekey or endpoint power-cycle still uses the primary nRF24 handshake. See ../Boat/docs/BOAT_R77_DUAL_RADIO_WATCHDOG_IMPLEMENTATION.md. This is software supervision, not an independent hardware power cutoff.
