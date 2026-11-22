@@ -77,3 +77,9 @@ Sonar selection remains deferred.
 ## R22 isolated Boat battery-sensor bench
 
 The [R22 ADS1115 battery bench sketch](Boat/hardware_test/ADS1115_Battery_Bench/ADS1115_Battery_Bench.ino) is built **separately from the Boat actuator firmware**. It is GPIO locked by default. Following a real physical pin/power audit, a private local header may enable I²C readout of ADS1115 raw codes and an uncalibrated pack-voltage estimate as serial CSV. It imports no radio, motor or solenoid code and grants **no safety authority**. See [R22 sensor commissioning instructions](Boat/docs/BOAT_R22_ADS1115_SENSOR_ONLY_BRINGUP.md). Both the Boat host tests and the main+locked-bench ESP32-S3 target compilation passed. Physical testing remains NOT_RUN.
+
+## R23 Boat GPIO and modular wiring authority
+
+[**R23 manufacturer-header GPIO and connection guide**](Boat/docs/BOAT_R23_GPIO_PINOUT_AND_HARNESSES.md) is the current physical-wiring *design* reference, with the [64-net CSV harness schedule](Boat/docs/BOAT_R23_MODULE_CONNECTION_MATRIX.csv). It confirms the **18 distinct DevKitC-1 GPIO/header positions**, 0x27 Waveshare MCP23017 address jumper expectation, E22-900T22S 26-pad mapping, 3.3V nRF24 supply, 3.3V-safe EKM014 control inputs, and selected four regulator rail roles. [The current R20 purchase register](docs/PROJECT_PURCHASE_REGISTER_R20.csv) has been reconciled: Pololu D24V10F3 #1 supplies nRF24; #2 supplies GY-91/ADS1115/MCP23017; E22 pad25 is supplied from main 5V. The optional Ardboard nRF socket adapter is **not** an alternative approved 5V power path.
+
+The actual purchased PCB revision and headers, M100 PRO 5V-powered UART/I²C signal levels, E22 TXD/AUX levels, RF carriers, independent STOP/watchdog/current-zero hardware, battery ADC calibration and output dummy-load acceptance remain **unverified**. Firmware safety flags remain off and high-current motor/solenoid inputs must stay disconnected.
