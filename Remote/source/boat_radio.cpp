@@ -430,7 +430,9 @@ void boatRadio_update() {
 }
 
 bool boatRadio_utcNow(uint64_t &unixMs){
-    return sessionReady()&&g_gpsUtcClock.utcNow(millis(),unixMs);
+    const uint32_t at=millis();
+    return sessionReady()&&g_linkManager.primaryHealthy(at)&&
+           g_gpsUtcClock.utcNow(at,unixMs);
 }
 flytec_r30h6::ClockReport boatRadio_utcQuality(){
     // Display/status path only; a stale/unauthenticated primary link makes
