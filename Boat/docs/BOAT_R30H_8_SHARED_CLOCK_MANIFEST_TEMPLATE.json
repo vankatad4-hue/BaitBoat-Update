@@ -1,0 +1,37 @@
+{
+  "schema": "R30H8-1",
+  "evidence_mode": "UNSPECIFIED",
+  "clock_domain": "",
+  "capture_sha256": "",
+  "instrument": {
+    "model": "",
+    "asset_id": "",
+    "sample_rate_hz": 0
+  },
+  "firmware": {
+    "boat_commit": "",
+    "remote_commit": ""
+  },
+  "pps": {
+    "gnss_module_revision": "",
+    "physical_pps_present": null,
+    "pps_utc_second_association_verified": null,
+    "pps_edge_polarity": "",
+    "witness_evidence": ""
+  },
+  "sample_markers": {
+    "boat_gpio_pin": "",
+    "remote_gpio_pin": "",
+    "logic_level_verified": false,
+    "time_read_and_marker_latency_calibrated": false,
+    "probe_evidence": ""
+  },
+  "hardware": {
+    "actuator_power_disconnected": null,
+    "radio_rf_audited": false,
+    "remote_board_revision": "",
+    "boat_board_revision": ""
+  },
+  "reviewer": "",
+  "notes": "Blank template. Never fabricate PPS edges, firmware clock reports or hardware timing."
+}
