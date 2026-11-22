@@ -67,10 +67,10 @@ class R68PowerContract(unittest.TestCase):
         self.assertEqual((ROOT / "Boat/releases/VERSION").read_text().strip(), "014")
         self.assertEqual((ROOT / "Remote/releases/VERSION").read_text().strip(), "028")
 
-    def test_twelve_hardware_checks_not_run(self):
+    def test_fourteen_hardware_checks_not_run(self):
         with TESTS.open(encoding="utf-8", newline="") as fh:
             tests = list(csv.DictReader(fh))
-        self.assertEqual(len(tests), 12)
+        self.assertEqual(len(tests), 14)
         self.assertTrue(all(t["State"] == "NOT_RUN" for t in tests))
 
     def test_purchase_register_owner_confirmed_two_independent_3v3_rails(self):
