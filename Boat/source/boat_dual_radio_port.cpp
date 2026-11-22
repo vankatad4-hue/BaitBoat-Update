@@ -19,7 +19,7 @@ void BoatDualRadioPort::abortMission(){
 }
 bool BoatDualRadioPort::missionInputs(ExecInputs &in,uint32_t now)const{
  in={};if(!missionInput_||!missionInput_(in))return false;
- in.primaryFresh=primaryFresh(now);in.backupFresh=backupFresh(now);return true;
+ in.primaryFresh=primaryFresh(now);in.backupFresh=backupFresh(now);in.autonomousRth=failsafeRthActive_;return true;
 }
 bool BoatDualRadioPort::missionOverrideOutput(int16_t &left,int16_t &right)const{
  ExecInputs in{};const uint32_t now=millis();const bool ready=missionInputs(in,now);
@@ -41,9 +41,11 @@ bool BoatDualRadioPort::sendMissionFeedback(const MissionControlFeedback &status
  return missionFeedbackEncode(status,f.payload)&&radio_frameSeal(f,key_)&&sendFrame(LINK_NRF_PRIMARY,f);
 }
 bool BoatDualRadioPort::requestReturnHome(){
- // No new mission may be created by a backup radio command. An active plan,
- // good local navigation/safety data and complete coil deenergization are
- // all required. Physical driver HAL still owns the independent STOP.
+ // Explicit Home still requires a locally stored Home record matching the
+ // prepared plan. No new mission may be created by a backup radio command.
+ BoatHomePoint storedHome{};
+ if(!homePointStore_.load||!homePointStore_.load(storedHome)||
+    !boatHomePointValid(storedHome)||!controller_.homeMatches(storedHome.latE7,storedHome.lonE7))return false;
  const auto phase=controller_.status().phase;
  if(!sessionReady()||detachedReturn_||
     (phase!=MC_OUTBOUND&&phase!=MC_PAUSED&&phase!=MC_RETURNING&&
@@ -137,14 +139,34 @@ void BoatDualRadioPort::update() {
    missionIntent_=controller_.tick(in,safetyNow,ready,stickLease_.neutral(progress.transaction,safetyNow));
    int16_t left=0,right=0;
    if(controller_.temporaryOverrideConfirmed()&&!missionOverrideOutput(left,right))abortMission();
-   if(detachedReturn_&&!controller_.diverted()){detachedReturn_=false;controller_.resetSession();missionIntent_={INTENT_STOP,-1,0};}
+   if(detachedReturn_&&!controller_.diverted()){detachedReturn_=false;failsafeRthActive_=false;controller_.resetSession();missionIntent_={INTENT_STOP,-1,0};}
    if(!detachedReturn_&&controller_.status().transaction&&safetyNow-lastMissionStatusMs_>=250U){lastMissionStatusMs_=safetyNow;sendMissionFeedback(controller_.status(),safetyNow);}
  }
+ maybeStartFailsafeReturnHome(safetyNow);
  if(sessionReady()) {
    if(nrfReady_ && (uint32_t)(now-lastNrfHeartbeatTxMs_)>=100U) {lastNrfHeartbeatTxMs_=now;sendHeartbeat(LINK_NRF_PRIMARY,now);}
    if(sx1262Ready_ && (uint32_t)(now-lastBackupHeartbeatTxMs_)>=3000U && (uint32_t)(now-lastBackupHeartbeatAttemptMs_)>=250U) {lastBackupHeartbeatAttemptMs_=now;if(sendHeartbeat(LINK_LORA_BACKUP,now))lastBackupHeartbeatTxMs_=now;}
  }
 }
+bool BoatDualRadioPort::maybeStartFailsafeReturnHome(uint32_t now){
+ if(failsafeRthActive_||primaryFresh(now)||backupFresh(now)||!controller_.canDivertHome())return false;
+ BoatHomePoint home{};
+ const bool homeStored=homePointStore_.load&&homePointStore_.load(home)&&
+   boatHomePointValid(home)&&controller_.homeMatches(home.latE7,home.lonE7);
+ ExecInputs in{};const bool inputsReady=missionInputs(in,now);
+ const bool navigationSafe=inputsReady&&!in.stopActive&&in.releaseIdle&&in.releaseInterlocks&&
+   controller_.homeNavigationValid(in);
+ if(!boatRadioLossRthDue(linkLossHold_&&!primaryFresh(now)&&!backupFresh(now),
+      controller_.canDivertHome(),homeStored,navigationSafe,haveAuthenticatedRx_,
+      lastAnyAuthenticatedRxMs_,now,10000U))return false;
+ if(!controller_.divertHome(in,true))return false;
+ // Keep outputs stopped for this update. The next application tick may issue
+ // only the local INTENT_NAV_HOME after the actuator supervisor rechecks inputs.
+ failsafeRthActive_=true;detachedReturn_=true;stickLease_.reset();
+ missionIntent_={INTENT_STOP,-1,0};
+ return true;
+}
+
 void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  const uint32_t now=millis();
  if(!authenticated_||!radioLinkFlagMatches(f.flags,link==LINK_LORA_BACKUP)||f.sourceId!=REMOTE_ID||f.destinationId!=BOAT_ID)return;
@@ -156,7 +178,7 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
      ++generation_;releaseIdSeen_=false;
      handshake_.frameKey(key_);sessionStarted_=true;lastSessionRx_=now;txSequence_=0;
      primarySeqGuard_.resetAfterHandshake();backupSeqGuard_.resetAfterHandshake();crossRadioSeqGuard_.resetAfterHandshake();
-     lastNrfRxValid_=lastBackupRxValid_=false;commandQueue_.clear();mission_.reset();dedupe_.clear();stickLease_.reset();radioWatchdog_.reset();
+     lastNrfRxValid_=lastBackupRxValid_=false;haveAuthenticatedRx_=false;lastAnyAuthenticatedRxMs_=0;commandQueue_.clear();mission_.reset();dedupe_.clear();stickLease_.reset();radioWatchdog_.reset();
      if(!detachedReturn_&&!linkLossHold_){abortMission();controller_.resetSession();}
    }
    RadioFrame ack;radio_frameInit(ack,(RadioMessageType)reply.type,BOAT_ID,REMOTE_ID,0,0,now,0);
@@ -173,26 +195,32 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  }else if(!crossSequenceAccepted&&!(f.type==RADIO_MSG_ACTION&&f.payload[0]==CMD_EMERGENCY_STOP))return;
  bool &rxValid=link==LINK_NRF_PRIMARY?lastNrfRxValid_:lastBackupRxValid_;
  uint32_t &lastRx=link==LINK_NRF_PRIMARY?lastNrfRxMs_:lastBackupRxMs_;
- if(f.type==RADIO_MSG_HEARTBEAT){lastRx=lastSessionRx_=now;rxValid=true;return;}
+ if(f.type==RADIO_MSG_HEARTBEAT){lastRx=lastSessionRx_=now;rxValid=true;noteAuthenticatedRx(now);return;}
  // Detached Home return keeps old plan private to the local supervisor.
  // A new session cannot attach to the old transaction or restart its target.
  if(detachedReturn_&&(f.type==RADIO_MSG_MISSION_STICKS||f.type==RADIO_MSG_MISSION_CONTROL||f.type==RADIO_MSG_MISSION_PREPARE))return;
  if(f.type==RADIO_MSG_MISSION_STICKS){
    if(link!=LINK_NRF_PRIMARY||!crossSequenceAccepted)return;
    MissionStickInput input{};if(!missionStickDecode(f.payload,input)||f.commandId!=input.transaction)return;
-   if(stickLease_.receive(input,controller_.status().transaction,now,true)){lastRx=lastSessionRx_=now;rxValid=true;}
+   if(stickLease_.receive(input,controller_.status().transaction,now,true)){lastRx=lastSessionRx_=now;rxValid=true;noteAuthenticatedRx(now);}
    return;
  }
  if(f.type==RADIO_MSG_MISSION_CONTROL){
    if(link!=LINK_NRF_PRIMARY||!crossSequenceAccepted)return;
    MissionControlRequest request{};if(!missionControlDecode(f.payload,request)||f.commandId!=request.transaction)return;
-   lastRx=lastSessionRx_=now;rxValid=true;
+   lastRx=lastSessionRx_=now;rxValid=true;noteAuthenticatedRx(now);
+   if(detachedReturn_&&request.op!=MCTRL_SWITCH_MANUAL){
+    sendMissionFeedback({request.transaction,controller_.status().phase,(uint8_t)request.op,request.request,MC_REJECTED},now);return;
+   }
    ExecInputs in{};const bool ready=missionInputs(in,now);
    MissionControlFeedback ack{};const bool newRequest=request.request>controller_.lastRequestId();
    if(controller_.request(request,in,now,true,ready,stickLease_.neutral(request.transaction,now),ack)){
      if(newRequest&&ack.result==MC_ACCEPTED&&request.op==MCTRL_START)commandQueue_.clear();
      if(newRequest&&ack.result==MC_ACCEPTED&&request.op!=MCTRL_START&&request.op!=MCTRL_RESUME)missionIntent_={INTENT_STOP,-1,0};
      if(newRequest&&ack.result==MC_ACCEPTED&&(request.op==MCTRL_TEMP_OVERRIDE||request.op==MCTRL_CANCEL||request.op==MCTRL_SWITCH_MANUAL))stickLease_.reset();
+     if(newRequest&&ack.result==MC_ACCEPTED&&request.op==MCTRL_SWITCH_MANUAL&&detachedReturn_){
+      detachedReturn_=false;failsafeRthActive_=false;linkLossHold_=false;missionIntent_={INTENT_STOP,-1,0};
+     }
      sendMissionFeedback(ack,now);
    }else sendMissionFeedback({request.transaction,MC_IDLE,(uint8_t)request.op,request.request,MC_REJECTED},now);
    return;
@@ -202,10 +230,23 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
    const uint16_t id=(uint16_t)f.payload[1]|((uint16_t)f.payload[2]<<8);
    const MissionOpcode op=(MissionOpcode)f.payload[0];
    if(!id||id!=f.commandId||op<MISSION_BEGIN||op>MISSION_CANCEL)return;
-   lastRx=lastSessionRx_=now;rxValid=true;
+   lastRx=lastSessionRx_=now;rxValid=true;noteAuthenticatedRx(now);
    const bool stopped=missionGate_&&missionGate_();
    MissionReceive result=mission_.ingest(f.payload,now,true,stopped);
-   if(result==MISSION_PREPARED){MissionPlan plan{};if(!mission_.getPrepared(plan,now)||!controller_.stage(plan,now,true,stopped)){mission_.reset();result=MISSION_REJECTED;}else {stickLease_.reset();commandQueue_.clear();}}
+   if(result==MISSION_PREPARED){
+    MissionPlan plan{};BoatHomePoint candidate={0,0,0},stored{};
+    if(!mission_.getPrepared(plan,now)){mission_.reset();result=MISSION_REJECTED;}
+    else{
+     candidate.latE7=plan.homeLatE7;candidate.lonE7=plan.homeLonE7;
+     const bool saved=homePointStore_.save&&homePointStore_.load&&
+       boatHomeCoordinatesValid(candidate.latE7,candidate.lonE7)&&
+       homePointStore_.save(candidate)&&homePointStore_.load(stored)&&
+       boatHomePointValid(stored)&&stored.latE7==candidate.latE7&&stored.lonE7==candidate.lonE7;
+     if(!saved||!controller_.stage(plan,now,true,stopped)){
+      mission_.reset();result=MISSION_REJECTED;
+     }else{stickLease_.reset();commandQueue_.clear();}
+    }
+   }
    if(result==MISSION_CANCELLED)abortMission();
    RadioFrame ack;radio_frameInit(ack,RADIO_MSG_MISSION_ACK,BOAT_ID,REMOTE_ID,++txSequence_,id,now,sessionEpoch_);
    if(missionAck_encode(id,op,result,ack.payload)&&radio_frameSeal(ack,key_))sendFrame(link,ack);
@@ -217,8 +258,8 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  const uint16_t id=(uint16_t)cmd.commandId;
  if(id==0) return;
  // An authenticated STOP invalidates any prepared plan before queue handling.
- lastRx=lastSessionRx_=now;rxValid=true;
- if(cmd.type==CMD_EMERGENCY_STOP){const bool wasDetached=detachedReturn_;detachedReturn_=false;abortMission();if(wasDetached)controller_.resetSession();mission_.reset();commandQueue_.clear();enqueue(cmd,link,false);if(sessionReady())sendCommandAck(link,cmd,RADIO_ACK_ACCEPTED,0,0,now);return;}
+ lastRx=lastSessionRx_=now;rxValid=true;noteAuthenticatedRx(now);
+ if(cmd.type==CMD_EMERGENCY_STOP){const bool wasDetached=detachedReturn_;detachedReturn_=false;failsafeRthActive_=false;linkLossHold_=false;abortMission();if(wasDetached)controller_.resetSession();mission_.reset();commandQueue_.clear();enqueue(cmd,link,false);if(sessionReady())sendCommandAck(link,cmd,RADIO_ACK_ACCEPTED,0,0,now);return;}
  // A command frame rejected by the cross-radio sequence guard is accepted
  // only as an exact command-ID duplicate. This prevents replaying an old
  // sequence with a new command ID on the alternate radio.
