@@ -18,8 +18,9 @@ enum BoatRadioWatchdogEvent : uint8_t {
     BOAT_RADIO_WATCHDOG_RESTORED
 };
 
-// Software watchdog over authenticated/fresh link status supplied by the
-// radio session manager. It is not an independent hardware cutoff.
+// R77 software watchdog over authenticated/fresh link status supplied by
+// the dual-radio session manager. Either fresh path is alive; both stale paths
+// require STOP_ALL. This is not an independent hardware power cutoff.
 class BoatRadioWatchdog {
 public:
     BoatRadioWatchdogEvent update(bool primaryFresh, bool backupFresh) {
