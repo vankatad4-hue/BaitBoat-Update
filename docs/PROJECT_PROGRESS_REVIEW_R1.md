@@ -487,5 +487,5 @@ Procurement lock: **two identical EBYTE E22-900T22S UART SMD** backup LoRa modul
 
 ## R75A — SIP3 socket fit qualification refinement
 
-- Promoted **BINDER MPE 006-1-003-D-B1STF-XS0** to primary dimensioned socket candidate. Its square-pin limit is 0.25×0.45mm; TRACO TSR pins are 0.46×0.46mm nominal ±0.1mm, so sample fit and manufacturer confirmation are mandatory.
+- Promoted **BINDER MPE 006-1-003-D-B1STF-XS0** to primary dimensioned socket candidate. Its documented square mating-pin size is 0.25×0.45mm; TRACO TSR pins are 0.46×0.46mm nominal ±0.1mm, so sample fit and manufacturer confirmation are mandatory.
 - Demoted econ connect MP70S3 to secondary due absent square-pin mating specification. Direct-solder pigtail is fallback if socket compatibility cannot be proven. Updated purchase register, R75 technical plan, hardware audit, physical acceptance CSV and static CI contract. No purchase or fit test.
