@@ -3,7 +3,7 @@
 #include <iostream>
 int main(){
  MissionPlan p={42,0,0,5,300,0,1000,0,0};
- ExecInputs in={{0,0,1,90,true,true,true,true},false,true,true,true,true,true,false};
+ ExecInputs in={{0,0,1,90,true,true,true,true},false,true,true,true,true,true,false,false};
  MissionExecution m;
  assert(!m.start(p,in,0,false));assert(m.start(p,in,0,true));
  assert(m.tick(in,1).intent==INTENT_NAV_TARGET);

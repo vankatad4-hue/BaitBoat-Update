@@ -8,7 +8,7 @@ static void start(BoatMissionController &c,MissionPlan p,ExecInputs &in){
 }
 int main(){
  MissionPlan p={1,0,0,15,300,0,2000,0,0};
- ExecInputs in={{0,1000,1,270,true,true,true,true},false,true,true,true,true,true,false};
+ ExecInputs in={{0,1000,1,270,true,true,true,true},false,true,true,true,true,true,false,false};
  BoatMissionController c;start(c,p,in);
  assert(c.tick(in,2,true,true).intent==INTENT_NAV_TARGET);
 
@@ -70,7 +70,7 @@ int main(){
  // may navigate without either radio. Before authorization the same outage
  // continues to hold all motor and release requests OFF.
  BoatMissionController c3;
- ExecInputs rthIn={{0,1000,1,270,true,true,true,true},false,true,true,true,true,true,false};
+ ExecInputs rthIn={{0,1000,1,270,true,true,true,true},false,true,true,true,true,true,false,false};
  start(c3,p,rthIn);
  assert(c3.tick(rthIn,400,true,true).intent==INTENT_NAV_TARGET);
  rthIn.primaryFresh=false;rthIn.backupFresh=false;
@@ -108,7 +108,7 @@ int main(){
  // R79: low battery holds outbound motion, then a validated Home diversion
  // cancels the remaining target/release sequence.
  BoatMissionController c6;
- ExecInputs lowIn={{0,1000,1,270,true,true,true,true},false,true,true,true,true,true,false,false};
+ ExecInputs lowIn={{0,1000,1,270,true,true,true,true},false,true,true,true,true,true,false,false,false};
  start(c6,p,lowIn);
  assert(c6.tick(lowIn,600,true,true).intent==INTENT_NAV_TARGET);
  lowIn.batteryLow=true;

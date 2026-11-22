@@ -7,7 +7,7 @@
 // represented by explicit flags. This is not a live RF or motor test.
 int main(){
  MissionPlan plan={2,0,0,0,300,0,1000,0,0};
- ExecInputs in={{0,0,1,90,true,true,true,true},true,true,true,true,true,true,false};
+ ExecInputs in={{0,0,1,90,true,true,true,true},true,true,true,true,true,true,false,false};
  BoatMissionController boat;MissionControlClient remote;MissionStickLease lease;
  uint8_t wire[8];MissionControlRequest req{},decoded{};MissionControlFeedback ack{},fb{};
  assert(boat.stage(plan,0,true,true));remote.bind(2);
