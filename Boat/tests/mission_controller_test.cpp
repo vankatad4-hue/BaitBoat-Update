@@ -32,5 +32,23 @@ int main(){
  req={MCTRL_START,1,1};assert(c.request(req,in,1,true,true,true,ack)&&ack.result==MC_ACCEPTED);
  c.emergencyAbort();assert(c.request(req,in,2,true,true,true,ack)&&ack.result==MC_REJECTED&&ack.phase==MC_ABORTED);
  assert(c.lastRequestId()==1&&c.tick(in,3,true,true).intent==INTENT_STOP);
+
+ // A lost primary link cancels temporary joystick override and returns to
+ // the previously active autonomous phase; no old stick value is replayed.
+ BoatMissionController linkLoss;
+ MissionPlan lp={7,0,0,1,300,0,1000,0,0};
+ ExecInputs lin={{0,0,1,90,true,true,true,true},true,true,true,true,true,true};
+ assert(linkLoss.stage(lp,0,true,true));lin.stopActive=false;
+ MissionControlFeedback linkAck{};
+ assert(linkLoss.request({MCTRL_START,7,1},lin,1,true,true,true,linkAck)&&linkAck.result==MC_ACCEPTED);
+ assert(linkLoss.tick(lin,2,true,true).intent==INTENT_NAV_TARGET);
+ assert(linkLoss.request({MCTRL_TEMP_OVERRIDE,7,2},lin,3,true,true,false,linkAck)&&linkAck.phase==MC_OVERRIDE_NEUTRAL);
+ linkLoss.tick(lin,4,true,true);assert(linkLoss.temporaryOverrideConfirmed());
+ assert(linkLoss.cancelOverrideForLinkLoss());
+ assert(linkLoss.status().phase==MC_OUTBOUND);
+ lin.primaryFresh=false;lin.backupFresh=false;
+ assert(linkLoss.tick(lin,5,true,false).intent==INTENT_STOP);
+ lin.backupFresh=true;
+ assert(linkLoss.tick(lin,6,true,false).intent==INTENT_NAV_TARGET);
  std::cout<<"Mission command and override supervisor simulation passed\n";
 }
