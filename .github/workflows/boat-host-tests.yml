@@ -169,6 +169,8 @@ jobs:
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/boat_home_point_record_test.cpp -o /tmp/boat_home_nvs_record
           /tmp/boat_home_nvs_record
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I Boat/tests/stubs Boat/source/boat_home_point_nvs.cpp Boat/tests/boat_home_point_nvs_test.cpp -o /tmp/boat_home_nvs_adapter
+          /tmp/boat_home_nvs_adapter
       - name: R61 guarded physical driver and calibration storage
         run: |
           g++ -std=c++17 -Wall -Wextra -Werror Boat/tests/figure8_calibration_store_test.cpp -o /tmp/r61_cal_store
