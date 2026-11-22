@@ -89,7 +89,8 @@ class R68PowerContract(unittest.TestCase):
                          "R23_ACTIVE_R20_SENSOR_RAIL_NOT_PURCHASED")
         self.assertIn("nRF24 PA/LNA", rf["Purchase_gate"])
         self.assertIn("E22 VCC supplied", rf["Purchase_gate"])
-        self.assertIn("ADS1115", sensors["Purchase_gate"])
+        self.assertIn("INA231", sensors["Purchase_gate"])
+        self.assertNotIn("ADS1115", sensors["Purchase_gate"])
         self.assertEqual(role_rows["nRF24 local socket power adapter"]["Qty"], "0")
         self.assertEqual(role_rows["Main controller 5V power"]["Exact_part"],
                          "Olimex DCDC6-16-TO5")
