@@ -104,6 +104,7 @@ void BoatDualRadioPort::resetSession(bool preserveMission){
  // authenticated session/key/epoch rollover.
  optionalDiagnostics_.reset();lastControlRxValid_=false;
  havePrimaryHeartbeatSent_=false;
+ utcSource_={};utcEverSent_=false;lastUtcTxMs_=0;
  radioWatchdog_.reset();
 }
 bool BoatDualRadioPort::begin() {
@@ -208,7 +209,8 @@ void BoatDualRadioPort::update() {
  opportunity.haveHeartbeat=havePrimaryHeartbeatSent_;
  uint8_t optionalPayload[8]{};
  const uint32_t optionalNow=millis();
- if(optionalDiagnostics_.take(opportunity,optionalNow,optionalPayload)){
+ const bool diagnosticOccupiesSlot=optionalDiagnostics_.take(opportunity,optionalNow,optionalPayload);
+ if(diagnosticOccupiesSlot){
    // The scheduler has ALREADY enforced heartbeat/command priority.
    RadioFrame optional{};
    radio_frameInit(optional,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,
@@ -218,6 +220,30 @@ void BoatDualRadioPort::update() {
      optionalDiagnostics_.sent(optionalNow);
    else
      optionalDiagnostics_.rejectedTx(); // no retries or priority inversion
+ }
+ // R30H-5 UTC LAST: authenticated nRF only, no E22 airtime.
+ // No TX during missions, command queue, manual control activity,
+ // failsafe or a missed heartbeat. This time stream is informational and
+ // CANNOT extend a link lease or change the STOP/RTH monotonic timers.
+ const uint32_t utcNow=millis();
+ const uint32_t gap=(uint32_t)(utcNow-lastNrfHeartbeatTxMs_);
+ if(!diagnosticOccupiesSlot&&opportunity.authenticatedSession&&
+    opportunity.primaryFresh&&opportunity.haveHeartbeat&&
+    !opportunity.commandQueued&&!opportunity.activeMission&&
+    !opportunity.failsafeOrLinkLoss&&!opportunity.recentCommand&&
+    !nrf_.txPending()&&gap>=boat_r30g::HEARTBEAT_GAP_BEGIN_MS&&
+    gap<=boat_r30g::HEARTBEAT_GAP_END_MS&&
+    (!utcEverSent_||(uint32_t)(utcNow-lastUtcTxMs_)>=5000U)){
+   uint64_t ms=0;
+   if(flytec_utc::extrapolate(utcSource_,utcNow,ms)){
+     RadioFrame beacon{};
+     radio_frameInit(beacon,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,
+                     ++txSequence_,0,utcNow,sessionEpoch_);
+     if(flytec_time::encode(ms,beacon.payload)&&
+        radio_frameSeal(beacon,key_)&&sendFrame(LINK_NRF_PRIMARY,beacon)){
+       lastUtcTxMs_=utcNow;utcEverSent_=true;
+     }
+   }
  }
 }
 bool BoatDualRadioPort::maybeStartFailsafeReturnHome(uint32_t now){
