@@ -54,7 +54,7 @@ The exact nRF24 supply/carrier/decoupling, EKM014 VH high-current wiring, motor/
 ## Stage C — logic-only radio and actuator tests
 
 1. Flash the Boat diagnostic firmware and verify that the Home NVS namespace opens.
-2. Prepare a mission with a valid Home coordinate. Confirm the Boat writes a Home record, reads it back, validates CRC and sequence, and reports the matching coordinates.
+2. On the Remote, set Home from a fresh GNSS fix and confirm the mission UI reports Home valid in its SD-backed mission storage. Prepare a mission with that Home coordinate. Confirm the Boat writes a local NVS Home record, reads it back, validates CRC and sequence, and reports the matching coordinates.
 3. Power-cycle the controller. Confirm the Home record remains valid but the mission does **not** auto-start.
 4. With both radios connected, verify authenticated heartbeats and link freshness.
 5. Disable nRF24 while E22 remains fresh: manual motor commands and all releases must be rejected; an eligible autonomous navigation mission may remain active.
