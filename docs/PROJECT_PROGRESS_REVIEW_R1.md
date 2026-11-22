@@ -494,3 +494,12 @@ Procurement lock: **two identical EBYTE E22-900T22S UART SMD** backup LoRa modul
 ## R75B — DCDC6 input connector caveat
 
 The official DCDC6 page says it pairs with Olimex PWR-CABLE; the cable page lists a female barrel pigtail but conflicts on 2.1mm versus 2.5mm inner diameter. The DCDC6 schematic shows center-positive input. Physical fit/polarity check is now an explicit acceptance gate; PWR-CABLE remains a candidate, not an installed part.
+
+
+## R76 — Original JR-V030RX-2507 controller comparison
+
+- Reviewed user photos of the original PCB. Identified B+/B−, GPS SDA/SCL/GND/+5V/RX/TX header, ANT, M1–M4 connectors (load mapping unknown), central controller and reverse-side MOSFET banks. Exact IC/FET identity and topology remain unverified.
+- Functional architecture is close to the selected retrofit: original MOSFET H-bridge area vs MDD20A dual H-bridge; multiple MOSFET load outputs vs EKM014 four low-side channels; GPS UART+I²C vs M100 PRO integrated QMC interface.
+- Recommended reuse is at the interface/functional level only. Keep ready-made MDD20A and EKM014, adopt six-wire GPS harness pattern after voltage/pinout checks, and keep modular power branches. No custom copy of original FET circuits.
+- **Independent safety not verified on original board.** Lost-signal RTH/electronic fence are not hardware E-stop. Retrofit safety stack is also not yet built/qualified; R65/R66/R17 components remain unresolved.
+- Added [R76 detailed comparison and reverse-engineering plan](../Boat/docs/BOAT_R76_ORIGINAL_JR_V030RX_BOARD_REVIEW.md). No wiring, BOM, firmware or release changes; Boat VER014 / Remote VER028 remain frozen.
