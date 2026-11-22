@@ -173,3 +173,13 @@ Sonar remains deferred. All GPIO/RF/safety flags must remain zero/false until ph
 ### R23 physical pin/sign-off worksheet
 
 [BOAT_R23_GPIO_AND_LEVEL_SIGNOFF.csv](../Boat/docs/BOAT_R23_GPIO_AND_LEVEL_SIGNOFF.csv) holds the 18 GPIO continuity/logic-level checks plus 14 module/power/safety checks (all **NOT_RUN**). Use it after purchasing parts; do not mark the design as electrically verified before recording actual measurements. Source and CI remain fail-closed.
+
+## R24 continuation — boot/reset and MCP23017 joint disabled audit (2026-11-22)
+
+**Current software deliverable:** [R24 module-only boot/reset safety review](../Boat/docs/BOAT_R24_BOOT_RESET_OUTPUT_SAFETY.md), [read-only combined register checker](../Boat/source/mcp23017_joint_boot_audit_r24.h), [R24 host regression](../Boat/tests/boat_r24_mcp_joint_boot_test.cpp), and a Boat portable-host CI step. The new helper validates both MCP23017 banks: IOCON=0, IODIRA=0xF0, IODIRB=0xFC, selected OLAT and GPIO bits all LOW. It composes existing low-latch-first initializers, with best-effort OFF on failure. It is **not integrated into an output-authorizing HAL** and must never be used as a physical safety gate.
+
+**Vendor evidence:** EKM014 manufacturer documents 120kΩ pull-downs on the four active-high IN pins, helpful for an undriven input but **not independent safety**. Microchip MCP23017 POR returns pins to inputs; after a reset the joint output-enabled diagnostic audit becomes false. Cytron MDD20A includes manual on-board test buttons and has no power-reversal protection. No startup PWM, rail timing or coil-output voltage has been measured.
+
+**Unresolved blocker unchanged:** independently rated physical STOP/watchdog/load isolation/coil-current-zero and bounded one-hot pulse protection are not yet selected, wired or accepted. An I²C/OLAT readback cannot replace them. The complete R23 32-item electrical signoff remains **NOT_RUN**. Keep both 3S high-current paths physically disconnected, existing pin audit flags 0/false, Boat VER014 and Remote VER028 unchanged. R24 CI regression is configured; its outcome must be checked from the workflow run rather than assumed.
+
+**Next engineering gate:** obtain the exact DevKitC-1, Waveshare, EKM014 and MDD20A module revisions; photograph manufacturer silks/connectors, then measure idle EKM IN1–4 and MDD PWM/DIR boot/reset behavior on logic-only current-limited supply. Verify M100/E22 output-high levels and R21 ADS1115 power sequencing. Do not commission actual actuator power without separately validated electrical safety equipment.
