@@ -70,8 +70,12 @@ public:
    return stop;
   }
   if(phase_==MC_PREPARED){if(now-stagedAt_>=10000U){phase_=MC_ABORTED;}return stop;}
-  // Both radio paths absent: stop all outputs but preserve the autonomous
-  // mission phase. It resumes only after either authenticated link is fresh.
+  // Once a release intent has entered its execution window, primary-link loss
+  // makes completion ambiguous. Abort it even if both radios disappear; never
+  // replay a hopper/hook release after reconnect.
+  if(engine_.phase()==EXEC_RELEASE_WAIT&&!in.primaryFresh){engine_.abort();phase_=MC_ABORTED;return stop;}
+  // Both radio paths absent: stop all outputs but preserve a navigation phase.
+  // It resumes only after either authenticated link is fresh.
   if(!in.primaryFresh&&!in.backupFresh)return stop;
   auto out=engine_.tick(in,now);
   switch(engine_.phase()){
