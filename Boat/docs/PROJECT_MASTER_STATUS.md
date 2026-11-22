@@ -574,3 +574,13 @@ Detailed implementation: [R77 dual-radio watchdog](BOAT_R77_DUAL_RADIO_WATCHDOG_
 ### R77A — backup recovery across long RF outage
 
 Removed the 6.5-second idle-session teardown on both Boat and Remote. Radio watchdog freshness still expires and stops outputs, but the authenticated session key and replay counters remain intact during RF silence. This allows a fresh authenticated E22 backup frame to restore the existing session after a long outage, without adding hardware or requiring nRF24 to return. Power-cycle and sequence-limit rekey still use the existing primary nRF24 handshake. Remote dual-radio manager regression now tests recovery from LINK_NO_LINK after an extended outage. See R77 report. No release/BOM/GPIO change.
+
+
+### R77B — software verification snapshot
+
+- Boat portable host tests PASS: run 45004175963.
+- Remote portable host tests PASS: run 45004179963.
+- Boat ESP32-S3 diagnostic target compile PASS: run 45004173232.
+- Remote Waveshare ESP32-S3 target compile was still IN_PROGRESS at run 45004179977 when recorded.
+- Project ZIP packaging PASS: run 45004459053.
+- Physical RF, motor, solenoid and safety-chain tests remain NOT_RUN; no live outputs authorized.
