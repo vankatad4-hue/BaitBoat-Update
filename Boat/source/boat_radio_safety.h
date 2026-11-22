@@ -69,6 +69,6 @@ BoatCrossRadioCommandDecision boatClassifyCrossRadioCommand(bool sequenceAccepte
                                                             bool alreadyExecuted,
                                                             bool pending);
 
-// Evaluates only; it does not drive motors or actuators. Call from the boat's
-// independent safety supervisor. Link loss must never enable solenoid outputs.
+// Evaluates only; it does not drive motors or actuators. This is software
+// policy in the main controller, not an independent hardware safety channel.
 BoatFailsafeDecision boatEvaluateLinkFailsafe(const BoatLinkSafetyInputs &in);
