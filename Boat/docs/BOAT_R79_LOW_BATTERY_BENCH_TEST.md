@@ -24,11 +24,11 @@ E22 VCC is 5V for its rated RF output-power condition; E22 UART/M0/M1/AUX remain
 
 
 1. Confirm the purchased ADS1115 breakout is the ADS1115 (not ADS1015), I²C address 0x48, powered from 3.3V with pull-ups to 3.3V.
-2. Install the 100kΩ/33kΩ 1% divider from pack positive through AIN0 to ground and a 100nF capacitor from AIN0 to ground. Verify polarity and no shorts before applying battery voltage.
+2. Install **R21 150kΩ/33kΩ 1% divider** from the protected, switched pack sense feed to AIN0, and 100nF ceramic AIN0-to-ground. The previous 100kΩ/33kΩ divider was superseded. Measure 3.3V VDD / AIN0 sequencing before enabling the ADC.
 3. Use a current-limited supply or protected pack simulator. Measure pack voltage and AIN0 voltage with a calibrated DMM at several points across the usable 3S range.
-4. Verify 12.6V pack input gives approximately 3.13V at AIN0. Confirm AIN0 never exceeds ADS1115 supply voltage or its permitted input range.
+4. Verify 12.6V pack input gives approximately **2.272V** at AIN0. Monitor AIN0 and ADS1115 VDD during power ramps; input must not violate GND−0.3V to VDD+0.3V.
 5. Calculate actual divider gain/offset from DMM measurements. Update the commissioned sensor profile only after the measured error is acceptable.
-6. Verify ADC I²C address, fresh conversion timestamp and voltage sample age. Disconnect the ADC or interrupt I²C: the Boat must enter STOP when the battery sample becomes stale (>1 second).
+6. Verify ADC I²C address, conversion timestamp and voltage sample age. **Any invalid ADC reading stops immediately**; an otherwise valid reading that ages beyond 1 second also stops. See [R21 ADC procedure](BOAT_R21_BATTERY_ADC_COMMISSIONING.md).
 
 ## B. Battery threshold simulation
 
