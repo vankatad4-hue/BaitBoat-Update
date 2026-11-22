@@ -1,4 +1,5 @@
 #include "tracker_sensor_port.h"
+#include "ina231_voltage_contract_r27.h"
 namespace{
  bool validPins(const TrackerSensorConfig &c){
   if(!c.pinAuditSigned||!(c.gnssBaud==9600||c.gnssBaud==115200)||(c.imuAddress!=0x68&&c.imuAddress!=0x69)||c.adcAddress<0x48||c.adcAddress>0x4b)return false;
@@ -60,6 +61,13 @@ void TrackerSensorPort::pollImu(uint32_t now){
  if(headingValid_)headingAt_=now;
 }
 void TrackerSensorPort::pollAdc(uint32_t now){
+ // R27: INA231 is selected for voltage-only sensing but not physically
+ // commissioned. Legacy ADS1115 polling must NOT generate battery telemetry.
+ // Real INA231 I2C acquisition will be implemented only after safe bench
+ // validation, with new-conversion/quality gates. Fail closed until then.
+ if(boat_r27::INA231_MODULE_SELECTED){
+  adcPending_=false;voltageValid_=false;return;
+ }
  if(!adcPending_){
   adcAt_=now;adcPending_=writeAdc(0xc383);if(!adcPending_)voltageValid_=false;return;
  }
