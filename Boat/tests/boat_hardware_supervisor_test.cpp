@@ -2,7 +2,7 @@
 #include <cassert>
 #include <iostream>
 static BoatHardwareSample sample(uint32_t t){
- return {{0,1000,1,90,true,true,true,true},t,t,t,true,true,true,true,true,true,true,true,false,false,75,3,8,12000,0,0,0,true,true};
+ return {{0,1000,1,90,true,true,true,true},t,t,t,true,true,true,true,true,true,true,true,false,false,75,3,8,12000,0,0,0,true,true,BOAT_BATTERY_GREEN,false};
 }
 int main(){
  BoatActuatorSupervisor s;auto hw=sample(0);
