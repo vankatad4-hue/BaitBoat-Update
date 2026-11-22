@@ -26,3 +26,9 @@
 No radio device has been purchased or paired. No independent STOP/watchdog/DC-rated cutoffs, hardware one-hot nonretriggerable coil limiter, current feedback, motor stall tests or closed-loop GPS water acceptance. Selected endpoints remain Boat ESP32-S3-DevKitC-1-N32R16V and Remote Waveshare ESP32-S3-Touch-LCD-4.3 Standard, with modular ready-made parts only. Remote SD stores maps/waypoints; Boat NVS stores calibration. Sonar undecided and not implemented.
 
 **Important:** LoRa RETURN_HOME is **mission diversion only**, not a new autonomous trip from MANUAL. The Boat's physical-driver HAL still has no commissioned actuator pins. Official Boat VER014 / Remote VER028 stay frozen. CI should be checked on the latest source commits before signoff.
+
+## Verification recorded
+- **PASS** Remote portable host tests [44991125196](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/44991125196) with R63 backup decoder/manager regression.
+- **PASS** Boat portable host tests [44991241882](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/44991241882) covering the cross-radio policy, primary-loss divergence, previously unhandled Home command, fail-closed no-mission behavior and original-link ACK.
+- An initial new application test failed because the fake command lacked `MODE_RETURN_HOME`; after fixing it, a later test failure came from counting the deliberately rejected pre-mission request. Both test-fixture errors were corrected, and the current host suite passed. No actuator hardware was enabled.
+- **Target compiles for latest R63 Boat/Remote source:** scheduled at this review; check their eventual Actions conclusions, do not claim success from older R62 binaries. These are diagnostic/Remote software compiles, not physical safety acceptance.
