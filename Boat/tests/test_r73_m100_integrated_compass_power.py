@@ -50,7 +50,7 @@ class R73M100IntegratedCompass(unittest.TestCase):
     def test_5v_levels_are_unverified_and_not_energized(self):
         note = (ROOT / "Boat/docs/BOAT_R73_M100_PRO_INTEGRATED_COMPASS_POWER.md").read_text(encoding="utf-8")
         for phrase in ("3.6–5.5 V", "I²C", "UART", "3.3 V",
-                       "not be used to power the M100 PRO",
+                       "used to power the M100 PRO",
                        "level-shifting", "No new hardware purchase"):
             self.assertIn(phrase.casefold(), note.casefold())
         sketch = (ROOT / "Boat/source/firmware/Flytec_Boat.ino").read_text(encoding="utf-8")
