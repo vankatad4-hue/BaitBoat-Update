@@ -104,7 +104,7 @@ class CommonClockTests(unittest.TestCase):
         rows=self.read(HEADER + edge(100,"STOP_BUTTON_EDGE","REMOTE","RISING",origin="EXTERNAL_ANALYZER"))
         errors=api.validate_manifest(manifest("HARDWARE_OBSERVATION"),pathlib.Path("/dev/null"),rows)
         self.assertTrue(any("SHA256" in x for x in errors))
-        self.assertTrue(any("actuator" in x for x in errors))
+        self.assertTrue(any("VM/VH" in x for x in errors))
         self.assertTrue(any("sample rate" in x for x in errors))
 
     def test_full_hardware_metadata_still_returns_review_required_not_pass(self):
