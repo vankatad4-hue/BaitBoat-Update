@@ -16,12 +16,15 @@
 #include "e22_uart_link.h"
 #include "nrf24_link.h"
 #include "radio_hw_config.h"
+#include "radio_utc_time_v1.h"
+#include <sys/time.h>
 #include <Wire.h>
 #include <SPI.h>
 #include <esp_system.h>
 #include <string.h>
 
 static DualRadioManager g_linkManager;
+static flytec_time::Discipline g_gpsUtcClock;
 #if REMOTE_R30H3_STOP_TRACE_ENABLED
 static remote_r30h3::StopTrace g_stopTrace;
 #endif
@@ -59,6 +62,7 @@ static uint32_t g_missionStarted=0;
 static RadioSessionCounter g_boatSequenceGuard,g_boatPrimarySequenceGuard,g_boatBackupSequenceGuard;
 static void resetSession(uint32_t now){
     g_session.reset();radioSession_wipe(g_authKey,32);
+    g_gpsUtcClock.reset(); // no stale UTC authority across auth epochs
     g_manualConfirmRequired=true;g_stopMustConfirm=true;g_manualTransitionAt=now;
     g_txSequence=0;g_stopPending=false;g_missionId=0;g_missionUpload.fail();g_missionControl.reset();g_lastStickTx=now-50U;
     g_boatSequenceGuard.resetAfterHandshake();g_boatPrimarySequenceGuard.resetAfterHandshake();g_boatBackupSequenceGuard.resetAfterHandshake();
@@ -306,6 +310,15 @@ static bool dispatchValidatedPayload(ManagedLink link,const RadioFrame &frame,ui
                                  frame.sessionEpoch,now);
             return true;
         case RADIO_MSG_TELEMETRY:
+            if(frame.payload[0]==flytec_time::SUBTYPE){
+                // HMAC + session/epoch + sequence + nRF link checked by caller.
+                // Time NEVER refreshes control-link freshness, lease, stopState,
+                // battery, mission or other Boat telemetry.
+                if(link!=LINK_NRF_PRIMARY)return false;
+                uint64_t utcMs=0;
+                return flytec_time::decode(frame.payload,utcMs) &&
+                       g_gpsUtcClock.observe(utcMs,now);
+            }
             if(!radio_decodeTelemetryPayload(frame.payload,decoded)) return false;
             if(!telemetryApplyRadioPayload(decoded,link==LINK_NRF_PRIMARY,now))return false;
             if(link==LINK_NRF_PRIMARY&&decoded.kind==RADIO_PAYLOAD_STATUS){
@@ -345,7 +358,8 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame){
     // packet may NEVER extend authenticated-control link freshness, which
     // would otherwise indirectly authorize manual sticks or STOP clearing.
     if(frame.type==RADIO_MSG_TELEMETRY &&
-       frame.payload[0]==radio_r30f::SUBTYPE)return;
+       (frame.payload[0]==radio_r30f::SUBTYPE ||
+        frame.payload[0]==flytec_time::SUBTYPE))return;
     g_linkManager.reportValidRx(link,true,now);
 }
 
@@ -393,6 +407,17 @@ void boatRadio_update() {
     }
     g_ackTracker.update(now);
     g_linkManager.tick(millis());
+    // Update ESP32 CLOCK_REALTIME only after two consistent authenticated
+    // Boat GPS UTC time samples; never touch millis() or safety timers.
+    const uint32_t utcLocalNow=millis();
+    uint64_t unixMs=0;
+    if(sessionReady()&&g_linkManager.primaryHealthy(utcLocalNow)&&
+       g_gpsUtcClock.shouldSetRtc(utcLocalNow)&&
+       g_gpsUtcClock.utcNow(utcLocalNow,unixMs)){
+        timeval tv{};tv.tv_sec=(time_t)(unixMs/1000ULL);
+        tv.tv_usec=(suseconds_t)((unixMs%1000ULL)*1000ULL);
+        if(settimeofday(&tv,nullptr)==0)g_gpsUtcClock.markRtcSet(utcLocalNow);
+    }
     const bool safe=missionPreparationSafe();
     if(g_missionUpload.state()==UPLOAD_ACTIVE&&(!safe||now-g_missionStarted>=9000U))boatRadio_cancelMissionPreparation();
     uint8_t missionPayload[8];
@@ -404,6 +429,9 @@ void boatRadio_update() {
     }
 }
 
+bool boatRadio_utcNow(uint64_t &unixMs){
+    return sessionReady()&&g_gpsUtcClock.utcNow(millis(),unixMs);
+}
 bool boatRadio_isConnected(){return g_session.established()&&g_linkManager.connected(millis());}
 BoatRadioLink boatRadio_getActiveLink(){return toPublicLink(g_linkManager.active());}
 BoatRadioState boatRadio_getState(){return toPublicState(g_linkManager.state());}
