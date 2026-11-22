@@ -1,9 +1,15 @@
 #pragma once
 #include <stdint.h>
 #include "boat_hardware_supervisor.h"
-// R48 independent-contact feedback adapter. The inputs MUST come from local
-// isolated, independently powered hardware, not remote radio messages.
-// Fail closed when any feedback is missing or stale.
+// HISTORICAL R48 LEGACY feedback schema: requires distinct motor and
+// coil contactor status. The R29/R30C-selected Boat uses ONE shared 3S
+// actuator power bus and has NO separately-switched motor/coil domains.
+// Do NOT short, duplicate, alias or fake these two legacy contactor fields
+// to claim independent safety. See boat_common_bus_feedback_r30c.h for the
+// proposed ONE-common-bus supervision contract (still uncommissioned).
+// "Independent" means functionally capable of cutting/observing load power
+// despite a stalled MCU, NOT a second actuator battery.
+// Fail closed when any real local feedback is missing or stale.
 struct BoatSafetyContacts {
  bool stopLoopClosed=false;
  bool watchdogContactClosed=false;
