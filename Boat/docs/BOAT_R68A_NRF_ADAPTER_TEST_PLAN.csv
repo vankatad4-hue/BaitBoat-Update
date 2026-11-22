@@ -1,0 +1,10 @@
+Test_ID,Component,Test_Input,Pass_Criterion,Status
+R68A-01,Ardboard1127,Inspect received board/photo plus SKU,Confirm exact Ardboard article 1127 and PA LNA socket fit/8-pin mapping,NOT_RUN
+R68A-02,Ardboard1127,Vendor pinout confirmation,Verify actual VCC permissible input range with 5.0V and regulator/logic header orientation,NOT_RUN
+R68A-03,Ardboard1127,Regulated bench 5V idle,Measure actual socket 3.3V and stability before connecting radio,NOT_RUN
+R68A-04,Ardboard1127+PA_LNA,Simultaneous radio transmit peak,Verify measured local 3.3V rail droop and radio ACK reliability with no reset,NOT_RUN
+R68A-05,Ardboard1127+PA_LNA,Maximum intended duty with heat enclosure,Measure regulator temperature and ripple at practical worst-case ambient,NOT_RUN
+R68A-06,Olimex5V+Ardboard1127,ESP32 startup plus radio peaks,Prove source current below derated 2A and no USB/header backfeed,NOT_RUN
+R68A-07,Ardboard1127,Remove radio 5V while SPI remains driven,No phantom power or unintended radio wake through SPI lines,NOT_RUN
+R68A-08,E22-900T22S,E22 own supply and carrier,Verify separate 3V3 VCC and 3V3 TTL or manufactured carrier requirements,NOT_RUN
+R68A-09,All,STOP and power-rail fault simulation,Motor and coil VH branches remain independently disconnected; no actuator command,NOT_RUN
