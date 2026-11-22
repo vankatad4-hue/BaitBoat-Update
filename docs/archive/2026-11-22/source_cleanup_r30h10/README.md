@@ -8,3 +8,5 @@ Historical source code moved out of the active Boat/Remote source trees. No arch
 - `Boat/source/heltec_sx1262_link.cpp` and `.h` — retired integrated-Heltec SX1262 implementation, superseded by external E22 UART; no longer compiled or linked.
 
 All changes remain uncommissioned. Physical RF STOP/PPS tests, actual GPIO signatures, R30A independent cutoff/current-zero, and the common-3S dummy-load gates remain NOT_RUN. Boat VER014 / Remote VER028 unchanged.
+
+- `Remote/source/platformio_entry.cpp` — **duplicate** sketch entry adapter; retired because the root `Flytec_Remote.ino` is automatically compiled by PlatformIO, causing double `setup()/loop()` definitions when the adapter is also included.

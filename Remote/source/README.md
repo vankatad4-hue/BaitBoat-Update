@@ -25,3 +25,5 @@ The portable SD status helper (`ui_sd_status.h`) now distinguishes **no mounted 
 `display_port.cpp` uses GPIO6 as an Arduino SD dummy chip-select, while the provisional `radio_hw_config.h` uses GPIO6 for nRF24 CE. This is a physical collision even if Sensor AD is not connected. A compile-time gate prevents `REMOTE_NRF_PIN_AUDIT_SIGNED=1` while these assignments overlap; no replacement pin has been selected without inspection of the actual Waveshare Standard PCB and card/RS485 schematics. All radio physical commissioning remains forbidden.
 
 - The unused earlier `boat_config.h` screen geometry (45/60 px bands, obsolete versus current layout) is archived under `docs/archive/2026-11-22/source_cleanup_r30h10/Remote/source/`. Current dimensions remain in `boat_ui.cpp`.
+
+**Remote PlatformIO sketch entry (R30H-10):** `Flytec_Remote.ino` is at the source root and is directly converted by PlatformIO into one `.ino.cpp` object; the retired `platformio_entry.cpp` duplicate adapter is archived. Boat's nested .ino still needs its independent guarded adapter. These are compilation-only choices, not new physical hardware permissions.

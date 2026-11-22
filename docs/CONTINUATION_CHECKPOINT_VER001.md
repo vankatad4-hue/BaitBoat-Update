@@ -604,3 +604,10 @@ Shared preflight and hostile tests verify epoch gating, primary freshness, ident
 - On archived source commit `fa7d2f17`, Boat/Remote Arduino targets both **SUCCESS**: [Boat #45061849197](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45061849197), [Remote #45061849238](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45061849238).
 - [PlatformIO #45061849117](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45061849117): Boat SUCCESS, Remote FAILURE **not** at the corrected LVGL integer-point code; `WiFiGeneric.h` missing `Network.h` due to a PIO library dependency graph omitting framework Network, despite WiFi 3.3.12. Remote-only `lib_ldf_mode=deep+` was changed to `deep` as an isolated compatibility trial, following prior Arduino-ESP32 issue evidence. Claim successful full Remote PlatformIO build only after new completed CI, never from the toolchain configuration change itself.
 - Hardware commissioning, radio GPIO6/15 conflicts, common 3S STOP/current-zero and actual R30H-10 captures still unresolved. Boat VER014 / Remote VER028 unchanged.
+
+
+### R30H-10 Remote PlatformIO duplicate Arduino sketch fix
+
+- Follow-up PlatformIO [#45062526394](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45062526394) passed Boat; Remote resolved the previous `Network.h` dependency issue but failed linking because PlatformIO auto-compiled root `Flytec_Remote.ino.cpp` AND legacy `Remote/source/platformio_entry.cpp` included the same sketch. Duplicate `setup()`/`loop()` diagnosed from actual linker output, not conjecture.
+- Archive the redundant Remote PIO adapter (exact contents retained) and compile the root `.ino` directly using `Remote/platformio.ini` `build_src_filter`. Keep Boat's guarded adapter for its nested `.ino`. The **new** Remote PlatformIO result remains pending; until its completed PASS, Arduino CLI is the authoritative build.
+- Diagnostic and physical safety locks untouched; Remote GPIO6/15 remain electrically conflicted, no actual GPS/PPS, RF STOP/current-zero tests, Boat VER014 / Remote VER028 unchanged.

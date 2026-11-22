@@ -36,3 +36,7 @@ The follow-up read-only source inventory on [GitHub Actions #45061849119](https:
 ## Experimental PlatformIO dependency discovery regression
 
 Real CI [#45061849117](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45061849117): Boat PlatformIO compiled, Remote still fails **after** the fixed LVGL code because `WiFiGeneric.h` cannot find `Network.h`; the PIO dependency graph omits Arduino framework `Network` despite `WiFi`. Remote `lib_ldf_mode` now uses `deep` instead of `deep+` to test known preprocessor-aware discovery incompatibility. Pending new PIO CI, no Remote PIO PASS claim. Arduino targets both PASS on `fa7d2f17` (Boat [#45061849197](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45061849197), Remote [#45061849238](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45061849238)).
+
+## Native Remote sketch instead of duplicate entry adapter
+
+[PIO #45062526394](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45062526394) overcame the former `Network.h` discovery issue with `lib_ldf_mode=deep`, but failed at Remote link due to duplicate `setup()`/`loop()` from automatically generated root `Flytec_Remote.ino.cpp` plus `Remote/source/platformio_entry.cpp` (which manually included the same sketch). The redundant Remote adapter is now archived and excluded from active builds; root `.ino` is compiled once directly. Boat's **subdirectory** adapter remains needed and untouched. All actual hardware/RF/STOP/PPS checks still NOT_RUN. New PlatformIO CI verification pending.

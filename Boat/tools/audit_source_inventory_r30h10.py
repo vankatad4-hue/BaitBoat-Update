@@ -52,6 +52,8 @@ def check_guards():
         '-<heltec_sx1262_link.cpp>' not in pio,
         not (ROOT / 'Boat/source/heltec_sx1262_link.cpp').exists(),
         not (ROOT / 'Boat/source/heltec_sx1262_link.h').exists(),
+        not (ROOT / 'Remote/source/platformio_entry.cpp').exists(),
+        '+<*.ino>' in (ROOT / 'Remote/platformio.ini').read_text(encoding='utf-8'),
         'RadioLib @' not in pio,
         'RadioLib@' not in arduino,
         'rm /tmp/FlytecBoatBuild/heltec_sx1262_link.cpp' not in arduino,
