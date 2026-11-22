@@ -633,3 +633,13 @@ Removed the 6.5-second idle-session teardown on both Boat and Remote. Radio watc
 - Host math and sketch isolation checks and standalone ESP32-S3 target compilation passed; evidence is [R22 bench procedure](BOAT_R22_ADS1115_SENSOR_ONLY_BRINGUP.md).
 - Physical bring-up, regulator ripple/thermal, VDD/AIN0 power sequencing, exact board pinout, DMM ADC calibration, radio and dummy-load acceptance remain NOT_RUN; no motor/solenoid power commissioned.
 - Official versions remain Boat VER014 and Remote VER028.
+
+## R23 — manufacturer-checked DevKitC-1 GPIO/harness allocation (2026-11-22)
+
+- **Design status:** R23 GPIO and connector/wire mapping committed. The [18 unique Espressif GPIO/header assignments](BOAT_R23_GPIO_PINOUT_AND_HARNESSES.md) match the R20 44-position J1/J3 crosswalk and published Espressif DevKitC-1 v1.1 header mapping; the [64-net CSV](BOAT_R23_MODULE_CONNECTION_MATRIX.csv) covers M100 PRO, GY91, ADS1115, nRF24, E22 UART, Waveshare MCP23017, MDD20A, EKM014, switched analog battery input, 5V/3.3V rails and four unwired potential safety GPIOs.
+- M100 PRO VCC 5V/UBX115200, QMC5883L 0x0D and SH1.0-6 cable; **physical contact order and 5V-powered TX/SDA/SCL logic levels unverified**. E22 exact 26-pad NRST/M0/M1/RXD/TXD/AUX/VCC/ANT mapping vendor-verified; 5V-powered E22 TXD/AUX levels and factory carrier still to inspect.
+- Waveshare MCP23017 A0/A1/A2 jumpers open HIGH gives 0x27; GPB0/1 to MDD20A DIR1/2 and GPA0-3 to EKM014 IN1-4 are logical connections only. MDD20A PWM1/2 GPIO39/40 repurposes JTAG; EKM014 5V VL accepts 3.3V control. EKM VH remains isolated 3S source with unselected independent cutoff.
+- Procurement register corrected: D24V10F3 #1 is nRF24 PA/LNA radio power; #2 is GY91/ADS1115/MCP23017 power; E22 gets 5V from main DCDC6-16-TO5. Ardboard socket power alternative remains optional, quantity zero, not the active 3.3V source. Older R68/R68A BOM/test views are historical, not purchase authority.
+- New `boat_r23_gpio_connection_contract.h`, `verify_gpio_connections_r23.py`, and `boat_r23_gpio_contract_test.cpp` are checked in Boat CI for 18-pin collisions, reserved 1.8V GPIO47/48 and octal memory, wiring CSV consistency, radio macros, and all unsigned commissioning flags.
+- **NOT RUN:** exact purchased PCB/header audit, module carrier/SH1.0 cavity check, electrical level tests, 3.3V rail and I²C scans, ADS1115 12.6V DMM calibration, high-current safety cutoff/watchdog/current-zero feedback, dummy loads, water tests. GPIO1/2/41/42 are reserved but do not have physical feedback attached. The diagnostic firmware remains non-actuating.
+- Official versions remain Boat VER014 / Remote VER028. Sonar module integration remains deferred.
