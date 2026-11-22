@@ -9,7 +9,7 @@ static unsigned disables=0;
 static bool readSample(BoatHardwareSample &s){
  if(!available)return false;
  if(!holdStamp)stamp=fakeNow;
- s={{422000000,275000000,1.25,90,true,true,true,true},stamp,fakeNow,fakeNow,true,physical,true,true,true,idle,true,true,output.left!=0,output.right!=0,70,3,8,12000,0,fakeNow,fakeNow,true,true};
+ s={{422000000,275000000,1.25,90,true,true,true,true},stamp,fakeNow,fakeNow,true,physical,true,true,true,idle,true,true,output.left!=0,output.right!=0,70,3,8,12000,0,fakeNow,fakeNow,true,true,BOAT_BATTERY_GREEN,false};
  return true;
 }
 static bool apply(const BoatActuatorOutput &o,uint16_t lease){
