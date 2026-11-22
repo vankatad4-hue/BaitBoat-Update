@@ -133,10 +133,14 @@ void loop(){
   boat_r30e::encodeLocal(status,localBytes);
   // This format is local only. It is not RADIO_PAYLOAD_STATUS or a Remote
   // command; the Remote protocol is intentionally unchanged.
-  Serial.printf("R30E,LOCAL_ONLY,%s,flags=0x%04X,pack_mV=%u,seq=%u,changed=%u,outputs=LOCKED\\n",
+  Serial.printf("R30E,LOCAL_ONLY,%s,flags=0x%04X,pack_mV=%u,seq=%u,changed=%u,outputs=LOCKED,frame=%02X%02X%02X%02X%02X%02X%02X%02X\\n",
       boat_r30e::label(status.reason),
       (unsigned)status.flags,(unsigned)status.millivolts,
-      (unsigned)status.sequence,(unsigned)changed);
+      (unsigned)status.sequence,(unsigned)changed,
+      (unsigned)localBytes[0],(unsigned)localBytes[1],
+      (unsigned)localBytes[2],(unsigned)localBytes[3],
+      (unsigned)localBytes[4],(unsigned)localBytes[5],
+      (unsigned)localBytes[6],(unsigned)localBytes[7]);
  }
  application.tick(); // no commissioned driver attached: diagnostic only
  delay(1);
