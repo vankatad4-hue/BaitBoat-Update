@@ -77,3 +77,13 @@ Boat pack: 3S4P Li-ion, nominal 11.1 V, fully charged ~12.6 V, nominal low opera
 ## R73 latest GPS/compass supply correction (supersedes old R68/R71 load assumptions)
 
 [Manufacturer HGLRC M100 PRO](https://www.hglrc.com/products/hglrc-m100-pro-gps) includes **QMC5883L on its PCB** and specifies **3.6–5.5 V supply input**. This *whole GPS board including onboard QMC* is **NOT powered by the confirmed D24V10F3 3.3 V sensor output**. It is assigned provisionally to **5V_MCU (Olimex candidate)** along with ESP32 and conditional nRF adapter, subject to the aggregate current/EMI budget and 3.3V IO compatibility. **Confirmed D24V10F3 #2 = GY-91 + Waveshare MCP23017 ONLY**; D24V10F3 #1 = E22 only. This correction supersedes any historical RECOM/QMC/SENSOR references in tables and diagrams above. No standalone QMC part to purchase. **M100 UART TX / I²C pull-up signal voltage not proven 3.3V-safe; don't connect to ESP32 until verified**, or use ready-made rated level shifting. Details: [R73 review](BOAT_R73_M100_PRO_INTEGRATED_COMPASS_POWER.md), [active corrected BOM](BOAT_R68_POWER_RAIL_BOM.csv).
+
+
+## R74 — latest owner selections supersede historical R68 candidates (2026-11-22)
+
+- **Main 5V rail: Olimex DCDC6-16-TO5, one unit initially, owner-confirmed model.** Powers ESP32-S3 + full HGLRC M100 PRO GPS including onboard QMC5883L. Filtered Ardboard 1127 nRF socket input may share only after aggregate startup/RF/thermal tests. A second DCDC6 is conditional if tests demonstrate need for a separately conditioned 5V spur; do not order automatically and never parallel outputs.
+- **EKM014 VL logic rail: TRACO TSR 2-2450, one unit, owner-directed selected model.** Fixed 5V/2A, 6.5–36V input, dedicated to EKM014 VL only; EKM014 VH remains independent 3S battery feed and must stay >= VL. No solenoid, MDD20A or VH power from TSR. Exact fuse, SIP3 socket/harness, reverse-polarity protection and hot enclosure qualification still open.
+- These supersede R68 candidate notes that named Pololu S13V20F5 for EKM014 VL. S13V20F5 is now historical unselected alternative. XL6019 remains not selected.
+- The confirmed 2× Pololu D24V10F3 #2830 remain unchanged: #1 E22 LoRa only; #2 GY-91 + MCP23017 only. M100/QMC is on the 5V main rail, not 3V3.
+- See [R74 5V regulator technical decision](BOAT_R74_5V_REGULATOR_SELECTION.md), active [power BOM](BOAT_R68_POWER_RAIL_BOM.csv), [14-point unrun acceptance plan](BOAT_R68_POWER_ACCEPTANCE.csv), and updated canonical [purchase register](../../docs/PROJECT_PURCHASE_REGISTER_R20.csv).
+- **Status semantics:** exact models selected/confirmed but not purchased. No electrical bench tests or hardware commissioning. Boat VER014 / Remote VER028 remain frozen.
