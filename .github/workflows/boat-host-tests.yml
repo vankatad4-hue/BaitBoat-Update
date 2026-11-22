@@ -168,6 +168,13 @@ jobs:
         run: |
           python3 Boat/tools/verify_r30h5_gps_time_isolation.py
           python3 -m unittest Boat/tests/test_r30h5_gps_time_isolation.py -v
+      - name: R30H-6 clock quality is NOT common RF clock, marker I/O unsigned
+        run: |
+          cmp Boat/source/r30h6_utc_marker_policy.h Remote/source/r30h6_utc_marker_policy.h
+          cmp Boat/source/radio_utc_time_v1.h Remote/source/radio_utc_time_v1.h
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IBoat/source \
+            Boat/tests/r30h6_utc_marker_policy_test.cpp -o /tmp/boat_r30h6_utc_marker
+          /tmp/boat_r30h6_utc_marker
       - name: R30H-5 GNSS UTC calendar UBX/NMEA parser and authenticated clock discipline (no physical GPS)
         run: |
           cmp Boat/source/radio_utc_time_v1.h Remote/source/radio_utc_time_v1.h
