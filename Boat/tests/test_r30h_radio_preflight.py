@@ -95,6 +95,20 @@ class TestR30HPreflight(unittest.TestCase):
         self.hostile("Boat/docs/BOAT_R30H_7_GNSS_PPS_RF_CLOCK_SIGNOFF.csv",
                      "NOT_RUN,,,", "PASS,PPS=real,unverified,none")
 
+    def test_r30h8_fake_pps_data_is_denied(self):
+        self.hostile("Boat/docs/BOAT_R30H_8_SHARED_CLOCK_CAPTURE_TEMPLATE.csv",
+                     "event,utc_unix_ms,origin,notes\n",
+                     "event,utc_unix_ms,origin,notes\nC1,T1,FAKE,0,GNSS,GNSS_PPS_EDGE,1795347296000,EXTERNAL_ANALYZER,dummy\n")
+
+    def test_r30h8_manifests_cannot_claim_physical_pps(self):
+        self.hostile("Boat/docs/BOAT_R30H_8_SHARED_CLOCK_MANIFEST_TEMPLATE.json",
+                     '"evidence_mode": "UNSPECIFIED"',
+                     '"evidence_mode": "HARDWARE_OBSERVATION"')
+
+    def test_r30h8_clock_gate_cannot_be_signed(self):
+        self.hostile("Boat/docs/BOAT_R30H_8_CLOCK_ALIGNMENT_GATES.csv",
+                     "NOT_RUN,,,", "PASS,test_only,unverified,none")
+
     def test_fail_if_motor_driver_attaches(self):
         self.hostile("Boat/source/firmware/Flytec_Boat.ino",
                      "const bool ready=radio.begin();",
