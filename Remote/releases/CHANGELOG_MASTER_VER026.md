@@ -386,3 +386,9 @@ Engineering-only branch milestone; no official Remote/Boat package version bump.
 
 - User proposed **2× independent Pololu D24V10F3 #2830 3.3V/1A**: one for Boat E22-900T22S, the other for GY-91 MPU9250/BMP280 + QMC5883L + Waveshare MCP23017 SKU15391. Manufacturer permits 3S battery VIN; VOUT rails must never be joined and are not galvanically isolated. Both are **engineering-preferred proposed**, not fully owner-locked, ordered or commissioned.
 - Prior RECOM sensor regulator moved to unselected alternative in purchase register; active `Boat/docs/BOAT_R68_POWER_RAIL_BOM.csv` and `Boat/tests/test_r68_power_contract.py` revised. See `Boat/docs/BOAT_R71_DUAL_D24V10F3_3V3_RAIL_REVIEW.md`. No change to Remote's 1S4P supply, ESP32/5V power choice, nRF adapter, official versions or safety hold; Boat VER014 / Remote VER028 unchanged.
+
+
+## R72 — selected Boat dual Pololu 3.3 V supply (2026-11-22)
+
+- Owner explicitly **confirmed 2× Pololu D24V10F3 #2830**, *Boat only*: one independent 3.3 V output for E22-900T22S and one for GY-91/QMC5883L/Waveshare MCP23017 expansion. R71 proposal status superseded and canonical purchase register/power rail BOM updated to `R72_OWNER_CONFIRMED_D24V10F3_NOT_PURCHASED`. RECOM 3.3 V sensor candidate remains unselected.
+- Independent power inputs/outputs, fused reverse protection, local decoupling, measured ripple/hot operation, ready-made E22 carrier and power sequencing still require qualification; no wiring/actuator enable, no parts purchased, no release bump. Boat VER014 / Remote VER028 unchanged.
