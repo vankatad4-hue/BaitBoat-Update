@@ -164,6 +164,10 @@ jobs:
           cp Boat/tests/application_stubs/boat_dual_radio_port.h /tmp/boat_app_test/
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -I/tmp/boat_app_test -IBoat/source -IBoat/tests/stubs /tmp/boat_app_test/boat_application_port.cpp Boat/tests/boat_application_integration_test.cpp -o /tmp/boat_application
           /tmp/boat_application
+      - name: R30H-5 time-source security, monotonic STOP/RTH and replay-isolation
+        run: |
+          python3 Boat/tools/verify_r30h5_gps_time_isolation.py
+          python3 -m unittest Boat/tests/test_r30h5_gps_time_isolation.py -v
       - name: R30H-5 GNSS UTC calendar UBX/NMEA parser and authenticated clock discipline (no physical GPS)
         run: |
           cmp Boat/source/radio_utc_time_v1.h Remote/source/radio_utc_time_v1.h
