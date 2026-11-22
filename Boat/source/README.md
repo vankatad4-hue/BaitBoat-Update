@@ -10,7 +10,7 @@ Active Boat hardware decisions are in [BOAT_HARDWARE_SELECTION_R20.md](../docs/B
 - `boat_home_point_nvs.*`: two-slot CRC-verified Boat-local Home persistence.
 - `mission_execution.h` / `mission_controller.h`: mission state, outbound hold on low battery, Home diversion and no-radio Home navigation.
 - `boat_hardware_supervisor.h`: motor/release output policy, one-at-a-time releases, low-battery outbound inhibit and Home-only RTH gate.
-- `tracker_sensor_port.*`: GNSS/IMU and ADS1115-compatible battery-voltage acquisition. Commissioned profile must remain disabled until exact pins and divider calibration are verified.
+- `tracker_sensor_port.*`: GNSS/IMU and selected R27/R28 INA231 BUS-only battery-voltage acquisition. Physical I²C access and calibration stay disabled pending board inspection; the retired ADS1115 fallback is inactive.
 
 ## R79 battery behavior
 
@@ -18,7 +18,7 @@ The Boat computes battery state locally from a fresh voltage sample. Red battery
 
 ## Hardware boundary
 
-The current firmware target is a diagnostic/non-actuating build. The [R20 GPIO/header map](../docs/BOAT_GPIO_HEADER_MAP_R20.md) is a candidate only; pin-audit flags remain false. The ADS1115 sample now supplies the battery-health validity used by the physical-driver gate. Independent STOP/watchdog/pulse-limiter/current-zero feedback and physical driver bindings still require sign-off. Host tests and target compilation do not commission actual ADC, GNSS, radio, MDD20A or EKM014 hardware.
+The current firmware target is a diagnostic/non-actuating build. The [R20 GPIO/header map](../docs/BOAT_GPIO_HEADER_MAP_R20.md) is a candidate only; pin-audit flags remain false. Only a commissioned, calibrated INA231 BUS-only voltage sample may eventually supply battery-health validity; none exists yet, so the physical-driver gate stays closed. Independent STOP/watchdog/pulse-limiter/current-zero feedback and physical driver bindings still require sign-off. Host tests and target compilation do not commission actual ADC, GNSS, radio, MDD20A or EKM014 hardware.
 
 ## R22 read-only ADS1115 module
 
@@ -36,3 +36,9 @@ The production Boat firmware is unchanged by this diagnostic sketch and remains 
 - [R23 full wiring design](../docs/BOAT_R23_GPIO_PINOUT_AND_HARNESSES.md).
 
 The `boat_radio_hw_config.h` numeric GPIOs are unchanged and remain audit-locked. `NRF24Link::begin()` already calls explicit `SPIClass::begin(sck, miso, mosi, csn)`, so the selected GPIO11/12/13 SPI route is not relying on board-default SPI pins. GNSS/I²C sensor profile and all physical actuator drivers remain uncommissioned.
+
+## Build inventory: retired implementation isolation (R30H-10 software pass)
+
+- **Active radio transport:** nRF24L01+ plus E22 UART. The retired Heltec SX1262 implementation in `heltec_sx1262_link.{cpp,h}` is preserved solely for historical reference and old host regressions; it is excluded from both Boat PlatformIO and Arduino diagnostic target builds. RadioLib is no longer an active Boat target dependency. No removal of audit locks or adoption of a new radio is implied.
+- The retired R21/R22 ADS1115 and R26 INA226 reference headers/tests remain available for historical regression only, not as active battery acquisition. R27/R28 INA231 BUS-only remains the selected (uncommissioned) path.
+- Source-level inventory changes are not hardware acceptance. All R30A physical STOP, coil-current-zero, and R30H-10 RF/PPS measurements remain pending.

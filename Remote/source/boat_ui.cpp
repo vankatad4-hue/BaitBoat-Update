@@ -389,13 +389,18 @@ static void drawSonarPlot(uint16_t width, uint16_t height)
     if (!sonarPlot) return;
     while (lv_obj_get_child_count(sonarPlot) > 0)
         lv_obj_delete(lv_obj_get_child(sonarPlot, 0));
-    const int w=(int)width-1, h=(int)height-1;
+    // LVGL 9.6 lv_point_precise_t stores integer pixel coordinates in this
+    // configuration. Never use floating-point list initialization here:
+    // Arduino and PlatformIO must compile the very same drawing code.
+    if (width < 2 || height < 2) return;
+    const int32_t w = static_cast<int32_t>(width) - 1;
+    const int32_t h = static_cast<int32_t>(height) - 1;
     const lv_color_t grid=lv_color_hex(0x244258);
     static lv_point_precise_t hp[5][2],vp[5][2];
     for(int i=0;i<=4;i++){
         int y=(h*i)/4, x=(w*i)/4;
-        hp[i][0]={0.0f,(float)y};hp[i][1]={(float)w,(float)y};
-        vp[i][0]={(float)x,0.0f};vp[i][1]={(float)x,(float)h};
+        hp[i][0]={0,y};hp[i][1]={w,y};
+        vp[i][0]={x,0};vp[i][1]={x,h};
         sonarLine(sonarPlot,hp[i],2,grid,1);sonarLine(sonarPlot,vp[i],2,grid,1);
     }
     // Illustrative arcs scaled to the current viewport; DEMO label remains visible.
@@ -404,9 +409,9 @@ static void drawSonarPlot(uint16_t width, uint16_t height)
     const int bx[]={50,58,66,74,82,90,96}, by[]={88,78,68,62,68,78,88};
     const int fx[]={2,18,34,50,66,82,98}, fy[]={96,94,97,93,96,94,97};
     for(int i=0;i<7;i++){
-        archA[i]={(float)(w*ax[i]/100),(float)(h*ay[i]/100)};
-        archB[i]={(float)(w*bx[i]/100),(float)(h*by[i]/100)};
-        bottom[i]={(float)(w*fx[i]/100),(float)(h*fy[i]/100)};
+        archA[i]={w*ax[i]/100,h*ay[i]/100};
+        archB[i]={w*bx[i]/100,h*by[i]/100};
+        bottom[i]={w*fx[i]/100,h*fy[i]/100};
     }
     sonarLine(sonarPlot,archA,7,lv_color_hex(0x35E3B0),2);
     sonarLine(sonarPlot,archB,7,lv_color_hex(0xF5C84C),2);
