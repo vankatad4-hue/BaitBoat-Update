@@ -102,3 +102,8 @@ Still to confirm:
 12. Run radio range/EMI tests, GPS/heading calibration, then full boat acceptance.
 
 **Current readiness:** component model selection is partly complete; purchase, physical qualification and commissioning are not. Host tests are software/static evidence only. Do not energize motor or solenoid branches.
+
+
+## R75A — socket-fit review update
+
+The **BINDER MPE 006-1-003-D-B1STF-XS0** is now the primary dimensioned SIP3 socket candidate (2.54mm pitch, 3A, 4-finger BeCu clip). Its published square mating-pin maximum is 0.25×0.45mm; TRACO specifies 0.46×0.46mm nominal with ±0.1mm tolerance. The nominal difference is only 0.01mm, but compatibility is **not guaranteed**. Obtain one sample and request manufacturer confirmation before locking. econ connect MP70S3 is demoted to secondary because its listing gives a round pin form and does not publish a square mating-pin tolerance. If neither sample passes, use a direct-solder pigtail service method rather than forcing an unsuitable socket.
