@@ -197,12 +197,14 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  bool &rxValid=link==LINK_NRF_PRIMARY?lastNrfRxValid_:lastBackupRxValid_;
  uint32_t &lastRx=link==LINK_NRF_PRIMARY?lastNrfRxMs_:lastBackupRxMs_;
  if(f.type==RADIO_MSG_HEARTBEAT){lastRx=lastSessionRx_=now;rxValid=true;noteAuthenticatedRx(now);return;}
- // Detached Home return keeps old plan private to the local supervisor.
- // A new session cannot attach to the old transaction or restart its target.
- if(detachedReturn_&&(f.type==RADIO_MSG_MISSION_STICKS||f.type==RADIO_MSG_MISSION_PREPARE))return;
+ // Detached Home return keeps the old plan private. Only a fresh neutral
+ // primary stick sample may be observed, solely to qualify an explicit manual
+ // takeover request; non-neutral sticks cannot steer or interrupt RTH.
+ if(detachedReturn_&&f.type==RADIO_MSG_MISSION_PREPARE)return;
  if(f.type==RADIO_MSG_MISSION_STICKS){
    if(link!=LINK_NRF_PRIMARY||!crossSequenceAccepted)return;
    MissionStickInput input{};if(!missionStickDecode(f.payload,input)||f.commandId!=input.transaction)return;
+   if(detachedReturn_&&(!input.neutral||input.left||input.right))return;
    if(stickLease_.receive(input,controller_.status().transaction,now,true)){lastRx=lastSessionRx_=now;rxValid=true;noteAuthenticatedRx(now);}
    return;
  }
