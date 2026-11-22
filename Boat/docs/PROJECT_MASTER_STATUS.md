@@ -554,3 +554,18 @@ Owner supplied front/rear photographs of the original board marked **JR-V030RX-2
 **Safety verdict:** no independent hardware safety chain can be verified on the original PCB photographs. No separate safety relay, rated load contactor, monitored auxiliary, independent watchdog or fault-latched power isolation is visible. V030/V080 manual's lost-signal return/electronic fence are navigation/radio behaviors, not independent electrical emergency stop. The retrofit is also not yet physically independently safe: R65/R66/R17 requirements remain unselected/uncommissioned (STOP, manual reset, watchdog, motor and EKM014 VH contactors, feedback, one-hot non-retrigger pulse control and current-zero sensors).
 
 Added [R76 original-board reverse-engineering review](BOAT_R76_ORIGINAL_JR_V030RX_BOARD_REVIEW.md). No pinout, BOM, firmware, actuator wiring or release version changed. Next evidence: macro photos of IC/MOSFET markings, full connected harness photos, power-off continuity mapping and controlled independent motor/coil current measurements. Boat VER014 / Remote VER028 unchanged.
+
+
+## R77 — Dual-radio link watchdog behavior implemented (2026-11-22)
+
+Owner requested **no new physical elements**: on total radio loss stop all outputs; when an authenticated radio link returns, continue the held autonomous mission. Implemented a software watchdog using existing nRF24/E22 freshness and existing ESP32-S3 firmware.
+
+- Either authenticated fresh radio path keeps autonomous navigation available. Primary nRF24 remains mandatory for manual steering and irreversible hopper/hook releases. If primary is stale but E22 backup is fresh, manual/stick input is cancelled, navigation can continue, and the mission waits at a target until primary returns before release.
+- When both links are stale, motor requests are zero and all four solenoid outputs are commanded OFF. Mission navigation phase is held; link loss no longer triggers automatic Return-to-Home.
+- On authenticated link/session recovery, an eligible outbound/returning/paused mission resumes. Stale commands and stick leases are discarded. Manual control requires neutral then a new command.
+- A release intent/pulse interrupted by primary loss is aborted; active release is commanded OFF and latched. No automatic replay after reconnect. Explicit user-requested Home remains supported.
+- Updated radio policy, session manager, command queue, mission controller/executor, actuator supervisor and application generation handling. Added/updated host tests for watchdog transitions, mission hold/resume, release non-replay, neutral-before-manual recovery and emergency STOP queue preservation.
+
+Detailed implementation: [R77 dual-radio watchdog](BOAT_R77_DUAL_RADIO_WATCHDOG_IMPLEMENTATION.md).
+
+**Critical scope:** this is a software radio watchdog on the main ESP32-S3, not an independent hardware safety channel. It cannot cut power if the MCU freezes or a driver MOSFET fails short. R65/R66/R17 physical STOP, load isolation, monitored feedback, independent watchdog and one-hot bounded pulse/current-zero requirements remain open. No new physical elements, GPIO assignments, purchases or live-load tests. Boat VER014 / Remote VER028 unchanged.
