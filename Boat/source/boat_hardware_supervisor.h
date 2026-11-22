@@ -72,7 +72,11 @@ public:
   // Both authenticated radio paths stale: all motors and solenoids OFF.
   // An interrupted release is latched because its physical completion is unknown.
   if(!in.primaryFresh&&!in.backupFresh){
-   if(releaseBusy())stop();
+   if(releaseBusy()){
+    completion_={lastTx_,lastToken_,false,true};
+    pulseActive_=awaitIdle_=false;
+    stopLatched_=true;
+   }
    return off;
   }
   if(pulseActive_||awaitIdle_){
