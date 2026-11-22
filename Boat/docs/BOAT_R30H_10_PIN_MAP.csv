@@ -1,0 +1,26 @@
+Net,GPIO,Header,Disposition,Note
+GNSS_TX,4,J1-4,PROBE_ONLY,M100 PRO RX
+GNSS_RX,5,J1-5,PROBE_ONLY,M100 PRO TX measure level
+I2C_SCL,7,J1-7,PROBE_ONLY,Shared GY91 M100 MCP INA231
+I2C_SDA,8,J1-12,PROBE_ONLY,3V3 I2C only
+NRF_CSN,9,J1-15,PROBE_ONLY,RF signed zero
+NRF_CE,10,J1-16,PROBE_ONLY,RF signed zero
+NRF_MOSI,11,J1-17,PROBE_ONLY,SPI output not enabled
+NRF_SCK,12,J1-18,PROBE_ONLY,SPI output not enabled
+NRF_MISO,13,J1-19,PROBE_ONLY,SPI input
+NRF_IRQ,21,J3-18,PROBE_ONLY,IRQ input
+E22_NRST,6,J1-6,PROBE_ONLY,No drive before module audit
+E22_AUX,14,J1-20,PROBE_ONLY,Input level check
+E22_M0,15,J1-8,PROBE_ONLY,Mode output locked
+E22_M1,16,J1-9,PROBE_ONLY,Mode output locked
+E22_TX,17,J1-10,PROBE_ONLY,ESP TX to E22 RX
+E22_RX,18,J1-11,PROBE_ONLY,ESP RX from E22 TX
+MDD_PWM1,39,J3-9,BLOCKED_ACTUATOR,Motor bus disconnected
+MDD_PWM2,40,J3-8,BLOCKED_ACTUATOR,Motor bus disconnected
+SAFETY1,1,J3-4,RESERVED,Independent safety design
+SAFETY2,2,J3-5,RESERVED,Independent safety design
+SAFETY41,41,J3-7,RESERVED,Independent safety design
+SAFETY42,42,J3-6,RESERVED,Independent safety design
+GNSS_PPS,-1,UNASSIGNED,UNASSIGNED,No exported verified M100 PPS
+MCP23017,-1,I2C_0x27,EXTERNAL_IO,GPB0-1 direction GPA0-3 EKM inputs
+INA231,-1,I2C_0x40,EXTERNAL_IO,Selected BUS-only sense uncommissioned

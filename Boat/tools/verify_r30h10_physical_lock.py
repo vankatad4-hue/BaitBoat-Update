@@ -57,9 +57,11 @@ def main() -> None:
             "#define REMOTE_E22_BRIDGE_AUDIT_SIGNED 0",
             "#define REMOTE_E22_RF_INTEROPERABILITY_VERIFIED 0",
             "#define REMOTE_E22_RF_AIRTIME_AUDIT_SIGNED 0",
-            "#define REMOTE_NRF_CE_PIN   6",
+            "#define REMOTE_NRF_CE_PIN   (-1)",
             "#define REMOTE_SD_DUMMY_CSN_PIN 6",
-            "#define REMOTE_NRF_CSN_PIN  15",
+            "#define REMOTE_NRF_CSN_PIN  (-1)",
+            "#define REMOTE_R30H10_REJECTED_CE_GPIO 6",
+            "#define REMOTE_R30H10_REJECTED_CSN_GPIO 15",
         ],
         "Boat/source/boat_r30h9_marker_config.h": [
             "#define BOAT_R30H9_MARKER_GPIO (-1)",
@@ -74,6 +76,8 @@ def main() -> None:
         for line in lines:
             assert_line(path, line)
 
+    from verify_r30h10_gpio_map import check_gpio_map
+    require(not check_gpio_map(ROOT), "R30H-10 GPIO map source check failed")
     path = ROOT / "Boat/docs/BOAT_R30H_10_PHYSICAL_GATES.csv"
     with path.open(encoding="utf-8", newline="") as f:
         rows = list(csv.DictReader(f))

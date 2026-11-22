@@ -47,3 +47,6 @@ Use [R30H-10 unsigned gate register](BOAT_R30H_10_PHYSICAL_GATES.csv), not a CI 
 2. A safe GPIO marker requires a separate approved free output, validated latency, physical continuity, risk review and an isolated diagnostic firmware build; currently **none exists**.
 3. R30H-10 is **not completed** until the independent STOP/current-zero/solenoid-limiter evidence passes independently, with physical hardware. Until then `ACTUATOR_POWER=DISCONNECTED`, `UPLOAD=DENIED`, `RF_AUDITS=0`, `PHYSICAL_ACCEPTANCE=OPEN`, and `Boat VER014 / Remote VER028` are unchanged.
 4. Any actual wiring disagreement, voltage conflict, absent PPS, unsafe antenna/probe, or unexpected powered output: abort, de-energize, annotate BLOCKED/FAIL and require reviewed rework.
+
+## R30H-10 passive GPIO pin-map update (source only)
+Authoritative machine-readable [Boat pin map](BOAT_R30H_10_PIN_MAP.csv) and [Remote pin map](../../Remote/docs/REMOTE_R30H_10_PIN_MAP.csv), plus [engineering evaluation](../../docs/R30H_10_GPIO_RESOURCE_EVALUATION.md). The live Remote nRF CE/CSN proposals were retired to `-1/-1`; rejected GPIO6/15 remain documented. Remote shared TF SPI/CH422G EXIO4 CS needs arbitration before any nRF RF-only trial. GNSS PPS remains `-1` without a proved exported pin. The Boat candidate assignments remain unchanged; independent STOP and all actuator outputs remain locked.

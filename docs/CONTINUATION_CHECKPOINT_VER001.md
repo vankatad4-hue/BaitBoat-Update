@@ -643,3 +643,6 @@ See [full source cleanup and build evidence](SOURCE_CLEANUP_R30H_10_R1.md).
 
 ## R30H-10 — PlatformIO source optimization R2 (2026-11-22)
 Current development work: [conservative optimized source/CI report](PLATFORMIO_SOURCE_OPTIMIZATION_R30H10_R2.md). Remote current-link-before-telemetry safety ordering, unified STOP dispatch, ADC all-or-nothing sampling, Boat timestamp consistency, VS Code IntelliSense and PlatformIO regression gates have been updated. **A fresh target CI PASS is pending**; prior build #45063024581 covered earlier code. Preserve all 18 physical gates as NOT_RUN/BLOCKED, unsigned radios/markers, independent STOP/current-zero blocker, and denied upload. Boat VER014 / Remote VER028 unchanged.
+
+## R30H-10 GPIO mapping (2026-11-22)
+[GPIO resource evaluation](R30H_10_GPIO_RESOURCE_EVALUATION.md), Boat and Remote CSV pin ledgers and header-only compile contracts added for passive/preliminary testing. Boat preserves R23 candidate UART/I2C/nRF/E22 assignments and reserves safety GPIO1/2/41/42; motor PWM39/40 remains blocked, PPS=-1. Remote live nRF CE/CSN are now **-1/unassigned** due to actual GPIO6 SD dummy-CS and GPIO15 RS485 conflicts, plus shared TF SPI/CH422G EXIO4 chip-select contention. Signed RF/power/STOP gates remain 0; upload denied, all physical acceptance NOT_RUN/BLOCKED, Boat VER014 / Remote VER028 unchanged.
