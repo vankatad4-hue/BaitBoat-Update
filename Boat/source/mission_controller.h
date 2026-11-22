@@ -34,7 +34,7 @@ public:
   }
   bool accepted=false;
   if(r.op==MCTRL_CANCEL){engine_.abort();phase_=MC_ABORTED;accepted=true;}
-  else if(!diverted_&&appReady&&in.primaryFresh&&!in.stopActive){
+  else if(appReady&&in.primaryFresh&&!in.stopActive){
    switch(r.op){
    case MCTRL_START:
     if(phase_==MC_PREPARED&&now-stagedAt_<10000U&&sticksNeutral&&engine_.start(plan_,in,now,true)){phase_=MC_OUTBOUND;accepted=true;}
@@ -50,11 +50,15 @@ public:
      phase_=engine_.phase()==EXEC_RETURNING?MC_RETURNING:MC_OUTBOUND;accepted=true;
     }
     break;
-   case MCTRL_SWITCH_MANUAL:
-    if(phase_==MC_OUTBOUND||phase_==MC_RETURNING||phase_==MC_PAUSED||phase_==MC_OVERRIDE_NEUTRAL||phase_==MC_OVERRIDE_ACTIVE){
-     engine_.abort();phase_=MC_MANUAL_REQUESTED;accepted=true; // not physical MODE_MANUAL confirmation
+   case MCTRL_SWITCH_MANUAL:{
+    const bool safeRthTakeover=!diverted_||
+      (sticksNeutral&&in.stationary&&in.releaseIdle&&in.releaseInterlocks);
+    if(safeRthTakeover&&
+       (phase_==MC_OUTBOUND||phase_==MC_RETURNING||phase_==MC_PAUSED||phase_==MC_OVERRIDE_NEUTRAL||phase_==MC_OVERRIDE_ACTIVE)){
+     engine_.abort();phase_=MC_MANUAL_REQUESTED;accepted=true;diverted_=false;
     }
     break;
+   }
    default:break;
    }
   }
@@ -76,7 +80,7 @@ public:
   if(engine_.phase()==EXEC_RELEASE_WAIT&&!in.primaryFresh){engine_.abort();phase_=MC_ABORTED;return stop;}
   // Both radio paths absent: stop all outputs but preserve a navigation phase.
   // It resumes only after either authenticated link is fresh.
-  if(!in.primaryFresh&&!in.backupFresh)return stop;
+  if(!in.primaryFresh&&!in.backupFresh&&!in.autonomousRth)return stop;
   auto out=engine_.tick(in,now);
   switch(engine_.phase()){
    case EXEC_OUTBOUND:phase_=MC_OUTBOUND;break;
@@ -95,6 +99,14 @@ public:
  // A status hint only. No manual motor output is generated here; the future
  // executor must validate and lease each fresh authenticated stick command.
  bool temporaryOverrideConfirmed()const{return phase_==MC_OVERRIDE_ACTIVE;}
+ bool canDivertHome()const{
+  return phase_==MC_OUTBOUND||phase_==MC_PAUSED||phase_==MC_RETURNING||
+         phase_==MC_OVERRIDE_NEUTRAL||phase_==MC_OVERRIDE_ACTIVE;
+ }
+ bool homeNavigationValid(const ExecInputs &in)const{return plan_.transaction&&engine_.homeNavigationValid(in);}
+ bool homeMatches(int32_t latE7,int32_t lonE7)const{
+  return plan_.transaction&&plan_.homeLatE7==latE7&&plan_.homeLonE7==lonE7;
+ }
  bool cancelOverrideForLinkLoss(){
   if(phase_!=MC_OVERRIDE_ACTIVE&&phase_!=MC_OVERRIDE_NEUTRAL)return false;
   if(!engine_.cancelPauseForLinkLoss()){emergencyAbort();return false;}
