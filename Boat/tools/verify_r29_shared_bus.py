@@ -49,6 +49,19 @@ for fn, count, status_fields in acceptance_files:
         tests = list(reader)
     assert len(tests) == count, (fn, len(tests), count)
     assert len({t["Check_ID"] for t in tests}) == count, fn
-    assert all(all(t[field] == "NOT_RUN" for field in status_fields)
-               for t in tests), fn
+    if fn.endswith("BOAT_R23_GPIO_AND_LEVEL_SIGNOFF.csv"):
+        assert "Check_Type" in reader.fieldnames, fn
+        # 18 GPIOs have a real continuity check, while the other 14
+        # MODULE_INTERLOCK checks intentionally leave that field blank.
+        # ALL status/power-on/power-off cells still must be NOT_RUN.
+        assert sum(t["Check_Type"] == "GPIO_PIN" for t in tests) == 18, fn
+        assert sum(t["Check_Type"] == "MODULE_INTERLOCK" for t in tests) == 14, fn
+        for t in tests:
+            assert t["Test_Status"] == "NOT_RUN", t["Check_ID"]
+            assert t["Power_On_Level_Test"] == "NOT_RUN", t["Check_ID"]
+            assert t["Power_Off_Level_Test"] == "NOT_RUN", t["Check_ID"]
+            expected = "NOT_RUN" if t["Check_Type"] == "GPIO_PIN" else ""
+            assert t["Continuity_Test"] == expected, t["Check_ID"]
+    else:
+        assert all(t["Status"] == "NOT_RUN" for t in tests), fn
 print("R29 shared 3S bus policy and 81 physical NOT_RUN safeguards verified; no motor/solenoid hardware commissioned")
