@@ -20,6 +20,7 @@ on:
       - 'Boat/docs/BOAT_R30D_READONLY_FEEDBACK_SIMULATION.md'
       - 'Boat/docs/BOAT_R30E_LOCAL_FAULT_TELEMETRY.md'
       - 'Boat/docs/BOAT_R30F_DIAGNOSTIC_WIRE_PROTOCOL.md'
+      - 'Boat/docs/BOAT_R30G_RADIO_DIAGNOSTIC_PRIORITY.md'
       - 'Boat/hardware_test/INA231_Battery_Bench/**'
       - '.github/workflows/boat-host-tests.yml'
   pull_request:
@@ -41,6 +42,7 @@ on:
       - 'Boat/docs/BOAT_R30D_READONLY_FEEDBACK_SIMULATION.md'
       - 'Boat/docs/BOAT_R30E_LOCAL_FAULT_TELEMETRY.md'
       - 'Boat/docs/BOAT_R30F_DIAGNOSTIC_WIRE_PROTOCOL.md'
+      - 'Boat/docs/BOAT_R30G_RADIO_DIAGNOSTIC_PRIORITY.md'
       - 'Boat/hardware_test/INA231_Battery_Bench/**'
       - '.github/workflows/boat-host-tests.yml'
 
@@ -314,6 +316,12 @@ jobs:
             Boat/tests/r30f_optional_safety_diag_codec_test.cpp -o /tmp/r30f_boat_codec
           /tmp/r30f_boat_codec
           python3 Boat/tools/verify_r30f_diagnostic_protocol.py
+      - name: R30G priority scheduling prevents diagnostic starvation of STOP and heartbeat
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror \
+            Boat/tests/boat_r30g_optional_diag_budget_test.cpp -o /tmp/r30g_optional
+          /tmp/r30g_optional
+          python3 Boat/tools/verify_r30g_optional_diag_priority.py
       - name: R66 COTS safety PLC capacity and external interlock acceptance oracle (host only)
         run: |
           python3 -m unittest Boat/tests/test_r66_safety_plc_budget.py -v
