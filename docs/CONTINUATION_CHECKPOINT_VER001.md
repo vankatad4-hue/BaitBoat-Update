@@ -399,3 +399,20 @@ Intermediate early R30F CI runs failed because their respective commit snapshots
 **Physical and release limits:** this is software arbitration, **not a measured hard realtime guarantee**. No hardware STOP, watchdog/contact, current-zero/pulse limiter, real nRF/E22 pairing or common high-current load test. One shared 3S4P pack feeds MDD20A VM and EKM014 VH in parallel (not two switched supplies), physical approval still 24 OPEN and prior 81 NOT_RUN, INA231 and common-bus commissioning false. Boat VER014 / Remote VER028 frozen, sonar model unselected.
 
 **Next R30H priority:** preserve the selected hardware architecture and develop explicit real-RF bench verification procedures and a software trace for pending control, attempted heartbeat, dropped optional diagnostic and 10-second radio-loss transition; physical metrics cannot be claimed until paired modules and actual logic analyzer instrumentation are available.
+
+
+## R30H — реални RF тестове: готов протокол, измервания все още NOT_RUN (2026-11-22)
+
+**Етапът е подготвен и committed в \`hardware-ready-dual-radio-r1\`; физическите изпитвания още НЕ са проведени.** Текущият Boat firmware продължава да е неактуиращ diagnostic target и няма commissioned physical driver. Никакъв release bump (Boat VER014 / Remote VER028), няма позволени моторни/соленоидни load тестове или water trials.
+
+R30H артефакти:
+
+1. [Процедура за реалните nRF24L01+ PA/LNA и E22-900T22S](../Boat/docs/BOAT_R30H_RF_LATENCY_BENCH_PROCEDURE.md) — non-actuating RF first, STOP end-to-end/proc timing, controlled one-/two-link loss, conditional 10 s RTH, pre-/post-RTH restoration, staged dummy-load only after independent physical safety gates.
+2. [22 сценария, всички NOT_RUN](../Boat/docs/BOAT_R30H_RF_TEST_MATRIX.csv) — 30 независими повторения за latency сценарии, негативни interlock проверки и изисквани evidence artifacts.
+3. [Празен CSV event timeline](../Boat/docs/BOAT_R30H_RF_EVENTS_TEMPLATE.csv), и [Python read-only analyzer](../Boat/tools/analyze_r30h_rf_events.py) с host-only regressions [test_r30h_event_analyzer.py](../Boat/tests/test_r30h_event_analyzer.py), вграден в Boat host workflow. Празен timeline = NOT_RUN, а не PASS. Реални multi-device E2E времена изискват общ analyzer clock или доказана синхронизация.
+
+**Кодово потвърдена особеност:** primary freshness 250ms, backup freshness 6000ms; nRF heartbeat 100ms, E22 heartbeat 3000ms. \`both stale\` означава immediate software STOP от момента на staleness, **НЕ** от момента на физическо RF прекъсване; при последен E22 heartbeat е възможен прозорец до 6s. 10s RTH се брои от **последен приет автентикиран frame**, само с активна eligible mission, matching CRC-valid Home и валидни локални safety/navigation условия. Backup-only не разрешава manual моторни команди или release. STOP по E22 може да бъде забавен от 3s pacing — конкретните worst-case измервания и приемливите физически граници са отворени. R30G optional diagnostics не може да refresh-ва основната връзка.
+
+**R30H статус:** процедура/матрица/host evidence checker **PREPARED**; физически radio identity/level/interoperability, RF loss times, STOP output latency, actual 10s RTH motion, независими STOP/current-zero и common-3S hardware **NOT_RUN / BLOCKED**. R30A 24 OPEN gates; R23/R25/R27 81 NOT_RUN. Документацията и analyzer CI са софтуерни, не физически протокол от проведен тест.
+
+**Следващо продължение:** R30H-1 inspect bought module revisions + legal antenna/logic rails; R30H-2 provision secure pairing and collect measured RF-only authenticated timestamps, keeping MDD20A VM and EKM014 VH disconnected; R30H-3 compare actual STOP/dual-link freshness timings and revise unacceptable 6s/3s safety exposures; R30H-4 independent physical signoff before dummy-load tests; R30H-5 accept/reject signed latency budget. Sonar still deferred.
