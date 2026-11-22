@@ -603,7 +603,7 @@ Removed the 6.5-second idle-session teardown on both Boat and Remote. Radio watc
 ## R79 — low-battery failsafe and R20 hardware baseline (2026-11-22)
 
 - Active hardware authority: [BOAT_HARDWARE_SELECTION_R20.md](BOAT_HARDWARE_SELECTION_R20.md). R20 supersedes R19 and explicitly adds the ADS1115 0x48 battery-voltage module already assumed by the I²C ADC firmware path.
-- Battery sensing: 3S pack via ADS1115 AIN0, candidate 100kΩ/33kΩ 1% divider and 100nF filter. Calibration remains uncommissioned; compare with a DMM before enabling the sensor profile.
+- **R21 supersedes this R79 draft divider:** the active candidate is 150kΩ/33kΩ, 1%, 100nF; nominal 5.54545 ratio and 2.272V ADS1115 AIN0 at 12.6V pack. See [R21 sensor commissioning](BOAT_R21_BATTERY_ADC_COMMISSIONING.md). Calibration remains uncommissioned; compare with a DMM before enabling the sensor profile.
 - Threshold defaults: green above 11.4V; yellow 10.8–11.4V; red at or below 10.8V; low-battery RTH after 3 seconds; critical STOP at or below 10.2V for 1 second; immediate STOP at or below 9.9V. Stale ADC data (>1s) fails closed.
 - Red battery holds outbound mission motion and blocks new missions/releases. An eligible active mission is diverted to matching CRC-valid Boat NVS Home only with fresh GNSS/heading/geofence and local STOP/release interlocks. All release outputs remain OFF during RTH. If no autonomous mission exists, warn and leave manual return to the operator. Critical voltage overrides RTH and stops all outputs.
 - Remote battery telemetry is independent of Remote battery: voltage and estimated percentage, green/yellow/red, Bulgarian recharge/RTH warnings, grey unavailable on stale data. Mission preparation is blocked on stale or red telemetry, with Boat-side enforcement as final authority.
@@ -617,3 +617,10 @@ Removed the 6.5-second idle-session teardown on both Boat and Remote. Radio watc
 - Corrected E22-900T22S supply: 5V VCC from DCDC6-16-TO5 main 5V/2A rail; UART/control signals remain 3.3V TTL. D24V10F3 #1 is nRF24 PA/LNA; D24V10F3 #2 is GY-91/ADS1115/MCP23017.
 - MCP23017 address 0x27 candidate: GPA0–GPA3 to EKM014 IN1–IN4; GPB0–GPB1 to MDD20A DIR1/DIR2. The host-tested adapter readback is not coil-current feedback and does not replace the independent pulse guard.
 - The physical-driver battery-health validity now derives from the fresh ADS1115 sample; no separate battery-comparator module is required. Independent STOP/watchdog/pulse-limiter/current-zero feedback remains a separate uncommissioned gate.
+
+## R21 ADC correction and power sequencing — 2026-11-22
+
+- The original 100kΩ/33kΩ divider produced 3.126V at full pack 12.6V, above the production 3.0V conversion sanity check. It is replaced by 150kΩ/33kΩ (R21), ratio 5.54545; 12.6V gives 2.272V at AIN0.
+- The unsigned example sensor profile now imports `BOAT_BATTERY_DIVIDER_RATIO`; its `commissioned=false` gate is retained. Never sign the pin audit or enable physical output merely because a build succeeds.
+- An invalid ADC reading now makes the battery monitor invalid immediately rather than reusing a prior reading younger than 1000ms. A stale reading remains an independent STOP condition.
+- R21 read-only power/ADC commissioning procedure and [blank DMM/oscilloscope worksheet](BOAT_R21_ADC_CALIBRATION_WORKSHEET.csv) are published. Physical ADC VDD-versus-AIN0 sequencing and independent STOP/current-zero feedback are unresolved.
