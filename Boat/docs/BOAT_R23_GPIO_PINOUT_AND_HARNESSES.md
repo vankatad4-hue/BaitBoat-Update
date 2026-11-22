@@ -178,3 +178,7 @@ R23's 150k/33k ADC connection is **logical only**. R25 identified the unpowered-
 ## R27 successor — ADS1115 no longer active battery module (2026-11-22)
 
 R23's GPIO7 SCL / GPIO8 SDA and sensor 3.3V rail are retained; however **R27 selected Ardboard INA231 product 1491** for voltage-only BUS measurement in place of ADS1115 0x48. Treat all R23 ADS1115 AIN0/wiring nets as **HISTORICAL, NOT CONNECTED**. Proposed INA231 address 0x40 depends on physical A1/A0 straps, and no final connector contact numbering has been signed. See [R27 active wiring requirements](BOAT_R27_INA231_SELECTED_VOLTAGE_ONLY.md). All actual R23 physical signoffs stay NOT_RUN; do not energize any actuator.
+
+## R29 power-only supersession — single common 3S bus (2026-11-22)
+
+Per owner, **no separately switched motor and solenoid high-current supply rails**. Treat historic R23 MDD `MDD_MOTOR_SUPPLY` and EKM014 `EKM_VH` two independent protected-gate wording as historical. The [R29 current power plan](BOAT_R29_SHARED_BUS_FAULT_SIMULATION.md) supersedes these with **the SAME shared 3S4P battery bus / common return** feeding MDD20A VM and EKM014 VH in parallel, with no output power wired or commissioned. The existing EKM014 5V VL *logic* regulator is unchanged; all radio/sensor/GPIO/other R23 signal nets remain. Full current load/connector/fuse/reverse-polarity tests are still required. Never claim independent contactor feedback where no contactor is fitted.
