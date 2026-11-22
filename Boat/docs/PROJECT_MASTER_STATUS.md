@@ -481,3 +481,8 @@ Corrected the earlier mismatch between 3 s E22 TX pacing and the Boat's 200 ms m
 
 ## R69 — E22 LoRa exact model explicitly confirmed (2026-11-22)
 User reaffirmed **EBYTE E22-900T22S UART SMD**, one module in Boat and one matching module in Remote. **E22-900T30S is not selected**. Both canonical purchase-register rows now owner-confirmed but still not purchased. Exact factory-made carrier, 3.3 V power and UART levels, antenna, EU868 limits and matching on-air settings remain to be validated. E22 backup is limited to STOP and active mission guarded RETURN_HOME. No commissioned radio hardware, no actuator enable; Boat VER014 / Remote VER028 unchanged.
+
+
+## R70 — Ardboard XL6019 alternative inspected (2026-11-22)
+- Exact owner-provided [Ardboard automatic buck-boost product 1577](https://www.ardboard.com/xl6019-automatic-step-up-step-down-converter) seller claims 3.8–32V input, adjustable 1.25–35V, up to 1.5–2A conditionally, 400kHz and no input reverse-polarity protection, €4.90 incl VAT / 7 listed at lookup.
+- [R70 review](BOAT_R70_ARDBOARD_XL6019_BUCK_BOOST_REVIEW.md) flags XLSEMI silicon datasheet 5–40V and 180kHz instead, requiring actual assembled chip/circuit evidence. This is a **nonselected candidate alternate for 3S->5V EKM014 VL only**; fixed-output Pololu S13V20F5 remains preferred proposal. No substitution for stable ESP32, sensors, E22, nRF, or independent safety 24V rail; no physical tests or purchases. Official Boat 014 / Remote 028 frozen.
