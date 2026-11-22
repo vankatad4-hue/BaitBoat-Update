@@ -1,5 +1,8 @@
 # Boat R23 — ESP32-S3 GPIO pin freeze candidate and ready-made module harnesses
 
+> **CURRENT ASSEMBLY OVERRIDE — R30A (2026-11-22):** This R23 document is the original manufacturer-header *candidate* reference only. Do **NOT** assemble ADS1115 battery nets or separately switched motor/solenoid supplies from its historical CSV. The current [R30A effective netlist](BOAT_R30A_EFFECTIVE_ASSEMBLY_NETS.csv) merges all still-relevant R23 signals with the R27 INA231 BUS-only wiring and R29 **single common 3S** VM/VH supply. It retains unsigned GPIO and connector checks; no actuator power is approved. See [R30A handoff](BOAT_R30A_PROTOTYPE_ASSEMBLY_HANDOFF.md).
+
+
 **Date:** 2026-11-22 | **Branch:** `hardware-ready-dual-radio-r1`  
 **Scope:** actual R20-selected DevKitC-1-N32R16V + M100 PRO + GY-91 + ADS1115 + nRF24 PA/LNA + E22-900T22S + Waveshare MCP23017 + Cytron MDD20A + EKM014.  
 **Result:** **manufacturer-header-verified pin allocation and complete logical connection schedule**; final board-revision, carrier connector, logic-level and physical safety tests remain **unsigned**. **No physical motor or solenoid energization authorized.**
