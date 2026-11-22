@@ -36,3 +36,7 @@ Critical battery is displayed separately as `КРИТ. БАТ. — STOP`. The re
 ## Current status
 
 Software changes are under CI validation. Selected modules remain unpurchased/uncommissioned. Target compile and host-test success do not replace ADC calibration, dummy-load testing or physical acceptance. Keep actual motors and solenoids disconnected until the bench procedure passes.
+
+## R22 first sensor-only startup
+
+Use [the R22 isolated ADS1115 bench procedure](docs/BOAT_R22_ADS1115_SENSOR_ONLY_BRINGUP.md) for initial ADC readout, not the mission runtime. The sketch is GPIO-audit locked and only handles the premade ADS1115 module through candidate SDA8/SCL7, if physically verified. Check ADC VDD-versus-AIN0 power sequencing before connecting pack sense voltage. MDD20A motor power and EKM014 VH must remain physically disconnected.
