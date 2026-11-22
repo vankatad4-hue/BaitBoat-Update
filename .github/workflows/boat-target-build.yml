@@ -4,6 +4,7 @@ on:
     branches: [hardware-ready-dual-radio-r1]
     paths:
       - 'Boat/source/**'
+      - 'Boat/hardware_test/ADS1115_Battery_Bench/**'
       - '.github/workflows/boat-target-build.yml'
   workflow_dispatch:
 permissions:
@@ -39,6 +40,28 @@ jobs:
           # pin the existing diagnostic-only huge_app table (no OTA) explicitly.
           # A reviewed 32MB dual-OTA partition layout is still required before OTA.
           arduino-cli compile --verbose --export-binaries --fqbn 'esp32:esp32:esp32s3:FlashSize=32M,FlashMode=opi,PSRAM=opi,PartitionScheme=huge_app' /tmp/FlytecBoatBuild 2>&1 | tee /tmp/boat-target-build.log
+      - name: Stage R22 ADS1115 bench firmware (locked and non-actuating by default)
+        run: |
+          mkdir -p /tmp/BoatAdcBench
+          cp Boat/hardware_test/ADS1115_Battery_Bench/ADS1115_Battery_Bench.ino /tmp/BoatAdcBench/BoatAdcBench.ino
+          cp Boat/source/boat_battery_divider.h Boat/source/boat_ads1115_bench_math.h /tmp/BoatAdcBench/
+          # NO locally signed pin config is staged. The resulting binary is locked.
+      - name: Compile R22 ADC-only bench target (no actuator or radio dependencies)
+        run: |
+          set -o pipefail
+          arduino-cli compile --verbose --export-binaries --fqbn 'esp32:esp32:esp32s3:FlashSize=32M,FlashMode=opi,PSRAM=opi,PartitionScheme=huge_app' /tmp/BoatAdcBench 2>&1 | tee /tmp/boat-adc-bench-target-build.log
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: flytec-boat-r22-ads1115-bench-LOCKED
+          path: /tmp/BoatAdcBench/build/esp32.esp32.esp32s3/**
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: boat-r22-ads1115-target-build-log
+          path: /tmp/boat-adc-bench-target-build.log
+          if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         if: success()
         with:
