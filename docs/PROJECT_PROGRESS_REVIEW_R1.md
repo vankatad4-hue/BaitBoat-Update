@@ -467,3 +467,11 @@ Procurement lock: **two identical EBYTE E22-900T22S UART SMD** backup LoRa modul
 
 - Owner confirmed M100 PRO's QMC5883L is **on the GNSS PCB**. Official HGLRC listing corroborates QMC5883L and **3.6–5.5V M100 module VIN**, so the full assembly is proposed for **Olimex 5V**, not Pololu D24V10F3 3.3V sensor rail. No separate QMC hardware purchase. Still measure M100 UART/I²C IO levels/pull-ups for ESP32 3.3V safety and full 5V source load.
 - The two locked Pololu 3.3V supplies remain: #1 E22 LoRa, #2 GY-91 + Waveshare MCP23017. Updated [R73 note](../Boat/docs/BOAT_R73_M100_PRO_INTEGRATED_COMPASS_POWER.md), [R67 I²C map](../Boat/docs/BOAT_R67_I2C_AND_EXPANDER_MAP.csv), active [power CSV](../Boat/docs/BOAT_R68_POWER_RAIL_BOM.csv), purchase register and static CI test. No physical hardware testing or release (Boat VER014 / Remote VER028).
+
+
+## R74 — 5V regulator selection completed at model level (2026-11-22)
+
+- **Olimex DCDC6-16-TO5** confirmed as main Boat 5V converter, 1× initially for ESP32-S3 + full M100 PRO/QMC. Optional second DCDC6 only if bench tests demonstrate a need for a separately conditioned branch; no output paralleling.
+- **TRACO TSR 2-2450** selected for dedicated EKM014 VL 5V logic rail (5V/2A, 6.5–36V input). EKM014 VH remains raw 3S and independent; VH must be >= VL. Pololu S13V20F5 superseded as active candidate.
+- Confirmed dual D24V10F3 3.3V rails unchanged. Created [R74 detailed review](../Boat/docs/BOAT_R74_5V_REGULATOR_SELECTION.md); updated power BOM, purchase register, 14-point NOT_RUN bench plan and host contract test. Farnell BG TSR listing showed 5,022 stock and €12.05 ex VAT at lookup.
+- Exact model choices are not purchases; SIP3 socket/harness, fuse, reverse polarity protection, EKM014 current/thermal, DCDC6 aggregate current and USB backfeed need physical qualification. No actuator commissioning or release. Boat VER014 / Remote VER028.
