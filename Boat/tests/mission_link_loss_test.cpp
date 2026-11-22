@@ -14,6 +14,12 @@ int main(){
  in.primaryFresh=in.backupFresh=false;
  assert(c.tick(in,100,true,false).intent==INTENT_STOP&&c.diverted());
  assert(c.tick(in,101,true,false).intent==INTENT_NAV_HOME);
+ // Backup remains alive, but cannot replace primary manual supervision.
+ in.primaryFresh=false;in.backupFresh=true;
+ c.resetSession();in.stopActive=true;assert(c.stage(p,0,true,true));
+ in.stopActive=false;
+ MissionControlFeedback newAck{};
+ assert(c.request({MCTRL_START,p.transaction,1},in,2,true,true,true,newAck)==false || newAck.result!=MC_ACCEPTED);
  // Transport session expiry/rekey calls divertHome, not resetSession.
  assert(c.divertHome(in,true));
  assert(c.tick(in,10000,true,false).intent==INTENT_NAV_HOME);
