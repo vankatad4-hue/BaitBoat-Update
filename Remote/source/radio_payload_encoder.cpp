@@ -1,4 +1,5 @@
 #include "radio_payload_encoder.h"
+#include "radio_safety_diagnostic_v1.h"
 #include <string.h>
 static void clear8(uint8_t out[8]){memset(out,0,8);}
 static void put16(uint8_t*p,uint16_t v){p[0]=(uint8_t)v;p[1]=(uint8_t)(v>>8);}
@@ -12,4 +13,10 @@ case RADIO_PAYLOAD_GNSS_LATITUDE:if(in.coordinateE7 < -900000000L||in.coordinate
 case RADIO_PAYLOAD_GNSS_LONGITUDE:if(in.coordinateE7 < -1800000000L||in.coordinateE7>1800000000L)return false;out[0]=4;out[1]=in.coordinateSample;put32(out+2,in.coordinateE7);return true;
 case RADIO_PAYLOAD_NAVIGATION:if((in.headingCentidegrees!=0xFFFFU&&in.headingCentidegrees>35999U)||(in.speedCmPerSecond!=0xFFFFU&&in.speedCmPerSecond>10000U)||in.navigationStatus>5)return false;out[0]=5;put16(out+1,in.headingCentidegrees);put16(out+3,in.speedCmPerSecond);out[5]=in.navigationStatus;out[6]=in.waypointIndex;out[7]=in.navigationSample;return true;
 case RADIO_PAYLOAD_SONAR_SUMMARY:if(in.sonarHealth>3||(in.sonarAlarmFlags&0xF0U)!=0)return false;out[0]=6;put16(out+1,in.depthCm);put16(out+3,in.sonarRangeCm);out[5]=in.sonarHealth;out[6]=in.sonarAlarmFlags;out[7]=in.sonarSample;return true;
+case RADIO_PAYLOAD_SAFETY_DIAGNOSTIC: {
+        // Only telemetry bits; never encode STOP, ACK or a command.
+        const radio_r30f::Diagnostic d={in.diagnosticReason,
+            in.diagnosticFlags,in.diagnosticMillivolts,in.diagnosticSequence};
+        return radio_r30f::encode(d,out);
+    }
 default:return false;}}
