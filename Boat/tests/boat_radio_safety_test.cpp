@@ -32,6 +32,17 @@ int main() {
   assert(watchdog.update(false,false)==BOAT_RADIO_WATCHDOG_NO_CHANGE);
   assert(watchdog.update(false,true)==BOAT_RADIO_WATCHDOG_RESTORED);
 
+  // R78: the 10-second timer starts at the last authenticated frame.
+  assert(!boatRadioLossRthDue(true,true,true,true,true,1000,10999));
+  assert(boatRadioLossRthDue(true,true,true,true,true,1000,11000));
+  assert(!boatRadioLossRthDue(false,true,true,true,true,1000,12000));
+  assert(!boatRadioLossRthDue(true,false,true,true,true,1000,12000));
+  assert(!boatRadioLossRthDue(true,true,false,true,true,1000,12000));
+  assert(!boatRadioLossRthDue(true,true,true,false,true,1000,12000));
+  assert(!boatRadioLossRthDue(true,true,true,true,false,1000,12000));
+  const uint32_t wrapLast=0xFFFFFF00U;
+  assert(boatRadioLossRthDue(true,true,true,true,true,wrapLast,wrapLast+10000U));
+
   BoatLinkSafetyInputs in={false,false,false,false,false,false,false};
   assert(boatEvaluateLinkFailsafe(in)==BOAT_FS_STOP_ALL);
   // Good GNSS/autopilot data must not convert total radio loss into RTH.
