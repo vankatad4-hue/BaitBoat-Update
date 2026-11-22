@@ -91,7 +91,8 @@ static bool radioSendTransport(ManagedLink link,const BoatCommand &command){
     const uint32_t now=millis();
     if(link==LINK_LORA_BACKUP){
         if(!g_loraConfigured)return false;
-        if(command.type!=CMD_EMERGENCY_STOP&&command.type!=CMD_MANUAL_MOTORS&&
+        // Backup permits only fail-safe STOP or a Home request, never movement/release.
+        if(command.type!=CMD_EMERGENCY_STOP&&
            !(command.type==CMD_SET_MODE&&command.mode==MODE_RETURN_HOME))return false;
         if(g_backupTxSent&&now-g_lastBackupTxMs<3000U){
             if(command.type==CMD_EMERGENCY_STOP){g_pendingStop=command;g_stopPending=true;return true;}
