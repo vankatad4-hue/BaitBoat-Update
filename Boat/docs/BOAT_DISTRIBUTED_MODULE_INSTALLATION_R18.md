@@ -2,7 +2,7 @@
 
 # R18 — Distributed, prefabricated Boat module placement
 
-> **R19 ACTIVE BOM:** Use [BOAT_HARDWARE_SELECTION_R19.md](BOAT_HARDWARE_SELECTION_R19.md) for the current ESP32-S3-DevKitC-1-N32R16V, M100 PRO, GY-91, nRF24, E22-900T22S, MDD20A, EKM014 and selected regulators. The older Heltec/SX1262 power table is historical, not procurement authority.
+> **R20 ACTIVE BOM:** Use [BOAT_HARDWARE_SELECTION_R20.md](BOAT_HARDWARE_SELECTION_R20.md) for the current ESP32-S3-DevKitC-1-N32R16V, M100 PRO, GY-91, nRF24, E22-900T22S, ADS1115 battery ADC, MDD20A, EKM014 and selected regulators. R18's Heltec/SX1262 and old contactor candidate tables are historical, not procurement authority.
 
 **Owner revision 2026-11-21:** The former 77 × 79 × 14mm carrier and ~30mm lid clearance are **RETIRED AS HARD LIMITS**. Modules may be independently mounted **along the Flytec V080 hull**, not forced onto a single compact carrier. The exact hull interior still needs physical measuring (access, water exposure and service clearances). **No custom PCB, no backplane and no soldered homemade circuit board.**
 

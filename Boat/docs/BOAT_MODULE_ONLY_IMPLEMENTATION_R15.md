@@ -2,12 +2,12 @@
 
 # R15 — Boat premade-modules-only implementation plan
 
-> **R19 PROCUREMENT AUTHORITY:** The active Boat BOM and power-rail allocation are now in [BOAT_HARDWARE_SELECTION_R19.md](BOAT_HARDWARE_SELECTION_R19.md). This R15 document is historical for the Heltec/older regulator candidate list; do not order components from its superseded table. Keep the no-custom-PCB and ready-made-module-only constraint.
+> **R20 PROCUREMENT AUTHORITY:** Use [BOAT_HARDWARE_SELECTION_R20.md](BOAT_HARDWARE_SELECTION_R20.md) for all current Boat parts, including ADS1115 battery sensing. This R15 document and its Heltec/older regulator candidate table are historical; do not order from that table. The no-custom-PCB and ready-made-module-only constraint remains active.
 
 
-> **R18 HISTORICAL UPDATE:** The old 77×79mm/30mm carrier note is superseded by the distributed-module decision and then by the active R19 BOM above. Do not treat this R18 note as a current procurement or mechanical constraint. The current modular installation plan is R18; the current component list is R19.
+> **R18 HISTORICAL UPDATE:** The old 77×79mm/30mm carrier note is superseded by the distributed-module decision and then by the active R20 BOM above. Do not treat this R18 note as a current procurement or mechanical constraint. The current modular installation plan is R18; the current component list is R19.
 
-> **R18 MODULAR INSTALLATION POLICY (still active):** The old 77×79mm/30mm carrier envelope is retired; selected premade modules may be mounted separately along the hull. Manufacturer-supplied or factory-produced electronic modules only, no custom PCB. The R18 sourcing register is historical; the active BOM is R19. [Distributed mounting details](BOAT_DISTRIBUTED_MODULE_INSTALLATION_R18.md).
+> **R18 MODULAR INSTALLATION POLICY (still active):** The old 77×79mm/30mm carrier envelope is retired; selected premade modules may be mounted separately along the hull. Manufacturer-supplied or factory-produced electronic modules only, no custom PCB. The R18 sourcing register is historical; the active BOM is R20. [Distributed mounting details](BOAT_DISTRIBUTED_MODULE_INSTALLATION_R18.md).
 **Status:** Active architecture plan; no assembled electrical harness, no qualified STOP interlock
 
 ## Modules / supplies

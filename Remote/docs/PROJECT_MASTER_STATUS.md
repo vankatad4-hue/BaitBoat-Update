@@ -1,6 +1,6 @@
 # Flytec V080 Retrofit — Master Status R10
 
-> **R63 ACTIVE STATUS (2026-11-22):** Historical Heltec/PCB descriptions below are superseded by the current selected endpoints: Boat **ESP32-S3-DevKitC-1-N32R16V**, Remote **Waveshare ESP32-S3-Touch-LCD-4.3 Standard**, off-the-shelf modules only. Remote has the SD card; Boat does not. Exact hardware procurement and GPIO electrical acceptance remain pending. See the [R62 code audit](../../docs/R62_ENDPOINT_CODE_AUDIT_AND_NEXT_GATES.md) and [continuation checkpoint](../../docs/CONTINUATION_CHECKPOINT_VER001.md).
+> **R79 ACTIVE STATUS (2026-11-22):** Remote endpoint remains Waveshare ESP32-S3-Touch-LCD-4.3 Standard, 800×480, LVGL 9.6, dual nRF24/E22 radios, 1S4P battery and SD-backed maps/waypoints. Boat endpoint and battery ADC are specified in [Boat Hardware Selection R20](../../Boat/docs/BOAT_HARDWARE_SELECTION_R20.md). R79 adds the Boat's green/yellow/red battery voltage/estimated-charge indicator, recharge/RTH warning and stale-data fail-safe mission-preparation block. Older Heltec/PCB descriptions below are historical. Hardware and display/radio acceptance remain pending.
 
 
 Updated: 2026-11-20. Development branch; no firmware compile, hardware test, ERC/DRC, or operational release has been validated.
@@ -683,3 +683,12 @@ The owner reconfirmed **1× EBYTE E22-900T22S UART SMD on Remote and 1× same ex
 - R78 changes the Boat-side radio-loss policy and Boat-local Home NVS only; Remote source and Remote release version are unchanged.
 - Boat/Remote ZIP snapshots were packaged successfully with existing VER014/VER028 markers in [run 45006416675](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45006416675).
 - Physical display, touch, SD, nRF24 and E22 tests remain pending on purchased hardware.
+
+
+## R79 — Boat battery indicator and mission preparation gate (2026-11-22)
+
+- Remote target remains Waveshare ESP32-S3-Touch-LCD-4.3 Standard, 800×480, LVGL 9.6.
+- The main Boat telemetry header now displays Boat voltage plus estimated percentage, independent of the Remote's own battery.
+- Green above 50%; yellow 21–50% with `СРЕДНА БАТ. — ЗАРЕДИ`; red at 20% or lower or Boat low-battery flag with `НИСКА БАТ. — RTH`. Missing/stale Boat data displays `ЛОДКА: --` in muted grey.
+- Mission preparation is blocked when battery telemetry is stale or estimated charge is red. The Boat independently applies its own low-battery mission hold/RTH and critical STOP; Remote is not the safety authority.
+- Remote host tests passed on the R79 code commit; Waveshare target compile is tracked in GitHub Actions. Physical LCD/touch/SD/radio and actual Boat telemetry acceptance remain pending.

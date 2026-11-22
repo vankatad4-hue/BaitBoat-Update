@@ -1,6 +1,6 @@
 # Flytec V080 Boat Project — Master Status R4
 
-> **R63 ACTIVE STATUS (2026-11-22):** This document retains earlier Heltec/carrier/PCB-era history. Current selected Boat endpoint is **Espressif ESP32-S3-DevKitC-1-N32R16V**, HGLRC M100 PRO, GY-91, nRF24 primary, matched E22-900T22S backup, Cytron MDD20A, EKM014. **Ready-made modules only; no Boat SD**. Physical outputs remain uncommissioned. The current audit is [R62](../../docs/R62_ENDPOINT_CODE_AUDIT_AND_NEXT_GATES.md); [continuation checkpoint](../../docs/CONTINUATION_CHECKPOINT_VER001.md) takes precedence over historical lines below.
+> **R79 ACTIVE STATUS (2026-11-22):** Current Boat procurement authority is [Hardware Selection R20](BOAT_HARDWARE_SELECTION_R20.md). Active baseline: ESP32-S3-DevKitC-1-N32R16V, HGLRC M100 PRO/QMC5883L, GY-91, nRF24, E22-900T22S, MCP23017, ADS1115 battery ADC, Cytron MDD20A, EKM014 and selected premade regulators. R79 adds local 3S battery monitoring, low-battery mission hold/RTH and critical STOP. Older Heltec/central-carrier/PCB descriptions below are historical. Parts and physical wiring remain uncommissioned; use the [continuation checkpoint](../../docs/CONTINUATION_CHECKPOINT_VER001.md) and R20/R79 docs as authority.
 
 
 Updated 2026-11-20. Development only; not compiled, bench-validated, or operational.
@@ -598,3 +598,14 @@ Removed the 6.5-second idle-session teardown on both Boat and Remote. Radio watc
 - Remote Waveshare target compile PASS: [run 45004179977](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45004179977). Remote source was not changed by R78.
 - Dummy-load bench procedure prepared: [BOAT_R78_RADIO_LOSS_DUMMY_LOAD_BENCH_TEST.md](BOAT_R78_RADIO_LOSS_DUMMY_LOAD_BENCH_TEST.md). Boat/Remote ZIP snapshots packaged successfully in [run 45006416675](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45006416675) with existing VER014/VER028 markers. No physical bench test has been run; actual motors and solenoids remain disconnected.
 - No additional hardware elements were introduced, honoring the user's constraint. The watchdog remains software-only on the ESP32-S3 and is not an independent physical cutoff. No release version bump or physical acceptance is authorized.
+
+
+## R79 — low-battery failsafe and R20 hardware baseline (2026-11-22)
+
+- Active hardware authority: [BOAT_HARDWARE_SELECTION_R20.md](BOAT_HARDWARE_SELECTION_R20.md). R20 supersedes R19 and explicitly adds the ADS1115 0x48 battery-voltage module already assumed by the I²C ADC firmware path.
+- Battery sensing: 3S pack via ADS1115 AIN0, candidate 100kΩ/33kΩ 1% divider and 100nF filter. Calibration remains uncommissioned; compare with a DMM before enabling the sensor profile.
+- Threshold defaults: green above 11.4V; yellow 10.8–11.4V; red at or below 10.8V; low-battery RTH after 3 seconds; critical STOP at or below 10.2V for 1 second; immediate STOP at or below 9.9V. Stale ADC data (>1s) fails closed.
+- Red battery holds outbound mission motion and blocks new missions/releases. An eligible active mission is diverted to matching CRC-valid Boat NVS Home only with fresh GNSS/heading/geofence and local STOP/release interlocks. All release outputs remain OFF during RTH. If no autonomous mission exists, warn and leave manual return to the operator. Critical voltage overrides RTH and stops all outputs.
+- Remote battery telemetry is independent of Remote battery: voltage and estimated percentage, green/yellow/red, Bulgarian recharge/RTH warnings, grey unavailable on stale data. Mission preparation is blocked on stale or red telemetry, with Boat-side enforcement as final authority.
+- Detailed implementation: [BOAT_R79_LOW_BATTERY_FAILSAFE.md](BOAT_R79_LOW_BATTERY_FAILSAFE.md); physical procedure: [BOAT_R79_LOW_BATTERY_BENCH_TEST.md](BOAT_R79_LOW_BATTERY_BENCH_TEST.md).
+- R79 software is committed; physical ADS1115 calibration, GPIO map, radio/driver wiring and dummy-load tests remain pending. No actual motors or solenoids are to be connected until the dummy-load gates pass.
