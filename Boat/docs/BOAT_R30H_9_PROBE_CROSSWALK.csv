@@ -1,0 +1,11 @@
+Probe_ID,Endpoint,Signal,Physical_Origin,Pin_Proposal,Probe_Class,State,Boundary,Measured_Voltage_V,Actual_Header_Contact,Capture_Evidence,Engineer_Signoff
+H9-01,Remote,STOP physical button edge,MCP23017 button-bank input (actual pad/connector not inspected),UNASSIGNED,PASSIVE_EXISTING_INPUT,NOT_RUN,A software STOP request trace is not the button's electrical edge,,,,
+H9-02,Remote,nRF24 CSN transaction edge,Proposed ESP32 GPIO15 / onboard RS485 TXD conflict,15_CONFLICTED,PASSIVE_EXISTING_INTERFACE_ONLY,NOT_RUN,Do not repurpose GPIO15 to debug output; separate CSN testpoint needs actual schematic review,,,,
+H9-03,Remote,E22 UART TX start,SC16IS750 TTL UART output (physical carrier not inspected),UNASSIGNED,PASSIVE_EXISTING_INTERFACE_ONLY,NOT_RUN,Buffer admission does not prove RF STOP air transmission,,,,
+H9-04,Boat,nRF IRQ edge,ESP32-S3 GPIO21/J3-18 proposed nRF IRQ input,21_INPUT_CANDIDATE,PASSIVE_EXISTING_INTERFACE_ONLY,NOT_RUN,IRQ does not prove authenticated STOP,,,,
+H9-05,Boat,E22 UART RX start,ESP32-S3 GPIO18/J1-11 from E22 TXD,18_INPUT_CANDIDATE,PASSIVE_EXISTING_INTERFACE_ONLY,NOT_RUN,RX edge not HMAC verification,,,,
+H9-06,Boat,authenticated STOP acceptance marker,No dedicated physically inspected GPIO,UNASSIGNED,ACTIVE_DIAGNOSTIC_OUTPUT_NOT_IMPLEMENTED,NOT_RUN,R30H-2 STOP_AUTH_RECEIVED is local millisecond trace only,,,,
+H9-07,Boat,STOP logical intent marker,No dedicated physically inspected GPIO,UNASSIGNED,ACTIVE_DIAGNOSTIC_OUTPUT_NOT_IMPLEMENTED,NOT_RUN,R30H-2 STOP_LOGICAL_INTENT is not current-zero,,,,
+H9-08,Boat,RTH local-entry marker,No dedicated physically inspected GPIO,UNASSIGNED,ACTIVE_DIAGNOSTIC_OUTPUT_NOT_IMPLEMENTED,NOT_RUN,R30H-2 RTH_LOCAL_ENTRY is not physical propulsion,,,,
+H9-09,Boat,CLOCK_REALTIME atomic sample edge,No commissioned PPS or dedicated output,UNASSIGNED,ACTIVE_DIAGNOSTIC_OUTPUT_NOT_IMPLEMENTED,NOT_RUN,GPS UTC software time not single-clock precision,,,,
+H9-10,Remote,CLOCK_REALTIME atomic sample edge,No dedicated free GPIO on Waveshare Standard SKU25948 inspected,UNASSIGNED,ACTIVE_DIAGNOSTIC_OUTPUT_NOT_IMPLEMENTED,NOT_RUN,LCD/SD/touch/RS485/CAN/USB pins cannot be taken for probe,,,,
