@@ -28,11 +28,13 @@ The ADS1115 was already assumed by the Boat's I²C ADC acquisition code at addre
 
 ## Battery voltage input
 
+**The battery-divider values in the original R20 draft were replaced by R21.** See [R21 ADC commissioning and power sequencing](BOAT_R21_BATTERY_ADC_COMMISSIONING.md). Other R20 module selections remain active.
+
 - Use a premade ADS1115 breakout powered from the Boat 3.3V sensor/I/O rail.
 - I²C address: 0x48; use AIN0 for pack voltage.
-- Divider candidate: 100kΩ from battery positive to AIN0, 33kΩ from AIN0 to ground; 1% resistors.
+- **R21 superseding divider candidate:** 150kΩ from switched/protected battery positive to AIN0 and 33kΩ from AIN0 to sensor ground; both 1% resistors. Check power sequencing and unpowered-ADC input voltage.
 - Add 100nF from AIN0 to ground near the ADC input.
-- Divider ratio: approximately 4.0303:1. At 12.6V pack voltage, ADS1115 AIN0 is approximately 3.13V.
+- **R21 ratio:** 5.54545:1; at 12.6V full charge, ADS1115 AIN0 is approximately **2.272V**, safely below the firmware's 3.0V sanity gate while the 3.3V ADC is powered.
 - ADS1115 input configuration remains ±4.096V, single-shot AIN0-to-GND, 128SPS; supply and I²C pull-ups must be 3.3V.
 - Firmware example stores the candidate ratio with `commissioned=false`. Do not enable the commissioned profile until actual ADC readings are checked against a calibrated DMM at several pack voltages and under representative load.
 - Candidate I²C pins are GPIO7 (SCL) and GPIO8 (SDA) per [R20 GPIO/header map](BOAT_GPIO_HEADER_MAP_R20.md); remain unsigned until the exact board revision is inspected.
