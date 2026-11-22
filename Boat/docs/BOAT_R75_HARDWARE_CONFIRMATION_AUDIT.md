@@ -107,3 +107,10 @@ Still to confirm:
 ## R75A — socket-fit review update
 
 The **BINDER MPE 006-1-003-D-B1STF-XS0** is now the primary dimensioned SIP3 socket candidate (2.54mm pitch, 3A, 4-finger BeCu clip). Its published square mating-pin size is 0.25×0.45mm; TRACO specifies 0.46×0.46mm nominal with ±0.1mm tolerance. The nominal difference is only 0.01mm, but compatibility is **not guaranteed**. Obtain one sample and request manufacturer confirmation before locking. econ connect MP70S3 is demoted to secondary because its listing gives a round pin form and does not publish a square mating-pin tolerance. If neither sample passes, use a direct-solder pigtail service method rather than forcing an unsuitable socket.
+
+
+## R77 — radio watchdog firmware update (no new hardware)
+
+The user directed that no physical elements be added. Existing nRF24/E22 freshness is now used by a software watchdog: if both links expire, firmware requests zero motor output and all four solenoid outputs OFF; an eligible autonomous mission is held and resumes after a fresh authenticated link/session returns. Backup-only navigation may continue, but manual steering and irreversible releases remain primary-only. Stale commands/sticks are discarded; an interrupted release is aborted and never replayed. Automatic RTH on total link loss is removed; explicit user-requested Home remains.
+
+This is **not** the independent hardware STOP architecture required in P0. It runs on the main ESP32-S3 and cannot cut load power on MCU freeze, stuck GPIO or shorted driver MOSFET. Physical independent STOP/contactors, feedback, watchdog, one-hot pulse hardware and current-zero sensing remain unresolved. No new hardware, GPIO, BOM or physical acceptance was added. See [R77 implementation report](BOAT_R77_DUAL_RADIO_WATCHDOG_IMPLEMENTATION.md).
