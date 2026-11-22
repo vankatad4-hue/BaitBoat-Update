@@ -57,3 +57,10 @@ The **historical R23 pin and signal baseline** is [R23 GPIO pinout/harnesses](do
 ## R30B application-level common 3S brownout fault protection
 
 [Engineering report](docs/BOAT_R30B_SHARED_SUPPLY_FAULT_SIMULATION.md). The actual `BoatApplicationPort` now vetoes critical, stale, invalid or electrically untrusted INA231 readings before mission/actuator arbitration; the R79 radio-loss and low-battery tests remain in place. [R30B full host suite](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45043490071) **PASS**. This code does not wire or certify an independent STOP, motor driver, coil limiter or current measurement. Boat diagnostic default still has no physical actuator HAL; single shared 3S4P power architecture and all 24 physical gate statuses unchanged.
+
+## R30B final verified CI (2026-11-22)
+
+- [Boat ESP32-S3 target #45043490121](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45043490121), source commit `7f5e2e11222c2b859113b5a4b8e610a5cd8ac016`: **SUCCESS**. Full non-actuating `Flytec_Boat.ino` diagnostic, historical locked ADS1115 bench and selected locked R30A INA231 bench all compiled; upload-artifact steps successful. No live motor/solenoid outputs.
+- [Boat host #45043597807](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45043597807), documentation commit `eb461d416db71fb2ca1d258553cf4adc7747791d`: **SUCCESS**, including R29 shared-bus fault simulation, R30A 73-net/24-readiness-gate consistency and R30B brownout/stale voltage tests + source-guard assertions.
+- No Boat executable source changed after `7f5e2e` before these reviews. Firmware physical commissioning remains **DISABLED**, R30A 24 hardware gates OPEN and R23/R25/R27 physical tests **81 NOT_RUN**. These successes establish reproducible **software/locked-target readiness**, not proof of a safely energizable Boat or a working RF/autopilot/actuator assembly.
+
