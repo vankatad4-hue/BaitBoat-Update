@@ -2,7 +2,7 @@
 
 Date: 2026-11-22  
 Branch: `hardware-ready-dual-radio-r1`  
-Status: software implementation added; host and ESP32 target verification pending; physical acceptance not performed.
+Status: software implementation and host/ESP32 target verification PASS; physical NVS/RF/dummy-load acceptance not performed.
 
 ## Authoritative behavior
 
