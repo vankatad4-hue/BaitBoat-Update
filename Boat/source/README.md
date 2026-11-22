@@ -44,3 +44,6 @@ The `boat_radio_hw_config.h` numeric GPIOs are unchanged and remain audit-locked
 - Source-level inventory changes are not hardware acceptance. All R30A physical STOP, coil-current-zero, and R30H-10 RF/PPS measurements remain pending.
 
 - The unreferenced R36/R02 candidate-only `config/boat_config.h` and `config/radio_config.h` were archived under the same R30H-10 source-cleanup archive. Current selected hardware and radio macros remain in the live `boat_radio_hw_config.h` and R20/R27/R29 documents.
+
+## VS Code + PlatformIO R30H-10 (R2)
+The `Boat/source/platformio_entry.cpp` adapter is guarded by `FLYTEC_PLATFORMIO_BUILD` and includes the nested `firmware/Flytec_Boat.ino` exactly once. PlatformIO excludes that firmware subdirectory from source discovery. R30H-10 physical safety gates, motor/solenoid power, GPS/PPS and upload remain blocked. Use `../platformio.ini` as compile-only entry.

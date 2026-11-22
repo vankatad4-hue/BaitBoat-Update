@@ -27,3 +27,6 @@ The portable SD status helper (`ui_sd_status.h`) now distinguishes **no mounted 
 - The unused earlier `boat_config.h` screen geometry (45/60 px bands, obsolete versus current layout) is archived under `docs/archive/2026-11-22/source_cleanup_r30h10/Remote/source/`. Current dimensions remain in `boat_ui.cpp`.
 
 **Remote PlatformIO sketch entry (R30H-10):** `Flytec_Remote.ino` is at the source root and is directly converted by PlatformIO into one `.ino.cpp` object; the retired `platformio_entry.cpp` duplicate adapter is archived. Boat's nested .ino still needs its independent guarded adapter. These are compilation-only choices, not new physical hardware permissions.
+
+## VS Code + PlatformIO R30H-10 (R2)
+The single `Remote/source/Flytec_Remote.ino` is compiled natively by PIO. Do **not** include this sketch from a second C++ adapter. RF state now precedes telemetry safety readiness. The ADS1115 reader rejects duplicate channels, invalid reinitialisation and partial 4-axis frames; see `Remote/tests/joystick_adc_atomic_test.cpp`. Physical actuator/RF/STOP and upload remain denied; see `../platformio.ini`.

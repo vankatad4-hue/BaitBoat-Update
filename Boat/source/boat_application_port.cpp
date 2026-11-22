@@ -23,7 +23,8 @@ bool BoatApplicationPort::prepareGate(){
 void BoatApplicationPort::finishManual(bool success){
  if(!manualPending_)return;
  manualPending_=false;
- const auto status=boatHardware_status(sample_,millis(),executor_.stopped(),radio_.missionPhase(),radio_.detachedReturnActive(),radio_.primaryFresh(millis()));
+ const uint32_t now=millis();
+ const auto status=boatHardware_status(sample_,now,executor_.stopped(),radio_.missionPhase(),radio_.detachedReturnActive(),radio_.primaryFresh(now));
  radio_.completeApplicationAction(manualRelease_,generation_,success,status.stopState,(status.safetyFlags&1)?1:0);
 }
 void BoatApplicationPort::publishData(uint32_t now){

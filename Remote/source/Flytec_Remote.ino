@@ -17,13 +17,15 @@
 #include "release_button_guard.h"
 
 static bool uiReady = false;
+// Shared handler for touchscreen, physical and startup safety STOP.
+static void emergencyStop();
 
 // Physical button events (0..7 left bank, 8..15 right bank).
 static void physicalButtonEvent(uint8_t id, bool pressed)
 {
     if (!pressed) return;
     switch (id) {
-        case 0: boatCommands_sendStop(); boatState.emergencyStop=true; boatState.emergencyStopConfirmed=false; releaseGuard_cancel(); break;
+        case 0: emergencyStop(); break;
         case 1: if (boatState.mode==MODE_MANUAL) boatCommands_setMode(MODE_AUTOPILOT); else if (boatState.mode==MODE_AUTOPILOT) boatCommands_setMode(MODE_MANUAL); break;
         case 2: boatCommands_setMode(MODE_RETURN_HOME); break;
         case 3: case 4: case 5: case 6: case 7:
@@ -127,11 +129,8 @@ void loop()
     // Process incoming radio packets and boat acknowledgements.
     boatRadio_update();
 
-    // Apply the latest telemetry; GPS fixes automatically expire after 2 seconds.
-    telemetryApplyToBoatState(boatState,millis());
-    if(boatRadio_stopConfirmationPending()){boatState.emergencyStop=true;boatState.emergencyStopConfirmed=false;boatState.actuatorSafetyReady=false;}
-
-    // Publish radio supervisor status to the UI.
+    // Publish live radio supervisor status before any telemetry-based
+    // actuator readiness calculation (never use last loop's link flags).
     boatState.radioConnected = boatRadio_isConnected();
     boatState.radioPrimaryConnected = boatRadio_primaryConnected();
     boatState.radioBackupConnected = boatRadio_backupConnected();
@@ -151,8 +150,18 @@ void loop()
         default: boatState.radioLinkState = RADIO_UI_DISCONNECTED; break;
     }
 
+    // Fresh RF state must precede telemetry readiness, and a pending STOP
+    // overrides even a recently received authenticated status packet.
+    const uint32_t nowMs = millis();
+    telemetryApplyToBoatState(boatState, nowMs);
+    if (boatRadio_stopConfirmationPending()) {
+        boatState.emergencyStop = true;
+        boatState.emergencyStopConfirmed = false;
+        boatState.actuatorSafetyReady = false;
+    }
+
     // Poll physical controls with debounce; actuator release remains fail-closed.
-    physicalButtons_update(millis());
+    physicalButtons_update(nowMs);
 
     // Read sticks and process control only when every safety gate passes.
     joystick_update();
@@ -166,9 +175,10 @@ void loop()
 
         // Refresh GPS coordinates and status at a modest UI update rate.
         static uint32_t lastScreenUpdateMs = 0;
-        if (static_cast<uint32_t>(millis() - lastScreenUpdateMs) >= 250U)
+        const uint32_t screenNowMs = millis();
+        if (static_cast<uint32_t>(screenNowMs - lastScreenUpdateMs) >= 250U)
         {
-            lastScreenUpdateMs = millis();
+            lastScreenUpdateMs = screenNowMs;
             updateBoatScreen(boatState);
         }
     }

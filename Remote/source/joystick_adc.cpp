@@ -36,13 +36,29 @@ static bool readChannel(uint8_t channel,int &out){
   return true;
 }
 bool joystickAdc_begin(const JoystickAdcConfig &config){
+  // A reinitialisation failure must revoke any previous ready state.
+  ready=false;
+  if(config.address<0x48||config.address>0x4B)return false;
+  const uint8_t channels[4]={config.channelLeftX,config.channelLeftY,
+                              config.channelRightX,config.channelRightY};
+  uint8_t used=0;
+  for(const uint8_t channel:channels){
+    if(channel>3||(used&(1U<<channel)))return false;
+    used|=(uint8_t)(1U<<channel);
+  }
   cfg=config;
-  if(cfg.address<0x48||cfg.address>0x4B||cfg.channelLeftX>3||cfg.channelLeftY>3||cfg.channelRightX>3||cfg.channelRightY>3) return false;
-  uint16_t id=0; ready=readRegister(ADS_REG_CONFIG,id);
+  uint16_t configRegister=0;
+  ready=readRegister(ADS_REG_CONFIG,configRegister);
   return ready;
 }
 bool joystickAdc_read(int &leftX,int &leftY,int &rightX,int &rightY){
-  if(!ready) return false;
-  return readChannel(cfg.channelLeftX,leftX)&&readChannel(cfg.channelLeftY,leftY)&&readChannel(cfg.channelRightX,rightX)&&readChannel(cfg.channelRightY,rightY);
+  if(!ready)return false;
+  // Publish a complete 4-axis frame or nothing; never expose half-read data.
+  int lx=0,ly=0,rx=0,ry=0;
+  if(!readChannel(cfg.channelLeftX,lx)||!readChannel(cfg.channelLeftY,ly)||
+     !readChannel(cfg.channelRightX,rx)||!readChannel(cfg.channelRightY,ry))
+      return false;
+  leftX=lx;leftY=ly;rightX=rx;rightY=ry;
+  return true;
 }
 bool joystickAdc_isReady(){return ready;}

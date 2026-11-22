@@ -7,6 +7,7 @@ on:
     paths:
       - 'Remote/source/**'
       - 'Remote/tests/**'
+      - 'Remote/platformio.ini'
       - 'Boat/tools/verify_r30h5_gps_time_isolation.py'
       - 'Boat/tests/test_r30h5_gps_time_isolation.py'
       - 'Boat/source/radio_utc_time_v1.h'
@@ -21,6 +22,7 @@ on:
     paths:
       - 'Remote/source/**'
       - 'Remote/tests/**'
+      - 'Remote/platformio.ini'
       - 'Boat/tools/verify_r30h5_gps_time_isolation.py'
       - 'Boat/tests/test_r30h5_gps_time_isolation.py'
       - 'Boat/source/radio_utc_time_v1.h'
@@ -45,6 +47,12 @@ jobs:
           /tmp/remote_release_guard
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/stubs -IRemote/source \
             -fsyntax-only Remote/source/physical_button_scanner.cpp Remote/source/release_button_guard.cpp
+      - name: ADS1115 full-frame, invalid config and I2C fault regression
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/adc_stubs -IRemote/source \
+            Remote/source/joystick_adc.cpp Remote/tests/joystick_adc_atomic_test.cpp \
+            -o /tmp/remote_joystick_adc
+          /tmp/remote_joystick_adc
       - name: Payload codec
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IRemote/source \

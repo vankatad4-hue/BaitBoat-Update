@@ -19,6 +19,10 @@ int main(){
  assert(telemetryApplyRadioPayload(st,true,1465));telemetryApplyToBoatState(s,1466);assert(s.lowBattery&&s.criticalBattery);
  st.safetyFlags=0x19;st.batteryPercent=42;
  assert(telemetryApplyRadioPayload(st,true,1470));telemetryApplyToBoatState(s,1480);assert(!s.lowBattery&&s.batteryPercent==42);
+ // Loss of current primary RF must immediately revoke cached safety-ready UI.
+ s.radioPrimaryConnected=false;s.radioActiveLink=RADIO_UI_NONE;
+ telemetryApplyToBoatState(s,1490);assert(!s.actuatorSafetyReady);
+ s.radioPrimaryConnected=true;s.radioActiveLink=RADIO_UI_NRF_PRIMARY;
  assert(telemetryApplyRadioPayload(st,false,1500));telemetryApplyToBoatState(s,1600);assert(!s.emergencyStopConfirmed&&!s.actuatorSafetyReady);
  lat.coordinateSample=23;assert(telemetryApplyRadioPayload(lat,true,1700));telemetryApplyToBoatState(s,1800);assert(!s.gpsValid);
  telemetryApplyToBoatState(s,3201);assert(!s.emergencyStopConfirmed&&!s.actuatorSafetyReady&&!s.gpsValid&&!s.headingValid);

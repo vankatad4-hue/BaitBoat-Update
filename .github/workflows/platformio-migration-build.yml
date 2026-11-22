@@ -12,9 +12,22 @@ on:
       - 'Boat/tools/pio_deny_upload.py'
       - 'Boat/tools/verify_r30h10_physical_lock.py'
       - 'Boat/docs/BOAT_R30H_10_PHYSICAL_GATES.csv'
+      - 'Remote/tests/**'
+      - 'Boat/tests/**'
+      - 'Flytec_V080.code-workspace'
       - 'Remote/tools/pio_deny_upload.py'
       - 'Boat/source/boat_r30h9_marker_config.h'
       - 'Remote/source/remote_r30h9_marker_config.h'
+      - '.github/workflows/platformio-migration-build.yml'
+  pull_request:
+    branches: [main, hardware-ready-dual-radio-r1]
+    paths:
+      - 'Boat/platformio.ini'
+      - 'Boat/source/**'
+      - 'Remote/platformio.ini'
+      - 'Remote/source/**'
+      - 'Remote/tests/**'
+      - 'Boat/tests/**'
       - '.github/workflows/platformio-migration-build.yml'
   workflow_dispatch:
 
@@ -60,6 +73,21 @@ jobs:
           grep -F '#define REMOTE_SD_DUMMY_CSN_PIN 6' Remote/source/radio_hw_config.h
           grep -F '#define REMOTE_NRF_CE_PIN   6' Remote/source/radio_hw_config.h
           grep -F '#define REMOTE_NRF_CSN_PIN  15' Remote/source/radio_hw_config.h
+      - name: Cache downloaded PlatformIO packages (not firmware images)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio/packages
+            ~/.platformio/platforms
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio-${{ matrix.endpoint }}-${{ hashFiles('Boat/platformio.ini', 'Remote/platformio.ini') }}
+      - name: Run portable ADS1115 atomic-input test before Remote build
+        if: matrix.endpoint == 'Remote'
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/adc_stubs -IRemote/source \
+            Remote/source/joystick_adc.cpp Remote/tests/joystick_adc_atomic_test.cpp \
+            -o /tmp/remote_adc
+          /tmp/remote_adc
       - name: Install Node for licensed Bulgarian font (Remote only)
         if: matrix.endpoint == 'Remote'
         uses: actions/setup-node@v4

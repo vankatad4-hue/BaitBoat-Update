@@ -34,6 +34,17 @@ def main() -> None:
         assert_line(ini, "upload_command = python tools/pio_deny_upload.py")
         require("sys.exit(2)" in text(guard), f"{guard}: upload-denial exit removed")
 
+    # Guard the PlatformIO source adapter contract against duplicate setup/loop.
+    boat_pio = text("Boat/platformio.ini")
+    remote_pio = text("Remote/platformio.ini")
+    require("-<firmware/**>" in boat_pio, "Boat nested sketch exclusion missing")
+    require("+<*.ino>" in remote_pio, "Remote root sketch exclusion regression")
+    require('#include "firmware/Flytec_Boat.ino"' in text("Boat/source/platformio_entry.cpp"),
+            "Boat guarded sketch adapter missing")
+    require("FLYTEC_PLATFORMIO_BUILD" in text("Boat/source/platformio_entry.cpp"),
+            "Boat adapter must remain guarded from Arduino CLI")
+    require(not (ROOT / "Remote/source/platformio_entry.cpp").exists(),
+            "Remote duplicate setup()/loop() adapter reappeared")
     radio_flags = {
         "Boat/source/boat_radio_hw_config.h": [
             "#define BOAT_NRF_PIN_AUDIT_SIGNED 0",
