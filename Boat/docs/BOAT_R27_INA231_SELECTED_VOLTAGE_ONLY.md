@@ -46,3 +46,7 @@ The board's distinct GND pads, BUS pad, A0/A1 configuration solder bridges and a
 **Official releases:** Boat VER014 / Remote VER028 frozen. No physical module energization, water trial or actual coil/motor test has taken place.
 
 Sources: [Ardboard product 1491](https://www.ardboard.com/index.php?route=product/product&product_id=578), [TI INA231 Rev D datasheet](https://www.ti.com/lit/ds/symlink/ina231.pdf), [TI INA231EVM manufacturer guide](https://www.ti.com/lit/ug/sbou310/sbou310.pdf).
+
+### R27 superseding harness matrix (2026-11-22)
+
+The [R27 INA231 10-net battery-sense override](BOAT_R27_INA231_HARNESS_OVERRIDE.csv) replaces **only** the historical R23 `H03_ADS` nets. It leaves the rest of the 64-net R23 manufacturer pin map unchanged and marks every new INA231 connection **UNWIRED_PENDING** or **NO_WIRE**. The static [R27 selection checker](../tools/verify_r27_battery_selection.py) asserts exact Boat procurement model/quantity, GPIO7/8, 3.3V sensor rail, a protected low-current BUS sense, 0.1Ω shunt exclusion, permanent commissioning=false and 21 NOT_RUN evidence checks. These are software/design assertions, not inspected wire approvals.
