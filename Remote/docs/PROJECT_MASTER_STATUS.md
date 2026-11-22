@@ -652,3 +652,9 @@ Remote dual-radio manager now rejects invalid ManagedLink identifiers, checks au
 
 ## R63 — LoRa backup control correction and Home request UI path (2026-11-22)
 The 3 s LoRa airtime pacing cannot maintain the Boat's ~200 ms manual motor command lease. `Remote/source/dual_radio_manager.cpp` and `boat_radio.cpp` therefore limit the backup link to **STOP and Home request for an already-started mission**; they reject all steering, releases and autonomous mission-start commands. `boat_commands_setMode(MODE_RETURN_HOME)` can now submit the request for a locally active mission; final acceptance, navigation, STOP/interlocks and measured Home are checked on the Boat. The Remote host suite passed run 44991125196. Physical RF, 868 MHz legal airtime, acknowledgement roundtrip, full latest target compile and hardware tests are not established by these tests. See [R63 report](../../docs/R63_BACKUP_CONTROL_AND_RTH_INTEGRATION.md). Remote VER028 unchanged.
+
+
+## R65 cross-endpoint hardware note — 2026-11-22
+
+- Boat controller **ESP32-S3-DevKitC-1-N32R16V** preliminary pin budget now documented in `Boat/docs/BOAT_R65_SAFETY_AND_PIN_BUDGET.md` and its 44-header-pin CSV. Four Boat EKM014 requests need a **premade expansion interface into independent qualified hardware onehot/no-repeat gating** because Boat radio/motor/safety interfaces consume the candidate safe GPIOs; the Boat and Remote have independent I2C buses (both may use 0x20 on separate buses).
+- No change to chosen Remote Waveshare 4.3 Standard, Remote-integrated SD lake/waypoint storage, primary nRF or E22 SMD-carrier block. Remote actuator commands remain guarded; backup LoRa STOP/active-mission Home only. No new purchased hardware or Remote firmware change. Release marker 028 unchanged; sonar deferred.
