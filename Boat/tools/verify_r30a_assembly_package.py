@@ -78,6 +78,16 @@ def main():
     r29=rows("Boat/docs/BOAT_R29_SHARED_3S_BUS_CONNECTIONS.csv")
     effective=rows("Boat/docs/BOAT_R30A_EFFECTIVE_ASSEMBLY_NETS.csv")
     assert check_netlist(r23,r27,r29,effective)
+    software=rows("Boat/docs/BOAT_R30A_SOFTWARE_INTEGRATION_MATRIX.csv")
+    assert len(software)==17
+    assert len({r["ID"] for r in software})==len(software)
+    for item in software:
+        assert item["Subsystem"] and item["Current_Runtime_Status"] and item["Unresolved_Integration"]
+        if item["Implementation_Source"]!="NOT_IMPLEMENTED":
+            assert (ROOT/item["Implementation_Source"]).is_file(), item["Implementation_Source"]
+    assert any(r["Current_Runtime_Status"]=="NON_ACTUATING_DIAGNOSTIC" for r in software)
+    assert any(r["Current_Runtime_Status"]=="FAIL_CLOSED_NOT_ATTACHED" for r in software)
+    assert any(r["Current_Runtime_Status"]=="DEFERRED_BY_OWNER" for r in software)
     gates=rows("Boat/docs/BOAT_R30A_READINESS_GATES.csv")
     assert check_readiness(gates)
     f=lambda path:(ROOT/path).read_text(encoding="utf-8")
