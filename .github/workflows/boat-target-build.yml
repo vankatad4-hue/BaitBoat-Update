@@ -41,6 +41,27 @@ jobs:
           # pin the existing diagnostic-only huge_app table (no OTA) explicitly.
           # A reviewed 32MB dual-OTA partition layout is still required before OTA.
           arduino-cli compile --verbose --export-binaries --fqbn 'esp32:esp32:esp32s3:FlashSize=32M,FlashMode=opi,PSRAM=opi,PartitionScheme=huge_app' /tmp/FlytecBoatBuild 2>&1 | tee /tmp/boat-target-build.log
+      - name: R30H-2 compile optional USB-only local trace (no RF or actuators)
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/FlytecBoatR30H2Trace
+          cp Boat/source/*.cpp Boat/source/*.h /tmp/FlytecBoatR30H2Trace/
+          cp Boat/source/firmware/Flytec_Boat.ino /tmp/FlytecBoatR30H2Trace/FlytecBoatR30H2Trace.ino
+          sed -i 's/#define BOAT_R30H_LOCAL_TRACE_ENABLED 0/#define BOAT_R30H_LOCAL_TRACE_ENABLED 1/' /tmp/FlytecBoatR30H2Trace/boat_radio_hw_config.h
+          grep -F '#define BOAT_NRF_PIN_AUDIT_SIGNED 0' /tmp/FlytecBoatR30H2Trace/boat_radio_hw_config.h
+          grep -F '#define BOAT_E22_UART_RF_INTEROPERABILITY_VERIFIED 0' /tmp/FlytecBoatR30H2Trace/boat_radio_hw_config.h
+          grep -F '#define BOAT_E22_RF_AIRTIME_AUDIT_SIGNED 0' /tmp/FlytecBoatR30H2Trace/boat_radio_hw_config.h
+          grep -F '#define BOAT_R30H_LOCAL_TRACE_ENABLED 1' /tmp/FlytecBoatR30H2Trace/boat_radio_hw_config.h
+          set -o pipefail
+          # Compile proof only. Never upload this diagnostic variant as an official release.
+          arduino-cli compile --verbose --fqbn 'esp32:esp32:esp32s3:FlashSize=32M,FlashMode=opi,PSRAM=opi,PartitionScheme=huge_app' /tmp/FlytecBoatR30H2Trace 2>&1 | tee /tmp/boat-r30h2-usb-trace-compile.log
+      - name: R30H-2 optional trace compiler log (no firmware artifact)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: boat-r30h2-usb-only-build-log
+          path: /tmp/boat-r30h2-usb-trace-compile.log
+          if-no-files-found: ignore
       - name: Stage R22 ADS1115 bench firmware (locked and non-actuating by default)
         run: |
           mkdir -p /tmp/BoatAdcBench
