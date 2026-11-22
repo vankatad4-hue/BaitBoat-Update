@@ -69,10 +69,11 @@ void BoatDualRadioPort::resetSession(bool preserveMission){
   // new authenticated heartbeat proves that a radio has returned.
   linkLossHold_=true;stickLease_.reset();missionIntent_={INTENT_STOP,-1,0};
  }else{
-  linkLossHold_=false;detachedReturn_=false;
+  linkLossHold_=false;detachedReturn_=false;failsafeRthActive_=false;
   abortMission();controller_.resetSession();stickLease_.reset();
   missionIntent_={INTENT_STOP,-1,0};
  }
+ haveAuthenticatedRx_=false;lastAnyAuthenticatedRxMs_=0;
  handshake_.reset();radioSession_wipe(key_,32);sessionStarted_=false;
  primarySeqGuard_.resetAfterHandshake();backupSeqGuard_.resetAfterHandshake();crossRadioSeqGuard_.resetAfterHandshake();
  lastNrfRxValid_=lastBackupRxValid_=false;commandQueue_.clear();mission_.reset();dedupe_.clear();txSequence_=0;
@@ -140,7 +141,7 @@ void BoatDualRadioPort::update() {
    int16_t left=0,right=0;
    if(controller_.temporaryOverrideConfirmed()&&!missionOverrideOutput(left,right))abortMission();
    if(detachedReturn_&&!controller_.diverted()){detachedReturn_=false;failsafeRthActive_=false;controller_.resetSession();missionIntent_={INTENT_STOP,-1,0};}
-   if(!detachedReturn_&&controller_.status().transaction&&safetyNow-lastMissionStatusMs_>=250U){lastMissionStatusMs_=safetyNow;sendMissionFeedback(controller_.status(),safetyNow);}
+   if(controller_.status().transaction&&safetyNow-lastMissionStatusMs_>=250U){lastMissionStatusMs_=safetyNow;sendMissionFeedback(controller_.status(),safetyNow);}
  }
  maybeStartFailsafeReturnHome(safetyNow);
  if(sessionReady()) {
@@ -198,7 +199,7 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  if(f.type==RADIO_MSG_HEARTBEAT){lastRx=lastSessionRx_=now;rxValid=true;noteAuthenticatedRx(now);return;}
  // Detached Home return keeps old plan private to the local supervisor.
  // A new session cannot attach to the old transaction or restart its target.
- if(detachedReturn_&&(f.type==RADIO_MSG_MISSION_STICKS||f.type==RADIO_MSG_MISSION_CONTROL||f.type==RADIO_MSG_MISSION_PREPARE))return;
+ if(detachedReturn_&&(f.type==RADIO_MSG_MISSION_STICKS||f.type==RADIO_MSG_MISSION_PREPARE))return;
  if(f.type==RADIO_MSG_MISSION_STICKS){
    if(link!=LINK_NRF_PRIMARY||!crossSequenceAccepted)return;
    MissionStickInput input{};if(!missionStickDecode(f.payload,input)||f.commandId!=input.transaction)return;
