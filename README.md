@@ -89,3 +89,9 @@ The [R23 electrical sign-off worksheet](Boat/docs/BOAT_R23_GPIO_AND_LEVEL_SIGNOF
 ## R24 boot/reset diagnostic follow-up
 
 The [R24 shared MCP23017 boot/reset safety review](Boat/docs/BOAT_R24_BOOT_RESET_OUTPUT_SAFETY.md) records the manufacturer's EKM014 120 kΩ input pull-down behavior and adds a **non-actuating software register audit** covering both EKM014 GPA0–3 and MDD20A DIR GPB0–1. It includes simulated reset, active output and I²C-failure regression tests in Boat host CI. This is **not an independent electrical watchdog or cutoff**, does not claim coil-current-zero, and does not authorize motor/solenoid high-current wiring. All R23 electrical signoffs are still NOT_RUN; Boat VER014 / Remote VER028 unchanged.
+
+## R25 isolated power and level safety review
+
+The [R25 preflight](Boat/docs/BOAT_R25_POWER_LEVEL_PREFLIGHT.md) and [unsigned 28-gate evidence sheet](Boat/docs/BOAT_R25_POWER_LEVEL_EVIDENCE.csv) cover the selected four logic regulator rails, isolated M100 PRO/E22 logic levels, connector identities, PWM/coil boot idle behavior, ADC supply sequencing and physical STOP/watchdog/current-zero acceptance. All measurements remain NOT_RUN. The [R25 evidence checker](Boat/tools/verify_r25_preflight.py) rejects unsupported sign-offs and is run in CI in explicitly **unsigned** mode; passing this check does not commission hardware.
+
+**Important:** R21 150kΩ/33kΩ ADS1115 battery divider must stay **disconnected from the 3S pack** until the ADC VDD versus AIN0 sequencing is engineered/qualified; an unpowered ADS1115 may otherwise see an out-of-limit input even though 2.272V at 12.6V pack is acceptable when VDD=3.3V. High-current MDD20A and EKM014 paths also remain physically disconnected. Boat VER014 / Remote VER028 unchanged.
