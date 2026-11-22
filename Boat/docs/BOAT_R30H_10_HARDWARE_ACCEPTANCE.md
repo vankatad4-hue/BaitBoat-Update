@@ -37,6 +37,8 @@ Only after separate independent STOP and navigation safety acceptance, inspect b
 
 Capture-ID; UTC start and GNSS UTC source; instrument model/serial, sample rate and calibration; one clock ID; endpoint firmware commit/build environment; actual board/carrier revisions; net name and **measured** connector contact; probe voltage/attenuation/ground; power rail and load disconnect proof; test stimulus; observed electrical edge timestamps; raw waveform filename + SHA256; limitations (RF edge vs authenticated command); pass criterion; independent engineer/witness initials and review date. Blank fields are **not** PASS.
 
+The [R30H-10 CI source-lock preflight](../tools/verify_r30h10_physical_lock.py) rejects premature completed physical-status claims, changed RF/marker locks or removed upload denial. It does not simulate a logic analyzer or validate current-zero.
+
 Use [R30H-10 unsigned gate register](BOAT_R30H_10_PHYSICAL_GATES.csv), not a CI build log, as the physical acceptance record. Never replace an earlier unsigned worksheet with assumed measurements.
 
 ## Safe exit criteria
