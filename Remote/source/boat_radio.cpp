@@ -1,5 +1,6 @@
 #include "boat_radio.h"
 #include "radio_payload_codec.h"
+#include "radio_safety_diagnostic_v1.h"
 #include "radio_ack_tracker.h"
 #include "boat_telemetry.h"
 #include "boat_state.h"
@@ -292,6 +293,11 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame){
     const bool cross=g_boatSequenceGuard.accept(frame.sequence);
     if(!cross&&frame.type!=RADIO_MSG_HEARTBEAT)return;
     if(!dispatchValidatedPayload(link,frame,now))return;
+    // R30F authenticated diagnostic is informational. A diagnostic-only
+    // packet may NEVER extend authenticated-control link freshness, which
+    // would otherwise indirectly authorize manual sticks or STOP clearing.
+    if(frame.type==RADIO_MSG_TELEMETRY &&
+       frame.payload[0]==radio_r30f::SUBTYPE)return;
     g_linkManager.reportValidRx(link,true,now);
 }
 
