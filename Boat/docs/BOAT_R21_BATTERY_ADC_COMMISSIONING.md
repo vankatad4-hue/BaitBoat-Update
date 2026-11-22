@@ -90,3 +90,7 @@ No physical DMM/scope reading, dummy-load test or water test has been performed.
 ## R22 companion diagnostics (subsequent software work)
 
 The [R22 isolated ADS1115 serial bench sketch](BOAT_R22_ADS1115_SENSOR_ONLY_BRINGUP.md) can produce actual raw ADC codes **only after the physical GPIO and voltage-sequencing checks**. Its default build performs no I²C initialization; it is not integrated into the Boat's output-authorization path. Store the physical DMM and scope measurements in the R21 worksheet; a plausible uncalibrated serial value is never sufficient to commission the sensor or propulsion.
+
+## R25 clarification — do not energize the sense line before sequencing validation
+
+**Safety clarification (2026-11-22):** The 150kΩ/33kΩ divider values solve the previous full-charge software scaling conflict only. They **do not** prove protection against input back-powering while ADS1115 VDD is absent or rising/falling. At 12.6V, a disconnected/unclamped divider predicts ~2.272V AIN0; the ADS1115 absolute maximum is VDD+0.3V. The original R21 ramp/check procedure must **not** be interpreted as permission to apply a knowingly over-limit source to an unpowered IC. Keep the 3S pack sense feed disconnected until a compliant power sequencing/protection design and safe verification method have been approved for the exact premade ADS1115 carrier. See [R25 preflight](BOAT_R25_POWER_LEVEL_PREFLIGHT.md) and [unsigned evidence worksheet](BOAT_R25_POWER_LEVEL_EVIDENCE.csv). No physical calibration has been performed.
