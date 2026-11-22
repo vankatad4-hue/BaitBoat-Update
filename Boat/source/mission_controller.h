@@ -101,7 +101,8 @@ public:
  bool temporaryOverrideConfirmed()const{return phase_==MC_OVERRIDE_ACTIVE;}
  bool canDivertHome()const{
   return phase_==MC_OUTBOUND||phase_==MC_PAUSED||phase_==MC_RETURNING||
-         phase_==MC_OVERRIDE_NEUTRAL||phase_==MC_OVERRIDE_ACTIVE;
+         phase_==MC_OVERRIDE_NEUTRAL||phase_==MC_OVERRIDE_ACTIVE||
+         (phase_==MC_RELEASING&&engine_.phase()==EXEC_AT_TARGET);
  }
  bool homeNavigationValid(const ExecInputs &in)const{return plan_.transaction&&engine_.homeNavigationValid(in);}
  bool homeMatches(int32_t latE7,int32_t lonE7)const{
