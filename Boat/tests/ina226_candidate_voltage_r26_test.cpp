@@ -1,4 +1,5 @@
 #include "../source/ina226_voltage_candidate_r26.h"
+#include "../source/boat_battery_policy.h"
 #include <cassert>
 #include <iostream>
 using namespace boat_r26;
@@ -44,6 +45,17 @@ int main() {
  assert(!decodeEvidenceOnly(accepted,100,mv));
  accepted.rawBusRegister=0;
  assert(!decodeEvidenceOnly(accepted,100,mv));
+ // R79 policy interface: hypothetical decoded pack mV uses the same critical
+ // threshold, not ADS1115 ADC-count units. No physical sensor selected.
+ BoatBatteryMonitor policy;
+ auto nominal=fixture(10080);
+ assert(decodeEvidenceOnly(nominal,200,mv));
+ auto state=policy.update(true,mv,200);
+ assert(state.valid && state.band==BOAT_BATTERY_GREEN);
+ auto low=fixture(7920);
+ assert(decodeEvidenceOnly(low,250,mv) && mv==9900);
+ state=policy.update(true,mv,250);
+ assert(state.critical && state.band==BOAT_BATTERY_CRITICAL);
  // No combination of mock flags can authorize this unselected model.
  auto e=fixture(10080);
  assert(!readOnlyDecode(e,100,mv) && mv==0);
