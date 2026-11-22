@@ -21,21 +21,27 @@ int main() {
   assert(boatClassifyCrossRadioCommand(false,false,true)==BOAT_CROSSRADIO_DUPLICATE_PENDING);
   assert(boatClassifyCrossRadioCommand(false,false,false)==BOAT_CROSSRADIO_DROP_STALE);
 
+  BoatRadioWatchdog watchdog;
+  assert(!watchdog.alive());
+  assert(watchdog.update(false,false)==BOAT_RADIO_WATCHDOG_NO_CHANGE);
+  assert(watchdog.update(true,false)==BOAT_RADIO_WATCHDOG_RESTORED);
+  assert(watchdog.alive());
+  assert(watchdog.update(false,true)==BOAT_RADIO_WATCHDOG_NO_CHANGE);
+  assert(watchdog.update(false,false)==BOAT_RADIO_WATCHDOG_LOST);
+  assert(!watchdog.alive());
+  assert(watchdog.update(false,false)==BOAT_RADIO_WATCHDOG_NO_CHANGE);
+  assert(watchdog.update(false,true)==BOAT_RADIO_WATCHDOG_RESTORED);
+
   BoatLinkSafetyInputs in={false,false,false,false,false,false,false};
-  assert(boatEvaluateLinkFailsafe(in)==BOAT_FS_STOP_PROPULSION);
+  assert(boatEvaluateLinkFailsafe(in)==BOAT_FS_STOP_ALL);
+  // Good GNSS/autopilot data must not convert total radio loss into RTH.
   in.autonomousMissionActive=true; in.gnssValidFresh=true; in.headingValid=true;
   in.batteryHealthy=true; in.geofenceValid=true;
-  assert(boatEvaluateLinkFailsafe(in)==BOAT_FS_RETURN_HOME);
-  in.batteryHealthy=false;
-  assert(boatEvaluateLinkFailsafe(in)==BOAT_FS_STOP_PROPULSION);
+  assert(boatEvaluateLinkFailsafe(in)==BOAT_FS_STOP_ALL);
   in.nrfValidFresh=true;
-  assert(boatEvaluateLinkFailsafe(in)==BOAT_FS_NONE); // valid link suppresses link-loss action
+  assert(boatEvaluateLinkFailsafe(in)==BOAT_FS_NONE);
   in.nrfValidFresh=false; in.loraValidFresh=true;
-  // Backup alone cannot supervise 200ms manual motor leases.
-  assert(boatEvaluateLinkFailsafe(in)==BOAT_FS_STOP_PROPULSION);
-  in.autonomousMissionActive=true;in.batteryHealthy=true;
-  assert(boatEvaluateLinkFailsafe(in)==BOAT_FS_RETURN_HOME);
-  in.geofenceValid=false;
-  assert(boatEvaluateLinkFailsafe(in)==BOAT_FS_STOP_PROPULSION);
+  // A fresh backup link keeps the radio watchdog alive, but not manual control.
+  assert(boatEvaluateLinkFailsafe(in)==BOAT_FS_NONE);
   return 0;
 }
