@@ -69,7 +69,8 @@ public:
   if(!configured_||stopLatched_||in.stopActive||!in.fix.batteryHealthy){stop();return off;}
   // Never retain/replay a manual stick command after primary-link loss.
   if(!in.primaryFresh){cancelManual();manualNeedsNeutral_=true;}
-  // Both authenticated radio paths stale: all motors and solenoids OFF.
+  // Both authenticated radio paths stale: all outputs OFF, except a locally
+  // authorized INTENT_NAV_HOME after the 10-second gate. Releases stay OFF.
   // An interrupted release is latched because its physical completion is unknown.
   const bool radioIndependentHome=in.autonomousRth&&missionActive&&intent.intent==INTENT_NAV_HOME;
   if(!in.primaryFresh&&!in.backupFresh&&!radioIndependentHome){
