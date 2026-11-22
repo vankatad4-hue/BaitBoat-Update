@@ -1,4 +1,4 @@
-name: PlatformIO migration compile (experimental, no flashing)
+name: Primary PlatformIO compile (Boat + Remote, no flashing)
 
 on:
   push:
@@ -9,6 +9,10 @@ on:
       - 'Remote/platformio.ini'
       - 'Remote/source/**'
       - 'Remote/tools/generate_bg_font.sh'
+      - 'Boat/tools/pio_deny_upload.py'
+      - 'Remote/tools/pio_deny_upload.py'
+      - 'Boat/source/boat_r30h9_marker_config.h'
+      - 'Remote/source/remote_r30h9_marker_config.h'
       - '.github/workflows/platformio-migration-build.yml'
   workflow_dispatch:
 
@@ -21,7 +25,7 @@ concurrency:
 
 jobs:
   compile:
-    name: ${{ matrix.endpoint }} PlatformIO target (experimental)
+    name: ${{ matrix.endpoint }} PlatformIO target (primary, no flash)
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:
@@ -46,6 +50,13 @@ jobs:
           grep -F '#define REMOTE_NRF_PIN_AUDIT_SIGNED 0' Remote/source/radio_hw_config.h
           grep -F '#define BOAT_R30H_LOCAL_TRACE_ENABLED 0' Boat/source/boat_radio_hw_config.h
           grep -F '#define REMOTE_R30H3_STOP_TRACE_ENABLED 0' Remote/source/radio_hw_config.h
+          grep -F '#define BOAT_R30H9_MARKER_GPIO (-1)' Boat/source/boat_r30h9_marker_config.h
+          grep -F '#define BOAT_R30H9_GPIO_OUTPUT_SIGNED 0' Boat/source/boat_r30h9_marker_config.h
+          grep -F '#define REMOTE_R30H9_MARKER_GPIO (-1)' Remote/source/remote_r30h9_marker_config.h
+          grep -F '#define REMOTE_R30H9_GPIO_OUTPUT_SIGNED 0' Remote/source/remote_r30h9_marker_config.h
+          grep -F '#define REMOTE_SD_DUMMY_CSN_PIN 6' Remote/source/radio_hw_config.h
+          grep -F '#define REMOTE_NRF_CE_PIN   6' Remote/source/radio_hw_config.h
+          grep -F '#define REMOTE_NRF_CSN_PIN  15' Remote/source/radio_hw_config.h
       - name: Install Node for licensed Bulgarian font (Remote only)
         if: matrix.endpoint == 'Remote'
         uses: actions/setup-node@v4
@@ -66,7 +77,7 @@ jobs:
           pio --version
           pio run -d ${{ matrix.endpoint }} -e ${{ matrix.environment }} \
             2>&1 | tee /tmp/platformio-${{ matrix.endpoint }}.log
-      - name: Save experimental build log only
+      - name: Save primary build log only
         if: always()
         uses: actions/upload-artifact@v4
         with:
