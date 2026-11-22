@@ -503,3 +503,13 @@ The official DCDC6 page says it pairs with Olimex PWR-CABLE; the cable page list
 - Recommended reuse is at the interface/functional level only. Keep ready-made MDD20A and EKM014, adopt six-wire GPS harness pattern after voltage/pinout checks, and keep modular power branches. No custom copy of original FET circuits.
 - **Independent safety not verified on original board.** Lost-signal RTH/electronic fence are not hardware E-stop. Retrofit safety stack is also not yet built/qualified; R65/R66/R17 components remain unresolved.
 - Added [R76 detailed comparison and reverse-engineering plan](../Boat/docs/BOAT_R76_ORIGINAL_JR_V030RX_BOARD_REVIEW.md). No wiring, BOM, firmware or release changes; Boat VER014 / Remote VER028 remain frozen.
+
+
+## R77 — Software dual-radio watchdog behavior
+
+- Implemented the user's no-new-hardware requirement: total loss of authenticated nRF24 and E22 links commands motor outputs to zero and all EKM014 channels OFF; automatic RTH on radio loss is removed.
+- Either fresh radio path allows autonomous navigation. Primary nRF24 remains required for manual steering and irreversible release actions; backup-only navigation waits at a target until primary returns.
+- Eligible autonomous mission phase is held during total link loss and resumes after authenticated link/session recovery. Stale queues and stick leases are cleared; manual input requires neutral and a new command.
+- Release intent/pulse interrupted by primary loss is aborted and never replayed. An active pulse is commanded OFF and STOP-latched. Explicit user-requested Home remains supported.
+- Added [R77 implementation report](../Boat/docs/BOAT_R77_DUAL_RADIO_WATCHDOG_IMPLEMENTATION.md) and host regression coverage.
+- **Scope limitation:** software watchdog runs on the main ESP32-S3; it is not an independent hardware cutoff. Frozen MCU/stuck GPIO/shorted driver remain unprotected. R65/R66/R17 physical safety components and acceptance remain unresolved. No new hardware or GPIO; Boat VER014 / Remote VER028 unchanged.
