@@ -24,7 +24,7 @@ Status: software implementation added; host and ESP32 target verification pendin
 
 ## Home NVS
 
-The Remote retains its Home point in its own persistent storage. During authenticated Boat mission preparation, the Home coordinate from the prepared mission plan is copied into the Boat ESP32's internal NVS. The Boat uses a two-slot record with explicit little-endian serialization, version, sequence counter and CRC32. It writes the inactive slot, reads it back and verifies it before acknowledging mission preparation. A corrupt/missing record or failed read-back rejects preparation and blocks automatic RTH.
+The Remote's mission UI requires `homeValid` and a fresh GNSS position before uploading a plan; its existing Home record is persisted in the Remote's mission storage on SD. During authenticated Boat mission preparation, the Home coordinate from that prepared mission plan is copied into the Boat ESP32's internal NVS. The Boat NVS copy is the local authority used for detached RTH when neither radio is available. The Boat uses a two-slot record with explicit little-endian serialization, version, sequence counter and CRC32. It writes the inactive slot, reads it back and verifies it before acknowledging mission preparation. A corrupt/missing record or failed read-back rejects preparation and blocks automatic RTH.
 
 No additional hardware is introduced for this behavior; the storage uses the selected ESP32-S3's internal NVS.
 
