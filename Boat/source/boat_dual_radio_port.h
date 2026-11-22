@@ -4,6 +4,7 @@
 #include "nrf24_link.h"
 #include "e22_uart_board_port.h"
 #include "boat_radio_hw_config.h"
+#include "boat_r30h2_local_trace.h"
 #include "radio_command_codec.h"
 #include "radio_key_store.h"
 #include "boat_radio_safety.h"
@@ -67,6 +68,11 @@ public:
     bool backupReady() const { return sx1262Ready_; }
     bool primaryFresh(uint32_t now) const;
     bool backupFresh(uint32_t now) const;
+#if BOAT_R30H_LOCAL_TRACE_ENABLED
+    // USB-local source timestamps ONLY; never a cross-board physical STOP measurement.
+    bool takeR30HTrace(boat_r30h2::Record &out) { return localTrace_.take(out); }
+    uint32_t r30hTraceOverflows() const { return localTrace_.overflows(); }
+#endif
     BoatFailsafeDecision evaluateFailsafe(uint32_t now,bool missionActive,bool gnssOK,
                                            bool headingOK,bool batteryOK,bool geofenceOK) const;
 private:
@@ -87,6 +93,11 @@ private:
     BoatMissionController controller_;
     MissionStickLease stickLease_;
     BoatRadioWatchdog radioWatchdog_;
+#if BOAT_R30H_LOCAL_TRACE_ENABLED
+    boat_r30h2::LocalTrace localTrace_{};
+    uint32_t lastPrimaryTraceSampleAtMs_=0;
+    bool havePrimaryTraceSample_=false;
+#endif
     BoatHomePointStore homePointStore_{};
     uint32_t lastAnyAuthenticatedRxMs_=0;
     bool haveAuthenticatedRx_=false;
