@@ -109,6 +109,13 @@ jobs:
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror Remote/tests/mission_control_client_test.cpp -o /tmp/remote_mission_control
           /tmp/remote_mission_control
+      - name: R30H-3 Remote-local STOP request vs E22 queue admission (no RF)
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
+            Remote/tests/r30h3_remote_stop_trace_test.cpp -o /tmp/remote_r30h3_stop_trace
+          /tmp/remote_r30h3_stop_trace
+          python3 Boat/tools/simulate_r30h3_rf_timing.py > /tmp/remote_r30h3_timing.json
+          grep -q '"physical_RF_and_STOP_acceptance": "NOT_RUN"' /tmp/remote_r30h3_timing.json
       - name: R30H-1 real E22 bridge FIFO regression and unsigned RF gate
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
