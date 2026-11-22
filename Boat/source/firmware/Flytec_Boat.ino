@@ -131,8 +131,20 @@ void loop(){
   const bool changed=safetyFaultTransitions.observe(status);
   uint8_t localBytes[8]{};
   boat_r30e::encodeLocal(status,localBytes);
-  // This format is local only. It is not RADIO_PAYLOAD_STATUS or a Remote
-  // command; the Remote protocol is intentionally unchanged.
+  // R30F: a DIFFERENT, strictly versioned TELEMETRY subtype 8 may be sent
+  // over the existing authenticated primary nRF session. It contains ONLY
+  // unverified diagnostic flags and never creates a STOP ACK or command.
+  // The radio port itself refuses transmission without a provisioned key,
+  // authenticated session and fresh primary link. Do not send via backup.
+  RadioDecodedPayload safetyTelemetry{};
+  safetyTelemetry.kind=RADIO_PAYLOAD_SAFETY_DIAGNOSTIC;
+  safetyTelemetry.diagnosticReason=static_cast<uint8_t>(status.reason);
+  safetyTelemetry.diagnosticFlags=status.flags;
+  safetyTelemetry.diagnosticMillivolts=status.millivolts;
+  safetyTelemetry.diagnosticSequence=status.sequence;
+  radio.sendHardwareTelemetry(safetyTelemetry);
+  // The D5 frame below remains USB-local, NOT the authenticated RF format.
+  // It is never interpreted as a command or verified physical contact.
   Serial.printf("R30E,LOCAL_ONLY,%s,flags=0x%04X,pack_mV=%u,seq=%u,changed=%u,outputs=LOCKED,frame=%02X%02X%02X%02X%02X%02X%02X%02X\\n",
       boat_r30e::label(status.reason),
       (unsigned)status.flags,(unsigned)status.millivolts,
