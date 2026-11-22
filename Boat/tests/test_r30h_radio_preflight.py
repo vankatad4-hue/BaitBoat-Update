@@ -72,6 +72,25 @@ class TestR30HPreflight(unittest.TestCase):
                      "time_us,platform,event,edge,origin,notes\n",
                      "time_us,platform,event,edge,origin,notes\nC01,T01,H05,FAKE,100,REMOTE,STOP_BUTTON_EDGE,RISING,EXTERNAL_ANALYZER,dummy\n")
 
+    def test_r30h7_mismatched_gnss_epoch_does_not_qualify_utc(self):
+        self.hostile("Boat/source/tracker_gnss.h",
+                     "positionUtc_!=rmcUtc_", "false /* fake GNSS epoch */")
+
+    def test_r30h7_remote_utc_needs_primary_freshness(self):
+        self.hostile("Remote/source/boat_radio.cpp",
+                     "g_linkManager.primaryHealthy(at)&&",
+                     "true&&")
+
+    def test_r30h7_different_utc_wire_header_rejected(self):
+        self.hostile("Remote/source/radio_utc_time_v1.h",
+                     "static constexpr uint8_t VERSION=1;",
+                     "static constexpr uint8_t VERSION=2;")
+
+    def test_r30h7_no_fabricated_rf_reference(self):
+        self.hostile("Boat/source/r30h6_utc_marker_policy.h",
+                     "bool rfEndToEndStopClock=false;",
+                     "bool rfEndToEndStopClock=true;")
+
     def test_fail_if_motor_driver_attaches(self):
         self.hostile("Boat/source/firmware/Flytec_Boat.ino",
                      "const bool ready=radio.begin();",
