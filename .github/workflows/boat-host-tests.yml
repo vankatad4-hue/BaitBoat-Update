@@ -209,6 +209,11 @@ jobs:
           /tmp/r62_memory_gate
       - name: R20 selected ESP32-S3 GPIO/header candidate crosswalk
         run: python3 -m unittest Boat/tests/test_r65_pin_resources.py -v
+      - name: R23 verified-header GPIO and modular connection schedule
+        run: |
+          python3 Boat/tools/verify_gpio_connections_r23.py
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/boat_r23_gpio_contract_test.cpp -o /tmp/boat_r23_gpio
+          /tmp/boat_r23_gpio
       - name: R66 COTS safety PLC capacity and external interlock acceptance oracle (host only)
         run: |
           python3 -m unittest Boat/tests/test_r66_safety_plc_budget.py -v
