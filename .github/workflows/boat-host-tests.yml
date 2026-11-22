@@ -271,6 +271,13 @@ jobs:
         run: |
           python3 Boat/tools/verify_r30a_assembly_package.py
           python3 -m unittest Boat/tests/test_r30a_assembly_package.py -v
+      - name: R30B shared 3S brownout and stale INA231 fault simulation
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -I Boat/tests/stubs \
+            Boat/tests/boat_r30b_shared_supply_fault_matrix_test.cpp \
+            -o /tmp/boat_r30b_faults
+          /tmp/boat_r30b_faults
+          python3 Boat/tools/verify_r30b_power_fault_lock.py
       - name: R66 COTS safety PLC capacity and external interlock acceptance oracle (host only)
         run: |
           python3 -m unittest Boat/tests/test_r66_safety_plc_budget.py -v
