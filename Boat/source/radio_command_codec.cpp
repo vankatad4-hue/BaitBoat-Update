@@ -8,7 +8,7 @@ static int16_t clampMotor(int16_t v) {
 static bool backupAllowed(const BoatCommand &cmd) {
     if (cmd.type == CMD_EMERGENCY_STOP) return true;
     if (cmd.type == CMD_SET_MODE && cmd.mode == MODE_RETURN_HOME) return true;
-    if (cmd.type == CMD_MANUAL_MOTORS) return true;
+    if (cmd.type == CMD_MANUAL_MOTORS) return false; // backup pacing exceeds motor lease
     return false;
 }
 
@@ -58,13 +58,6 @@ bool radio_decodeCommand(const RadioFrame &f, uint8_t expectedSrc, uint8_t expec
     if (out.activate && !releaseCommand) return false;
     if (releaseCommand && !out.activate) return false;
     if (backup && !backupAllowed(out)) return false;
-    if (backup && out.type == CMD_MANUAL_MOTORS) {
-        constexpr int16_t MAX_BACKUP=250;
-        if (out.leftMotor > MAX_BACKUP) out.leftMotor=MAX_BACKUP;
-        if (out.leftMotor < -MAX_BACKUP) out.leftMotor=-MAX_BACKUP;
-        if (out.rightMotor > MAX_BACKUP) out.rightMotor=MAX_BACKUP;
-        if (out.rightMotor < -MAX_BACKUP) out.rightMotor=-MAX_BACKUP;
-    }
     return true;
 }
 
