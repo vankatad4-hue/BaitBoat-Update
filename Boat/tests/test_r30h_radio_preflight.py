@@ -91,6 +91,10 @@ class TestR30HPreflight(unittest.TestCase):
                      "bool rfEndToEndStopClock=false;",
                      "bool rfEndToEndStopClock=true;")
 
+    def test_r30h7_fake_pps_signoff_rejected(self):
+        self.hostile("Boat/docs/BOAT_R30H_7_GNSS_PPS_RF_CLOCK_SIGNOFF.csv",
+                     "NOT_RUN,,,", "PASS,PPS=real,unverified,none")
+
     def test_fail_if_motor_driver_attaches(self):
         self.hostile("Boat/source/firmware/Flytec_Boat.ino",
                      "const bool ready=radio.begin();",
