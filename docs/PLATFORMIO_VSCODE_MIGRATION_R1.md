@@ -77,3 +77,18 @@ The diagnostic Remote `platformio.ini` switches **`lib_ldf_mode = deep+` → `de
 ## R30H-10 duplicate-entrypoint linker fix
 
 On [PlatformIO #45062526394](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45062526394), Boat compiled successfully and Remote reached linking after the `lib_ldf_mode = deep` fix; Remote failed with duplicate `setup()` and `loop()` definitions from `Flytec_Remote.ino.cpp.o` and `platformio_entry.cpp.o`. The second Remote-only entry adapter is now removed from the active source tree and retained as historical archive. The single native root-level `Flytec_Remote.ino` is explicitly included by the source filter. This is a **compile-only change**; no radio/STOP/RTH/SD functionality, safety pin flags or official versions changed. A fresh completed PlatformIO CI run is required before PASS.
+
+
+## R30H-10 source optimization and verified dual-build migration — 2026-11-22
+
+See [full source cleanup and build evidence](SOURCE_CLEANUP_R30H_10_R1.md).
+
+- **Both PlatformIO targets: SUCCESS** — [workflow #45063024581](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45063024581), Boat N32R16V and Remote Waveshare Standard with ESP32 Arduino core 3.3.12, compilation-only, no upload.
+- **Both Arduino reference targets: SUCCESS** on the archived-source revision — [Boat #45061849197](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45061849197) and [Remote #45061849238](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45061849238). Remote target rerun for latest PIO adapter cleanup is separately tracked under [#45063024540](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45063024540).
+- **Both host workflows: SUCCESS** after the Remote entrypoint correction — [Remote #45063024532](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45063024532); Boat host [#45061849147](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45061849147); static active-source inventory [#45063024449](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45063024449) SUCCESS.
+- **197 active-source files, 56 sketch/C++ compile roots, one intentionally preserved reference/example header**. Six retired unreferenced or duplicated files were preserved in [history](https://github.com/vankatad4-hue/BaitBoat-Update/tree/hardware-ready-dual-radio-r1/docs/archive/2026-11-22/source_cleanup_r30h10) and removed from live sources. This is static review and safe cleanup, not complete runtime performance optimization.
+- Remote LVGL 9.6 sonar DEMO point coordinates repaired (float-to-integer), duplicate SD status corrected with 4-case host test. Retired Heltec SX1262 and unused older configuration files archived. Boat uses selected nRF24/E22 UART and INA231 BUS-only; sonar still deferred.
+- **Safety/physical acceptance remains OPEN**: no real radio STOP/RTH/PPS accuracy or independent STOP/current-zero acceptance, no motor/solenoid power approval. Remote GPIO6 (SD dummy CS/nRF CE) and GPIO15 (RS485/nRF CSN) remain electrically conflicted and unsigned. Keep Boat VER014 / Remote VER028 and reference Arduino build; passing PIO is a viable parallel compilation path, not firmware promotion.
+
+
+Compilation is now verified for Boat and Remote in the final experimental PlatformIO CI. Keep the established Arduino CLI targets and do not enable hardware signoffs; retain distinct ESP32 core version checks.
