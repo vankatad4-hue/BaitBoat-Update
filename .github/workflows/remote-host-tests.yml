@@ -109,6 +109,13 @@ jobs:
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror Remote/tests/mission_control_client_test.cpp -o /tmp/remote_mission_control
           /tmp/remote_mission_control
+      - name: R30H-1 real E22 bridge FIFO regression and unsigned RF gate
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
+            Remote/tests/sc16is750_fifo_budget_r30h_test.cpp -o /tmp/remote_r30h_sc16
+          /tmp/remote_r30h_sc16
+          python3 Boat/tools/verify_r30h_radio_preflight.py
+          python3 -m unittest Boat/tests/test_r30h_radio_preflight.py -v
       - name: R62 backup radio pacing and invalid-link fail closed
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/stubs -IRemote/source \
