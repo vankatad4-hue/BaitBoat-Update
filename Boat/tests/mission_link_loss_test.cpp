@@ -114,6 +114,9 @@ int main(){
  lowIn.batteryLow=true;
  assert(c6.tick(lowIn,601,true,true).intent==INTENT_STOP);
  assert(c6.status().phase==MC_OUTBOUND);
+ MissionControlFeedback lowBatteryManual{};
+ assert(c6.request({MCTRL_SWITCH_MANUAL,p.transaction,3},lowIn,601,true,true,true,lowBatteryManual));
+ assert(lowBatteryManual.result==MC_REJECTED&&c6.status().phase==MC_OUTBOUND);
  assert(c6.canDivertHome()&&c6.divertHome(lowIn,true));
  lowIn.autonomousRth=true;
  assert(c6.tick(lowIn,602,true,false).intent==INTENT_NAV_HOME);

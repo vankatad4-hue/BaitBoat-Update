@@ -13,7 +13,7 @@ int main() {
     p[7]=1; assert(!radio_decodeAckPayload(p,d) && d.kind==RADIO_PAYLOAD_INVALID);
     p[0]=1; p[1]=2; p[2]=0; p[3]=0x7F; p[4]=55; p[5]=3; p[6]=12; p[7]=0;
     assert(radio_decodeTelemetryPayload(p,d) && d.kind==RADIO_PAYLOAD_STATUS && d.batteryPercent==55);
-    p[3]=0x80; assert(!radio_decodeTelemetryPayload(p,d) && d.kind==RADIO_PAYLOAD_INVALID);
+    p[3]=0x80; assert(radio_decodeTelemetryPayload(p,d) && d.kind==RADIO_PAYLOAD_STATUS && d.safetyFlags==0x80);
     p[0]=2; p[1]=0xB8; p[2]=0x0B; p[3]=0x64; p[4]=0; p[5]=p[6]=p[7]=0;
     assert(radio_decodeTelemetryPayload(p,d) && d.batteryMillivolts==3000 && d.speedCmPerSecond==100);
     p[0]=3; p[1]=9; p[2]=0x00; p[3]=0x65; p[4]=0xCD; p[5]=0x1D; p[6]=0xE7; p[7]=3;

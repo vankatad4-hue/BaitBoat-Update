@@ -57,7 +57,7 @@ Estimated percentage uses a generic 3S Li-ion voltage curve. It is not coulomb c
 - Top-level Boat battery label shows voltage and estimated percentage.
 - Green: above 50%; yellow: 21–50%; red: 20% or lower or Boat low-battery status flag.
 - Yellow warning: `СРЕДНА БАТ. — ЗАРЕДИ`.
-- Red warning: `НИСКА БАТ. — RTH`.
+- Red warning: `НИСКА БАТ. — RTH`. Critical battery has a separate status flag and displays `КРИТ. БАТ. — STOP`.
 - Stale/missing Boat battery telemetry shows `ЛОДКА: --` in muted grey.
 - Mission preparation is blocked if battery telemetry is stale or estimated charge is 20% or lower; the Boat independently enforces the red-battery gate.
 
