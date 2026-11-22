@@ -1,10 +1,10 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-22, R79/R20  
+**Checkpoint:** 2026-11-22, **R29** (R79 safety policy, R27 INA231, R29 shared 3S bus)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `hardware-ready-dual-radio-r1`
 
-Read this file first. It supersedes the earlier Heltec/central-carrier/PCB-era continuation text. Current procurement and wiring authority is R20; current battery/radio failsafe authority is R79.
+Read this file first. It supersedes the earlier Heltec/central-carrier/PCB-era continuation text. Current hardware baseline is R20, superseded by R27 INA231 battery sensing and R29 one-common-3S-load-bus wiring; battery/radio failsafe authority remains R79.
 
 ## Current state
 
@@ -34,7 +34,7 @@ Read this file first. It supersedes the earlier Heltec/central-carrier/PCB-era c
 - GY-91 (MPU-9250 + BMP280).
 - nRF24L01+ PA/LNA primary radio; EBYTE E22-900T22S backup radio.
 - MCP23017 I/O expander, candidate address 0x27.
-- ADS1115 16-bit ADC breakout at I²C 0x48 for pack voltage.
+- **Ardboard INA231 product 1491**, I²C 0x40 candidate, for protected voltage-only BUS sensing; ADS1115 retired.
 - Cytron MDD20A dual motor driver; EKM014 four-channel release driver.
 - 3S4P 18650 pack, 11.1V nominal, ~10Ah, 20A BMS.
 
@@ -43,8 +43,8 @@ Read this file first. It supersedes the earlier Heltec/central-carrier/PCB-era c
 - DCDC6-16-TO5 5V/2A main rail: ESP32-S3 DevKitC-1, M100 PRO and E22-900T22S VCC. E22 UART/M0/M1/AUX logic is 3.3V TTL; do not power its VCC from the 3.3V D24V10F3 rail if rated RF output power is required.
 - TSR 2-2450 5V: EKM014 VL logic only.
 - D24V10F3 #1 3.3V: nRF24 PA/LNA.
-- D24V10F3 #2 3.3V: GY-91, ADS1115 and MCP23017.
-- 3S battery through separate fused paths: MDD20A motor power and EKM014 VH.
+- D24V10F3 #2 3.3V: GY-91, INA231 and MCP23017.
+- **ONE common protected 3S battery bus** feeds both MDD20A VM and EKM014 VH in parallel; wire/fuse/physical safe-STOP acceptance NOT RUN. No separately switched motor or coil power domain.
 - Do not parallel regulator outputs. Measure current, ripple and temperature before commissioning.
 
 ### Remote
@@ -79,7 +79,7 @@ The Boat makes the decision locally; neither radio is required.
 - Remote indicator: green above 50%, yellow 21–50%, red at 20% or lower/Boat low flag; stale data is grey/unavailable. Critical battery has a separate `КРИТ. БАТ. — STOP` warning. New mission preparation is blocked on stale/red/critical telemetry.
 - Status bit 5 indicates low-battery/RTH; bit 7 indicates critical STOP.
 
-Voltage percentage is an estimate from a generic 3S Li-ion curve, not coulomb counting. Calibrate the R21 corrected 150kΩ/33kΩ ADS1115 divider against a DMM and validate thresholds under actual load and temperature.
+Voltage percentage is an estimate from a generic 3S Li-ion curve, not coulomb counting. Calibrate the R27 selected INA231 BUS-only module against a DMM and validate thresholds under load and temperature; R21 ADS1115 divider is historical.
 
 ## R78 radio-loss policy retained
 
