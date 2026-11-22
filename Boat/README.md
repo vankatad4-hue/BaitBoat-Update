@@ -40,3 +40,7 @@ Software changes are under CI validation. Selected modules remain unpurchased/un
 ## R22 first sensor-only startup
 
 Use [the R22 isolated ADS1115 bench procedure](docs/BOAT_R22_ADS1115_SENSOR_ONLY_BRINGUP.md) for initial ADC readout, not the mission runtime. The sketch is GPIO-audit locked and only handles the premade ADS1115 module through candidate SDA8/SCL7, if physically verified. Check ADC VDD-versus-AIN0 power sequencing before connecting pack sense voltage. MDD20A motor power and EKM014 VH must remain physically disconnected.
+
+## R23 assigned GPIO and wiring
+
+The authoritative current connection design is [R23 GPIO pinout/harnesses](docs/BOAT_R23_GPIO_PINOUT_AND_HARNESSES.md) and its [64-net wiring matrix](docs/BOAT_R23_MODULE_CONNECTION_MATRIX.csv). It maps **18** Espressif ESP32-S3 DevKitC-1 J1/J3 GPIOs and MCP23017 GPA0-3 (EKM014 inputs), GPB0-1 (MDD20A DIR), power and E22 manufacturer pads. The selected two Pololu 3.3V regulators are now assigned to nRF24 and sensors/I²C separately; E22 VCC uses main 5V. Original R20 pin definitions remain candidates until physical validation; R23 does **not** sign GPIO audit flags or permit outputs. Motors/solenoids disconnected until independent hardware safety and dummy-load acceptance.
