@@ -23,7 +23,7 @@ class TestR30H3SoftwareOnly(unittest.TestCase):
     def test_all_e22_heartbeat_phases_enumerated(self):
         e = mod.exposure(mod.POLICY)
         self.assertEqual({"min": 0, "max": 3000,
-                          "examples": {"just_after_tx": 3000, "just_before_next_slot": 1}},
+                          "examples": {"just_after_tx": 3000, "just_before_next_slot": 1, "at_next_slot": 0}},
                          e["remote_e22_stop_queue_wait_ms"])
         self.assertEqual(251, e["nrf_only_first_stale_after_cut_ms"])
         self.assertEqual(6001, e["e22_only_first_stale_after_cut_ms"])
