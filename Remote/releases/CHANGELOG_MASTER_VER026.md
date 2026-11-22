@@ -398,3 +398,10 @@ Engineering-only branch milestone; no official Remote/Boat package version bump.
 
 - Confirmed with HGLRC: selected Boat HGLRC M100 PRO GNSS assembly includes QMC5883L and requires 3.6–5.5V module input. No separate compass purchase. Its UART GNSS/I²C compass are separately addressed signals within the same assembly; before connecting ESP32-S3 3.3V pins, validate all output and SDA/SCL pull-up voltage when module is fed 5V. Premade appropriate level shifter if necessary.
 - R72 2× owner-confirmed Pololu D24V10F3 unchanged: one E22 backup and the other GY-91 + Waveshare MCP23017 only; GPS moved to proposed Olimex 5V alongside ESP32 and conditional nRF adapter (2A load requalification pending). Added `Boat/docs/BOAT_R73_M100_PRO_INTEGRATED_COMPASS_POWER.md`, updated wiring and power BOM/purchase register, and CI static contract. No physical approval or firmware change; Boat VER014 and Remote VER028 unchanged.
+
+
+## R74 — Boat 5V regulator selections
+
+- Owner confirmed **Olimex DCDC6-16-TO5, one initially**, as main 5V rail for ESP32-S3 + HGLRC M100 PRO GPS/QMC; optional second only if bench current/EMI tests require a separately conditioned spur, never parallel outputs.
+- Owner-directed **TRACO TSR 2-2450, one**, as dedicated EKM014 VL logic 5V/2A regulator. 6.5–36V input is compatible with Boat 3S pack. VH remains separate raw pack and >= VL. S13V20F5 is historical unselected alternative.
+- Updated canonical purchase register, active power BOM, R74 technical review, 14-point acceptance plan and static rail contract. 2× D24V10F3 3.3V choices remain unchanged. Exact part selections are not purchases; SIP3 mounting/harness, fuse, reverse polarity, load/thermal and bench tests remain open. No GPIO/actuator commissioning. Boat VER014 / Remote VER028 unchanged.
