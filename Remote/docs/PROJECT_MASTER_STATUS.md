@@ -1,5 +1,8 @@
 # Flytec V080 Retrofit — Master Status R10
 
+> **LATEST R30H-10 AUTHORITY (2026-11-22):** VS Code + PlatformIO is **primary** for Remote; Arduino CLI remains a compatibility regression. [Development workflow](../../docs/PLATFORMIO_PRIMARY_WORKFLOW_R30H10.md). Both PIO targets previously passed [CI #45063024581](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45063024581), but **GPIO6 nRF CE vs SD dummy-CS** and **GPIO15 nRF CSN vs onboard RS485 TXD** remain BLOCKED. Real nRF/E22, GPS/PPS, RF STOP timing and independent physical Boat STOP/current zero are NOT_RUN/BLOCKED ([physical gates](../../Boat/docs/BOAT_R30H_10_PHYSICAL_GATES.csv)). Flash and actuator-power approval denied; Remote VER028 frozen. Historical status below is superseded where contradictory.
+
+
 > **R79 ACTIVE STATUS (2026-11-22):** Remote endpoint remains Waveshare ESP32-S3-Touch-LCD-4.3 Standard, 800×480, LVGL 9.6, dual nRF24/E22 radios, 1S4P battery and SD-backed maps/waypoints. Boat endpoint and battery ADC are specified in [Boat Hardware Selection R20](../../Boat/docs/BOAT_HARDWARE_SELECTION_R20.md). R79 adds the Boat's green/yellow/red battery voltage/estimated-charge indicator, recharge/RTH warning and stale-data fail-safe mission-preparation block. Older Heltec/PCB descriptions below are historical. Hardware and display/radio acceptance remain pending.
 
 
