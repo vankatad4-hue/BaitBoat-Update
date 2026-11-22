@@ -55,3 +55,7 @@ No connector cavity numbering is approved here. R23 GPIO7/8 I²C remains the sam
 6. **No module switch** until owner confirms the exact part and the R26 physical records demonstrate suitable voltage-only wiring. Until then, R20 ADS1115 remains the selected-but-blocked design.
 
 **Next development option:** choose a commercially assembled INA226 voltage module with independently accessible VBUS; separately select a qualified independent safety/power-interlock module. Do not silently switch the R20 BOM or remove the R25 ADC safety hold.
+
+## R27 superseding selection (2026-11-22)
+
+The owner requested INA231 module selection if electrically compatible; the specific Ardboard Bulgarian [INA231 product 1491](https://www.ardboard.com/index.php?route=product/product&product_id=578) is now **selected** for voltage-only measurement. This R26 INA226 comparison is **historical, not active purchasing authority**; do not enable its `INA226_HARDWARE_SELECTED=false` candidate firmware or purchase INA226 based on this report. See [R27 active wiring and acceptance](BOAT_R27_INA231_SELECTED_VOLTAGE_ONLY.md). Do not connect either chip/module to motor or solenoid 20A wiring.
