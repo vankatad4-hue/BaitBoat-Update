@@ -7,6 +7,10 @@ on:
     paths:
       - 'Remote/source/**'
       - 'Remote/tests/**'
+      - 'Boat/tools/simulate_r30h3_rf_timing.py'
+      - 'Boat/tests/test_r30h3_software_exposure.py'
+      - 'Boat/tools/verify_r30h_radio_preflight.py'
+      - 'Boat/tests/test_r30h_radio_preflight.py'
       - '.github/workflows/remote-host-tests.yml'
   pull_request:
     branches:
@@ -14,6 +18,10 @@ on:
     paths:
       - 'Remote/source/**'
       - 'Remote/tests/**'
+      - 'Boat/tools/simulate_r30h3_rf_timing.py'
+      - 'Boat/tests/test_r30h3_software_exposure.py'
+      - 'Boat/tools/verify_r30h_radio_preflight.py'
+      - 'Boat/tests/test_r30h_radio_preflight.py'
       - '.github/workflows/remote-host-tests.yml'
 
 jobs:
