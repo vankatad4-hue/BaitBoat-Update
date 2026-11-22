@@ -27,6 +27,12 @@ REQUIRED = (
     "Boat/source/e22_uart_link.cpp",
     "Boat/source/e22_uart_link.h",
     "Boat/source/firmware/Flytec_Boat.ino",
+    "Boat/source/tracker_gnss.h",
+    "Boat/source/gnss_utc_sync.h",
+    "Boat/source/radio_utc_time_v1.h",
+    "Remote/source/radio_utc_time_v1.h",
+    "Boat/source/r30h6_utc_marker_policy.h",
+    "Remote/source/r30h6_utc_marker_policy.h",
     "Boat/docs/BOAT_R30H_1_RF_MODULE_SIGNOFF.csv",
     "Boat/docs/BOAT_R30H_RF_TEST_MATRIX.csv",
     "Boat/docs/BOAT_R30H_3_STOP_RF_ACCEPTANCE.csv",
@@ -114,6 +120,24 @@ def verify(source):
          "boat_r30h2::RTH_LOCAL_ENTRY")
     if "Serial." in source["Boat/source/boat_dual_radio_port.cpp"]:
         errors.append("R30H-2 Serial I/O may not enter radio interrupt/safety path")
+    # R30H-7: GPS UTC must never become STOP/RTH or a fabricated
+    # physical common-clock reference; GNSS date must match position epoch.
+    need("Boat/source/tracker_gnss.h", "positionUtc_!=rmcUtc_")
+    need("Remote/source/boat_radio.cpp",
+         "g_linkManager.primaryHealthy(at)&&")
+    need("Boat/source/firmware/Flytec_Boat.ino", "settimeofday(&tv,nullptr)")
+    need("Remote/source/boat_radio.cpp", "settimeofday(&tv,nullptr)")
+    need("Remote/source/boat_radio.cpp",
+         "frame.payload[0]==flytec_time::SUBTYPE))return;")
+    if source["Boat/source/radio_utc_time_v1.h"] != source["Remote/source/radio_utc_time_v1.h"]:
+        errors.append("Boat/Remote GPS UTC wire discipline headers differ")
+    if source["Boat/source/r30h6_utc_marker_policy.h"] != source["Remote/source/r30h6_utc_marker_policy.h"]:
+        errors.append("Boat/Remote debug marker gate headers differ")
+    for p in ("Boat/source/r30h6_utc_marker_policy.h","Remote/source/r30h6_utc_marker_policy.h"):
+        need(p, "bool rfEndToEndStopClock=false;")
+        need(p, "bool traceReferenceCertified=false;")
+    if "settimeofday" in source[boat] or "settimeofday" in source[remote].split("bool boatRadio_utcNow")[1]:
+        errors.append("UTC clock adjustment must stay outside Boat safety radio loop and Remote public UTC accessor")
     if "application.attach(" in source["Boat/source/firmware/Flytec_Boat.ino"]:
         errors.append("R30H-1 must never attach a real BoatPhysicalDriver")
 
