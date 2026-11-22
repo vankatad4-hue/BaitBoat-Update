@@ -18,6 +18,7 @@ on:
       - 'Boat/docs/BOAT_R30A_PROTOTYPE_ASSEMBLY_HANDOFF.md'
       - 'Boat/docs/BOAT_R30C_ONE_BUS_SAFETY_FEEDBACK_CONTRACT.md'
       - 'Boat/docs/BOAT_R30D_READONLY_FEEDBACK_SIMULATION.md'
+      - 'Boat/docs/BOAT_R30E_LOCAL_FAULT_TELEMETRY.md'
       - 'Boat/hardware_test/INA231_Battery_Bench/**'
       - '.github/workflows/boat-host-tests.yml'
   pull_request:
@@ -37,6 +38,7 @@ on:
       - 'Boat/docs/BOAT_R30A_PROTOTYPE_ASSEMBLY_HANDOFF.md'
       - 'Boat/docs/BOAT_R30C_ONE_BUS_SAFETY_FEEDBACK_CONTRACT.md'
       - 'Boat/docs/BOAT_R30D_READONLY_FEEDBACK_SIMULATION.md'
+      - 'Boat/docs/BOAT_R30E_LOCAL_FAULT_TELEMETRY.md'
       - 'Boat/hardware_test/INA231_Battery_Bench/**'
       - '.github/workflows/boat-host-tests.yml'
 
@@ -296,6 +298,12 @@ jobs:
             -o /tmp/boat_r30d_readonly
           /tmp/boat_r30d_readonly
           python3 Boat/tools/verify_r30d_readonly_feedback.py
+      - name: R30E local diagnostic fault telemetry and change-tracker regression
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -I Boat/tests/stubs \
+            Boat/tests/boat_r30e_fault_status_test.cpp -o /tmp/boat_r30e_faults
+          /tmp/boat_r30e_faults
+          python3 Boat/tools/verify_r30e_fault_status.py
       - name: R66 COTS safety PLC capacity and external interlock acceptance oracle (host only)
         run: |
           python3 -m unittest Boat/tests/test_r66_safety_plc_budget.py -v
