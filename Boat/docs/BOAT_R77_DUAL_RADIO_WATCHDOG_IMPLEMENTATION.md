@@ -27,7 +27,7 @@ The software watchdog is alive when **either** authenticated link is fresh. Tota
 
 ## 3. Recovery behavior
 
-For an outbound, returning or paused autonomous mission, a complete radio outage changes the output request to STOP while preserving the mission phase in RAM. On session expiry the transport keys, sequence state, dedupe cache, command queue and radio watchdog state are reset; the already-running eligible mission phase is retained across the new authenticated handshake. It resumes only after a valid fresh heartbeat/control frame arrives.
+For an outbound, returning or paused autonomous mission, a complete radio outage changes the output request to STOP while preserving the mission phase in RAM. Ordinary RF inactivity no longer tears down the authenticated session: both endpoints retain the existing session key and replay counters, allowing a fresh authenticated nRF24 or E22 frame to restore the same session even after a long outage. A power-cycle or sequence-limit rekey still uses the existing primary nRF24 handshake. Eligible mission phase is preserved across sequence rekey and resumes only after a valid fresh authenticated frame arrives.
 
 The following are deliberately not replayed:
 - queued primary-link commands from a stale link;
@@ -46,6 +46,8 @@ An emergency STOP already received into the queue is retained during queue purgi
 - Boat/source/mission_execution.h — no-radio hold, backup-only navigation, primary-only release authority, and no release replay after primary loss.
 - Boat/source/boat_hardware_supervisor.h — output-off request on total link loss; invalidate stale manual control; latch an interrupted release.
 - Boat/source/boat_application_port.cpp — normal session re-handshake no longer permanently disables the physical-driver adapter; an in-flight release remains a latched stop.
+- Remote/source/boat_radio.cpp — ordinary link inactivity no longer resets the authenticated session, allowing backup-only recovery after an extended RF outage.
+- Remote/tests/dual_radio_manager_r62_test.cpp — backup-link recovery after a prolonged no-link state.
 
 ## 5. Tests added/updated
 
