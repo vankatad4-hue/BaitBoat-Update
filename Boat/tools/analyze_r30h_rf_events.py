@@ -16,6 +16,7 @@ LOSS_CASES = {"H08", "H11", "H12", "H13", "H14", "H15", "H16"}
 RTH_CASES = {"H11"}
 NO_RTH_CASES = {"H12", "H13", "H14", "H15", "H16", "H17"}
 BEFORE_RECOVERY = {"H17"}
+SUPPORTED_CASES = STOP_CASES | LOSS_CASES | BEFORE_RECOVERY
 ALL_EVENTS = {
     "INPUT_STOP", "TX_STOP_ATTEMPT", "AUTH_STOP_RX", "STOP_INTENT",
     "LOGICAL_OUTPUT_OFF", "DUMMY_CURRENT_ZERO",
@@ -105,8 +106,10 @@ def check(trial, record, stop_limit_ms=None, loss_limit_ms=None):
             errors.append("not a recovery BEFORE 10 seconds")
     if case in RTH_CASES | NO_RTH_CASES and "RELEASE_ACTIVE" in e:
         errors.append("release active during loss/RTH")
+    # Unmodeled cases require human signoff, never an automated success label.
+    assessed = case in SUPPORTED_CASES
     # An event-only log is not independent evidence of physical current zero.
-    return errors, metrics, case, transport, clock
+    return errors, metrics, case, transport, clock, assessed
 
 
 def summarize(values):
@@ -131,11 +134,13 @@ def main():
     if not trials:
         print("NOT_RUN: empty evidence CSV; NO physical acceptance")
         return 3
-    totals, failure = defaultdict(list), False
+    totals, failure, human_review = defaultdict(list), False, False
     for trial, record in sorted(trials.items()):
-        errors, metrics, case, transport, clock = check(trial, record, args.stop_limit_ms, args.loss_stop_limit_ms)
+        errors, metrics, case, transport, clock, assessed = check(trial, record, args.stop_limit_ms, args.loss_stop_limit_ms)
         failure |= bool(errors)
-        print(f"{trial} {case} {transport} clock={clock}: {'FAIL' if errors else 'EVENT_CHECK_OK'}")
+        human_review |= not assessed
+        status = 'FAIL' if errors else ('EVENT_CHECK_OK' if assessed else 'MANUAL_REVIEW_REQUIRED')
+        print(f"{trial} {case} {transport} clock={clock}: {status}")
         for label, value in sorted(metrics.items()):
             print(f"  {label}={value:.3f}ms")
             totals[(case, label)].append(value)
@@ -145,8 +150,8 @@ def main():
     for (case, label), values in sorted(totals.items()):
         mi, med, p95, ma = summarize(values)
         print(f"  {case} {label} n={len(values)}: {mi:.3f}/{med:.3f}/{p95:.3f}/{ma:.3f}")
-    print("RESULT:", "FAIL" if failure else "EVENTS_CONSISTENT_ONLY - hardware gates and sample counts NOT assessed")
-    return 2 if failure else 0
+    print("RESULT:", "FAIL" if failure else ("MANUAL_REVIEW_REQUIRED - unsupported scenarios remain unsigned" if human_review else "EVENTS_CONSISTENT_ONLY - hardware gates and sample counts NOT assessed"))
+    return 2 if failure else (4 if human_review else 0)
 
 
 if __name__ == "__main__":
