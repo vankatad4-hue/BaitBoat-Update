@@ -692,3 +692,10 @@ The owner reconfirmed **1× EBYTE E22-900T22S UART SMD on Remote and 1× same ex
 - Green above 50%; yellow 21–50% with `СРЕДНА БАТ. — ЗАРЕДИ`; red at 20% or lower or Boat low-battery flag with `НИСКА БАТ. — RTH`. Missing/stale Boat data displays `ЛОДКА: --` in muted grey.
 - Mission preparation is blocked when battery telemetry is stale or estimated charge is red. The Boat independently applies its own low-battery mission hold/RTH and critical STOP; Remote is not the safety authority.
 - Remote host tests passed on the R79 code commit; Waveshare target compile is tracked in GitHub Actions. Physical LCD/touch/SD/radio and actual Boat telemetry acceptance remain pending.
+
+
+### R79 critical-battery indication refinement (2026-11-22)
+
+- Boat status bit 5 remains low-battery/RTH; bit 7 now independently marks critical-battery STOP.
+- Remote battery indicator remains red for either state, but the warning text is distinct: `НИСКА БАТ. — RTH` versus `КРИТ. БАТ. — STOP`.
+- Remote mission preparation rejects stale/red/critical Boat battery telemetry. Boat firmware remains the final safety authority.
