@@ -12,6 +12,12 @@ struct BoatTelemetry {
  uint32_t latitudeReceivedAtMs,longitudeReceivedAtMs,coordinatePairReceivedAtMs;
  bool navigationValid;uint8_t navigationStatus,waypointIndex,navigationSample;uint32_t navigationReceivedAtMs;
  bool weatherValid=false;int16_t temperatureCentiC=0;uint32_t pressurePa=0,weatherReceivedAtMs=0;
+ // R30F optional authenticated PRIMARY-LINK fault information. This is
+ // UNVERIFIED diagnostic data, never a substitute for physical STOP status.
+ bool diagnosticValid=false,diagnosticPrimary=false;
+ uint8_t diagnosticReason=0,diagnosticSequence=0;
+ uint16_t diagnosticFlags=0,diagnosticMillivolts=0xffffU;
+ uint32_t diagnosticReceivedAtMs=0;
  bool sonarSummaryValid;uint16_t sonarDepthCm,sonarRangeCm;uint8_t sonarHealth,sonarAlarmFlags,sonarSample;uint32_t sonarReceivedAtMs;
 };
 extern BoatTelemetry telemetry;
