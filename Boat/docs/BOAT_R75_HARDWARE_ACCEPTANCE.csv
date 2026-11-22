@@ -1,0 +1,12 @@
+Test_ID,Area,Setup,Acceptance,Status
+R75-M01,TSR socket fit,Sample TSR 2-2450 and econ connect MP70S3 socket,0.46mm square pins mate without force or damage and remain electrically stable after vibration,NOT_RUN
+R75-M02,Removable connector,Test Phoenix 1757022 plug with 1926028 header and soldered pigtails,Correct mechanical mating friction retention strain relief and no solder-joint load; no custom PCB,NOT_RUN
+R75-E01,TSR harness pinout,Unpowered continuity test from regulator pins to connector,Pin 1 VIN pin 2 GND pin 3 VOUT; no shorts or reversed wiring,NOT_RUN
+R75-F01,Input fuse and holder,Inspect SCHURTER 0001.2508 and exact Littelfuse holder datasheet and harness,2.5A time-lag fuse DC rating holder DC rating terminal conductor range and branch wire protection all verified,NOT_RUN
+R75-P01,TSR electrical test,Current-limited bench supply at 9.0V 11.1V and 12.6V with EKM014 VH disconnected,5V within tolerance and measured VL load ripple overshoot startup thermal and no unintended IN1-IN4 activity recorded,NOT_RUN
+R75-P02,DCDC6 aggregate 5V test,ESP32-S3 and M100 PRO connected with nRF adapter initially excluded,5V output stays in tolerance under startup GNSS activity and radio bursts with measured current ripple cable drop and thermal margin,NOT_RUN
+R75-P03,DCDC6 input cable,Verify Olimex PWR-CABLE barrel polarity and input fuse path,Center-positive polarity correct cable rating and branch fuse coordinated with wire and load,NOT_RUN
+R75-P04,USB backfeed,Test DCDC6 powered DevKit with PC programming connection,No simultaneous 5V sources or backfeed; approved data-only or power-blocked cable verified if used,NOT_RUN
+R75-P05,M100 signal levels,Power M100 PRO at approved 5V with ESP32 disconnected and scope UART TX SDA SCL,All signals are 3.3V safe or approved prebuilt level shifting and power sequencing are installed,NOT_RUN
+R75-P06,Independent 3V3 rails,Test E22 TX on rail 1 and GY-91 MCP23017 bus on rail 2 separately,No output paralleling; voltage ripple current and powered-off backfeed meet limits,NOT_RUN
+R75-S01,Independent actuator cutoff,Use current-limited dummy loads with physical STOP and MCU requests stuck HIGH,Motor branch and EKM014 VH are physically isolated and cannot auto-rearm; no live actuator test before acceptance,NOT_RUN
