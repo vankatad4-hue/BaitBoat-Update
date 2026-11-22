@@ -1,6 +1,6 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-22, **R30H-8 PPS/shared-clock capture estimator prepared; R30H-9 next (physical gates unsigned)** (R78/R79 safety, R27 INA231, R29 common 3S bus; physical checks unsigned)  
+**Checkpoint:** 2026-11-22, **R30H-8 safety state retained; VS Code + PlatformIO parallel migration R1 underway (experimental)** (R78/R79 safety, R27 INA231, R29 common 3S bus; physical checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `hardware-ready-dual-radio-r1`
 
@@ -549,3 +549,11 @@ Shared preflight and hostile tests verify epoch gating, primary freshness, ident
 **Blocked:** physical 8 R30H-8 gates NOT_RUN, R30H-7 12 GNSS/PPS gates NOT_RUN, R30H-4 10 probe mappings NOT_READY, R30H-3 16 STOP gates NOT_RUN, R30H-1 22 modules NOT_RUN, R30H 22 radio scenarios NOT_RUN; R30A independent physical STOP/watchdog/current-zero and one-solenoid hardware interlocks still OPEN. Real E22 3s STOP queue/6s freshness exposure remains unmeasured; no physical STOP bound or water readiness approval. Sonar unselected.
 
 **Next R30H-9:** prepare a hardware-conditional, non-actuating debug-marker *specification* for specific inspected pin allocations once actual Boat/Remote modules are present. Do not wire/enable PPS or RTC debug edges, alter STOP/RTH timing or use physical actuator power without individual signed safety evidence.
+
+## VS Code + PlatformIO migration R1 — parallel compiler path (2026-11-22)
+
+**User-requested software workflow change, NOT a firmware promotion or safety acceptance.** [Full Windows/VS Code guide](PLATFORMIO_VSCODE_MIGRATION_R1.md). New `Boat/platformio.ini` and `Remote/platformio.ini` projects target the exact Boat ESP32-S3-N32R16V 32 MB OPI flash/16 MB OPI PSRAM and Remote Waveshare ESP32-S3-Touch-LCD-4.3 Standard 16 MB flash/OPI PSRAM. The source entry adapters `Boat/source/platformio_entry.cpp` and `Remote/source/platformio_entry.cpp` include the existing .ino files only in PIO builds, while Arduino CLI still compiles original .ino files normally. Application source, STOP/RTH, GPS UTC, LVGL, SD maps and radio security behavior are unchanged.
+
+[Independent, non-flashing PlatformIO CI](../.github/workflows/platformio-migration-build.yml) builds the two targets with `espressif32 8.0.0` and Arduino ESP32 core 3.3.12, which is **newer** than the reference Arduino CLI core 3.0.2. LVGL 9.6.0 and the previously pinned display/radio libraries are requested; CI also regenerates legally installed Bulgarian UI font source. **Until a completed successful PIO compile is actually verified, this is a configuration + experimental CI only.** Existing Arduino host/target CI remain authoritative. `platformio.ini` uploads are blocked via custom `pio_deny_upload.py` in both projects. Git ignores generated font files, provisioned secrets, local GPIO profiles and .pio build artifacts.
+
+**Never unlock hardware in the name of migrating IDEs.** Boat/Remote nRF and E22 commissioning flags are still 0; common 3S motor/solenoid VM/VH, independent STOP/current zero and GPS/PPS real-radio tests remain unsigned. Boat VER014 / Remote VER028 frozen. R30H-9 is still the next physical-instrumentation design step.
