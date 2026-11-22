@@ -85,6 +85,14 @@ int main(){
  rin.backupFresh=true;
  const auto recovered=radio.tick(rin,710,{INTENT_NAV_HOME,-1,0},radioHome,true,false,0,0,710);
  assert(recovered.left>0&&recovered.right>0);
+ rin.primaryFresh=false;rin.backupFresh=false;rin.autonomousRth=true;
+ const auto detachedHome=radio.tick(rin,711,{INTENT_NAV_HOME,-1,0},radioHome,true,false,0,0,711);
+ assert(detachedHome.left>0&&detachedHome.right>0&&detachedHome.releaseChannel==-1);
+ const auto detachedTarget=radio.tick(rin,712,{INTENT_NAV_TARGET,-1,0},radioHome,true,false,0,0,712);
+ assert(detachedTarget.left==0&&detachedTarget.right==0&&detachedTarget.releaseChannel==-1);
+ rin.autonomousRth=false;
+ const auto stillNoLink=radio.tick(rin,713,{INTENT_NAV_HOME,-1,0},radioHome,true,false,0,0,713);
+ assert(stillNoLink.left==0&&stillNoLink.right==0&&stillNoLink.releaseChannel==-1);
 
  std::cout<<"Hardware sample validity, radio watchdog and release executor passed\n";
 }
