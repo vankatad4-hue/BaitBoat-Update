@@ -10,7 +10,7 @@ enum ManagedLink:uint8_t{LINK_NONE,LINK_NRF_PRIMARY,LINK_LORA_BACKUP};
 struct FakeAck{uint32_t id;bool success;ManagedLink reply;};
 class BoatDualRadioPort{
 public:
- bool primary=true,backup=false,detached=false;uint32_t gen=1;
+ bool primary=true,backup=false,detached=false,failsafeRth=false;uint32_t gen=1;
  bool returnAllowed=false;unsigned returnRequests=0;
  MissionControlPhase phase=MC_IDLE;ExecOutput intent={INTENT_STOP,-1,0};
  MissionNavigationResult nav{};uint16_t tx=0;
@@ -25,6 +25,7 @@ public:
  bool primaryFresh(uint32_t)const{return primary;}
  bool backupFresh(uint32_t)const{return backup;}
  bool detachedReturnActive()const{return detached;}
+ bool failsafeReturnHomeActive()const{return failsafeRth;}
  uint32_t sessionGeneration()const{return gen;}
  MissionControlPhase missionPhase()const{return phase;}
  uint16_t missionTransaction()const{return tx;}
