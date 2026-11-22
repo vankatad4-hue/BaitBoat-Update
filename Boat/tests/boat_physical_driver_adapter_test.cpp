@@ -6,7 +6,8 @@ static int8_t coilOut=-1;
 static int16_t motorL=0,motorR=0;
 static unsigned cuts=0;
 static bool sample(BoatHardwareSample &s,BoatSafetyContacts &c,Ekm014Feedback &f){
- s={};c={stop,true,true,true,zero,true,true,true,nowMs};
+ s={};s.voltageValid=true;s.batteryAt=nowMs;s.batteryMillivolts=12000;s.batteryHealthy=true;
+ c={stop,true,true,true,zero,true,true,true,nowMs};
  f={true,true,zero,true,nowMs};return true;
 }
 static bool motors(int16_t l,int16_t r,uint16_t){motorL=l;motorR=r;return !failWrite;}
