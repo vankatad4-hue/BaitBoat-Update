@@ -174,3 +174,7 @@ A separate [R23 pin-by-pin electrical sign-off worksheet](BOAT_R23_GPIO_AND_LEVE
 ## R25 successor note — battery sense hold during power transitions
 
 R23's 150k/33k ADC connection is **logical only**. R25 identified the unpowered-ADS1115 VDD-relative input limit as an explicit release blocker. Do not connect the switched 3S sense feed until safe sequencing/conditioning has been designed and accepted. See [R25 power/logic preflight](BOAT_R25_POWER_LEVEL_PREFLIGHT.md) for the 28-item unsigned test sheet and isolated module measurement order. R23 manufacturer GPIO allocation, 32 NOT_RUN physical checks, module selection and locked outputs remain unchanged.
+
+## R27 successor — ADS1115 no longer active battery module (2026-11-22)
+
+R23's GPIO7 SCL / GPIO8 SDA and sensor 3.3V rail are retained; however **R27 selected Ardboard INA231 product 1491** for voltage-only BUS measurement in place of ADS1115 0x48. Treat all R23 ADS1115 AIN0/wiring nets as **HISTORICAL, NOT CONNECTED**. Proposed INA231 address 0x40 depends on physical A1/A0 straps, and no final connector contact numbering has been signed. See [R27 active wiring requirements](BOAT_R27_INA231_SELECTED_VOLTAGE_ONLY.md). All actual R23 physical signoffs stay NOT_RUN; do not energize any actuator.
