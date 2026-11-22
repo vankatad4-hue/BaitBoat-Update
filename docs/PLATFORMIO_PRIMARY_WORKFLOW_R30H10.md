@@ -25,6 +25,8 @@ pio run -d Remote -e remote_waveshare_43_diagnostic
 5. Review compiler warnings, artifact provenance and [primary PlatformIO Actions workflow](../.github/workflows/platformio-migration-build.yml). Run portable host tests and safety preflights on every functional change. Use Arduino CLI builds only as **secondary regression** when the change affects shared C++/library compatibility.
 6. Remote Bulgarian font resources are generated from a locally licensed installed font using `Remote/tools/generate_bg_font.sh` (Linux/WSL dependencies in [original migration guide](PLATFORMIO_VSCODE_MIGRATION_R1.md)); never commit third-party font binaries.
 
+The primary CI also runs [R30H-10 source-lock preflight](../Boat/tools/verify_r30h10_physical_lock.py), checking that all 18 hardware gates remain unsigned and that both PlatformIO upload-denial mechanisms and RF/marker pins stay fail-closed. A green preflight is **only** a source policy check; it cannot replace hardware measurements.
+
 ## HARD SAFETY BOUNDARY — applies to both projects
 
 - **Upload/flash remains denied** by `upload_protocol = custom` plus `tools/pio_deny_upload.py`. No live motor, solenoid, RF, waypoint mission or RTH commissioning is authorized by a successful build.
