@@ -1,6 +1,7 @@
 #include "boat_application_port.h"
 #include "boat_hardware_status.h"
 #include "boat_hardware_telemetry.h"
+#include "boat_shared_supply_fault_guard_r30b.h"
 BoatApplicationPort *BoatApplicationPort::active_=nullptr;
 bool BoatApplicationPort::attach(const BoatPhysicalDriver &driver,const BoatActuatorConfig &config){
  if(attached_||active_||!driver.read||!driver.apply||!driver.disable)return false;
@@ -47,8 +48,14 @@ void BoatApplicationPort::tick(){
  const bool physicalBatteryHealthy=sample_.batteryHealthy;
  const bool batterySampleFresh=sample_.voltageValid&&(uint32_t)(now-sample_.batteryAt)<=BoatBatteryMonitor::MAX_SAMPLE_AGE_MS;
  const BoatBatterySnapshot battery=batteryMonitor_.update(batterySampleFresh,sample_.batteryMillivolts,now);
+ // R30B: defense-in-depth against a shared-3S rail brownout, invalid I2C
+ // conversion, stale battery timestamp or false battery-healthy flag.
+ // The guard only DENIES unsafe operation; it cannot commission hardware.
+ const auto energy=boat_r30b::inspectBoatBattery(
+    battery,physicalBatteryHealthy,sample_.voltageValid,
+    sample_.batteryMillivolts,sample_.batteryAt,now);
  sample_.batteryBand=battery.band;sample_.batteryPercent=battery.percent;sample_.batteryRthRequested=battery.rthRequested;
- sample_.batteryHealthy=physicalBatteryHealthy&&battery.valid&&!battery.critical;
+ sample_.batteryHealthy=energy!=boat_r30b::EnergyEvidence::STOP_INVALID_OR_CRITICAL;
  sample_.fix.batteryHealthy=sample_.batteryHealthy;
  auto in=boatHardware_inputs(sample_,now,executor_.stopped());
  if(!sample_.physicalStopReleased||!sample_.watchdogReady||!in.fix.batteryHealthy){fault();radio_.update();radio_.sendHardwareTelemetry(boatHardware_status(sample_,millis(),true,MC_ABORTED,false,radio_.primaryFresh(millis())));return;}
