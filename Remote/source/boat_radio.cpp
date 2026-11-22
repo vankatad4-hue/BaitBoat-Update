@@ -22,6 +22,9 @@
 #include <string.h>
 
 static DualRadioManager g_linkManager;
+#if REMOTE_R30H3_STOP_TRACE_ENABLED
+static remote_r30h3::StopTrace g_stopTrace;
+#endif
 static RadioAckTracker g_ackTracker;
 static SC16IS750Bridge g_uartBridge(Wire,0x48);
 static E22UartLink g_lora(g_uartBridge,
@@ -96,22 +99,56 @@ static bool radioSendTransport(ManagedLink link,const BoatCommand &command){
         if(command.type!=CMD_EMERGENCY_STOP&&
            !(command.type==CMD_SET_MODE&&command.mode==MODE_RETURN_HOME))return false;
         if(g_backupTxSent&&now-g_lastBackupTxMs<3000U){
-            if(command.type==CMD_EMERGENCY_STOP){g_pendingStop=command;g_stopPending=true;return true;}
+            if(command.type==CMD_EMERGENCY_STOP){
+              g_pendingStop=command;g_stopPending=true;
+#if REMOTE_R30H3_STOP_TRACE_ENABLED
+              g_stopTrace.record(remote_r30h3::E22_PACING_DEFERRED,now,
+                                 (uint16_t)command.commandId,2);
+#endif
+              return true; // queued locally; NOT RF delivery
+            }
             return false; // never queue obsolete movement
         }
     }else if(link!=LINK_NRF_PRIMARY||!g_nrfReady)return false;
     BoatCommand wire=command;wire.sequence=++g_txSequence;wire.createdAtMs=now;
     RadioFrame frame;
     if(!radio_encodeCommand(wire,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,g_sessionEpoch,frame,g_authKey))return false;
-    if(link==LINK_NRF_PRIMARY)return g_nrf.sendFrame(frame);
+    if(link==LINK_NRF_PRIMARY){
+        const bool admitted=g_nrf.sendFrame(frame);
+#if REMOTE_R30H3_STOP_TRACE_ENABLED
+        if(command.type==CMD_EMERGENCY_STOP)
+            g_stopTrace.record(admitted?remote_r30h3::NRF_BUFFER_ADMITTED:
+                              remote_r30h3::NRF_BUFFER_REJECTED,now,
+                              (uint16_t)command.commandId,1);
+#endif
+        return admitted; // queue admission, NOT Boat STOP acknowledgement
+    }
     frame.flags=RADIO_FLAG_BACKUP_LINK;
     if(!radio_frameSeal(frame,g_authKey))return false;
-    if(g_lora.sendFrame(frame,now)){g_lastBackupTxMs=now;g_backupTxSent=true;return true;}
-    if(command.type==CMD_EMERGENCY_STOP){g_pendingStop=command;g_stopPending=true;return true;}
+    if(g_lora.sendFrame(frame,now)){
+      g_lastBackupTxMs=now;g_backupTxSent=true;
+#if REMOTE_R30H3_STOP_TRACE_ENABLED
+      if(command.type==CMD_EMERGENCY_STOP)
+          g_stopTrace.record(remote_r30h3::E22_UART_BUFFER_ADMITTED,now,
+                             (uint16_t)command.commandId,2);
+#endif
+      return true; // E22 UART accepted, NOT PHY airtime or receipt proof
+    }
+    if(command.type==CMD_EMERGENCY_STOP){
+      g_pendingStop=command;g_stopPending=true;
+#if REMOTE_R30H3_STOP_TRACE_ENABLED
+      g_stopTrace.record(remote_r30h3::E22_UART_BUFFER_REJECTED_PENDING,now,
+                         (uint16_t)command.commandId,2);
+#endif
+      return true; // still local pending, NOT delivered
+    }
     return false;
 }
 
 bool boatRadio_begin() {
+#if REMOTE_R30H3_STOP_TRACE_ENABLED
+    g_stopTrace.reset();
+#endif
     g_missionUpload=MissionUpload{};g_missionPlan={};g_missionId=0;
     g_linkManager.begin(millis());
     g_loraConfigured=false;g_nrfReady=false;g_begun=false;
@@ -143,6 +180,11 @@ bool boatRadio_begin() {
 }
 
 bool boatRadio_sendCommand(const BoatCommand &command) {
+#if REMOTE_R30H3_STOP_TRACE_ENABLED
+    if(command.type==CMD_EMERGENCY_STOP)
+        g_stopTrace.record(remote_r30h3::STOP_BUTTON_REQUEST,millis(),
+                           (uint16_t)command.commandId,0);
+#endif
     if(command.type==CMD_EMERGENCY_STOP){g_missionControl.reset();g_stopMustConfirm=true;g_manualConfirmRequired=true;g_manualTransitionAt=millis();}
     if(command.type==CMD_EMERGENCY_STOP && (g_missionUpload.state()==UPLOAD_ACTIVE||g_missionUpload.state()==UPLOAD_PREPARED))g_missionUpload.fail();
     if(!g_begun) return false;
@@ -373,3 +415,19 @@ void boatRadio_setTransport(RadioSendFn transport){(void)transport;} // fixed in
 void boatRadio_setReady(ManagedLink link,bool ready){g_linkManager.setTransportReady(link,ready);}
 void boatRadio_reportValidPacket(ManagedLink link,bool authenticated,uint32_t receivedAtMs){(void)link;(void)authenticated;(void)receivedAtMs;} // only verified dispatch updates health
 void boatRadio_reportFailure(ManagedLink link){g_linkManager.reportFailure(link);}
+
+bool boatRadio_takeR30H3StopTrace(remote_r30h3::Record &out){
+#if REMOTE_R30H3_STOP_TRACE_ENABLED
+    return g_stopTrace.take(out);
+#else
+    (void)out;
+    return false;
+#endif
+}
+uint32_t boatRadio_r30h3TraceOverflows(){
+#if REMOTE_R30H3_STOP_TRACE_ENABLED
+    return g_stopTrace.overflows();
+#else
+    return 0;
+#endif
+}
