@@ -50,5 +50,22 @@ int main(){
  assert(linkLoss.tick(lin,5,true,false).intent==INTENT_STOP);
  lin.backupFresh=true;
  assert(linkLoss.tick(lin,6,true,false).intent==INTENT_NAV_TARGET);
+ // Backup-only PAUSE is discrete and idempotent; other manual operations
+ // remain gated by the fresh primary link.
+ BoatMissionController backupOnly;
+ MissionPlan bp={9,0,0,1,300,0,1000,0,0};
+ ExecInputs bin={{0,0,1,90,true,true,true,true},true,true,true,true,true,true,false,false};
+ assert(backupOnly.stage(bp,0,true,true));bin.stopActive=false;
+ MissionControlFeedback backAck{};
+ assert(backupOnly.request({MCTRL_START,9,1},bin,1,true,true,true,backAck)&&backAck.result==MC_ACCEPTED);
+ bin.primaryFresh=false;bin.backupFresh=true;
+ assert(backupOnly.request({MCTRL_PAUSE,9,2},bin,2,true,true,false,backAck)&&backAck.result==MC_ACCEPTED);
+ assert(backAck.phase==MC_PAUSED);
+ assert(backupOnly.request({MCTRL_PAUSE,9,2},bin,3,true,true,false,backAck)&&backAck.result==MC_ACCEPTED);
+ assert(backupOnly.lastRequestId()==2);
+ assert(!backupOnly.request({MCTRL_RESUME,9,2},bin,4,true,true,true,backAck));
+ assert(backupOnly.request({MCTRL_RESUME,9,3},bin,5,true,true,true,backAck)&&backAck.result==MC_REJECTED);
+ assert(backupOnly.request({MCTRL_CANCEL,9,4},bin,6,true,true,true,backAck)&&backAck.result==MC_ACCEPTED);
+ assert(backupOnly.request({MCTRL_CANCEL,9,4},bin,7,true,true,true,backAck)&&backAck.result==MC_ACCEPTED);
  std::cout<<"Mission command and override supervisor simulation passed\n";
 }
