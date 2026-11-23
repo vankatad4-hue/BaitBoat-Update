@@ -466,7 +466,7 @@ void boatRadio_update() {
         // before the periodic heartbeat consumes that slot.
     MissionControlRequest request{};
     const bool missionBackup= !missionPrimaryReady()&&g_loraConfigured&&g_linkManager.backupHealthy(now);
-     if(sessionReady()&&(!missionBackup||!g_backupTxSent||(uint32_t)(now-g_lastBackupTxMs)>=3000U)&&g_missionControl.next(now,request,missionBackup)){
+     if(sessionReady()&&!g_stopPending&&(!missionBackup||!g_backupTxSent||(uint32_t)(now-g_lastBackupTxMs)>=3000U)&&g_missionControl.next(now,request,missionBackup)){
          const bool primary=missionPrimaryReady();
          const bool backup=!primary&&g_loraConfigured&&g_linkManager.backupHealthy(now)&&
              (request.op==MCTRL_PAUSE||request.op==MCTRL_CANCEL)&&
