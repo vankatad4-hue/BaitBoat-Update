@@ -9,9 +9,11 @@ B="Boat/docs/BOAT_R30H_10_PIN_MAP.csv"
 R="Remote/docs/REMOTE_R30H_10_PIN_MAP.csv"
 BH="Boat/source/boat_radio_hw_config.h"
 RH="Remote/source/radio_hw_config.h"
+BP="Boat/source/boat_pin_assignments_r30h32.h"
+RP="Remote/source/remote_pin_assignments_r30h32.h"
 
 def snapshot(root=ROOT):
-    return {p:(root/p).read_text(encoding="utf8") for p in (B,R,BH,RH)}
+    return {p:(root/p).read_text(encoding="utf8") for p in (B,R,BH,RH,BP,RP)}
 def check_gpio_map(root=ROOT):
     return bool(verify(snapshot(root)))
 def verify(data):
@@ -49,6 +51,19 @@ def verify(data):
     for name in ("REJECTED_CE","REJECTED_CSN"):
         if r.get(name,{}).get("Disposition")!="CONFLICT_REJECTED":errors.append(name+" collision obscured")
     if b.get("GNSS_PPS",{}).get("Disposition")!="NOT_REQUIRED":errors.append("Boat PPS fabricated")
+    # Pin macros may refer to the canonical constexpr namespace instead of
+    # duplicating literals. Resolve only explicitly named constexpr definitions.
+    def resolved(path,macro):
+        m=re.search(r"^#define\\s+"+re.escape(macro)+r"\\s+([^\\s/]+)",data[path],re.M)
+        if not m:return None
+        raw=m.group(1).strip("()")
+        if raw.startswith("boat_pins::") or raw.startswith("remote_pins::"):
+            namespace,key=raw.split("::",1)
+            source=data[BP if namespace=="boat_pins" else RP]
+            definition=re.search(r"\\b"+re.escape(key)+r"\\s*=\\s*(-?(?:0x[0-9A-Fa-f]+|\\d+))\\s*[,;]",source)
+            return int(definition.group(1),0) if definition else None
+        try:return int(raw,0)
+        except ValueError:return None
     for path,expected in (
        (BH,{"BOAT_NRF_CSN_PIN":9,"BOAT_NRF_CE_PIN":10,"BOAT_NRF_SCK_PIN":12,
             "BOAT_NRF_MOSI_PIN":11,"BOAT_NRF_MISO_PIN":13,"BOAT_NRF_IRQ_PIN":21,
@@ -70,8 +85,7 @@ def verify(data):
             "REMOTE_NRF_BRIDGE_RF_INTEROPERABILITY_VERIFIED":0,
             "REMOTE_NRF_PIN_AUDIT_SIGNED":0})):
         for key,value in expected.items():
-            match=re.search(r"^#define\s+"+re.escape(key)+r"\s+\(?(-?(?:0x[0-9A-Fa-f]+|\d+))\)?\s*$",data[path],re.M)
-            if not match or int(match.group(1),0)!=value: errors.append(path+":"+key+" altered")
+            if resolved(path,key)!=value: errors.append(path+":"+key+" altered")
     return errors
 
 if __name__=="__main__":
