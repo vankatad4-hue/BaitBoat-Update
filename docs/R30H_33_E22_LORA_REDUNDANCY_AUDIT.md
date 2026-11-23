@@ -11,7 +11,7 @@
 | M0 | GPIO15 | SC16 GPIO0 | Assigned |
 | M1 | GPIO16 | SC16 GPIO1 | Assigned |
 | AUX input | GPIO14 | SC16 GPIO2 | Assigned |
-| NRST active-low | GPIO6 in pin map | SC16 GPIO3 | **Boat firmware does not drive NRST**: E22BoardPins contains no reset field; use carrier pull-up/reset default or extend adapter after checking module |
+| NRST active-low | GPIO6 in pin map | SC16 GPIO3 | **Implemented in R30H-33**: Boat E22BoardPins includes NRST and drives GPIO6 through reset callback; physical levels unverified |
 | E22 VCC | Regulated 5 V | Regulated 5 V boost rail | Selected design, voltage/ripple and available converter unverified |
 | E22 GND | Common logic/RF return | Common logic/RF return | Assigned |
 | Antenna | Dedicated compatible 868 MHz antenna | Dedicated right-side 868 MHz antenna | Verify actual module carrier, antenna, EU region settings |
@@ -27,12 +27,12 @@ Remote I²C ESP GPIO8 SDA / GPIO9 SCL -> SC16IS750. Boat direct UART does not sh
 - Backup is intentionally restricted: STOP and RETURN HOME; no hopper/hook release or unrestricted manual control on LoRa. The primary nRF is required for full control, session establishment and ordinary telemetry.
 - Backup heartbeat and link freshness are present; after loss of **both** links, Boat has conditional RTH/STOP policy. Backup alone does not guarantee ability to establish a fresh session after restart.
 - `BOAT_E22_UART_RF_INTEROPERABILITY_VERIFIED`, `BOAT_E22_UART_LOGIC_LEVELS_VERIFIED`, `BOAT_E22_UART_PIN_AUDIT_SIGNED`, `BOAT_E22_RF_AIRTIME_AUDIT_SIGNED`, `REMOTE_E22_BRIDGE_AUDIT_SIGNED`, `REMOTE_E22_RF_INTEROPERABILITY_VERIFIED`, `REMOTE_E22_RF_AIRTIME_AUDIT_SIGNED` remain **0** by design. Do not set these to 1 based on diagrams or CI.
-- **Critical integration gap:** Boat `E22BoardPins` omits NRST, although the wiring map assigns GPIO6. Remote implements NRST via SC16 GPIO3. Boat adapter currently calls `E22UartLink` with a null reset callback. The two boards may still start via power-on reset, but symmetric software reset is not implemented.
+- **Resolved in source:** Boat `E22BoardPins` now includes GPIO6 NRST and an active-low reset callback, matching Remote SC16 GPIO3 reset behavior. No actual reset waveform has been measured.
 - **Critical timing gap:** `EST_AIRTIME_MS=25` is explicitly an unverified estimate and the 1% duty bucket is provisional. Verify actual on-air duration and regional compliance; do not claim guaranteed STOP latency.
 - **Current code quality gap:** Previous R30H-32 numeric radio macros referenced C++ namespace values inside `#if`; R30H-33 restored preprocessor-safe numeric macros with static assertions. PlatformIO builds/host CI have not yet passed on these commits.
 
 ## Completion criteria (normal functional integration, not hardware safety signoff)
-1. Correct Boat NRST support or explicitly document a carrier-level reset default, and verify E22 carrier pin numbering.
+1. Verify Boat GPIO6 NRST reset timing and E22 carrier pin numbering with the actual modules.
 2. Confirm actual Remote SC16IS750 1.8432 MHz oscillator, I²C 0x48, 3.3 V logic and 5 V E22 power.
 3. Verify matching E22 profile, UART frame exchange, authenticated backup heartbeat and STOP/RTH command acceptance with assembled radios.
 4. Simulate nRF-only loss: STOP/RTH over backup; simulate both links lost >10s: conditional RTH else STOP; verify session recovery, duplicate rejection, LoRa airtime limits.
