@@ -94,7 +94,7 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
     # Prevent broad, silent migration to a different compiler/sketch model.
     if "-<firmware/**>" not in config["Boat"] or "+<*.ino>" not in config["Remote"]:
         errors.append("Boat guarded C++ / Remote root .ino source filters drift")
-    if '#include "firmware/Flytec_Boat.ino"' not in read("Boat/source/platformio_entry.cpp"):
+    if '#include "firmware/Flytec_Boat.ino"' not in read("Boat/source/boat_platformio_entry.cpp"):
         errors.append("Boat PlatformIO guarded sketch adapter missing")
     if (root / "Remote/source/platformio_entry.cpp").exists():
         errors.append("Remote duplicate setup()/loop() adapter forbidden")
