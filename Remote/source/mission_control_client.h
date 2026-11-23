@@ -9,14 +9,15 @@ public:
  bool request(MissionControlOp op,uint32_t now){
   if(!transaction_||pending_||nextId_==65535||op<MCTRL_START||op>MCTRL_SWITCH_MANUAL)return false;
   if(unknown_&&op!=MCTRL_CANCEL)return false;
-  request_={op,transaction_,++nextId_};pending_=true;tries_=0;started_=now;lastTx_=now;return true;
+  request_={op,transaction_,++nextId_};pending_=true;tries_=0;backupEver_=false;started_=now;lastTx_=now;return true;
  }
  // A transport may refuse admission while its RF slot is busy. Merely
  // inspecting a due request must not consume a retry or move its timestamp.
  bool due(uint32_t now,MissionControlRequest &out,bool backup=false){
   if(!pending_)return false;
   const uint32_t retryMs=backup?3000U:400U;
-  const uint32_t timeoutMs=backup?12000U:1800U;
+  // A request that used LoRa keeps its longer deadline after nRF recovers.
+  const uint32_t timeoutMs=(backup||backupEver_)?12000U:1800U;
   if((uint32_t)(now-started_)>=timeoutMs||
      (tries_>=3&&(uint32_t)(now-lastTx_)>=retryMs)){
    pending_=false;unknown_=true;return false;
@@ -24,11 +25,11 @@ public:
   if(tries_&&(uint32_t)(now-lastTx_)<retryMs)return false;
   out=request_;return true;
  }
- void admitted(uint32_t now){if(pending_){++tries_;lastTx_=now;}}
+ void admitted(uint32_t now,bool backup=false){if(pending_){++tries_;lastTx_=now;backupEver_=backupEver_||backup;}}
  // Legacy host simulation interface; runtime uses due/admitted separately.
  bool next(uint32_t now,MissionControlRequest &out,bool backup=false){
   if(!due(now,out,backup))return false;
-  admitted(now);return true;
+  admitted(now,backup);return true;
  }
  bool observe(const MissionControlFeedback &f,uint32_t now,bool authenticated){
   if(!authenticated||!missionFeedbackValid(f)||!transaction_||f.transaction!=transaction_)return false;
@@ -48,5 +49,5 @@ public:
 private:
  uint16_t transaction_=0,nextId_=0;MissionControlRequest request_{};
  MissionControlPhase phase_=MC_IDLE;MissionControlResult lastResult_=MC_STATUS;
- uint32_t started_=0,lastTx_=0,at_=0;uint8_t tries_=0;bool pending_=false,unknown_=false,seen_=false;
+ uint32_t started_=0,lastTx_=0,at_=0;uint8_t tries_=0;bool pending_=false,unknown_=false,seen_=false,backupEver_=false;
 };
