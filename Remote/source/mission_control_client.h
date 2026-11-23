@@ -11,13 +11,24 @@ public:
   if(unknown_&&op!=MCTRL_CANCEL)return false;
   request_={op,transaction_,++nextId_};pending_=true;tries_=0;started_=now;lastTx_=now;return true;
  }
- bool next(uint32_t now,MissionControlRequest &out,bool backup=false){
+ // A transport may refuse admission while its RF slot is busy. Merely
+ // inspecting a due request must not consume a retry or move its timestamp.
+ bool due(uint32_t now,MissionControlRequest &out,bool backup=false){
   if(!pending_)return false;
   const uint32_t retryMs=backup?3000U:400U;
-   const uint32_t timeoutMs=backup?12000U:1800U;
-   if(now-started_>=timeoutMs||(tries_>=3&&now-lastTx_>=retryMs)){pending_=false;unknown_=true;return false;}
-  if(tries_&&now-lastTx_<retryMs)return false;
-  ++tries_;lastTx_=now;out=request_;return true;
+  const uint32_t timeoutMs=backup?12000U:1800U;
+  if((uint32_t)(now-started_)>=timeoutMs||
+     (tries_>=3&&(uint32_t)(now-lastTx_)>=retryMs)){
+   pending_=false;unknown_=true;return false;
+  }
+  if(tries_&&(uint32_t)(now-lastTx_)<retryMs)return false;
+  out=request_;return true;
+ }
+ void admitted(uint32_t now){if(pending_){++tries_;lastTx_=now;}}
+ // Legacy host simulation interface; runtime uses due/admitted separately.
+ bool next(uint32_t now,MissionControlRequest &out,bool backup=false){
+  if(!due(now,out,backup))return false;
+  admitted(now);return true;
  }
  bool observe(const MissionControlFeedback &f,uint32_t now,bool authenticated){
   if(!authenticated||!missionFeedbackValid(f)||!transaction_||f.transaction!=transaction_)return false;
