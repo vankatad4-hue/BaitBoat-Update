@@ -10,6 +10,7 @@
 #include <mutex>
 #include <functional>
 #include <chrono>
+#include <condition_variable>
 struct Cmd { uint32_t id; };
 int main() {
  flytec_rtos::CommandHandoff<Cmd,8> q;
@@ -77,6 +78,35 @@ int main() {
  });
  producerA.join();producerB.join();consumer.join();
  assert(admitted.load()==400 && received.size()==400);
+ // R30H-75: dequeue before STOP, delay preparation until STOP latches.
+ assert(q.offer({60000}));
+ assert(q.receive(c,stop,token) && !stop && c.id==60000);
+ const uint32_t heldToken=token;
+ std::mutex barrierMutex;
+ std::condition_variable barrierCv;
+ bool waiting=false,release=false;
+ std::atomic<int> executed{0};
+ std::thread held([&] {
+  {
+   std::unique_lock<std::mutex> lock(barrierMutex);
+   waiting=true;barrierCv.notify_one();
+   barrierCv.wait(lock,[&]{return release;});
+  }
+  (void)q.executeIfCurrent(heldToken,[&]{++executed;});
+ });
+ {
+  std::unique_lock<std::mutex> lock(barrierMutex);
+  barrierCv.wait(lock,[&]{return waiting;});
+ }
+ assert(q.offerStop({59999}));
+ {
+  std::lock_guard<std::mutex> lock(barrierMutex);
+  release=true;
+ }
+ barrierCv.notify_one();
+ held.join();
+ assert(executed.load()==0 && !q.mayExecute(heldToken));
+ assert(q.receive(c,stop,token) && stop && c.id==59999);
  // STOP under simultaneous ordinary producer pressure must invalidate all
  // old tokens. A fresh STOP is eventually retrievable.
  assert(q.offerStop({50000}));
