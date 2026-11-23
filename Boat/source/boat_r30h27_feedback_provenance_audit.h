@@ -1,3 +1,6 @@
+// LEGACY, RETIRED: independent physical current-zero acceptance and hardware
+// safety signoff were removed from the project scope by owner decision.
+// Historical diagnostic code only; do not use as a release gate.
 #pragma once
 #include <stdint.h>
 #include "boat_common_bus_readonly_port_r30d.h"
