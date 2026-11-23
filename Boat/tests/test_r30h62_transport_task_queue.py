@@ -19,6 +19,15 @@ class TestTransportTaskQueue(unittest.TestCase):
   self.assertNotIn("#include <Arduino.h>",boat)
   self.assertLess(boat.index("xQueueReceive(stop_, &cmd, 0)"),
                   boat.index("xQueueReceive(ordinary_, &cmd, 0)"))
+ def test_stop_invalidates_pending_ordinary_queue(self):
+  s=(ROOT/"Boat/source/transport_task_queue.h").read_text()
+  start=s.index("bool offerStop(")
+  end=s.index("bool receive(",start)
+  stop=s[start:end]
+  self.assertIn("xQueueOverwrite(stop_, &cmd)",stop)
+  self.assertIn("xQueueReset(ordinary_)",stop)
+  self.assertLess(stop.index("xQueueOverwrite(stop_, &cmd)"),stop.index("xQueueReset(ordinary_)"))
+  self.assertIn("already dequeued",stop)
  def test_no_blocking_on_stop_path(self):
   s=(ROOT/"Boat/source/transport_task_queue.h").read_text()
   self.assertNotIn("portMAX_DELAY",s)
