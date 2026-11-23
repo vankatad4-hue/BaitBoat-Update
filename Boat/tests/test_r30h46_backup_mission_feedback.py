@@ -9,6 +9,10 @@ class FeedbackRetry(unittest.TestCase):
         self.assertIn("MissionControlFeedback pendingBackupMissionFeedback_",HDR)
         self.assertIn("pendingBackupMissionFeedback_=status",SRC)
         self.assertIn("status.result!=MC_STATUS",SRC)
+    def test_distinct_request_does_not_overwrite_queued_reply(self):
+        self.assertIn('pendingBackupMissionFeedback_.transaction!=status.transaction',SRC)
+        self.assertIn('pendingBackupMissionFeedback_.request!=status.request',SRC)
+        self.assertIn('pendingBackupMissionFeedback_.op!=status.op',SRC)
     def test_retry_before_periodic_status_and_heartbeat(self):
         self.assertLess(SRC.index("if(pendingBackupMissionFeedbackValid_){",SRC.index("void BoatDualRadioPort::update")),
                         SRC.index("const auto progress=controller_.status()"))
