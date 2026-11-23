@@ -16,3 +16,9 @@ out/ui-font/
 **/radio_auth_key_local.h
 **/secrets.h
 **/.env
+
+# Reproducible generated source ZIPs, Python/PlatformIO caches.
+/out/
+**/__pycache__/
+**/.pytest_cache/
+.venv/

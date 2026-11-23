@@ -4,9 +4,14 @@ on:
   push:
     branches:
       - hardware-ready-dual-radio-r1
+      - platformio-unified-r30h20
     paths:
       - 'Remote/**'
       - 'Boat/**'
+      - 'tools/**'
+      - 'tests/**'
+      - 'docs/**'
+      - 'Flytec_V080.code-workspace'
       - '.github/workflows/package-flytec-zips.yml'
   pull_request:
     branches:
@@ -14,6 +19,10 @@ on:
     paths:
       - 'Remote/**'
       - 'Boat/**'
+      - 'tools/**'
+      - 'tests/**'
+      - 'docs/**'
+      - 'Flytec_V080.code-workspace'
       - '.github/workflows/package-flytec-zips.yml'
   workflow_dispatch:
 
@@ -83,6 +92,11 @@ jobs:
           unzip -tq "out/Flytec_Remote_ver${REMOTE_VERSION}.zip"
           unzip -tq "out/Flytec_Boat_ver${BOAT_VERSION}.zip"
           sha256sum out/*.zip | tee "out/SHA256SUMS_ver${REMOTE_VERSION}_${BOAT_VERSION}.txt"
+      - name: Package complete Git-tracked project source and SHA-256
+        run: |
+          python3 tools/flytec.py snapshot --output out/Flytec_Project_PlatformIO_R30H20_source_snapshot.zip
+          unzip -tq out/Flytec_Project_PlatformIO_R30H20_source_snapshot.zip
+          cd out && sha256sum -c Flytec_Project_PlatformIO_R30H20_source_snapshot.zip.sha256
       - name: Preserve immutable bumped archives (push events only)
         if: github.event_name == 'push' && (steps.release.outputs.remote == 'true' || steps.release.outputs.boat == 'true')
         env:
@@ -111,6 +125,15 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "Preserve immutable Flytec release archives"
           git push origin "HEAD:refs/heads/$GITHUB_REF_NAME"
+      - name: Upload full project source snapshot (NOT firmware)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Flytec_Project_PlatformIO_R30H20_source_${{ github.sha }}
+          path: |
+            out/Flytec_Project_PlatformIO_R30H20_source_snapshot.zip
+            out/Flytec_Project_PlatformIO_R30H20_source_snapshot.zip.sha256
+          if-no-files-found: error
+          retention-days: 90
       - name: Upload Remote archive artifact
         uses: actions/upload-artifact@v4
         with:

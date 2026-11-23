@@ -4,9 +4,13 @@ on:
   push:
     branches:
       - hardware-ready-dual-radio-r1
+      - platformio-unified-r30h20
     paths:
       - 'Remote/source/**'
       - 'Remote/tests/**'
+      - 'tests/r30h20_**'
+      - 'tests/r30h20_stubs/**'
+      - 'tools/**'
       - 'Remote/platformio.ini'
       - 'Boat/tools/verify_r30h5_gps_time_isolation.py'
       - 'Boat/tests/test_r30h5_gps_time_isolation.py'
@@ -22,6 +26,9 @@ on:
     paths:
       - 'Remote/source/**'
       - 'Remote/tests/**'
+      - 'tests/r30h20_**'
+      - 'tests/r30h20_stubs/**'
+      - 'tools/**'
       - 'Remote/platformio.ini'
       - 'Boat/tools/verify_r30h5_gps_time_isolation.py'
       - 'Boat/tests/test_r30h5_gps_time_isolation.py'
@@ -37,6 +44,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: R30H-20 authenticated Remote 32-byte frame fault matrix (host only)
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror \
+            -Itests/r30h20_stubs -IRemote/source \
+            Remote/source/radio_protocol.cpp Remote/source/radio_payload_codec.cpp \
+            tests/r30h20_radio_frame_fault_matrix_test.cpp -lcrypto \
+            -o /tmp/flytec_r30h20_remote
+          /tmp/flytec_r30h20_remote
       - name: Compiler
         run: g++ --version
       - name: Release guard unit test and scanner syntax

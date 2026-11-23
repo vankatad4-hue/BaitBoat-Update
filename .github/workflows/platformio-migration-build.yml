@@ -2,7 +2,7 @@ name: Primary PlatformIO compile (Boat + Remote, no flashing)
 
 on:
   push:
-    branches: [hardware-ready-dual-radio-r1]
+    branches: [hardware-ready-dual-radio-r1, platformio-unified-r30h20]
     paths:
       - 'Boat/platformio.ini'
       - 'Boat/source/**'
@@ -20,6 +20,9 @@ on:
       - 'Remote/tests/**'
       - 'Boat/tests/**'
       - 'Flytec_V080.code-workspace'
+      - 'tests/r30h20_**'
+      - 'tests/r30h20_stubs/**'
+      - 'tools/**'
       - 'Remote/tools/pio_deny_upload.py'
       - 'Boat/source/boat_r30h9_marker_config.h'
       - 'Remote/source/remote_r30h9_marker_config.h'
@@ -81,6 +84,26 @@ jobs:
           python Boat/tools/verify_platformio_source_layout_r30h13.py
           python Boat/tools/verify_r30h10_gpio_map.py
           python -m unittest discover -s Boat/tests -p test_r30h10_gpio_map.py -v
+      - name: Unified PlatformIO source and VS Code safety audit
+        run: |
+          python tools/verify_platformio_unified.py
+          python -m unittest discover -s tools/tests -p 'test_*.py' -v
+      - name: R30H-20 Boat full authenticated 32-byte frames
+        if: matrix.endpoint == 'Boat'
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror \
+            -Itests/r30h20_stubs -IBoat/source \
+            Boat/source/radio_protocol.cpp Boat/source/radio_payload_codec.cpp \
+            tests/r30h20_radio_frame_fault_matrix_test.cpp -lcrypto -o /tmp/boat_r30h20
+          /tmp/boat_r30h20
+      - name: R30H-20 Remote full authenticated 32-byte frames
+        if: matrix.endpoint == 'Remote'
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror \
+            -Itests/r30h20_stubs -IRemote/source \
+            Remote/source/radio_protocol.cpp Remote/source/radio_payload_codec.cpp \
+            tests/r30h20_radio_frame_fault_matrix_test.cpp -lcrypto -o /tmp/remote_r30h20
+          /tmp/remote_r30h20
       - name: Cache downloaded PlatformIO packages (not firmware images)
         uses: actions/cache@v4
         with:

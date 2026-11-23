@@ -1,7 +1,7 @@
 name: Boat/Remote conservative source inventory (read-only)
 on:
   push:
-    branches: [hardware-ready-dual-radio-r1]
+    branches: [hardware-ready-dual-radio-r1, platformio-unified-r30h20]
     paths:
       - 'Boat/source/**'
       - 'Remote/source/**'
@@ -11,6 +11,9 @@ on:
       - 'Boat/tools/verify_platformio_source_layout_r30h13.py'
       - 'Boat/tests/test_platformio_source_layout_r30h13.py'
       - 'Flytec_V080.code-workspace'
+      - 'tests/r30h20_**'
+      - 'tests/r30h20_stubs/**'
+      - 'tools/**'
       - '.github/workflows/boat-target-build.yml'
       - 'Boat/tools/audit_source_inventory_r30h10.py'
       - '.github/workflows/source-audit.yml'
@@ -22,6 +25,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Unified PlatformIO workspace and no-upload gates
+        run: |
+          python3 tools/verify_platformio_unified.py
+          python3 -m unittest discover -s tools/tests -p 'test_*.py' -v
       - name: Read-only active/legacy include graph and compile guards
         run: python3 Boat/tools/audit_source_inventory_r30h10.py --json /tmp/source-audit.json
       - name: Validate every active Boat/Remote source and shared protocol pair

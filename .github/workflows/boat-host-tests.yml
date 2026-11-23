@@ -4,10 +4,14 @@ on:
   push:
     branches:
       - hardware-ready-dual-radio-r1
+      - platformio-unified-r30h20
     paths:
       - 'Boat/source/**'
       - 'Boat/tools/**'
       - 'Boat/tests/**'
+      - 'tests/r30h20_**'
+      - 'tests/r30h20_stubs/**'
+      - 'tools/**'
       - 'Boat/docs/BOAT_R25_POWER_LEVEL_EVIDENCE.csv'
       - 'Boat/docs/BOAT_R27_INA231_ACCEPTANCE.csv'
       - 'Boat/docs/BOAT_R27_INA231_HARNESS_OVERRIDE.csv'
@@ -30,6 +34,9 @@ on:
       - 'Boat/source/**'
       - 'Boat/tools/**'
       - 'Boat/tests/**'
+      - 'tests/r30h20_**'
+      - 'tests/r30h20_stubs/**'
+      - 'tools/**'
       - 'Boat/docs/BOAT_R25_POWER_LEVEL_EVIDENCE.csv'
       - 'Boat/docs/BOAT_R27_INA231_ACCEPTANCE.csv'
       - 'Boat/docs/BOAT_R27_INA231_HARNESS_OVERRIDE.csv'
@@ -70,6 +77,14 @@ jobs:
             Boat/tests/boat_r30h19_stop_ack_status_integration_test.cpp \
             -o /tmp/boat_r30h19_flow
           /tmp/boat_r30h19_flow
+      - name: R30H-20 authenticated Boat 32-byte frame fault matrix (host only)
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror \
+            -Itests/r30h20_stubs -IBoat/source \
+            Boat/source/radio_protocol.cpp Boat/source/radio_payload_codec.cpp \
+            tests/r30h20_radio_frame_fault_matrix_test.cpp -lcrypto \
+            -o /tmp/flytec_r30h20_boat
+          /tmp/flytec_r30h20_boat
       - name: Compiler
         run: g++ --version
       - name: Payload encoder/decoder

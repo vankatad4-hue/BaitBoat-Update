@@ -62,6 +62,36 @@
         "problemMatcher": []
       },
       {
+        "label": "Flytec: authenticated STOP host tests (NO RADIO)",
+        "type": "shell",
+        "command": "python",
+        "args": [
+          "tools/flytec.py",
+          "test-host"
+        ],
+        "options": {
+          "cwd": "${workspaceFolder:Flytec Boat — PlatformIO}/.."
+        },
+        "group": "test",
+        "problemMatcher": []
+      },
+      {
+        "label": "Flytec: complete Git-tracked source ZIP + SHA256",
+        "type": "shell",
+        "command": "python",
+        "args": [
+          "tools/flytec.py",
+          "snapshot",
+          "--output",
+          "out/Flytec_Project_PlatformIO_R30H20_source_snapshot.zip"
+        ],
+        "options": {
+          "cwd": "${workspaceFolder:Flytec Boat — PlatformIO}/.."
+        },
+        "group": "build",
+        "problemMatcher": []
+      },
+      {
         "label": "Flytec: generate licensed Remote LVGL font",
         "type": "shell",
         "command": "python",
@@ -116,6 +146,7 @@
         "dependsOn": [
           "Flytec: source & safety audit (no hardware)",
           "Flytec: R30H physical/RF locks (no hardware)",
+          "Flytec: authenticated STOP host tests (NO RADIO)",
           "Flytec: Boat PlatformIO build (NO UPLOAD)",
           "Flytec: Remote PlatformIO build (NO UPLOAD)"
         ],
