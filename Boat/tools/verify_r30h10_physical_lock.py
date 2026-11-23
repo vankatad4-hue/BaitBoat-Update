@@ -105,7 +105,21 @@ def main() -> None:
         for forbidden in ("Measured_value", "Raw_capture_or_document", "Reviewer", "Review_date"):
             require(not (row.get(forbidden) or "").strip(), f"{gate}: unreviewed evidence supplied")
 
-    print("R30H-10 PASS: all 18 physical gates unsigned, physical RF/STOP denied, upload denied")
+    # Separate R30H-12 test ledger: never turn code-only CI into simulated
+    # measurements or silent RF signoff. H10's 18-row register is unchanged.
+    extra = ROOT / "Remote/docs/REMOTE_R30H_12_PHYSICAL_MEASUREMENTS.csv"
+    with extra.open(encoding="utf-8", newline="") as f:
+        bridge_rows = list(csv.DictReader(f))
+    require(len(bridge_rows) == 12, "R30H-12 requires exactly 12 physical probes")
+    require({r["Gate_ID"] for r in bridge_rows} ==
+            {f"R12-{n:02d}" for n in range(1, 13)}, "R30H-12 missing or duplicate probe IDs")
+    for record in bridge_rows:
+        require(record["Status"] in ("NOT_RUN", "BLOCKED"),
+                f'{record["Gate_ID"]}: synthetic R30H-12 completion')
+        for evidence_field in ("Measured_value", "Raw_capture_or_document", "Reviewer", "Review_date"):
+            require(not (record.get(evidence_field) or "").strip(),
+                    f'{record["Gate_ID"]}: unreviewed physical data')
+    print("R30H-10 PASS: 18 original gates and 12 R30H-12 probes unsigned; upload denied")
     print("NOTE: this PASS is a *source lock check*, NOT a physical test result.")
 
 

@@ -1,0 +1,13 @@
+Gate_ID,Subsystem,Required_evidence,Status,Measured_value,Raw_capture_or_document,Reviewer,Review_date
+R12-01,Hardware identity,Actual Waveshare Standard and NXP SC18IS606-EVB PCB revision photos,NOT_RUN,,,,
+R12-02,I2C address and voltage,Measure physical 0x28 and 0x21 3V3 pullups idle levels and SCL stretching,NOT_RUN,,,,
+R12-03,NXP EEPROM isolation,Verify CS1 EEPROM remains inactive and SS2 is physically unconnected,BLOCKED,,,,
+R12-04,CE reset safety,Measure CE low during cold start MCU reset MCP reset I2C NACK and stuck HIGH condition,BLOCKED,,,,
+R12-05,Independent SPI bus,Prove bridge SPI physically separate from Waveshare TF SPI11 12 13,NOT_RUN,,,,
+R12-06,Radio supply,Measure nRF supply transients ripple and CE GPIO levels with no actuator power,NOT_RUN,,,,
+R12-07,Primary RF compatibility,Measure nRF 32B packet 250kbps CRC ACK real-air interoperability,NOT_RUN,,,,
+R12-08,Authenticated STOP timing,Thirty physical STOP trials under concurrent SD UI ADC and E22 activity,BLOCKED,,,,
+R12-09,Shared I2C latency,Logic analyzer measure busy NACK Wire timeouts per transfer and loaded bus duty cycle,NOT_RUN,,,,
+R12-10,Return from bus fault,Confirm primary disabled and backup controls fail closed after real I2C faults,NOT_RUN,,,,
+R12-11,Independent actuator STOP,Independent physical current-zero and solenoid watchdog dummy load acceptance,BLOCKED,,,,
+R12-12,Release authorization,Unchanged diagnostic upload locks 18 H10 gates and version markers 014 028,BLOCKED,,,,

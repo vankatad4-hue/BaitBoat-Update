@@ -63,3 +63,6 @@ pio run -d Boat -e boat_n32r16v_diagnostic
 ```
 
 **Open issues:** Remote bridge + nRF real-air RF interoperability, I²C delay/clock stretch under contention, packet/STOP latency, CE external pull-down, EVB jumper/electrical continuity, procurement stock, and independent STOP/current zero. No hardware tests performed. **VERSIONS remain Boat 014 / Remote 028.**
+
+## R30H-12 follow-up (2026-11-23)
+Source now enforces an **elapsed-time soft guard** per individual bridge request and rejects late responses. [Latency calculations and test protocol](REMOTE_R30H_12_BRIDGE_LATENCY_AND_ACCEPTANCE.md) are **wire-only estimates**, not physical STOP limits. The separate [12-row measurement register](REMOTE_R30H_12_PHYSICAL_MEASUREMENTS.csv) is unsigned; the existing 18 R30H-10 gates stay unchanged. Neither MCP GPA0 stuck-high MCU reset nor independent Boat STOP/current-zero is solved by the software update.

@@ -86,6 +86,12 @@ jobs:
             ~/.platformio/platforms
             ~/.platformio/.cache
           key: ${{ runner.os }}-pio-${{ matrix.endpoint }}-${{ hashFiles('Boat/platformio.ini', 'Remote/platformio.ini') }}
+      - name: R30H-12 non-actuating I2C wire-budget regression
+        if: matrix.endpoint == 'Remote'
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
+            Remote/tests/r30h12_i2c_wire_budget_test.cpp -o /tmp/remote_i2c_budget
+          /tmp/remote_i2c_budget
       - name: R30H-11 portable isolated nRF bridge tests before Remote build
         if: matrix.endpoint == 'Remote'
         run: |
