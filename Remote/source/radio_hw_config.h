@@ -18,16 +18,16 @@
 #define REMOTE_R30H10_REJECTED_CSN_GPIO 15
 // EVB JP3 all jumpers ON -> wire address 0x50, Arduino 7-bit I2C 0x28.
 // Actual jumper states and 3.3V levels must be measured.
-#define REMOTE_NRF_BRIDGE_I2C_ADDRESS remote_pins::SC18IS606_NRF
-#define REMOTE_NRF_CE_EXPANDER_ADDRESS remote_pins::RADIO_IO_MCP
-#define REMOTE_NRF_CE_EXPANDER_GPA remote_pins::NRF_CE_GPA
+#define REMOTE_NRF_BRIDGE_I2C_ADDRESS 0x28
+#define REMOTE_NRF_CE_EXPANDER_ADDRESS 0x21
+#define REMOTE_NRF_CE_EXPANDER_GPA 0
 #define REMOTE_NRF_BRIDGE_HARDWARE_AUDIT_SIGNED 0
 #define REMOTE_NRF_BRIDGE_RF_INTEROPERABILITY_VERIFIED 0
 #define REMOTE_NRF_CHANNEL  76
 // Direct nRF SPI on ESP32 is retired. The only ESP32 SPI11/12/13 is TF.
-#define REMOTE_TF_SPI_MOSI_PIN remote_pins::TF_MOSI
-#define REMOTE_TF_SPI_SCK_PIN remote_pins::TF_SCK
-#define REMOTE_TF_SPI_MISO_PIN remote_pins::TF_MISO
+#define REMOTE_TF_SPI_MOSI_PIN 11
+#define REMOTE_TF_SPI_SCK_PIN 12
+#define REMOTE_TF_SPI_MISO_PIN 13
 #define REMOTE_NRF_MOSI_PIN (-1)
 #define REMOTE_NRF_SCK_PIN  (-1)
 #define REMOTE_NRF_MISO_PIN (-1)
@@ -45,7 +45,16 @@
 // Current display driver holds EXIO4 asserted during SD mount. Its SD path
 // remains unchanged; the selected SC18IS606 has INDEPENDENT SPI lines.
 // Never wire nRF to MCU SPI11/12/13 (they remain SD-owned).
-#define REMOTE_SD_DUMMY_CSN_PIN remote_pins::SD_DUMMY_CS
+#define REMOTE_SD_DUMMY_CSN_PIN 6
 #if REMOTE_NRF_PIN_AUDIT_SIGNED
 #error "R30H-11: no approved nRF hardware or I2C-SPI bridge; radio commissioning forbidden"
 #endif
+
+// Keep macros numeric for #if and external library compatibility.
+static_assert(REMOTE_NRF_BRIDGE_I2C_ADDRESS == remote_pins::SC18IS606_NRF, "R30H-33 pin-map mismatch: REMOTE_NRF_BRIDGE_I2C_ADDRESS");
+static_assert(REMOTE_NRF_CE_EXPANDER_ADDRESS == remote_pins::RADIO_IO_MCP, "R30H-33 pin-map mismatch: REMOTE_NRF_CE_EXPANDER_ADDRESS");
+static_assert(REMOTE_NRF_CE_EXPANDER_GPA == remote_pins::NRF_CE_GPA, "R30H-33 pin-map mismatch: REMOTE_NRF_CE_EXPANDER_GPA");
+static_assert(REMOTE_TF_SPI_MOSI_PIN == remote_pins::TF_MOSI, "R30H-33 pin-map mismatch: REMOTE_TF_SPI_MOSI_PIN");
+static_assert(REMOTE_TF_SPI_SCK_PIN == remote_pins::TF_SCK, "R30H-33 pin-map mismatch: REMOTE_TF_SPI_SCK_PIN");
+static_assert(REMOTE_TF_SPI_MISO_PIN == remote_pins::TF_MISO, "R30H-33 pin-map mismatch: REMOTE_TF_SPI_MISO_PIN");
+static_assert(REMOTE_SD_DUMMY_CSN_PIN == remote_pins::SD_DUMMY_CS, "R30H-33 pin-map mismatch: REMOTE_SD_DUMMY_CSN_PIN");
