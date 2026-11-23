@@ -18,6 +18,7 @@ static_assert(BOAT_R30H9_MARKER_GPIO == -1 && BOAT_R30H9_GPIO_OUTPUT_SIGNED == 0
 #include "boat_home_point_record.h"
 #include "radio_payload_encoder.h"
 #include "boat_r30g_optional_diag_budget.h"
+#include "boat_r30h18_stop_ack_outbox.h"
 #include "boat_command_queue.h"
 #include "mission_wire.h"
 #include "mission_controller.h"
@@ -99,6 +100,7 @@ private:
     RadioSessionCounter primarySeqGuard_,backupSeqGuard_,crossRadioSeqGuard_;
     BoatCommandDeduplicator dedupe_;
     BoatCommandQueue commandQueue_;
+    boat_r30h18::StopAckOutbox stopAck_; // STOP-only priority ACK, never a physical STOP witness
     MissionAssembler mission_;
     BoatMissionController controller_;
     MissionStickLease stickLease_;
