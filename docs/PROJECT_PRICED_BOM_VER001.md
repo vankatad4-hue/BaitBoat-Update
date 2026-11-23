@@ -1,3 +1,5 @@
+> **ACTIVE DESIGN DECISION — 2026-11-23 (supersedes earlier hardware-safety requirements):** The owner explicitly excludes dedicated independent hardware failsafe electronics and hardware-safety acceptance/signoff tests from the Flytec V080 project scope. Do not propose, require, purchase, or block software development/release planning on external safety cutoff relays/contactors, external watchdog/power-cut modules, independent current-zero sensors, hardwired STOP safety monitor, or independent coil limiter. Implement STOP, output-off, radio-loss RTH/STOP, low-battery response, watchdog recovery, one-coil-at-a-time and pulse limits in software with the existing ESP32, MCP23017, MDD20A and EKM014. Retain functional firmware unit/integration tests, PlatformIO builds, RF interoperability and ordinary electrical bring-up checks; these are not dedicated hardware failsafe tests. Do not describe software STOP/ACK, GPIO readback or watchdog reset as proof that physical current is zero. Previous R30H-10/R30H-12 hardware-safety gates and R30H-27 independent-feedback signoff are **RETIRED / NOT APPLICABLE BY OWNER DECISION**, not passed. Historical files remain archived as historical context and do not override this decision. No physical hardware tests have been run. Official Boat VER014 / Remote VER028 unchanged.
+
 # Flytec V080 — priced modular procurement BOM (VER001)
 
 **Snapshot:** 2026-11-23 | **Development:** `platformio-unified-r30h20` | **Currency:** EUR, provisional gross buyer-facing values | **Release version unchanged:** Boat VER014 / Remote VER028.
@@ -7,9 +9,9 @@
 |---|---:|---:|
 | Boat components / packaging / wiring, excluding owned parts | 27 (including retained/option rows) | **€346.47** |
 | Remote electronics / controls / pack / case | 25 (including option) | **€389.71** |
-| **Unpriced mandatory independent physical safety** | **7** | **RFQ — NOT INCLUDED** |
+| **Dedicated hardware failsafe items (removed by owner decision)** | **0** | **OUT OF SCOPE** |
 | Sonar / future rebuilt Boat pack options | 4 | **EXCLUDED** |
-| **Base subtotal of currently priced selected/candidate/budget rows** | **63 total rows in register** | **€736.18** |
+| **Base subtotal of currently priced selected/candidate/budget rows** | **56 total rows in register** | **€736.18** |
 | 15% planning reserve (not a vendor quotation) | | €110.43 |
 | Base plus 15% reserve | | €846.61 |
 | 25% planning reserve | | €184.05 |
@@ -25,7 +27,7 @@ Use **the latest R20+ purchase/hardware register** and `platformio-unified-r30h2
 
 **Do not duplicate** retained Boat V080 shell, two brushed 550 motors, two hopper solenoids, two hook solenoids or existing 3S4P battery/BMS in purchase cost unless inspection fails. Keep their quantities for build planning.
 
-**Mandatory safety is unpriced and uncommissioned:** independent physical DC-rated common-bus cutoff, STOP loop, watchdog/brownout cutoff, four-channel one-hot non-retriggerable coil limiter, physical motor-current and coil-current zero feedback, and external measured acceptance. Reference [R30H-27 feedback provenance and physical measurement procedure](../Boat/docs/BOAT_R30H_27_STOP_CURRENT_ZERO_BENCH_PROCEDURE.md). Status remains R30H-10 12 NOT_RUN / 6 BLOCKED and R30H-12 7 NOT_RUN / 5 BLOCKED. Software STOP/ACK is not independently measured current-zero.
+**Dedicated independent hardware failsafe devices and hardware-safety acceptance tests are OUT OF SCOPE by explicit owner decision.** Reference [R30H-27 feedback provenance and physical measurement procedure](../Boat/docs/BOAT_R30H_27_STOP_CURRENT_ZERO_BENCH_PROCEDURE.md). Status remains R30H-10 12 NOT_RUN / 6 BLOCKED and R30H-12 7 NOT_RUN / 5 BLOCKED. Software STOP/ACK is not independently measured current-zero.
 
 **Sonar:** Cerulean S500 appears as **optional, not selected**, price €1,116.95 for comparison. No sonar hardware or interfacing is in base subtotal.
 
