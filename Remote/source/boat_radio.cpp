@@ -498,7 +498,8 @@ void boatRadio_update() {
     uint8_t missionPayload[8];
     if(g_missionUpload.next(now,safe,missionPayload))sendMissionPreparation(missionPayload);
     MissionControlRequest request{};
-    if(g_missionControl.next(now,request)&&sessionReady()){
+    const bool missionBackup= !missionPrimaryReady()&&g_loraConfigured&&g_linkManager.backupHealthy(now);
+     if(g_missionControl.next(now,request,missionBackup)&&sessionReady()){
          const bool primary=missionPrimaryReady();
          const bool backup=!primary&&g_loraConfigured&&g_linkManager.backupHealthy(now)&&
              (request.op==MCTRL_PAUSE||request.op==MCTRL_CANCEL)&&
