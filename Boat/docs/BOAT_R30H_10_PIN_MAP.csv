@@ -17,10 +17,10 @@ E22_TX,17,J1-10,PROBE_ONLY,ESP TX to E22 RX
 E22_RX,18,J1-11,PROBE_ONLY,ESP RX from E22 TX
 MDD_PWM1,39,J3-9,BLOCKED_ACTUATOR,Motor bus disconnected
 MDD_PWM2,40,J3-8,BLOCKED_ACTUATOR,Motor bus disconnected
-SAFETY1,1,J3-4,RESERVED,Independent safety design
-SAFETY2,2,J3-5,RESERVED,Independent safety design
-SAFETY41,41,J3-7,RESERVED,Independent safety design
-SAFETY42,42,J3-6,RESERVED,Independent safety design
-GNSS_PPS,-1,UNASSIGNED,UNASSIGNED,No exported verified M100 PPS
-MCP23017,-1,I2C_0x27,EXTERNAL_IO,GPB0-1 direction GPA0-3 EKM inputs
-INA231,-1,I2C_0x40,EXTERNAL_IO,Selected BUS-only sense uncommissioned
+SPARE1,1,J3-4,UNUSED,Hardware safety removed; spare GPIO
+SPARE2,2,J3-5,UNUSED,Hardware safety removed; spare GPIO
+SPARE41,41,J3-7,UNUSED,Hardware safety removed; spare GPIO
+SPARE42,42,J3-6,UNUSED,Hardware safety removed; spare GPIO
+GNSS_PPS,-1,NOT_CONNECTED,NOT_REQUIRED,GPS UTC over UART; PPS not part of selected wiring
+MCP23017,-1,I2C_0x27,EXTERNAL_IO,GPB0-1 direction GPA0-3 EKM inputs; A2 A1 A0 HIGH
+INA231,-1,I2C_0x40,EXTERNAL_IO,Selected BUS-only voltage sensing; no independent current-zero measurement
