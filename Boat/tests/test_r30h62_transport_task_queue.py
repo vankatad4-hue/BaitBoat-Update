@@ -13,6 +13,10 @@ class TestTransportTaskQueue(unittest.TestCase):
                    "xQueueReset(ordinary_)", "xQueueReset(stop_)",
                    "if (!ready()) { end(); return false; }"):
    self.assertIn(required,boat)
+  self.assertIn("std::is_trivially_copyable<Command>::value",boat)
+  self.assertIn("if (ready()) return true;",boat)
+  self.assertIn("end();",boat)
+  self.assertNotIn("#include <Arduino.h>",boat)
   self.assertLess(boat.index("xQueueReceive(stop_, &cmd, 0)"),
                   boat.index("xQueueReceive(ordinary_, &cmd, 0)"))
  def test_no_blocking_on_stop_path(self):
