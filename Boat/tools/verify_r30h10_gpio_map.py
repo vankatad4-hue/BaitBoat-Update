@@ -30,7 +30,9 @@ def verify(data):
             "SD_DUMMY_CS":6,"RS485_TX":15,"RS485_RX":16,"NRF_CE":-1,
             "NRF_CSN":-1,"NRF_IRQ":-1,"REJECTED_CE":6,"REJECTED_CSN":15,
             "BUTTONS_MCP":-1,"OK_MCP":-1,"ADS1115":-1,"SC16IS750":-1,
-            "USB_DN":19,"USB_DP":20,"UART0_TX":43,"UART0_RX":44,"REMOTE_PPS":-1}
+            "USB_DN":19,"USB_DP":20,"UART0_TX":43,"UART0_RX":44,"REMOTE_PPS":-1,
+            "NRF_SPI_BRIDGE":-1,"NRF_BRIDGE_CSN":-1,"NRF_BRIDGE_CE":-1,
+            "NRF_BRIDGE_EEPROM":-1}
     if set(b)!=set(boat): errors.append("Boat pins missing/added")
     if set(r)!=set(remote): errors.append("Remote pins missing/added")
     for m,pins in ((b,boat),(r,remote)):
