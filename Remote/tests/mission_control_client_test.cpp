@@ -26,5 +26,14 @@ int main(){
  busy.admitted(3500);
  assert(!busy.due(6499,due,true));
  assert(busy.due(6500,due,true));
+ // Recovering nRF after a LoRa attempt must not instantly expire the
+ // in-flight correlated request under the primary-only 1.8-second limit.
+ MissionControlClient failover;MissionControlRequest pending{};
+ failover.bind(21);assert(failover.request(MCTRL_PAUSE,100));
+ assert(failover.due(100,pending,true));failover.admitted(100,true);
+ assert(!failover.due(2200,pending,false)&&failover.pending()&&!failover.unknown());
+ assert(failover.due(3100,pending,false));failover.admitted(3100,false);
+ assert(failover.observe({21,MC_PAUSED,MCTRL_PAUSE,pending.request,MC_ACCEPTED},3101,true));
+ assert(!failover.pending()&&!failover.unknown());
  std::cout<<"Mission remote control ACK handling passed\n";
 }
