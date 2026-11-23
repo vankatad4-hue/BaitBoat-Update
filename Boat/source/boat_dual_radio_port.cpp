@@ -147,7 +147,7 @@ void BoatDualRadioPort::update() {
   stickLease_.reset();
   commandQueue_.discardLink((uint8_t)LINK_NRF_PRIMARY,true);
  }
- if(!missionGate_||!missionGate_()||!primaryFresh(now))mission_.reset();
+ if(!missionGate_||!missionGate_()||(!primaryFresh(now)&&!backupFresh(now)))mission_.reset();
  if(nrfReady_){
   const bool stopAckWasInFlight=stopAck_.inFlight();
   nrf_.update();
@@ -418,7 +418,7 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
    return;
  }
  if(f.type==RADIO_MSG_MISSION_PREPARE){
-   if(link!=LINK_NRF_PRIMARY||!crossSequenceAccepted||!sessionReady())return;
+   if(!crossSequenceAccepted||!sessionReady())return;
    const uint16_t id=(uint16_t)f.payload[1]|((uint16_t)f.payload[2]<<8);
    const MissionOpcode op=(MissionOpcode)f.payload[0];
    if(!id||id!=f.commandId||op<MISSION_BEGIN||op>MISSION_CANCEL)return;
