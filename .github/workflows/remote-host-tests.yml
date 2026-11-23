@@ -50,7 +50,7 @@ jobs:
       - name: R30H-11 isolated nRF bridge register/SPI/RX/TX/fault regression
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/bridge_stubs -IRemote/source \
-            Remote/source/sc18is606_port.cpp Remote/source/sc18is606_nrf_link.cpp \
+            Remote/source/sc18is606_port.cpp Remote/source/mcp23017_ce_port.cpp Remote/source/sc18is606_nrf_link.cpp \
             Remote/tests/sc18is606_bridge_nrf_test.cpp -o /tmp/remote_sc18is606
           /tmp/remote_sc18is606
       - name: ADS1115 full-frame, invalid config and I2C fault regression

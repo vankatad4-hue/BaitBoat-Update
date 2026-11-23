@@ -27,7 +27,9 @@ bool Sc18is606Port::begin(){
     uint8_t version[16]={};
     static const char EXPECTED[]="SC18IS606";
     if(!command(&id,1,true)||!fetch(version,sizeof(version))||
-       memcmp(version,EXPECTED,sizeof(EXPECTED)-1)!=0)return false;
+       memcmp(version,EXPECTED,sizeof(EXPECTED)-1)!=0){
+        disable();return false;
+    }
     // NXP SS2 comes up as an inactive SPI select (likely driven HIGH).
     // Do NOT tie it directly to the active-high nRF CE. CE is instead
     // initialized low via existing MCP23017 GPA0 before any bridge setup.
