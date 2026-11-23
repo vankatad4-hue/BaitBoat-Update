@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <type_traits>
+#include <atomic>
 namespace flytec_rtos {
 template <typename Command, size_t Depth> class CommandHandoff {
  static_assert(Depth > 0, "Depth must be positive");
@@ -31,19 +32,22 @@ public:
   return true;
  }
  void end() {
+  stopLatched_.store(true, std::memory_order_release);
   if (ordinary_) { vQueueDelete(ordinary_); ordinary_ = nullptr; }
   if (stop_) { vQueueDelete(stop_); stop_ = nullptr; }
  }
  ~CommandHandoff() { end(); }
  bool ready() const { return ordinary_ != nullptr && stop_ != nullptr; }
  bool offer(const Command& cmd) {
-  return ready() && xQueueSend(ordinary_, &cmd, 0) == pdTRUE;
+  if (!ready() || stopLatched_.load(std::memory_order_acquire)) return false;
+  return xQueueSend(ordinary_, &cmd, 0) == pdTRUE;
  }
  // STOP admission invalidates pending ordinary commands before delivery.
  // An ordinary command already dequeued by the consumer still needs an
  // application-level STOP epoch check immediately before execution.
  bool offerStop(const Command& cmd) {
   if (!ready()) return false;
+  stopLatched_.store(true, std::memory_order_release);
   if (xQueueOverwrite(stop_, &cmd) != pdTRUE) return false;
   xQueueReset(ordinary_);
   return true;
@@ -57,14 +61,23 @@ public:
    isStop = true;
    return true;
   }
+  if (stopLatched_.load(std::memory_order_acquire)) return false;
   return xQueueReceive(ordinary_, &cmd, 0) == pdTRUE;
  }
  // Reinitialize on a new authenticated session to prevent stale commands.
+ // Only the application STOP-clear policy may call this, never radio RX.
+ void clearStopLatchAfterAuthorization() {
+  if (ordinary_) xQueueReset(ordinary_);
+  stopLatched_.store(false, std::memory_order_release);
+ }
  void clear() {
+  stopLatched_.store(true, std::memory_order_release);
   if (ordinary_) xQueueReset(ordinary_);
   if (stop_) xQueueReset(stop_);
  }
+ bool stopLatched() const { return stopLatched_.load(std::memory_order_acquire); }
 private:
+ std::atomic<bool> stopLatched_{false};
  QueueHandle_t ordinary_ = nullptr;
  QueueHandle_t stop_ = nullptr;
 };
