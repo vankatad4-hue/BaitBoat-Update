@@ -406,8 +406,10 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
    return;
  }
  if(f.type==RADIO_MSG_MISSION_CONTROL){
-   if(link!=LINK_NRF_PRIMARY||!crossSequenceAccepted)return;
+   if(!crossSequenceAccepted)return;
    MissionControlRequest request{};if(!missionControlDecode(f.payload,request)||f.commandId!=request.transaction)return;
+   // Slow E22 supports discrete autonomous PAUSE/CANCEL only; no manual takeover.
+   if(link==LINK_LORA_BACKUP&&request.op!=MCTRL_PAUSE&&request.op!=MCTRL_CANCEL)return;
    lastRx=lastSessionRx_=now;rxValid=true;noteAuthenticatedRx(now);
    if(detachedReturn_&&request.op!=MCTRL_SWITCH_MANUAL){
     sendMissionFeedback({request.transaction,controller_.status().phase,(uint8_t)request.op,request.request,MC_REJECTED},now);return;
