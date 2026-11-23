@@ -75,12 +75,23 @@ class TestSourceLayout(unittest.TestCase):
         modified=src.replace(a,"BOAT_STOP_ACK_PLACEHOLDER",1).replace(b,a,1)
         modified=modified.replace("BOAT_STOP_ACK_PLACEHOLDER",b,1)
         errors,_=audit_module.audit(overrides={"Boat/source/boat_dual_radio_port.cpp":modified})
-        self.assertTrue(any("Boat STOP ACK priority broken" in e for e in errors),errors)
+        self.assertTrue(any("Boat STOP ACK/STATUS priority broken" in e for e in errors),errors)
 
     def test_boat_stop_ack_cannot_be_silently_dropped(self):
         self.check_rejects_edit("Boat/source/boat_dual_radio_port.cpp",
-            "if(stopAck_.pending())return false;",
+            "if(stopAck_.pending()||statusOutbox_.pending())return false;",
             "if(false)return false;")
+
+    def test_boat_stop_status_priority_before_heartbeat(self):
+        src=(ROOT/"Boat/source/boat_dual_radio_port.cpp").read_text(encoding="utf-8")
+        a="statusOutbox_.due(statusNow,sessionReady(),nrfReady_,"
+        b="sendHeartbeat(LINK_NRF_PRIMARY,now)"
+        self.assertIn(a,src)
+        self.assertIn(b,src)
+        modified=src.replace(a,"BOAT_STATUS_PLACEHOLDER",1).replace(b,a,1)
+        modified=modified.replace("BOAT_STATUS_PLACEHOLDER",b,1)
+        errors,_=audit_module.audit(overrides={"Boat/source/boat_dual_radio_port.cpp":modified})
+        self.assertTrue(any("Boat STOP ACK/STATUS priority broken" in e for e in errors),errors)
 
     def test_remote_radio_pin_lock_cannot_silently_disappear(self):
         self.check_rejects_edit("Remote/source/radio_hw_config.h",
