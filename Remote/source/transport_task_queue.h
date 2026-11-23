@@ -49,14 +49,18 @@ public:
  // can drop STOP admission. A caller retries if this returns false.
  bool offerStop(const Command& cmd) {
   stopLatched_.store(true, std::memory_order_release);
+  // Only one STOP producer may write the overwrite slot at a time. A
+  // competing producer gets false and must retry; the latch stays asserted.
+  if (stopWriter_.test_and_set(std::memory_order_acquire)) return false;
+  if (!ready()) { stopWriter_.clear(std::memory_order_release); return false; }
   const uint32_t newEpoch = epoch_.fetch_add(1, std::memory_order_acq_rel) + 1U;
-  if (!ready()) return false;
   Entry e{cmd, newEpoch};
   const bool admitted = xQueueOverwrite(stop_, &e) == pdTRUE;
   if (xSemaphoreTake(mutex_, 0) == pdTRUE) {
    xQueueReset(ordinary_);
    xSemaphoreGive(mutex_);
   }
+  stopWriter_.clear(std::memory_order_release);
   return admitted;
  }
  // epochToken must travel with the dequeued command to the execution gate.
@@ -124,6 +128,7 @@ public:
  bool stopLatched() const { return stopLatched_.load(std::memory_order_acquire); }
  uint32_t currentEpoch() const { return epoch_.load(std::memory_order_acquire); }
 private:
+ std::atomic_flag stopWriter_ = ATOMIC_FLAG_INIT;
  std::atomic<bool> stopLatched_{true};
  std::atomic<uint32_t> epoch_{0};
  SemaphoreHandle_t mutex_ = nullptr;
