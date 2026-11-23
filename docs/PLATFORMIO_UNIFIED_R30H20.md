@@ -57,3 +57,7 @@ The branch workflows `boat-host-tests.yml`, `remote-host-tests.yml`, `source-aud
 ## Next stage after compilation
 
 Continue R30H-20 with state-machine-level end-to-end STOP receipt/feedback tests, including high TX load and replay/epoch rollover. Run the real passive GPIO and RF-only bench test **only after** the designated physical modules are assembled and inspected. Do not infer physical STOP or zero-current from source-only ACK/STATUS simulations.
+
+## R30H-21 follow-on (2026-11-23)
+
+The active PlatformIO branch now includes R30H-21 primary TX pre-admission sequence guarding, an authenticated 1,024-frame simulated load matrix, regression source mutation and safe source snapshot packaging. [Details](R30H_21_PRIMARY_TX_BUSY_SEQUENCE_BUDGET.md). No hardware permission or official release change.

@@ -1,8 +1,14 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-23, **R30H-20 — VS Code + PlatformIO PRIMARY: correlated STOP command-ID acceptance ACK followed by authoritative primary Boat stopped-status, bounded retry and heartbeat recovery; physical gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
+**Checkpoint:** 2026-11-23, **R30H-21 — VS Code + PlatformIO PRIMARY: correlated STOP command-ID acceptance ACK followed by authoritative primary Boat stopped-status, bounded retry and heartbeat recovery; physical gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `platformio-unified-r30h20` (parent `hardware-ready-dual-radio-r1`)
+
+## Current read-first status — R30H-21 TX-busy primary sequence preservation (2026-11-23)
+
+> **R30H-21 (2026-11-23) · `platformio-unified-r30h20` · primary nRF STOP/STATUS TX sequence-budget fix:** Boat now checks that an ordinary primary TX slot is truly free **before** assigning a 16-bit authenticated frame sequence to heartbeat, mission feedback, noncritical telemetry and ordinary command ACKs. Pending STOP ACK and latest authoritative STATUS preempt these messages; the separate LoRa path and STOP ACK retry budgets are unchanged. Portable 50,000-attempt busy-TX scheduling stress and 1,024-frame authenticated Boat/Remote CRC/HMAC/loss/replay/STATUS tests added, plus mutation-enforced source audits and PlatformIO CI. [Engineering report](R30H_21_PRIMARY_TX_BUSY_SEQUENCE_BUDGET.md). A host PASS verifies only simulated software; check CI against exact new HEAD. **R30H-10 12 NOT_RUN / 6 BLOCKED, R30H-12 7 NOT_RUN / 5 BLOCKED; Boat VER014 / Remote VER028 unchanged.**
+
+---
 
 ## Current read-first status — R30H-20 PlatformIO unified branch (2026-11-23)
 
