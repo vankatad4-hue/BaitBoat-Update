@@ -24,8 +24,8 @@ def verify(data):
     boat={"GNSS_TX":4,"GNSS_RX":5,"I2C_SCL":7,"I2C_SDA":8,"NRF_CSN":9,
           "NRF_CE":10,"NRF_MOSI":11,"NRF_SCK":12,"NRF_MISO":13,"NRF_IRQ":21,
           "E22_NRST":6,"E22_AUX":14,"E22_M0":15,"E22_M1":16,"E22_TX":17,"E22_RX":18,
-          "MDD_PWM1":39,"MDD_PWM2":40,"SAFETY1":1,"SAFETY2":2,"SAFETY41":41,
-          "SAFETY42":42,"GNSS_PPS":-1,"MCP23017":-1,"INA231":-1}
+          "MDD_PWM1":39,"MDD_PWM2":40,"SPARE1":1,"SPARE2":2,"SPARE41":41,
+          "SPARE42":42,"GNSS_PPS":-1,"MCP23017":-1,"INA231":-1}
     remote={"I2C_SDA":8,"I2C_SCL":9,"TF_MOSI":11,"TF_SCK":12,"TF_MISO":13,
             "SD_DUMMY_CS":6,"RS485_TX":15,"RS485_RX":16,"NRF_CE":-1,
             "NRF_CSN":-1,"NRF_IRQ":-1,"REJECTED_CE":6,"REJECTED_CSN":15,
@@ -41,13 +41,14 @@ def verify(data):
             if row.get("GPIO")!=str(pin): errors.append(name+": unexpected GPIO")
     for name in ("MDD_PWM1","MDD_PWM2"):
         if b.get(name,{}).get("Disposition")!="BLOCKED_ACTUATOR":errors.append(name+" output unlocked")
-    for name in ("SAFETY1","SAFETY2","SAFETY41","SAFETY42"):
-        if b.get(name,{}).get("Disposition")!="RESERVED":errors.append(name+" safety pin reused")
-    for name in ("NRF_CE","NRF_CSN","NRF_IRQ","REMOTE_PPS"):
-        if r.get(name,{}).get("Disposition")!="UNASSIGNED":errors.append(name+" Remote output allocated")
+    for name in ("SPARE1","SPARE2","SPARE41","SPARE42"):
+        if b.get(name,{}).get("Disposition")!="UNUSED":errors.append(name+" spare pin unexpectedly used")
+    for name,disposition in (("NRF_CE","EXTERNAL_IO"),("NRF_CSN","EXTERNAL_IO"),
+                             ("NRF_IRQ","POLLING"),("REMOTE_PPS","NOT_REQUIRED")):
+        if r.get(name,{}).get("Disposition")!=disposition:errors.append(name+" Remote connection map mismatch")
     for name in ("REJECTED_CE","REJECTED_CSN"):
         if r.get(name,{}).get("Disposition")!="CONFLICT_REJECTED":errors.append(name+" collision obscured")
-    if b.get("GNSS_PPS",{}).get("Disposition")!="UNASSIGNED":errors.append("Boat PPS fabricated")
+    if b.get("GNSS_PPS",{}).get("Disposition")!="NOT_REQUIRED":errors.append("Boat PPS fabricated")
     for path,expected in (
        (BH,{"BOAT_NRF_CSN_PIN":9,"BOAT_NRF_CE_PIN":10,"BOAT_NRF_SCK_PIN":12,
             "BOAT_NRF_MOSI_PIN":11,"BOAT_NRF_MISO_PIN":13,"BOAT_NRF_IRQ_PIN":21,
@@ -78,5 +79,5 @@ if __name__=="__main__":
     if errors:
         for err in errors:print("R30H-10 GPIO LOCK FAIL:",err)
         raise SystemExit(1)
-    print("PASS: provisional pin maps consistent, Remote RF=-1, PPS=-1, safety and upload still locked")
+    print("PASS: software-only pin maps consistent; Remote RF via I2C bridges; PPS not connected")
     print("PASS is SOURCE ONLY; no real GPIO RF PPS or STOP measurement")
