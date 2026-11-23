@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "boat_pin_assignments_r30h32.h"
 // R20: MCP23017 bank=0 default register map; port B pins 0/1 direction.
 // This adapter does not initialize a physical bus, authorize motor power,
 // control PWM, or replace the independent STOP/contactor.
@@ -11,7 +12,7 @@ public:
 };
 class Mcp23017DirectionAdapter {
 public:
- explicit Mcp23017DirectionAdapter(Mcp23017RegisterBus &bus,uint8_t address=0x27)
+ explicit Mcp23017DirectionAdapter(Mcp23017RegisterBus &bus,uint8_t address=boat_pins::MCP_ADDR)
    :bus_(bus),address_(address){}
  bool prepareDisabled() {
    ready_=false;
