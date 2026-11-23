@@ -4,19 +4,27 @@
 // STOP uses a dedicated length-one overwrite queue and is always read first.
 // No heap allocation during send/receive; FreeRTOS queue creation allocates
 // during startup. A failed initialization must deny the task migration.
-#include <Arduino.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
 #include <stdint.h>
+#include <stddef.h>
+#include <type_traits>
 namespace flytec_rtos {
 template <typename Command, size_t Depth> class CommandHandoff {
  static_assert(Depth > 0, "Depth must be positive");
+ static_assert(Depth <= 0xFFFFU, "Depth exceeds FreeRTOS queue limit");
+ static_assert(std::is_trivially_copyable<Command>::value,
+               "FreeRTOS byte-copy queue requires trivially copyable payload");
 public:
  CommandHandoff() = default;
  CommandHandoff(const CommandHandoff&) = delete;
  CommandHandoff& operator=(const CommandHandoff&) = delete;
  bool begin() {
-  if (ordinary_ || stop_) return ready();
+  // A partially initialized instance must not retain stale queue handles.
+  if (ordinary_ || stop_) {
+   if (ready()) return true;
+   end();
+  }
   ordinary_ = xQueueCreate(static_cast<UBaseType_t>(Depth), sizeof(Command));
   stop_ = xQueueCreate(1, sizeof(Command));
   if (!ready()) { end(); return false; }
