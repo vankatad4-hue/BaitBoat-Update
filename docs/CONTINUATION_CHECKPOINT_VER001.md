@@ -1,8 +1,16 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-23, **R30H-16 — VS Code + PlatformIO PRIMARY: bounded nRF STOP retransmissions until authenticated Boat STOP status, up to 8 admissions/150 ms gap/2.5 s deadline; physical gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
+**Checkpoint:** 2026-11-23, **R30H-17 — VS Code + PlatformIO PRIMARY: correlated STOP command-ID acceptance ACK followed by authoritative primary Boat stopped-status, bounded retry and heartbeat recovery; physical gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `hardware-ready-dual-radio-r1`
+
+## Current read-first status — R30H-17 STOP ACK/STATUS correlation (2026-11-23)
+
+**R30H-17 (2026-11-23) — correlated STOP ACK / primary STATUS evidence:** A newly pressed STOP can no longer be confirmed solely by a previously emitted Boat `stopState=1` status. Remote now requires an authenticated **matching command-ID STOP ACCEPTED/EXECUTED ACK**, followed by fresh primary Boat stopped-status. Until then the STOP latch remains asserted. The 8-admission / 150-ms / 2.5-s bounded retry policy remains; after the 8th admission heartbeat is permitted so Boat can send feedback, without unlocking movement. [R30H-17 report](docs/R30H_17_STOP_ACK_STATUS_CORRELATION.md). All physical R30H-10/R30H-12 STOP/current-zero gates still unsigned; compile-only and releases Boat VER014 / Remote VER028 frozen.
+
+**Physical admission is NOT implied by source tests.** Check live CI outcome at [GitHub Actions](https://github.com/vankatad4-hue/BaitBoat-Update/actions/workflows/platformio-migration-build.yml); signed hardware gates, physical stop measurements and release markers remain unchanged.
+
+---
 
 ## Current read-first status — R30H-16 STOP confirmation-aware bounded retries (2026-11-23)
 
