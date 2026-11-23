@@ -25,6 +25,9 @@ private:
     int spiSck_,spiMiso_,spiMosi_;
     bool ready_,txPending_,lastTxSuccess_;
     uint32_t txCount_,rxCount_,txFailCount_;
+    // Software-only transport lock. This is NOT a physical STOP watchdog.
+    static constexpr uint32_t TX_PENDING_TIMEOUT_MS = 120U;
+    uint32_t txStartedAtMs_ = 0;
     RadioFrame rxQueue_[4];
     uint8_t rxHead_,rxTail_,rxQueueCount_;
     const uint8_t *txAddress_;

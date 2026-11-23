@@ -140,7 +140,20 @@ void BoatDualRadioPort::update() {
   commandQueue_.discardLink((uint8_t)LINK_NRF_PRIMARY,true);
  }
  if(!missionGate_||!missionGate_()||!primaryFresh(now))mission_.reset();
- if(nrfReady_){nrf_.update();RadioFrame f;while(nrf_.receiveFrame(f))receive(LINK_NRF_PRIMARY,f);}
+ if(nrfReady_){
+  nrf_.update();
+  if(!nrf_.ready()){
+   // R30H-13: revoke primary immediately on its transport watchdog fault.
+   // Queued/stick primary commands cannot survive a transport failure.
+   nrfReady_=false;lastNrfRxValid_=false;
+   stickLease_.reset();mission_.reset();
+   controller_.cancelOverrideForLinkLoss();
+   commandQueue_.discardLink((uint8_t)LINK_NRF_PRIMARY,true);
+  } else {
+   RadioFrame f;
+   while(nrf_.receiveFrame(f))receive(LINK_NRF_PRIMARY,f);
+  }
+ }
  if(sx1262Ready_){e22_.update();RadioFrame f;while(e22_.receiveFrame(f))receive(LINK_LORA_BACKUP,f);}
 
  const uint32_t safetyNow=millis();

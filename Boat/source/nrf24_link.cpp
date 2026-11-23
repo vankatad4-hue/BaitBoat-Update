@@ -11,7 +11,8 @@ NRF24Link::NRF24Link(int ce,int csn,SPIClass *spi,uint8_t ch,int sck,int miso,in
  memset(rxQueue_,0,sizeof(rxQueue_));
 }
 bool NRF24Link::begin(bool remoteRole) {
- ready_=false;
+ ready_=false;txPending_=false;lastTxSuccess_=false;
+ rxHead_=rxTail_=rxQueueCount_=0;txStartedAtMs_=0;
  if(cePin_<0 || csnPin_<0 || !spiBus_) return false;
  txAddress_=remoteRole?BOAT_PIPE:REMOTE_PIPE;
  rxAddress_=remoteRole?REMOTE_PIPE:BOAT_PIPE;
@@ -41,6 +42,14 @@ void NRF24Link::update() {
      if(txFail) { ++txFailCount_; radio_.flush_tx(); }
      radio_.startListening();
    }
+   if(txPending_ && (uint32_t)(millis()-txStartedAtMs_)>=TX_PENDING_TIMEOUT_MS) {
+     // RF status/IRQ failure must not indefinitely hold the TX slot and
+     // suppress subsequent STOP/heartbeat requests. Recommission before use.
+     ++txFailCount_;txPending_=false;lastTxSuccess_=false;ready_=false;
+     rxHead_=rxTail_=rxQueueCount_=0;
+     radio_.flush_tx();radio_.startListening();
+     return;
+   }
    if(rxReady && radio_.available()) {
      RadioFrame f; radio_.read(&f,sizeof(f));
      if(f.magic[0]==RADIO_FRAME_MAGIC0 && f.magic[1]==RADIO_FRAME_MAGIC1 &&
@@ -64,11 +73,12 @@ bool NRF24Link::sendFrame(const RadioFrame &frame) {
  if(!radio_.startWrite(&frame,sizeof(frame),false)) {
    radio_.startListening();return false;
  }
+ txStartedAtMs_=millis();
  txPending_=true;lastTxSuccess_=false;++txCount_;
  return true; // TX started; application ACK/boat state is still required
 }
 bool NRF24Link::receiveFrame(RadioFrame &frame) {
  update();
- if(rxQueueCount_==0) return false;
+ if(!ready_ || rxQueueCount_==0) return false;
  frame=rxQueue_[rxHead_];rxHead_=(uint8_t)((rxHead_+1U)%4U);--rxQueueCount_;return true;
 }
