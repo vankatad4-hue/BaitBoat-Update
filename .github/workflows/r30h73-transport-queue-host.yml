@@ -8,6 +8,9 @@ on:
       - 'Boat/tests/r30h73*'
       - 'Boat/tests/run_r30h73_transport_queue_host.sh'
       - 'Boat/tests/test_r30h71_transport_handoff_contract.py'
+      - 'Boat/tests/test_r30h87_dual_core_contract.py'
+      - 'Boat/source/dual_core_diagnostic.h'
+      - 'Remote/source/dual_core_diagnostic.h'
       - '.github/workflows/r30h73-transport-queue-host.yml'
   workflow_dispatch:
 jobs:
@@ -22,5 +25,7 @@ jobs:
             echo "=== Host transport run ${run}/5 ==="
             bash Boat/tests/run_r30h73_transport_queue_host.sh
           done
-      - name: Source contract
+      - name: Transport source contract
         run: python -m unittest discover -s Boat/tests -p test_r30h71_transport_handoff_contract.py -v
+      - name: Dual-core diagnostic source contract
+        run: python -m unittest discover -s Boat/tests -p test_r30h87_dual_core_contract.py -v
