@@ -94,7 +94,10 @@ bool DualRadioManager::backupCommandAllowed(const BoatCommand &cmd) {
     case CMD_SET_MODE: return cmd.mode == MODE_RETURN_HOME || cmd.mode == MODE_AUTOPILOT;
     case CMD_MANUAL_MOTORS: return false; // 3s LoRa pacing cannot meet 200ms motor lease
     case CMD_CLEAR_STOP: return false; // cannot safely clear STOP without fresh control lease
-    default: return true; // discrete authenticated actions still checked by Boat interlocks
+    case CMD_RELEASE_HOPPER_LEFT: case CMD_RELEASE_HOPPER_RIGHT:
+    case CMD_RELEASE_HOOK_LEFT: case CMD_RELEASE_HOOK_RIGHT:
+        return true; // Boat must still enforce all release interlocks
+    default: return false; // legacy combined release and unknown commands
     }
 }
 bool DualRadioManager::send(const BoatCommand &cmd, RadioSendFn sendFn, uint32_t now) {
