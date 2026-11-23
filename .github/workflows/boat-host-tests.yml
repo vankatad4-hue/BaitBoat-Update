@@ -60,6 +60,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: R30H-30 software-only actuator output boundary host regression
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IBoat/source \
+            Boat/tests/boat_r30h30_software_output_boundary_test.cpp \
+            -o /tmp/boat_r30h30_output
+          /tmp/boat_r30h30_output
       - name: R30H-13 Boat nRF24 stuck-TX host regression (no physical radio)
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror \
