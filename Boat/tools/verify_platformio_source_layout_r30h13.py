@@ -163,6 +163,12 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
         ("Boat/source/boat_shared_supply_fault_guard_r30b.h", "snapshot.critical"),
         ("Boat/source/boat_dual_radio_port.cpp", "maybeStartFailsafeReturnHome(safetyNow);"),
         ("Boat/source/boat_dual_radio_port.cpp", "if(!boatRadioLossRthDue(linkLossHold_&&!primaryFresh(now)&&!backupFresh(now),"),
+        # R30H-24: stale, cached navigation outputs are refused at the
+        # final actuator boundary even if radio/mission controller was stale.
+        ("Boat/source/boat_hardware_supervisor.h", "if(!in.fix.fresh||!in.fix.headingValid||!in.fix.geofenceValid||"),
+        ("Boat/source/boat_hardware_supervisor.h", "in.fix.headingDeg>=360.0)return off;"),
+        ("Boat/tests/boat_r30h24_wrap_failsafe_test.cpp", "navBoundaryStaleCachedResult();"),
+        ("Boat/tests/boat_r30h24_application_wrap_test.cpp", "radio.lowBatteryReturnRequests==1U"),
         # R30H-14: cross-endpoint over-air profile must not drift silently.
         ("Boat/source/boat_radio_hw_config.h", "#define BOAT_NRF_CHANNEL 76"),
         ("Remote/source/radio_hw_config.h", "#define REMOTE_NRF_CHANNEL  76"),

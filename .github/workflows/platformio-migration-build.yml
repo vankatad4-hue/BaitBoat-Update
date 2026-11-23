@@ -142,6 +142,28 @@ jobs:
             Boat/tests/boat_r30h23_failsafe_integration_test.cpp \
             -o /tmp/boat_r30h23_failsafe
           /tmp/boat_r30h23_failsafe
+      - name: R30H-24 Boat supervisor rollover and cached-nav local-input safety
+        if: matrix.endpoint == 'Boat'
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror \
+            -IBoat/tests/stubs -IBoat/source \
+            Boat/source/mission_protocol.cpp Boat/source/boat_radio_safety.cpp \
+            Boat/source/radio_payload_codec.cpp \
+            Boat/tests/boat_r30h24_wrap_failsafe_test.cpp \
+            -o /tmp/boat_r30h24_wrap
+          /tmp/boat_r30h24_wrap
+      - name: R30H-24 Boat real application battery alarm single-RTH across wrap
+        if: matrix.endpoint == 'Boat'
+        run: |
+          mkdir -p /tmp/flytec_r30h24_adapter
+          cp Boat/source/boat_application_port.cpp Boat/source/boat_application_port.h /tmp/flytec_r30h24_adapter/
+          cp Boat/tests/application_stubs/boat_dual_radio_port.h /tmp/flytec_r30h24_adapter/
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror \
+            -I/tmp/flytec_r30h24_adapter -IBoat/source -IBoat/tests/stubs \
+            /tmp/flytec_r30h24_adapter/boat_application_port.cpp \
+            Boat/tests/boat_r30h24_application_wrap_test.cpp \
+            -o /tmp/boat_r30h24_adapter
+          /tmp/boat_r30h24_adapter
       - name: Cache downloaded PlatformIO packages (not firmware images)
         uses: actions/cache@v4
         with:

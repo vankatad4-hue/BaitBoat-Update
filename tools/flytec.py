@@ -132,6 +132,21 @@ def compile_host()->None:
             "Boat/source/mission_protocol.cpp","Boat/source/boat_radio_safety.cpp",
             "Boat/source/radio_payload_codec.cpp",
             "Boat/tests/boat_r30h23_failsafe_integration_test.cpp"])
+        groups.append(["g++","-std=c++17","-Wall","-Wextra","-Wpedantic","-Werror",
+            "-IBoat/tests/stubs","-IBoat/source",
+            "Boat/source/mission_protocol.cpp","Boat/source/boat_radio_safety.cpp",
+            "Boat/source/radio_payload_codec.cpp",
+            "Boat/tests/boat_r30h24_wrap_failsafe_test.cpp"])
+        staged=Path(tmp)/"boat_app_adapter"
+        staged.mkdir()
+        for filename in ("boat_application_port.cpp","boat_application_port.h"):
+            shutil.copyfile(ROOT/"Boat"/"source"/filename,staged/filename)
+        shutil.copyfile(ROOT/"Boat"/"tests"/"application_stubs"/"boat_dual_radio_port.h",
+                        staged/"boat_dual_radio_port.h")
+        groups.append(["g++","-std=c++17","-Wall","-Wextra","-Wpedantic","-Werror",
+            f"-I{staged}","-IBoat/source","-IBoat/tests/stubs",
+            str(staged/"boat_application_port.cpp"),
+            "Boat/tests/boat_r30h24_application_wrap_test.cpp"])
         for i,args in enumerate(groups):
             exe=str(Path(tmp)/f"host_{i}")
             command(*args,"-o",exe)

@@ -125,6 +125,16 @@ class TestSourceLayout(unittest.TestCase):
         self.check_rejects_edit("Boat/source/boat_shared_supply_fault_guard_r30b.h",
             "snapshot.critical", "false")
 
+    def test_r30h24_actuator_boundary_rejects_stale_cached_navigation(self):
+        self.check_rejects_edit("Boat/source/boat_hardware_supervisor.h",
+            "if(!in.fix.fresh||!in.fix.headingValid||!in.fix.geofenceValid||",
+            "if(false||")
+
+    def test_r30h24_repeated_low_battery_single_home_assertion_present(self):
+        self.check_rejects_edit("Boat/tests/boat_r30h24_application_wrap_test.cpp",
+            "radio.lowBatteryReturnRequests==1U",
+            "radio.lowBatteryReturnRequests>=0U")
+
     def test_remote_radio_pin_lock_cannot_silently_disappear(self):
         self.check_rejects_edit("Remote/source/radio_hw_config.h",
              "#define REMOTE_NRF_PIN_AUDIT_SIGNED 0",
