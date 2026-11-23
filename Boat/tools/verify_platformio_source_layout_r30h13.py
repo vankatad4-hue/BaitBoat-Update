@@ -169,6 +169,15 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
         ("Boat/source/boat_hardware_supervisor.h", "in.fix.headingDeg>=360.0)return off;"),
         ("Boat/tests/boat_r30h24_wrap_failsafe_test.cpp", "navBoundaryStaleCachedResult();"),
         ("Boat/tests/boat_r30h24_application_wrap_test.cpp", "radio.lowBatteryReturnRequests==1U"),
+        # R30H-25: a physical actuator apply failure must latch STOP, and a
+        # genuine new radio generation must invalidate non-neutral sticks.
+        ("Boat/source/boat_application_port.h", "bool driverFaultLatched_=false;"),
+        ("Boat/source/boat_application_port.cpp", "driverFaultLatched_=true; // never trust subsequent radio/sensor rearm"),
+        ("Boat/source/boat_application_port.cpp", "if(driverFaultLatched_){"),
+        ("Boat/source/boat_application_port.cpp", "if(generation_!=0U)executor_.requireManualNeutral();"),
+        ("Boat/source/boat_hardware_supervisor.h", "void requireManualNeutral(){cancelManual();manualNeedsNeutral_=true;}"),
+        ("Boat/tests/boat_r30h25_driver_session_fault_test.cpp", "assert(readCount==readsBeforeLatch);"),
+        ("Boat/tests/boat_r30h25_brownout_recovery_test.cpp", "assert(stopped()&&radio.phase==MC_ABORTED);"),
         # R30H-14: cross-endpoint over-air profile must not drift silently.
         ("Boat/source/boat_radio_hw_config.h", "#define BOAT_NRF_CHANNEL 76"),
         ("Remote/source/radio_hw_config.h", "#define REMOTE_NRF_CHANNEL  76"),

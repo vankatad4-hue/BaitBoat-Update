@@ -147,6 +147,11 @@ def compile_host()->None:
             f"-I{staged}","-IBoat/source","-IBoat/tests/stubs",
             str(staged/"boat_application_port.cpp"),
             "Boat/tests/boat_r30h24_application_wrap_test.cpp"])
+        for test in ("driver_session_fault","brownout_recovery"):
+            groups.append(["g++","-std=c++17","-Wall","-Wextra","-Wpedantic","-Werror",
+                f"-I{staged}","-IBoat/source","-IBoat/tests/stubs",
+                str(staged/"boat_application_port.cpp"),
+                f"Boat/tests/boat_r30h25_{test}_test.cpp"])
         for i,args in enumerate(groups):
             exe=str(Path(tmp)/f"host_{i}")
             command(*args,"-o",exe)

@@ -135,6 +135,21 @@ class TestSourceLayout(unittest.TestCase):
             "radio.lowBatteryReturnRequests==1U",
             "radio.lowBatteryReturnRequests>=0U")
 
+    def test_r30h25_driver_failure_cannot_auto_rearm(self):
+        self.check_rejects_edit("Boat/source/boat_application_port.cpp",
+            "driverFaultLatched_=true; // never trust subsequent radio/sensor rearm",
+            "driverFaultLatched_=false; // unsafe mutation")
+
+    def test_r30h25_radio_session_requires_neutral(self):
+        self.check_rejects_edit("Boat/source/boat_application_port.cpp",
+            "if(generation_!=0U)executor_.requireManualNeutral();",
+            "if(generation_!=0U)executor_.cancelManual();")
+
+    def test_r30h25_missing_latched_driver_rejects_commands(self):
+        self.check_rejects_edit("Boat/source/boat_application_port.cpp",
+            "if(driverFaultLatched_){",
+            "if(false){")
+
     def test_remote_radio_pin_lock_cannot_silently_disappear(self):
         self.check_rejects_edit("Remote/source/radio_hw_config.h",
              "#define REMOTE_NRF_PIN_AUDIT_SIGNED 0",
