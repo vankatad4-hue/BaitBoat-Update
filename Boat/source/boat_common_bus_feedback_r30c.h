@@ -1,3 +1,6 @@
+// LEGACY, RETIRED: external STOP/watchdog/contactor/current-zero signoff
+// is not part of the selected software-only project. This old contract is
+// retained for historical tests and must not gate active firmware.
 #pragma once
 #include <stdint.h>
 #include "boat_hardware_supervisor.h"
