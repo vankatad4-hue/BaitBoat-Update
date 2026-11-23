@@ -107,6 +107,7 @@ jobs:
         if: matrix.endpoint == 'Boat'
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IBoat/source -IRemote/source \
+            Boat/source/radio_payload_codec.cpp Remote/source/radio_ack_tracker.cpp \
             Boat/tests/boat_r30h19_stop_ack_status_integration_test.cpp \
             -o /tmp/boat_r30h19_flow
           /tmp/boat_r30h19_flow
