@@ -145,7 +145,13 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
         ("Boat/source/boat_dual_radio_port.cpp", "stopAck_.offer((uint16_t)cmd.commandId,sessionEpoch_,result,"),
         ("Boat/source/boat_dual_radio_port.cpp", "stopAck_.due(ackNow,sessionReady(),nrfReady_,nrf_.txPending())"),
         ("Boat/source/boat_dual_radio_port.cpp", "stopAck_.completed(nrf_.ready()&&nrf_.lastTxSuccess());"),
-        ("Boat/source/boat_dual_radio_port.cpp", "if(stopAck_.pending())return false;"),
+        ("Boat/source/boat_dual_radio_port.cpp", "if(stopAck_.pending()||statusOutbox_.pending())return false;"),
+        ("Boat/source/boat_dual_radio_port.h", '#include "boat_r30h19_status_outbox.h"'),
+        ("Boat/source/boat_r30h19_status_outbox.h", "MAX_STATUS_AGE_MS=300U"),
+        ("Boat/source/boat_dual_radio_port.cpp", "statusOutbox_.offer(status,now);"),
+        ("Boat/source/boat_dual_radio_port.cpp", "statusOutbox_.reset(); // discard any STATUS sampled before this STOP"),
+        ("Boat/source/boat_dual_radio_port.cpp", "statusOutbox_.due(statusNow,sessionReady(),nrfReady_,"),
+        ("Boat/source/boat_dual_radio_port.cpp", "statusOutbox_.sent(); // TX started; not an actuator/safety ACK"),
         # R30H-14: cross-endpoint over-air profile must not drift silently.
         ("Boat/source/boat_radio_hw_config.h", "#define BOAT_NRF_CHANNEL 76"),
         ("Remote/source/radio_hw_config.h", "#define REMOTE_NRF_CHANNEL  76"),
@@ -209,13 +215,14 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
     boat_sequence=("nrf_.update();",
                    "while(nrf_.receiveFrame(f))receive(LINK_NRF_PRIMARY,f);",
                    "stopAck_.due(ackNow,sessionReady(),nrfReady_,nrf_.txPending())",
+                   "statusOutbox_.due(statusNow,sessionReady(),nrfReady_,",
                    "sendHeartbeat(LINK_NRF_PRIMARY,now)",
                    "optionalDiagnostics_.take(opportunity,optionalNow,optionalPayload)")
     boat_positions=[boat_radio.find(word,boat_start,boat_end) for word in boat_sequence]
     if (boat_start<0 or boat_end<0 or any(pos<0 for pos in boat_positions) or
             boat_positions!=sorted(boat_positions) or
             len(set(boat_positions))!=len(boat_positions)):
-        errors.append("Boat STOP ACK priority broken: poll -> RX -> STOP ACK -> heartbeat -> optional")
+        errors.append("Boat STOP ACK/STATUS priority broken: poll -> RX -> ACK -> STATUS -> heartbeat -> optional")
     for endpoint in ("Boat", "Remote"):
         if not (root / f"{endpoint}/releases/VERSION").exists():
             errors.append(f"{endpoint}: release version marker missing")
