@@ -468,6 +468,7 @@ void boatRadio_update() {
     const bool primary=missionPrimaryReady();
     const bool backup=!primary&&g_loraConfigured&&g_linkManager.backupHealthy(now);
     const bool backupSlot=!g_backupTxSent||(uint32_t)(now-g_lastBackupTxMs)>=3000U;
+    g_missionControl.expire(now,backup);
     if(sessionReady()&&!g_stopPending&&(primary||(backup&&backupSlot))&&
        g_missionControl.due(now,request,backup)){
         // E22 backup is limited to discrete PAUSE/CANCEL; do not consume a
