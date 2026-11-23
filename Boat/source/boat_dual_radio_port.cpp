@@ -240,7 +240,10 @@ void BoatDualRadioPort::update() {
    int16_t left=0,right=0;
    if(controller_.temporaryOverrideConfirmed()&&!missionOverrideOutput(left,right))abortMission();
    if(detachedReturn_&&!controller_.diverted()){detachedReturn_=false;failsafeRthActive_=false;controller_.resetSession();missionIntent_={INTENT_STOP,-1,0};}
-   if(controller_.status().transaction&&safetyNow-lastMissionStatusMs_>=250U){lastMissionStatusMs_=safetyNow;sendMissionFeedback(controller_.status(),safetyNow);}
+   if(controller_.status().transaction&&safetyNow-lastMissionStatusMs_>=
+       (primaryFresh(safetyNow)?250U:3000U)){
+      lastMissionStatusMs_=safetyNow;sendMissionFeedback(controller_.status(),safetyNow);
+    }
  }
  maybeStartFailsafeReturnHome(safetyNow);
  if(sessionReady()) {
