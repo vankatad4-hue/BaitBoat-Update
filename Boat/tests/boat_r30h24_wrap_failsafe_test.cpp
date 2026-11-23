@@ -62,10 +62,10 @@ static void navBoundaryStaleCachedResult(){
  assert(moves(a.tick(in,start,{INTENT_NAV_HOME,-1,0},HOME,true,false,0,0,start)));
  // A cached navigation result is deliberately still valid. The real
  // physical-sample ages, not that cache, must gate the final motor request.
- s.safetyAt=start+200U;s.headingAt=start+200U;
- in=ready(s,start+200U,false,false);in.autonomousRth=true;
+ s.safetyAt=start+300U;s.headingAt=start; // heading age exactly 300 ms
+ in=ready(s,start+300U,false,false);in.autonomousRth=true;
  assert(!in.fix.headingValid);
- assert(off(a.tick(in,start+200U,{INTENT_NAV_HOME,-1,0},HOME,true,false,0,0,s.safetyAt)));
+ assert(off(a.tick(in,start+300U,{INTENT_NAV_HOME,-1,0},HOME,true,false,0,0,s.safetyAt)));
  s.gnssAt=start+1U;s.headingAt=start+2100U;s.safetyAt=start+2100U;
  in=ready(s,start+2100U,false,false);in.autonomousRth=true;
  assert(!in.fix.fresh);
