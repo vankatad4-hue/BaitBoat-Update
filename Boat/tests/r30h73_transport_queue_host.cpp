@@ -8,6 +8,8 @@
 #include <iostream>
 #include <set>
 #include <mutex>
+#include <functional>
+#include <chrono>
 struct Cmd { uint32_t id; };
 int main() {
  flytec_rtos::CommandHandoff<Cmd,8> q;
@@ -62,7 +64,9 @@ int main() {
  std::thread producerA(produce,10000U,std::ref(doneA));
  std::thread producerB(produce,20000U,std::ref(doneB));
  std::thread consumer([&] {
+  const auto deadline=std::chrono::steady_clock::now()+std::chrono::seconds(10);
   while(!doneA.load() || !doneB.load() || received.size()<400U) {
+   assert(std::chrono::steady_clock::now()<deadline && "consumer stalled");
    Cmd item{}; bool stopFlag=false; uint32_t e=0;
    if(q.receive(item,stopFlag,e)) {
     assert(!stopFlag && q.mayExecute(e));
