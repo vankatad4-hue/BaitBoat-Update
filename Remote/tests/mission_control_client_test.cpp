@@ -35,5 +35,20 @@ int main(){
  assert(failover.due(3100,pending,false));failover.admitted(3100,false);
  assert(failover.observe({21,MC_PAUSED,MCTRL_PAUSE,pending.request,MC_ACCEPTED},3101,true));
  assert(!failover.pending()&&!failover.unknown());
+ // A pending request must expire without any available radio transport.
+ MissionControlClient disconnected;disconnected.bind(30);
+ assert(disconnected.request(MCTRL_START,10));
+ disconnected.expire(1809,false);
+ assert(disconnected.pending()&&!disconnected.unknown());
+ disconnected.expire(1810,false);
+ assert(!disconnected.pending()&&disconnected.unknown());
+ // A request admitted on backup retains its 12-second deadline offline.
+ MissionControlClient offlineBackup;MissionControlRequest offlineRequest{};
+ offlineBackup.bind(31);assert(offlineBackup.request(MCTRL_PAUSE,10));
+ assert(offlineBackup.due(10,offlineRequest,true));offlineBackup.admitted(10,true);
+ offlineBackup.expire(3000,false);
+ assert(offlineBackup.pending()&&!offlineBackup.unknown());
+ offlineBackup.expire(12010,false);
+ assert(!offlineBackup.pending()&&offlineBackup.unknown());
  std::cout<<"Mission remote control ACK handling passed\n";
 }
