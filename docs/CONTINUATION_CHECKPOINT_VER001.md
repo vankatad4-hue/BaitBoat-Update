@@ -1,8 +1,14 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-23, **R30H-19 — VS Code + PlatformIO PRIMARY: correlated STOP command-ID acceptance ACK followed by authoritative primary Boat stopped-status, bounded retry and heartbeat recovery; physical gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
+**Checkpoint:** 2026-11-23, **R30H-20 — VS Code + PlatformIO PRIMARY: correlated STOP command-ID acceptance ACK followed by authoritative primary Boat stopped-status, bounded retry and heartbeat recovery; physical gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
-**Branch:** `hardware-ready-dual-radio-r1`
+**Branch:** `platformio-unified-r30h20` (parent `hardware-ready-dual-radio-r1`)
+
+## Current read-first status — R30H-20 PlatformIO unified branch (2026-11-23)
+
+> **R30H-20 (2026-11-23) — NEW PRIMARY BRANCH [`platformio-unified-r30h20`](https://github.com/vankatad4-hue/BaitBoat-Update/tree/platformio-unified-r30h20).** Complete tracked-file project inherited from `hardware-ready-dual-radio-r1` at `e0b6220d`; source, UI, CAD, documents, tests and previous releases retained. Added a VS Code / PlatformIO audit/build/test/snapshot command (`tools/flytec.py`), full-project Git-tracked ZIP/SHA256 manifest, CI triggers for the new branch, and authenticated 32-byte STOP/ACK/STATUS fault tests compiled separately against Boat and Remote protocol source. Fixed critical battery STATUS reserved `0x80` bit and invalid STATUS outbox priority starvation. This is **compile-only software development, not physical approval**; CI results require exact-commit verification. [R30H-20 handoff](PLATFORMIO_UNIFIED_R30H20.md). **R30H-10 12 NOT_RUN / 6 BLOCKED; R30H-12 7 NOT_RUN / 5 BLOCKED; Boat VER014 / Remote VER028 unchanged.**
+
+---
 
 ## Current read-first status — R30H-19 STOP ACK/STATUS integration (2026-11-23)
 
