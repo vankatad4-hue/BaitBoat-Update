@@ -33,7 +33,8 @@ void BoatApplicationPort::publishData(uint32_t now){
 }
 void BoatApplicationPort::fault(){
  finishManual(false);
- executor_.stop();radio_.localEmergencyStop();releaseTransaction_=0;
+ executor_.stop();executor_.requireManualNeutral();
+ radio_.localEmergencyStop();releaseTransaction_=0;
  if(driver_.disable)driver_.disable();
 }
 void BoatApplicationPort::tick(){
@@ -41,6 +42,21 @@ void BoatApplicationPort::tick(){
  if(!attached_){
   radio_.update();BoatCommand cmd{};bool duplicate=false;ManagedLink link=LINK_NONE;
   while(radio_.takeCommand(cmd,duplicate,link)){}
+  return;
+ }
+ // R30H-25: after apply() fails, the physical output state is uncertain.
+ // Reassert physical disable, keep this instance irrevocably STOP-latched,
+ // and drain/reject any subsequent command. A radio handshake, fresh sensor
+ // or good battery cannot rearm a failed physical driver.
+ if(driverFaultLatched_){
+  driver_.disable();
+  radio_.update();
+  BoatCommand cmd{};bool duplicate=false;ManagedLink link=LINK_NONE;
+  while(radio_.takeCommand(cmd,duplicate,link)){
+   if(!duplicate&&cmd.type!=CMD_EMERGENCY_STOP)
+    radio_.completeApplicationAction(cmd,radio_.sessionGeneration(),false,2,0,link);
+  }
+  radio_.sendHardwareTelemetry(boatHardware_status({},millis(),true,MC_ABORTED,false,false));
   return;
  }
  sample_={};sampleOK_=driver_.read(sample_);
@@ -75,7 +91,11 @@ void BoatApplicationPort::tick(){
   if(manualPending_||executor_.releaseBusy()){
    manualPending_=false;executor_.stop();radio_.localEmergencyStop();
   }else{
-   executor_.cancelManual();
+   // Do not force a neutral handshake on initial application attachment;
+   // subsequent authenticated session/epoch changes must always re-arm
+   // manual control with a fresh neutral input before nonzero sticks.
+   if(generation_!=0U)executor_.requireManualNeutral();
+   else executor_.cancelManual();
   }
   generation_=radio_.sessionGeneration();
  }
@@ -136,7 +156,10 @@ void BoatApplicationPort::tick(){
  int16_t left=0,right=0;const bool overrideActive=radio_.missionOverrideOutput(left,right);
  // The driver must check and enforce the output lease independently.
  const auto out=executor_.tick(in,millis(),intent,radio_.missionNavigation(),missionActive,overrideActive,left,right,sample_.safetyAt);
- if(!driver_.apply(out,100)){fault();return;}
+ if(!driver_.apply(out,100)){
+  driverFaultLatched_=true; // never trust subsequent radio/sensor rearm
+  fault();return;
+ }
  const auto completion=executor_.takeCompletion();
  if(completion.valid){if(manualPending_)finishManual(completion.success);else if(!sample_.batteryRthRequested)radio_.missionReleaseComplete(completion.transaction,completion.token,completion.success);}
  if(manualPending_&&executor_.stopped())finishManual(false);

@@ -29,6 +29,11 @@ private:
  BoatHardwareSample sample_{};
  BoatBatteryMonitor batteryMonitor_{};
  bool attached_=false,sampleOK_=false;
+ // A physical driver apply() failure has uncertain actuator state. Do not
+ // permit clearing STOP within this application instance after such a fault.
+ // An authorized cold commissioning reset and measured driver recovery are
+ // required, never radio-only recovery.
+ bool driverFaultLatched_=false;
  uint16_t releaseTransaction_=0;
  uint32_t lastStatusAt_=0,lastDataAt_=0,generation_=0;
  uint8_t sampleSequence_=0;

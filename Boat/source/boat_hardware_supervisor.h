@@ -54,6 +54,10 @@ public:
   manualLeft_=left;manualRight_=right;manualAt_=receivedAt;
  }
  void cancelManual(){manualValid_=false;}
+ // R30H-25: a new authenticated radio session or a local emergency fault
+ // must not replay non-neutral sticks. A fresh neutral primary-only command
+ // is required before a subsequent nonzero manual motor lease.
+ void requireManualNeutral(){cancelManual();manualNeedsNeutral_=true;}
  bool releaseBusy()const{return pulseActive_||awaitIdle_;}
  void cancelReleaseForFailsafe(uint32_t now){if(pulseActive_){pulseActive_=false;awaitIdle_=true;offAt_=now;releaseCancelled_=true;cancelManual();}}
  bool beginManualRelease(uint16_t id,int8_t channel,const ExecInputs &in,uint32_t now){
