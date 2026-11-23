@@ -50,6 +50,7 @@ jobs:
   host-tests:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: R30H-13 Boat nRF24 stuck-TX host regression (no physical radio)
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror \
@@ -57,7 +58,6 @@ jobs:
             Boat/source/nrf24_link.cpp Boat/tests/r30h13_boat_nrf_timeout_test.cpp \
             -o /tmp/boat_nrf_timeout
           /tmp/boat_nrf_timeout
-      - uses: actions/checkout@v4
       - name: Compiler
         run: g++ --version
       - name: Payload encoder/decoder

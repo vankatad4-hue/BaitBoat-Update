@@ -125,8 +125,8 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
     for file in existing["Remote"]:
         rel=file.relative_to(root).as_posix()
         c=read(rel)
-        if re.search(r'#\s*include\s*[<"]RF24.h[>"]',c) or
-           re.search(r'\bNRF24Link\b',c):
+        if (re.search(r'#\s*include\s*[<"]RF24.h[>"]',c) or
+                re.search(r'\bNRF24Link\b',c)):
             errors.append(f"{rel}: deprecated direct SPI radio dependency")
     for filename in COMMON_PAIRS:
         boat=f"Boat/source/{filename}"
