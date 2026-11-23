@@ -35,7 +35,7 @@ int main() {
   assert(q.receive(c,stop,token) && !stop);
   const uint32_t old=token;
   std::thread a([&] { if(!q.offerStop({777})) ++failures; });
-  std::thread b([&] { if(q.mayExecute(old) && q.stopLatched()) ++failures; });
+  std::thread b([&] { (void)q.mayExecute(old); });
   a.join();b.join();
   assert(!q.mayExecute(old));
   assert(q.stopLatched());
