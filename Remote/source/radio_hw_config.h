@@ -19,9 +19,13 @@
 #define REMOTE_NRF_BRIDGE_HARDWARE_AUDIT_SIGNED 0
 #define REMOTE_NRF_BRIDGE_RF_INTEROPERABILITY_VERIFIED 0
 #define REMOTE_NRF_CHANNEL  76
-#define REMOTE_NRF_MOSI_PIN 11
-#define REMOTE_NRF_SCK_PIN  12
-#define REMOTE_NRF_MISO_PIN 13
+// Direct nRF SPI on ESP32 is retired. The only ESP32 SPI11/12/13 is TF.
+#define REMOTE_TF_SPI_MOSI_PIN 11
+#define REMOTE_TF_SPI_SCK_PIN  12
+#define REMOTE_TF_SPI_MISO_PIN 13
+#define REMOTE_NRF_MOSI_PIN (-1)
+#define REMOTE_NRF_SCK_PIN  (-1)
+#define REMOTE_NRF_MISO_PIN (-1)
 // R30H-1: actual Waveshare board, RF carrier, logic and airtime have NOT
 // been purchased/inspected/signed. Keep RADIO INITIALIZATION locked by default.
 // Do not set to 1 based on host tests, a schematic or a successful target build.

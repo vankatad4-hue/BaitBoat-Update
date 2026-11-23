@@ -17,7 +17,9 @@ static_assert(REMOTE_NRF_CE_PIN==-1 && REMOTE_NRF_CSN_PIN==-1 &&
 static_assert(REMOTE_SD_DUMMY_CSN_PIN==6 &&
               REMOTE_R30H10_REJECTED_CE_GPIO==6 &&
               REMOTE_R30H10_REJECTED_CSN_GPIO==15,"Known GPIO6/15 collisions");
-static_assert(flytec_h10_remote::MOSI==REMOTE_NRF_MOSI_PIN &&
-              flytec_h10_remote::SCK==REMOTE_NRF_SCK_PIN &&
-              flytec_h10_remote::MISO==REMOTE_NRF_MISO_PIN &&
-              flytec_h10_remote::PPS==-1,"Remote shared SPI/PPS pin drift");
+static_assert(flytec_h10_remote::MOSI==REMOTE_TF_SPI_MOSI_PIN &&
+              flytec_h10_remote::SCK==REMOTE_TF_SPI_SCK_PIN &&
+              flytec_h10_remote::MISO==REMOTE_TF_SPI_MISO_PIN &&
+              REMOTE_NRF_MOSI_PIN==-1 && REMOTE_NRF_SCK_PIN==-1 &&
+              REMOTE_NRF_MISO_PIN==-1 && flytec_h10_remote::PPS==-1,
+              "TF-owned ESP SPI and isolated nRF bridge pin drift");

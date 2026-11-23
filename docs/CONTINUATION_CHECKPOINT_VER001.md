@@ -1,10 +1,22 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-22, **VS Code + PlatformIO PRIMARY; R30H-10 provisional GPIO/SD/RF resource map synchronized; both Boat and Remote GPIO-revision PlatformIO jobs PASS (#45066383457); all physical GPIO/RF/GNSS-PPS/independent STOP NOT_RUN/BLOCKED** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
+**Checkpoint:** 2026-11-23, **VS Code + PlatformIO PRIMARY; R30H-11 Remote nRF candidate isolated over SC18IS606-EVB I2C-SPI bridge (no TF SPI sharing); all RF and R30H-10 physical GPIO/PPS/STOP gates remain unsigned; current target CI needs recheck** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `hardware-ready-dual-radio-r1`
 
-## Current read-first status — R30H-10 GPIO sync (2026-11-22)
+## Current read-first status — R30H-11 software bridge selection (2026-11-23)
+
+> **CURRENT DEVELOPMENT HANDOFF — R30H-11, 2026-11-23:** The Remote nRF24 candidate transport now uses a **separate, ready-made NXP SC18IS606-EVB I²C→SPI bridge** rather than Waveshare direct GPIO or its TF SPI. On the NXP evaluation board: I²C 7-bit candidate `0x28` (EVB 8-bit write `0x50`); `JP1-7 SS0 → nRF CSN`, `JP1-5 SS2/GPIO2 → nRF CE`; **JP1-6 SS1 is already connected to an onboard EEPROM and must NOT be used for CE**. EVB JP1-2/3/4 carries independent SCK/MOSI/MISO. Waveshare `GPIO11/12/13` remain TF-only; no SD/nRF SPI sharing or CS arbitration is needed **if physically wired as specified**. Existing `GPIO6` SD dummy-CS and `GPIO15` RS485 are untouched. No new ESP32 GPIO or additional MCU is needed. This is a **software candidate and not a hardware part approval**. `REMOTE_NRF_PIN_AUDIT_SIGNED=0`, `REMOTE_NRF_BRIDGE_HARDWARE_AUDIT_SIGNED=0`, `REMOTE_NRF_BRIDGE_RF_INTEROPERABILITY_VERIFIED=0`; RF, flashing and actuator outputs stay denied; Boat `VER014` / Remote `VER028` unchanged. [Detailed bridge plan](../Remote/docs/REMOTE_R30H_11_ISOLATED_NRF_SPI_BRIDGE.md).
+
+**Source implementation:** `Remote/source/sc18is606_port.*` (bounded I²C protocol and chip identity), `sc18is606_wire_io.*` (board-owned Wire), `sc18is606_nrf_link.*` (fixed 32B nRF24 register transport/ACK/status polling/fail-closed), and `Remote/tests/sc18is606_bridge_nrf_test.cpp` (injected faults). `boat_radio.cpp` now constructs this isolated bridge instead of the direct `RF24` GPIO adapter and revokes primary readiness on a transport fault. All three independent hardware locks stay 0; the bridge cannot initialize in the current production build. `Remote/source/nrf24_link.*` remains a compiled legacy reference, not selected by the application.
+
+**Hardware still unresolved:** Prebuilt EVB procurement and physical circuit check; exact EVB jumpers and I²C address/3.3V compatibility; presence of nRF stable 3.3V rail and mandatory CE pull-down; RF profile interoperability with Boat library; I²C latency under live LCD/buttons/ADS/E22 loads; actual radio packet/STOP acceptance and independent STOP current-zero. These tests are NOT_RUN; physical gates stay 12 NOT_RUN / 6 BLOCKED. Do not flash or connect actuators. Boat/Remote release markers remain `014/028`.
+
+**Next:** verify fresh complete PlatformIO/Arduino CI for bridge candidate. After it passes, advance R30H-10 with passive electrical ID/level checks and RF-only bench testing (only following signed radio and safety isolation gates). No GNSS PPS channel is allocated. Older R30H-10 shared-SPI arbitration notes below are **historical for the abandoned direct-nRF SPI route**.
+
+---
+
+## R30H-10 GPIO sync — historical base (2026-11-22)
 
 **Versions:** Boat `VER014`, Remote `VER028` remain unchanged; packaging is a development snapshot, not a signed firmware release. VS Code + PlatformIO is primary; Arduino reference CI is secondary.
 

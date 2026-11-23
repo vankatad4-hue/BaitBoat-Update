@@ -56,14 +56,19 @@ def verify(data):
             "BOAT_E22_UART_PIN_AUX":14,"BOAT_E22_UART_PIN_NRST":6,
             "BOAT_NRF_PIN_AUDIT_SIGNED":0,"BOAT_E22_UART_PIN_AUDIT_SIGNED":0}),
        (RH,{"REMOTE_NRF_CE_PIN":-1,"REMOTE_NRF_CSN_PIN":-1,
-            "REMOTE_NRF_MOSI_PIN":11,"REMOTE_NRF_SCK_PIN":12,
-            "REMOTE_NRF_MISO_PIN":13,"REMOTE_SD_DUMMY_CSN_PIN":6,
+            "REMOTE_TF_SPI_MOSI_PIN":11,"REMOTE_TF_SPI_SCK_PIN":12,
+            "REMOTE_TF_SPI_MISO_PIN":13,
+            "REMOTE_NRF_MOSI_PIN":-1,"REMOTE_NRF_SCK_PIN":-1,
+            "REMOTE_NRF_MISO_PIN":-1,"REMOTE_SD_DUMMY_CSN_PIN":6,
             "REMOTE_R30H10_REJECTED_CE_GPIO":6,
             "REMOTE_R30H10_REJECTED_CSN_GPIO":15,
+            "REMOTE_NRF_BRIDGE_I2C_ADDRESS":0x28,
+            "REMOTE_NRF_BRIDGE_HARDWARE_AUDIT_SIGNED":0,
+            "REMOTE_NRF_BRIDGE_RF_INTEROPERABILITY_VERIFIED":0,
             "REMOTE_NRF_PIN_AUDIT_SIGNED":0})):
         for key,value in expected.items():
-            match=re.search(r"^#define\s+"+re.escape(key)+r"\s+\(?(-?\d+)\)?\s*$",data[path],re.M)
-            if not match or int(match.group(1))!=value: errors.append(path+":"+key+" altered")
+            match=re.search(r"^#define\s+"+re.escape(key)+r"\s+\(?(-?(?:0x[0-9A-Fa-f]+|\d+))\)?\s*$",data[path],re.M)
+            if not match or int(match.group(1),0)!=value: errors.append(path+":"+key+" altered")
     return errors
 
 if __name__=="__main__":
