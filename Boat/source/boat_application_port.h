@@ -1,5 +1,6 @@
 #pragma once
 #include "boat_hardware_supervisor.h"
+#include "boat_r30h26_output_off_feedback_guard.h"
 #include "boat_dual_radio_port.h"
 // Current modular Boat uses ready-made ESP32-S3-DevKitC-1-N32R16V,
 // MDD20A, EKM014 and
@@ -34,6 +35,7 @@ private:
  // An authorized cold commissioning reset and measured driver recovery are
  // required, never radio-only recovery.
  bool driverFaultLatched_=false;
+ boat_r30h26::OutputOffFeedbackGuard outputOffFeedback_{};
  uint16_t releaseTransaction_=0;
  uint32_t lastStatusAt_=0,lastDataAt_=0,generation_=0;
  uint8_t sampleSequence_=0;

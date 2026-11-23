@@ -150,6 +150,26 @@ class TestSourceLayout(unittest.TestCase):
             "if(driverFaultLatched_){",
             "if(false){")
 
+    def test_r30h26_persistent_output_feedback_latches_stop(self):
+        self.check_rejects_edit("Boat/source/boat_application_port.cpp",
+            "driverFaultLatched_=true; // R30H-26 persistent reported output after OFF",
+            "driverFaultLatched_=false; // unsafe mutation")
+
+    def test_r30h26_coil_feedback_deadline_cannot_be_removed(self):
+        self.check_rejects_edit("Boat/source/boat_r30h26_output_off_feedback_guard.h",
+            "(uint32_t)(now-releaseOffSince_)>=RELEASE_OFF_SETTLE_MS",
+            "false")
+
+    def test_r30h26_motor_feedback_deadline_cannot_be_removed(self):
+        self.check_rejects_edit("Boat/source/boat_r30h26_output_off_feedback_guard.h",
+            "(uint32_t)(now-motorsOffSince_)>=MOTOR_OFF_SETTLE_MS",
+            "false")
+
+    def test_r30h26_fault_ack_never_synthesizes_stopped(self):
+        self.check_rejects_edit("Boat/source/boat_application_port.cpp",
+            "radio_.completeApplicationAction(manualRelease_,generation_,false,2,0);",
+            "radio_.completeApplicationAction(manualRelease_,generation_,false,1,0);")
+
     def test_remote_radio_pin_lock_cannot_silently_disappear(self):
         self.check_rejects_edit("Remote/source/radio_hw_config.h",
              "#define REMOTE_NRF_PIN_AUDIT_SIGNED 0",

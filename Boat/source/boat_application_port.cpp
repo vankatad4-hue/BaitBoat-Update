@@ -5,7 +5,9 @@
 BoatApplicationPort *BoatApplicationPort::active_=nullptr;
 bool BoatApplicationPort::attach(const BoatPhysicalDriver &driver,const BoatActuatorConfig &config){
  if(attached_||active_||!driver.read||!driver.apply||!driver.disable)return false;
- driver.disable();if(!executor_.configure(config))return false;
+ driver.disable();
+ outputOffFeedback_.commandedDisable(millis());
+ if(!executor_.configure(config))return false;
  driver_=driver;attached_=true;active_=this;
  radio_.setMissionInputs(readMission);radio_.setMissionPreparationGate(prepareGate);
  return true;
@@ -32,10 +34,19 @@ void BoatApplicationPort::publishData(uint32_t now){
  for(uint8_t i=0;i<b.count;++i)radio_.sendHardwareTelemetry(b.payload[i]);
 }
 void BoatApplicationPort::fault(){
- finishManual(false);
+ // In a fault path a same-tick pre-STOP sensor sample CANNOT confirm a
+ // newly commanded physical STOP. Return an error/UNKNOWN to any pending
+ // one-shot action, rather than synthesizing stopped feedback from an ACK.
+ if(manualPending_){
+  manualPending_=false;
+  radio_.completeApplicationAction(manualRelease_,generation_,false,2,0);
+ }
  executor_.stop();executor_.requireManualNeutral();
  radio_.localEmergencyStop();releaseTransaction_=0;
- if(driver_.disable)driver_.disable();
+ if(driver_.disable){
+  driver_.disable();
+  outputOffFeedback_.commandedDisable(millis());
+ }
 }
 void BoatApplicationPort::tick(){
  // Diagnostic default: poll and discard, never simulate a physical input.
@@ -74,6 +85,17 @@ void BoatApplicationPort::tick(){
  sample_.batteryBand=battery.band;sample_.batteryPercent=battery.percent;sample_.batteryRthRequested=battery.rthRequested;
  sample_.batteryHealthy=energy!=boat_r30b::EnergyEvidence::STOP_INVALID_OR_CRITICAL;
  sample_.fix.batteryHealthy=sample_.batteryHealthy;
+ // A genuine locally sampled motor/coil output still active after the
+ // previous OFF command has exceeded its settle deadline is a persistent
+ // hardware/feedback contradiction. Lock STOP, request disable again and
+ // offer UNKNOWN STATUS. No new radio/clear-stop command may pass.
+ if(outputOffFeedback_.mismatch(sample_,now)){
+  driverFaultLatched_=true; // R30H-26 persistent reported output after OFF
+  fault();
+  radio_.update();
+  radio_.sendHardwareTelemetry(boatHardware_status(sample_,millis(),true,MC_ABORTED,false,false));
+  return;
+ }
  auto in=boatHardware_inputs(sample_,now,executor_.stopped());
  if(!sample_.physicalStopReleased||!sample_.watchdogReady||!in.fix.batteryHealthy){fault();radio_.update();radio_.sendHardwareTelemetry(boatHardware_status(sample_,millis(),true,MC_ABORTED,false,radio_.primaryFresh(millis())));return;}
  radio_.update();
@@ -160,6 +182,7 @@ void BoatApplicationPort::tick(){
   driverFaultLatched_=true; // never trust subsequent radio/sensor rearm
   fault();return;
  }
+ outputOffFeedback_.acceptedOutput(out,millis());
  const auto completion=executor_.takeCompletion();
  if(completion.valid){if(manualPending_)finishManual(completion.success);else if(!sample_.batteryRthRequested)radio_.missionReleaseComplete(completion.transaction,completion.token,completion.success);}
  if(manualPending_&&executor_.stopped())finishManual(false);

@@ -178,6 +178,15 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
         ("Boat/source/boat_hardware_supervisor.h", "void requireManualNeutral(){cancelManual();manualNeedsNeutral_=true;}"),
         ("Boat/tests/boat_r30h25_driver_session_fault_test.cpp", "assert(readCount==readsBeforeLatch);"),
         ("Boat/tests/boat_r30h25_brownout_recovery_test.cpp", "assert(stopped()&&radio.phase==MC_ABORTED);"),
+        # R30H-26: local OFF feedback mismatch must latch STOP before any
+        # radio update/command dispatch; no synthetic stopped ACK on faults.
+        ("Boat/source/boat_application_port.h", "boat_r30h26::OutputOffFeedbackGuard outputOffFeedback_{};"),
+        ("Boat/source/boat_application_port.cpp", "if(outputOffFeedback_.mismatch(sample_,now)){"),
+        ("Boat/source/boat_application_port.cpp", "driverFaultLatched_=true; // R30H-26 persistent reported output after OFF"),
+        ("Boat/source/boat_application_port.cpp", "outputOffFeedback_.acceptedOutput(out,millis());"),
+        ("Boat/source/boat_r30h26_output_off_feedback_guard.h", "(uint32_t)(now-motorsOffSince_)>=MOTOR_OFF_SETTLE_MS"),
+        ("Boat/source/boat_r30h26_output_off_feedback_guard.h", "(uint32_t)(now-releaseOffSince_)>=RELEASE_OFF_SETTLE_MS"),
+        ("Boat/source/boat_application_port.cpp", "radio_.completeApplicationAction(manualRelease_,generation_,false,2,0);"),
         # R30H-14: cross-endpoint over-air profile must not drift silently.
         ("Boat/source/boat_radio_hw_config.h", "#define BOAT_NRF_CHANNEL 76"),
         ("Remote/source/radio_hw_config.h", "#define REMOTE_NRF_CHANNEL  76"),
