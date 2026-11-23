@@ -14,6 +14,7 @@ class TestHandoffContract(unittest.TestCase):
         self.assertIn("std::atomic<uint32_t> state_{1U}", src)
         self.assertIn("std::atomic<uint32_t> acknowledgedStopEpoch_", src)
         self.assertIn("xQueueOverwrite(stop_, &e)", src)
+        self.assertLess(src.index("const uint32_t newEpoch = latchAndAdvance();"), src.index("if (stopWriter_.test_and_set(std::memory_order_acquire)) return false;"))
         self.assertIn("compare_exchange_strong(observed, desired", src)
         self.assertIn("bool receive(Command& cmd, bool& isStop, uint32_t& epochToken)", src)
         self.assertIn("bool mayExecute(uint32_t token) const", src)
