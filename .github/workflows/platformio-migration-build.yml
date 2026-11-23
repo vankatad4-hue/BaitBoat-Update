@@ -76,6 +76,7 @@ jobs:
           grep -F '#define REMOTE_SD_DUMMY_CSN_PIN 6' Remote/source/radio_hw_config.h
           grep -F '#define REMOTE_NRF_CE_PIN   (-1)' Remote/source/radio_hw_config.h
           grep -F '#define REMOTE_NRF_CSN_PIN  (-1)' Remote/source/radio_hw_config.h
+          python Boat/tools/verify_platformio_source_layout_r30h13.py
           python Boat/tools/verify_r30h10_gpio_map.py
           python -m unittest discover -s Boat/tests -p test_r30h10_gpio_map.py -v
       - name: Cache downloaded PlatformIO packages (not firmware images)

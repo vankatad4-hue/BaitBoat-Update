@@ -6,6 +6,11 @@ on:
       - 'Boat/source/**'
       - 'Remote/source/**'
       - 'Boat/platformio.ini'
+      - 'Remote/platformio.ini'
+      - 'Remote/archive/2026-11-23/R30H_13_direct_RF24/**'
+      - 'Boat/tools/verify_platformio_source_layout_r30h13.py'
+      - 'Boat/tests/test_platformio_source_layout_r30h13.py'
+      - 'Flytec_V080.code-workspace'
       - '.github/workflows/boat-target-build.yml'
       - 'Boat/tools/audit_source_inventory_r30h10.py'
       - '.github/workflows/source-audit.yml'
@@ -19,8 +24,14 @@ jobs:
       - uses: actions/checkout@v4
       - name: Read-only active/legacy include graph and compile guards
         run: python3 Boat/tools/audit_source_inventory_r30h10.py --json /tmp/source-audit.json
+      - name: Validate every active Boat/Remote source and shared protocol pair
+        run: |
+          python3 Boat/tools/verify_platformio_source_layout_r30h13.py --json /tmp/platformio-audit.json
+          python3 -m unittest discover -s Boat/tests -p test_platformio_source_layout_r30h13.py -v
       - uses: actions/upload-artifact@v4
         with:
           name: flytec-source-inventory-not-physical-acceptance
-          path: /tmp/source-audit.json
+          path: |
+            /tmp/source-audit.json
+            /tmp/platformio-audit.json
           if-no-files-found: error
