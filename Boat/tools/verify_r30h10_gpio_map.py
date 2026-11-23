@@ -54,13 +54,13 @@ def verify(data):
     # Pin macros may refer to the canonical constexpr namespace instead of
     # duplicating literals. Resolve only explicitly named constexpr definitions.
     def resolved(path,macro):
-        m=re.search(r"^#define\\s+"+re.escape(macro)+r"\\s+([^\\s/]+)",data[path],re.M)
+        m=re.search(r"^#define\s+"+re.escape(macro)+r"\s+([^\s/]+)",data[path],re.M)
         if not m:return None
         raw=m.group(1).strip("()")
         if raw.startswith("boat_pins::") or raw.startswith("remote_pins::"):
             namespace,key=raw.split("::",1)
             source=data[BP if namespace=="boat_pins" else RP]
-            definition=re.search(r"\\b"+re.escape(key)+r"\\s*=\\s*(-?(?:0x[0-9A-Fa-f]+|\\d+))\\s*[,;]",source)
+            definition=re.search(r"\b"+re.escape(key)+r"\s*=\s*(-?(?:0x[0-9A-Fa-f]+|\d+))\s*[,;]",source)
             return int(definition.group(1),0) if definition else None
         try:return int(raw,0)
         except ValueError:return None
