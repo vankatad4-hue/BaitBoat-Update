@@ -1,0 +1,21 @@
+name: R30H-73 transport queue host stress
+on:
+  push:
+    branches: [platformio-unified-r30h20]
+    paths:
+      - 'Boat/source/transport_task_queue.h'
+      - 'Remote/source/transport_task_queue.h'
+      - 'Boat/tests/r30h73*'
+      - 'Boat/tests/run_r30h73_transport_queue_host.sh'
+      - '.github/workflows/r30h73-transport-queue-host.yml'
+  workflow_dispatch:
+jobs:
+  queue-host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile and run real transport header with FreeRTOS host mocks
+        run: bash Boat/tests/run_r30h73_transport_queue_host.sh
+      - name: Source contract
+        run: python -m unittest discover -s Boat/tests -p test_r30h71_transport_handoff_contract.py -v
