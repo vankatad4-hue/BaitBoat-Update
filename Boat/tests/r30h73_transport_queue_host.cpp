@@ -153,5 +153,38 @@ int main() {
  // clear() advanced the generation, so a stale STOP dequeue alone is
  // insufficient to authorize rearm. This is intentionally fail-closed.
  assert(!q.clearStopLatchAfterAuthorization());
- std::cout<<"R30H80 actual header / mock FreeRTOS stress PASS (1000 STOP rounds, 400 delivered IDs, 2 concurrent STOP writers)\n";
+ // R30H-84: adversarial rearm versus fresh STOP. The only legal
+ // ordering is rearm-before-STOP (STOP remains latched) or STOP-before-
+ // rearm (rearm rejects pending STOP). No execution may be authorized.
+ for (int race=0; race<500; ++race) {
+  flytec_rtos::CommandHandoff<Cmd,4> concurrent;
+  assert(concurrent.begin());
+  assert(concurrent.clearStopLatchAfterAuthorization());
+  assert(concurrent.offer({uint32_t(90000+race)}));
+  Cmd oldCmd{}; bool oldStop=false; uint32_t oldToken=0;
+  assert(concurrent.receive(oldCmd,oldStop,oldToken) && !oldStop);
+  assert(concurrent.offerStop({uint32_t(91000+race)}));
+  Cmd consumed{}; bool consumedStop=false; uint32_t consumedToken=0;
+  assert(concurrent.receive(consumed,consumedStop,consumedToken) && consumedStop);
+  std::atomic<bool> startRace{false};
+  std::atomic<bool> rearmed{false};
+  std::thread rearm([&] {
+   while (!startRace.load(std::memory_order_acquire)) std::this_thread::yield();
+   rearmed.store(concurrent.clearStopLatchAfterAuthorization(),std::memory_order_release);
+  });
+  std::thread emergency([&] {
+   while (!startRace.load(std::memory_order_acquire)) std::this_thread::yield();
+   assert(concurrent.offerStop({uint32_t(92000+race)}));
+  });
+  startRace.store(true,std::memory_order_release);
+  rearm.join(); emergency.join();
+  assert(concurrent.stopLatched());
+  assert(!concurrent.mayExecute(oldToken));
+  assert(!concurrent.clearStopLatchAfterAuthorization());
+  Cmd pending{}; bool pendingStop=false; uint32_t pendingToken=0;
+  assert(concurrent.receive(pending,pendingStop,pendingToken) &&
+         pendingStop && pending.id==uint32_t(92000+race));
+  (void)rearmed;
+ }
+ std::cout<<"R30H84 actual header / mock FreeRTOS stress PASS (1000 STOP rounds, 400 delivered IDs, 2 concurrent STOP writers)\n";
 }
