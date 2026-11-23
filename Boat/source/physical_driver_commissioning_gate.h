@@ -1,3 +1,7 @@
+// LEGACY, RETIRED: dedicated independent hardware safety architecture is
+// explicitly out of scope as of 2026-11-23. Do not integrate this historical
+// contract into the active software-only Boat driver. Retained solely for
+// compatibility with archived tests; it does not authorize physical outputs.
 #pragma once
 #include <stdint.h>
 #include "boat_hardware_supervisor.h"
