@@ -170,6 +170,16 @@ class TestSourceLayout(unittest.TestCase):
             "radio_.completeApplicationAction(manualRelease_,generation_,false,2,0);",
             "radio_.completeApplicationAction(manualRelease_,generation_,false,1,0);")
 
+    def test_r30h27_actual_current_zero_not_signed(self):
+        self.check_rejects_edit("Boat/source/boat_r30h27_feedback_provenance_audit.h",
+            "PHYSICAL_FEEDBACK_SIGNOFF_COMPLETE = false",
+            "PHYSICAL_FEEDBACK_SIGNOFF_COMPLETE = true")
+
+    def test_r30h27_mcp_output_echo_does_not_certify_current(self):
+        self.check_rejects_edit("Boat/source/boat_r30h27_feedback_provenance_audit.h",
+            "Origin::MCP_OUTPUT_LATCH_READBACK",
+            "Origin::EXTERNAL_CURRENT_MEASUREMENT")
+
     def test_remote_radio_pin_lock_cannot_silently_disappear(self):
         self.check_rejects_edit("Remote/source/radio_hw_config.h",
              "#define REMOTE_NRF_PIN_AUDIT_SIGNED 0",

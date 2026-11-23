@@ -190,6 +190,14 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
         ("Boat/tests/boat_r30h26_output_off_feedback_guard_test.cpp", "g.commandedDisable(base);"),
         ("Boat/tests/boat_r30h26_stuck_motor_application_test.cpp", "assert(status.stopState==2U);"),
         ("Boat/tests/boat_r30h26_stuck_coil_application_test.cpp", "assert(status.stopState==2U);"),
+        # R30H-27: never conflate status/ACK or output-latch echo with
+        # independently commissioned actual motor/coil zero.
+        ("Boat/source/boat_r30h27_feedback_provenance_audit.h", "PHYSICAL_FEEDBACK_SIGNOFF_COMPLETE = false"),
+        ("Boat/source/boat_r30h27_feedback_provenance_audit.h", "Origin::MCP_OUTPUT_LATCH_READBACK"),
+        ("Boat/source/boat_r30h27_feedback_provenance_audit.h", "review.independentlyProvenPhysicalStop;"),
+        ("Boat/source/boat_common_bus_readonly_port_r30d.h", "ACTUAL_READER_COMMISSIONED = false"),
+        ("Boat/source/boat_common_bus_feedback_r30c.h", "COMMON_BUS_HARDWARE_COMMISSIONED = false"),
+        ("Boat/tests/boat_r30h27_feedback_provenance_test.cpp", "assert(status.stopState==1U);"),
         # R30H-14: cross-endpoint over-air profile must not drift silently.
         ("Boat/source/boat_radio_hw_config.h", "#define BOAT_NRF_CHANNEL 76"),
         ("Remote/source/radio_hw_config.h", "#define REMOTE_NRF_CHANNEL  76"),

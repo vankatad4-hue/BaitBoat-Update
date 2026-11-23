@@ -81,6 +81,9 @@ def audit()->None:
     command(sys.executable,"Boat/tools/verify_platformio_source_layout_r30h13.py")
     command(sys.executable,"Boat/tools/verify_r30h10_physical_lock.py")
     command(sys.executable,"Boat/tools/verify_r30h_radio_preflight.py")
+    command(sys.executable,"Boat/tools/verify_r30h27_feedback_matrix.py")
+    command(sys.executable,"-m","unittest","discover","-s","Boat/tests",
+            "-p","test_r30h27_feedback_matrix.py","-v")
     command(sys.executable,"-m","unittest","discover","-s","tools/tests","-p","test_*.py","-v")
 
 def compile_host()->None:
@@ -159,6 +162,9 @@ def compile_host()->None:
                 f"-I{staged}","-IBoat/source","-IBoat/tests/stubs",
                 str(staged/"boat_application_port.cpp"),
                 f"Boat/tests/boat_r30h26_stuck_{channel}_application_test.cpp"])
+        groups.append(["g++","-std=c++17","-Wall","-Wextra","-Wpedantic","-Werror",
+            "-IBoat/source",
+            "Boat/tests/boat_r30h27_feedback_provenance_test.cpp"])
         for i,args in enumerate(groups):
             exe=str(Path(tmp)/f"host_{i}")
             command(*args,"-o",exe)
