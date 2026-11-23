@@ -40,7 +40,7 @@ int main(){
  tick(app,base);
  assert(radio.acks.size()==1U&&radio.acks.back().success);
  assert(off());
- radio.phase=MC_OUTBOUND;radio.tx=74;
+ radio.phase=MC_OUTBOUND;radio.tx=74;radio.returnAllowed=true;
  radio.intent={INTENT_NAV_TARGET,-1,0};
  radio.nav={true,false,15,90,0};
  supplyMv=10700;
