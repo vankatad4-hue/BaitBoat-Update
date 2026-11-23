@@ -15,6 +15,8 @@ on:
       - 'Boat/docs/BOAT_R30H_10_PIN_MAP.csv'
       - 'Remote/docs/REMOTE_R30H_10_PIN_MAP.csv'
       - 'Boat/tools/verify_r30h10_gpio_map.py'
+      - 'Boat/tools/verify_platformio_source_layout_r30h13.py'
+      - 'Boat/tests/test_platformio_source_layout_r30h13.py'
       - 'Remote/tests/**'
       - 'Boat/tests/**'
       - 'Flytec_V080.code-workspace'
