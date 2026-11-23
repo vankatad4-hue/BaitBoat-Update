@@ -132,13 +132,14 @@ static bool displayPort_mountSD()
     }
 
     expander->digitalWrite(4, LOW);                 // Assert physical TF-card CS via CH422G EXIO4 (active low).
-    pinMode(REMOTE_SD_DUMMY_CSN_PIN, OUTPUT);       // TEMPORARY SD dummy CS; conflicts with provisional nRF CE.
+    pinMode(REMOTE_SD_DUMMY_CSN_PIN, OUTPUT);       // TF-library dummy CS only; isolated nRF bridge never touches GPIO6.
     digitalWrite(REMOTE_SD_DUMMY_CSN_PIN, HIGH);    // Keep the dummy inactive; real TF CS is EXIO4.
     SPI.setHwCs(false);                            // Disable hardware-controlled CS on this SPI bus.
     SPI.begin(12, 13, 11, -1);                     // Configure SCK=12, MISO=13, MOSI=11, no native CS.
 
-    // The SD library still requires a GPIO CS argument; GPIO6 is temporarily used.
-    // The physical card remains selected through CH422G EXIO4, as required by Waveshare.
+    // SD.h still needs a dummy GPIO CS argument; GPIO6 is reserved for this.
+    // Real TF CS is CH422G EXIO4. nRF24 uses the separate SC18IS606 SPI
+    // controller and MUST NEVER connect to the TF bus or GPIO6.
     if (!SD.begin(REMOTE_SD_DUMMY_CSN_PIN, SPI, 4000000))                 // Mount the card at a conservative 4 MHz SPI clock.
     {
         Serial.println("SD: TF card mount failed or no card is inserted."); // Storage is optional at startup.

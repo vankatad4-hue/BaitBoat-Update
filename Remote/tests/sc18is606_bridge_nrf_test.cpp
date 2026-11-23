@@ -156,10 +156,29 @@ int main(){
         assert(!radio.receiveFrame(received));
         assert(radio.txCount()==1);
         assert(radio.rxCount()==1);
+        // Distinct CRC failure must not appear in accepted RX queue.
+        frame.crc16=(uint16_t)(frame.crc16^0x1234U);
+        fake.inject(frame);
+        radio.update();
+        assert(!radio.receiveFrame(received));
         fake.failAll=true;
         radio.update();
         assert(!radio.ready()); // revoke primary on bus/bridge errors
         assert(!radio.sendFrame(frame));
+    }
+    {
+        nowMs=0;FakeBridge fake;fake.allowAck=false;
+        Sc18is606NrfLink radio(fake,0x28,76);
+        assert(radio.begin(true));
+        RadioFrame frame{};
+        frame.magic[0]=RADIO_FRAME_MAGIC0;frame.magic[1]=RADIO_FRAME_MAGIC1;
+        assert(radio.sendFrame(frame));
+        fake.status|=0x10; // MAX_RT: radio has exhausted its auto-ACK retries
+        radio.update();
+        assert(!radio.txPending());
+        assert(!radio.lastTxSuccess());
+        assert(radio.txFailCount()==1);
+        assert(radio.ready()); // recover RX, never misreport TX ACK
     }
     {
         nowMs=0;FakeBridge fake;fake.allowAck=false;
