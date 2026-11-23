@@ -83,15 +83,13 @@ public:
  // the epoch to the final execution boundary.
  bool receive(Command& cmd, bool& isStop) {
   // Never hand ordinary work to a consumer that cannot validate its epoch.
-  uint32_t ignored = 0;
-  if (!ready() || xSemaphoreTake(mutex_, 0) != pdTRUE) return false;
+   if (!ready() || xSemaphoreTake(mutex_, 0) != pdTRUE) return false;
   Entry e{};
   const bool gotStop = xQueueReceive(stop_, &e, 0) == pdTRUE;
   if (gotStop) { cmd = e.command; isStop = true; }
   else isStop = false;
   xSemaphoreGive(mutex_);
-  (void)ignored;
-  return gotStop;
+   return gotStop;
  }
  bool mayExecute(uint32_t token) const {
   return ready() && !stopLatched() &&
@@ -111,11 +109,26 @@ public:
   return ok;
  }
  bool clearStopLatchAfterAuthorization() {
-  if (!ready() || xSemaphoreTake(mutex_, 0) != pdTRUE) return false;
-  xQueueReset(ordinary_); xQueueReset(stop_);
+  // STOP producers latch before acquiring the ordinary queue mutex.
+  // Never rearm while a STOP writer is active or an unconsumed STOP exists.
+  if (!ready() || stopWriter_.test_and_set(std::memory_order_acquire)) return false;
+  if (xSemaphoreTake(mutex_, 0) != pdTRUE) {
+   stopWriter_.clear(std::memory_order_release); return false;
+  }
+  Entry pending{};
+  const bool stopPending = xQueueReceive(stop_, &pending, 0) == pdTRUE;
+  if (stopPending) {
+   // Restore the STOP for the consumer; do not erase or authorize motion.
+   xQueueOverwrite(stop_, &pending);
+   xSemaphoreGive(mutex_);
+   stopWriter_.clear(std::memory_order_release);
+   return false;
+  }
+  xQueueReset(ordinary_);
   epoch_.fetch_add(1, std::memory_order_acq_rel);
   stopLatched_.store(false, std::memory_order_release);
   xSemaphoreGive(mutex_);
+  stopWriter_.clear(std::memory_order_release);
   return true;
  }
  void clear() {
