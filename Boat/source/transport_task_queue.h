@@ -52,6 +52,7 @@ public:
   if (stopWriter_.test_and_set(std::memory_order_acquire)) return false;
   if (!ready()) { stopWriter_.clear(std::memory_order_release); return false; }
   const uint32_t newEpoch = latchAndAdvance();
+  if (!stopLatched()) { stopWriter_.clear(std::memory_order_release); return false; }
   Entry e{cmd, newEpoch};
   const bool admitted = xQueueOverwrite(stop_, &e) == pdTRUE;
   if (xSemaphoreTake(mutex_, 0) == pdTRUE) {
@@ -116,6 +117,8 @@ public:
   if (!ready() || xSemaphoreTake(mutex_, 0) != pdTRUE) return false;
   uint32_t observed = state_.load(std::memory_order_acquire);
   const uint32_t stopEpoch = observed >> 1;
+  // Prevent generation wrap from revalidating an ancient token.
+  if (stopEpoch >= 0x7FFFFFFEU) { xSemaphoreGive(mutex_); return false; }
   if ((observed & 1U) == 0U ||
       acknowledgedStopEpoch_.load(std::memory_order_acquire) != stopEpoch) {
    // Initial startup state is latched without an actual STOP request.
@@ -153,7 +156,10 @@ private:
  uint32_t latchAndAdvance() {
   uint32_t observed=state_.load(std::memory_order_acquire);
   for (;;) {
-   const uint32_t nextEpoch=(observed >> 1) + 1U;
+   const uint32_t oldEpoch=observed >> 1;
+   // Exhausted generation space is permanently fail-closed until restart.
+   if (oldEpoch >= 0x7FFFFFFEU) return oldEpoch;
+   const uint32_t nextEpoch=oldEpoch + 1U;
    const uint32_t desired=(nextEpoch << 1) | 1U;
    if (state_.compare_exchange_weak(observed,desired,
           std::memory_order_acq_rel,std::memory_order_acquire))
