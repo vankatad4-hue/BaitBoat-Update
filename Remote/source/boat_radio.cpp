@@ -483,7 +483,7 @@ void boatRadio_update() {
                     if(radio_frameSeal(f,g_authKey)){
                         const bool sent=primary?g_nrf.sendFrame(f):g_lora.sendFrame(f,now);
                         if(sent){
-                            g_missionControl.admitted(now);
+                            g_missionControl.admitted(now,backup);
                             if(backup){g_lastBackupTxMs=now;g_backupTxSent=true;}
                         }
                     }
