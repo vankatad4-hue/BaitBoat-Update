@@ -1,3 +1,5 @@
+> **2026-11-23 active procurement scope:** The seven dedicated hardware failsafe rows S01–S07 were removed by explicit owner decision. Current active purchase register contains 56 items; hardware-safety components and their tests are not purchase requirements. Software STOP/RTH/watchdog remains in scope. Historical records are superseded.
+
 # Flytec V080 procurement
 
 The canonical *priced* 2026-11-23, 63-line bill of materials is
