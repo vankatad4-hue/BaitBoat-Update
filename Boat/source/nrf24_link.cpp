@@ -37,32 +37,33 @@ void NRF24Link::update() {
  if(txPending_) {
    bool txOk=false,txFail=false,rxReady=false;
    radio_.whatHappened(txOk,txFail,rxReady);
-   if(txOk || txFail) {
-     txPending_=false;lastTxSuccess_=txOk;
-     if(txFail) { ++txFailCount_; radio_.flush_tx(); }
+   if(txOk||txFail){
+     txPending_=false;lastTxSuccess_=txOk&&!txFail;
+     if(txFail){++txFailCount_;radio_.flush_tx();}
      radio_.startListening();
    }
-   if(txPending_ && (uint32_t)(millis()-txStartedAtMs_)>=TX_PENDING_TIMEOUT_MS) {
-     // RF status/IRQ failure must not indefinitely hold the TX slot and
-     // suppress subsequent STOP/heartbeat requests. Recommission before use.
+   if(txPending_ && (uint32_t)(millis()-txStartedAtMs_)>=TX_PENDING_TIMEOUT_MS){
+     // Fail closed: uncertain TX completion may otherwise hold STOP/heartbeat.
      ++txFailCount_;txPending_=false;lastTxSuccess_=false;ready_=false;
      rxHead_=rxTail_=rxQueueCount_=0;
      radio_.flush_tx();radio_.startListening();
      return;
    }
-   if(rxReady && radio_.available()) {
-     RadioFrame f; radio_.read(&f,sizeof(f));
-     if(f.magic[0]==RADIO_FRAME_MAGIC0 && f.magic[1]==RADIO_FRAME_MAGIC1 &&
-       radio_crc16((const uint8_t*)&f,offsetof(RadioFrame,crc16))==f.crc16) {
-       if(rxQueueCount_<4){rxQueue_[rxTail_]=f;rxTail_=(uint8_t)((rxTail_+1U)%4U);++rxQueueCount_;++rxCount_;}
-     }
-   }
  }
- if(!txPending_ && radio_.available()) {
-   RadioFrame f; radio_.read(&f,sizeof(f));
-   if(f.magic[0]==RADIO_FRAME_MAGIC0 && f.magic[1]==RADIO_FRAME_MAGIC1 &&
-     radio_crc16((const uint8_t*)&f,offsetof(RadioFrame,crc16))==f.crc16) {
-     if(rxQueueCount_<4){rxQueue_[rxTail_]=f;rxTail_=(uint8_t)((rxTail_+1U)%4U);++rxQueueCount_;++rxCount_;}
+ // One physical RF24 FIFO contains at most three 32-byte frames.
+ // Drain in a single scheduled poll and never re-enter hardware from
+ // receiveFrame(), which is now a pure software-queue operation.
+ if(txPending_)return;
+ for(unsigned i=0;i<3U && radio_.available();++i){
+   RadioFrame f{};
+   radio_.read(&f,sizeof(f));
+   if(f.magic[0]!=RADIO_FRAME_MAGIC0||f.magic[1]!=RADIO_FRAME_MAGIC1||
+      radio_crc16((const uint8_t*)&f,offsetof(RadioFrame,crc16))!=f.crc16)
+     continue;
+   if(rxQueueCount_<4U){
+     rxQueue_[rxTail_]=f;
+     rxTail_=(uint8_t)((rxTail_+1U)%4U);
+     ++rxQueueCount_;++rxCount_;
    }
  }
 }
@@ -78,7 +79,8 @@ bool NRF24Link::sendFrame(const RadioFrame &frame) {
  return true; // TX started; application ACK/boat state is still required
 }
 bool NRF24Link::receiveFrame(RadioFrame &frame) {
- update();
+ // Main Boat radio scheduler calls update() once before draining the queue.
+ // Never perform SPI transactions just because an application dequeued data.
  if(!ready_ || rxQueueCount_==0) return false;
  frame=rxQueue_[rxHead_];rxHead_=(uint8_t)((rxHead_+1U)%4U);--rxQueueCount_;return true;
 }
