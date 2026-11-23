@@ -242,6 +242,8 @@ jobs:
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/stubs -IRemote/source \
             Remote/source/dual_radio_manager.cpp Remote/tests/dual_radio_manager_r62_test.cpp -o /tmp/remote_dual_radio_r62
           /tmp/remote_dual_radio_r62
+      - name: R30H-44 E22 STOP / mission / heartbeat priority and retry source contract
+        run: python3 -m unittest Remote/tests/test_r30h44_lora_mission_priority.py -v
       - name: R30H-43 LoRa mission feedback dispatch source contract
         run: python3 -m unittest Remote/tests/test_r30h43_lora_mission_feedback.py -v
       - name: R63 Remote backup LoRa command policy decoding
