@@ -21,6 +21,7 @@ on:
       - 'Boat/tests/**'
       - 'Flytec_V080.code-workspace'
       - 'tests/r30h20_**'
+      - 'tests/r30h22_**'
       - 'tests/r30h20_stubs/**'
       - 'tools/**'
       - 'Remote/tools/pio_deny_upload.py'
@@ -119,6 +120,18 @@ jobs:
             Boat/tests/boat_r30h21_primary_tx_priority_test.cpp \
             -o /tmp/boat_r30h21_budget
           /tmp/boat_r30h21_budget
+      - name: R30H-22 real-wire two-endpoint STOP/ACK/STATUS scheduler matrix
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror \
+            -Itests/r30h20_stubs -I${{ matrix.endpoint }}/source \
+            ${{ matrix.endpoint }}/source/radio_protocol.cpp \
+            ${{ matrix.endpoint }}/source/radio_payload_codec.cpp \
+            ${{ matrix.endpoint }}/source/radio_payload_encoder.cpp \
+            ${{ matrix.endpoint }}/source/radio_command_codec.cpp \
+            Remote/source/radio_ack_tracker.cpp \
+            tests/r30h22_dual_stop_scheduler_test.cpp -lcrypto \
+            -o /tmp/flytec_r30h22_endpoints
+          /tmp/flytec_r30h22_endpoints
       - name: Cache downloaded PlatformIO packages (not firmware images)
         uses: actions/cache@v4
         with:

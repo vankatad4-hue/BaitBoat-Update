@@ -10,6 +10,7 @@ on:
       - 'Boat/tools/**'
       - 'Boat/tests/**'
       - 'tests/r30h20_**'
+      - 'tests/r30h22_**'
       - 'tests/r30h20_stubs/**'
       - 'tools/**'
       - 'Boat/docs/BOAT_R25_POWER_LEVEL_EVIDENCE.csv'
@@ -35,6 +36,7 @@ on:
       - 'Boat/tools/**'
       - 'Boat/tests/**'
       - 'tests/r30h20_**'
+      - 'tests/r30h22_**'
       - 'tests/r30h20_stubs/**'
       - 'tools/**'
       - 'Boat/docs/BOAT_R25_POWER_LEVEL_EVIDENCE.csv'
@@ -98,6 +100,18 @@ jobs:
             Boat/tests/boat_r30h21_primary_tx_priority_test.cpp \
             -o /tmp/boat_r30h21_budget
           /tmp/boat_r30h21_budget
+      - name: R30H-22 Boat real-wire STOP ACK STATUS two-endpoint scheduler fault injection
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror \
+            -Itests/r30h20_stubs -IBoat/source \
+            Boat/source/radio_protocol.cpp \
+            Boat/source/radio_payload_codec.cpp \
+            Boat/source/radio_payload_encoder.cpp \
+            Boat/source/radio_command_codec.cpp \
+            Remote/source/radio_ack_tracker.cpp \
+            tests/r30h22_dual_stop_scheduler_test.cpp -lcrypto \
+            -o /tmp/flytec_r30h22_boat
+          /tmp/flytec_r30h22_boat
       - name: Compiler
         run: g++ --version
       - name: Payload encoder/decoder

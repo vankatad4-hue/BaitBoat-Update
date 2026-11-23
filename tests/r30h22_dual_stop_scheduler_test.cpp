@@ -190,7 +190,7 @@ struct Sim {
     }
     void tick(uint32_t now){
         lastNow=now;
-        retry.expired(now)?retry.reset():void();
+        if(retry.expired(now))retry.reset();
         const bool remoteBusy=(now<faults.remoteBusyBefore)||
              (faults.periodicBusy && now%100U==0U);
         const bool boatBusy=(now<faults.boatBusyBefore)||
@@ -234,7 +234,9 @@ static void failure(const char *label,Faults f,bool expectBoatSawStop){
     assert(s.physicalStopObserved==expectBoatSawStop);
     assert(s.stopAdmissions<=8);
     assert(s.ackAdmissions<=8U*8U);
-    assert(s.ordinaryRemoteHeartbeats>0); // heartbeat eventually recovers
+    if(f.remoteBusyBefore<=3500U)
+        assert(s.ordinaryRemoteHeartbeats>0); // local retry budget exhausted
+    else assert(s.ordinaryRemoteHeartbeats==0); // PHY remains occupied
     RadioCommandAckRecord record{};
     assert(s.tracker.get(601,record));
     assert(record.state==RADIO_CMD_ACK_TIMEOUT);
