@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "core0_probe.h"
 #include <lvgl.h>
 
 #include "joystick.h"
@@ -72,6 +73,7 @@ void setup()
     // R30H-63: core-affinity observation only; no concurrent application task.
     Serial.begin(115200);
     Serial.printf("R30H-63 Remote setup core=%d CPUs=%d\\n", xPortGetCoreID(), portNUM_PROCESSORS);
+    if (FLYTEC_ENABLE_CORE0_PROBE && !flytec_core_probe::start()) Serial.println("R30H-65 Core0 probe start FAILED");
 
     Serial.begin(115200);
 
