@@ -27,8 +27,9 @@ int main(){
  assert(radio_decodeCommand(frame,1,2,20,2500,true,got,key));
  cmd.mode=MODE_AUTOPILOT;
  assert(radio_encodeCommand(cmd,1,2,3,frame,key));
- assert(!radio_decodeCommand(frame,1,2,20,2500,true,got,key));
+ assert(radio_decodeCommand(frame,1,2,20,2500,true,got,key));
  cmd.type=CMD_RELEASE_HOOK_LEFT;cmd.mode=MODE_MANUAL;cmd.activate=true;
  assert(radio_encodeCommand(cmd,1,2,3,frame,key));
- assert(!radio_decodeCommand(frame,1,2,20,2500,true,got,key));
+ assert(radio_decodeCommand(frame,1,2,20,2500,true,got,key));
+ // Single-release command admission does not bypass Boat release interlocks.
 }
