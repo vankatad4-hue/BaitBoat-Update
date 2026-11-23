@@ -115,8 +115,8 @@ jobs:
         if: matrix.endpoint == 'Remote'
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
-            Remote/source/radio_payload_codec.cpp Remote/source/radio_ack_tracker.cpp \
-            Remote/tests/r30h19_ack_wire_test.cpp -o /tmp/remote_r30h19_wire
+            Remote/source/radio_payload_codec.cpp Remote/source/radio_payload_encoder.cpp \
+            Remote/source/radio_ack_tracker.cpp Remote/tests/r30h19_ack_wire_test.cpp -o /tmp/remote_r30h19_wire
           /tmp/remote_r30h19_wire
       - name: R30H-17 correlated STOP ACK and status regression
         if: matrix.endpoint == 'Remote'
