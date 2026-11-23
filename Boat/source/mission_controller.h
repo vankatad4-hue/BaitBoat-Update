@@ -34,7 +34,8 @@ public:
   }
   bool accepted=false;
   if(r.op==MCTRL_CANCEL&&!in.batteryLow){engine_.abort();phase_=MC_ABORTED;accepted=true;}
-  else if(appReady&&in.primaryFresh&&!in.stopActive){
+  else if(appReady&&!in.stopActive&&(in.primaryFresh||
+          (r.op==MCTRL_PAUSE&&in.backupFresh))){
    switch(r.op){
    case MCTRL_START:
     if(phase_==MC_PREPARED&&now-stagedAt_<10000U&&sticksNeutral&&engine_.start(plan_,in,now,true)){phase_=MC_OUTBOUND;accepted=true;}
