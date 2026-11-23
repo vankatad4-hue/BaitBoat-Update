@@ -217,7 +217,9 @@ void BoatDualRadioPort::update() {
   const uint32_t retryNow=millis();
   if(!sessionReady()||(uint32_t)(retryNow-pendingBackupMissionFeedbackAtMs_)>12000U)
    pendingBackupMissionFeedbackValid_=false;
-  else if(backupFresh(retryNow)){
+  else if(backupFresh(retryNow)&&
+          (!lastBackupMissionFeedbackAttemptMs_||(uint32_t)(retryNow-lastBackupMissionFeedbackAttemptMs_)>=250U)){
+   lastBackupMissionFeedbackAttemptMs_=retryNow;
    const MissionControlFeedback pending=pendingBackupMissionFeedback_;
    RadioFrame reply{};
    radio_frameInit(reply,RADIO_MSG_MISSION_FEEDBACK,BOAT_ID,REMOTE_ID,++txSequence_,pending.transaction,retryNow,sessionEpoch_);
