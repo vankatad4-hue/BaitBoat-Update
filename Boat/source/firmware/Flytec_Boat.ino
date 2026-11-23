@@ -51,6 +51,9 @@ static bool homeStorageReady=false;
 static Figure8CalibrationNvs calibrationNvs;
 static bool calibrationStorageReady=false;
 void setup(){
+ // R30H-63: runtime affinity evidence; no new task and no shared-state race.
+ Serial.begin(115200);
+ Serial.printf("R30H-63 Boat setup core=%d CPUs=%d\\n", xPortGetCoreID(), portNUM_PROCESSORS);
  Serial.begin(115200);
  Serial.println("Flytec Boat: external E22 UART backup design; uncommissioned radio and actuator GPIO disabled.");
  const uint32_t flashBytes=(uint32_t)ESP.getFlashChipSize();
@@ -91,6 +94,11 @@ void setup(){
  // the mission preparation gate unset (default deny).
 }
 void loop(){
+ // Print only once to confirm the actual Arduino loop core on target hardware.
+ static bool r30h63CoreReported=false;
+ if(!r30h63CoreReported){r30h63CoreReported=true;
+  Serial.printf("R30H-63 Boat loop core=%d\\n",xPortGetCoreID());
+ }
  #if __has_include("tracker_commissioned_config.h")
  if(sensorsReady){
   // Bench-only serial diagnostics. No actuator commissioning.
