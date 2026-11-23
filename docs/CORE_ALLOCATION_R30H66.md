@@ -1,3 +1,5 @@
+> **R30H-67 (2026-11-23):** Extended identical Boat/Remote `transport_task_queue.h` with priority STOP admission that resets the pending ordinary-command FIFO and sets an atomic STOP latch. `offer()` and ordinary `receive()` reject work while latched. Only an application-authorized `clearStopLatchAfterAuthorization()` may rearm the queue; `clear()` on session reset remains latched. Source-contract regression extended. **Limitation:** this queue is not connected to live RF/application tasks, and a command already dequeued before STOP still requires an application-level epoch check before actuation. The present design does not yet prove race-free STOP ordering under concurrent producers; full integration and target tests remain pending. No hardware failsafe additions. Official Boat VER014 / Remote VER028 unchanged.
+
 # R30H-66 — ESP32-S3 core ownership and migration acceptance
 
 ## Current verified source behavior
