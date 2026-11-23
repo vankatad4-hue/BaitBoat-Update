@@ -91,9 +91,10 @@ void DualRadioManager::tick(uint32_t now) {
 bool DualRadioManager::backupCommandAllowed(const BoatCommand &cmd) {
     switch (cmd.type) {
     case CMD_EMERGENCY_STOP: return true;
-    case CMD_SET_MODE: return cmd.mode == MODE_RETURN_HOME;
+    case CMD_SET_MODE: return cmd.mode == MODE_RETURN_HOME || cmd.mode == MODE_AUTOPILOT;
     case CMD_MANUAL_MOTORS: return false; // 3s LoRa pacing cannot meet 200ms motor lease
-    default: return false; // no release, mission start, or clear-stop on backup
+    case CMD_CLEAR_STOP: return false; // cannot safely clear STOP without fresh control lease
+    default: return true; // discrete authenticated actions still checked by Boat interlocks
     }
 }
 bool DualRadioManager::send(const BoatCommand &cmd, RadioSendFn sendFn, uint32_t now) {
