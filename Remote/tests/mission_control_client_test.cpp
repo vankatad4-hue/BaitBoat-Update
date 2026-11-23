@@ -19,11 +19,11 @@ int main(){
  MissionControlClient busy;MissionControlRequest due{};
  busy.bind(11);assert(busy.request(MCTRL_PAUSE,100));
  assert(busy.due(100,due,true)&&busy.due(200,due,true));
- busy.admitted(200);
+ busy.admitted(200,true);
  assert(!busy.due(3199,due,true));
  assert(busy.due(3200,due,true)); // no second admission yet
  assert(busy.due(3500,due,true));
- busy.admitted(3500);
+ busy.admitted(3500,true);
  assert(!busy.due(6499,due,true));
  assert(busy.due(6500,due,true));
  // Recovering nRF after a LoRa attempt must not instantly expire the
