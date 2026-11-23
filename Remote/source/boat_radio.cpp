@@ -330,7 +330,7 @@ static bool dispatchValidatedPayload(ManagedLink link,const RadioFrame &frame,ui
     switch(frame.type) {
         case RADIO_MSG_MISSION_FEEDBACK:{
             MissionControlFeedback feedback{};
-            if(link!=LINK_NRF_PRIMARY||!missionFeedbackDecode(frame.payload,feedback)||feedback.transaction!=frame.commandId)return false;
+            if(!missionFeedbackDecode(frame.payload,feedback)||feedback.transaction!=frame.commandId)return false;
             const auto old=g_missionControl.phase();
             if(!g_missionControl.observe(feedback,now,true))return false;
             if(old!=feedback.phase&&(feedback.phase==MC_MANUAL_REQUESTED||feedback.phase==MC_COMPLETE||feedback.phase==MC_ABORTED||feedback.phase==MC_IDLE)){
