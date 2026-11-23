@@ -13,15 +13,21 @@ public:
  }
  // A transport may refuse admission while its RF slot is busy. Merely
  // inspecting a due request must not consume a retry or move its timestamp.
- bool due(uint32_t now,MissionControlRequest &out,bool backup=false){
-  if(!pending_)return false;
+ // Advance the request deadline even when neither transport is available.
+ // Otherwise a disconnected request can remain pending indefinitely.
+ void expire(uint32_t now,bool backup=false){
+  if(!pending_)return;
   const uint32_t retryMs=backup?3000U:400U;
-  // A request that used LoRa keeps its longer deadline after nRF recovers.
   const uint32_t timeoutMs=(backup||backupEver_)?12000U:1800U;
   if((uint32_t)(now-started_)>=timeoutMs||
      (tries_>=3&&(uint32_t)(now-lastTx_)>=retryMs)){
-   pending_=false;unknown_=true;return false;
+   pending_=false;unknown_=true;
   }
+ }
+ bool due(uint32_t now,MissionControlRequest &out,bool backup=false){
+  expire(now,backup);
+  if(!pending_)return false;
+  const uint32_t retryMs=backup?3000U:400U;
   if(tries_&&(uint32_t)(now-lastTx_)<retryMs)return false;
   out=request_;return true;
  }
