@@ -137,5 +137,12 @@ int main() {
  assert(c.id==71001U || c.id==71002U);
  assert(q.stopLatched());
  assert(q.clearStopLatchAfterAuthorization());
- std::cout<<"R30H77 actual header / mock FreeRTOS stress PASS (1000 STOP rounds, 400 delivered IDs, 2 concurrent STOP writers)\n";
+ // R30H-80: STOP after a consumed STOP but before rearm must defeat rearm.
+ assert(q.offerStop({81001}));
+ assert(q.receive(c,stop,token) && stop && c.id==81001);
+ assert(q.offerStop({81002}));
+ assert(!q.clearStopLatchAfterAuthorization());
+ assert(q.receive(c,stop,token) && stop && c.id==81002);
+ assert(q.clearStopLatchAfterAuthorization());
+ std::cout<<"R30H80 actual header / mock FreeRTOS stress PASS (1000 STOP rounds, 400 delivered IDs, 2 concurrent STOP writers)\n";
 }
