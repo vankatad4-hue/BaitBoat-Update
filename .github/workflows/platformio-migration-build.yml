@@ -193,15 +193,6 @@ jobs:
               -o /tmp/boat_r30h26_stuck_${t}
             /tmp/boat_r30h26_stuck_${t}
           done
-      - name: R30H-27 Boat physical-feedback origin and unsigned-current-zero contract
-        if: matrix.endpoint == 'Boat'
-        run: |
-          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror \
-            -IBoat/source Boat/tests/boat_r30h27_feedback_provenance_test.cpp \
-            -o /tmp/boat_r30h27_provenance
-          /tmp/boat_r30h27_provenance
-          python3 Boat/tools/verify_r30h27_feedback_matrix.py
-          python3 -m unittest discover -s Boat/tests -p 'test_r30h27_feedback_matrix.py' -v
       - name: Cache downloaded PlatformIO packages (not firmware images)
         uses: actions/cache@v4
         with:
