@@ -27,7 +27,7 @@ class TestTransportTaskQueue(unittest.TestCase):
   self.assertIn("xQueueOverwrite(stop_, &cmd)",stop)
   self.assertIn("xQueueReset(ordinary_)",stop)
   self.assertLess(stop.index("xQueueOverwrite(stop_, &cmd)"),stop.index("xQueueReset(ordinary_)"))
-  self.assertIn("already dequeued",stop)
+  self.assertIn("already dequeued",s)
   self.assertIn("stopLatched_.store(true, std::memory_order_release)",stop)
   self.assertIn("clearStopLatchAfterAuthorization()",s)
   self.assertIn("stopLatched_.load(std::memory_order_acquire)",s)
