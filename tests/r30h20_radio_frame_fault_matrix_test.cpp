@@ -34,6 +34,13 @@ static RadioFrame ack(uint16_t seq,uint16_t id,uint8_t epoch,
     assert(radio_frameSeal(f,key));
     return f;
 }
+static RadioFrame heartbeat(uint16_t seq,uint8_t epoch,
+                            const uint8_t key[32]){
+    RadioFrame f{};
+    radio_frameInit(f,RADIO_MSG_HEARTBEAT,2,1,seq,0,12000U+seq,epoch);
+    f.payload[0]=1;f.payload[1]=1;
+    assert(radio_frameSeal(f,key));return f;
+}
 static RadioFrame status(uint16_t seq,uint8_t stop,uint8_t epoch,
                          const uint8_t key[32],bool backup=false){
     RadioFrame f{};
@@ -59,6 +66,8 @@ struct Receiver {
            f.sessionEpoch!=epoch||!radioLinkFlagMatches(f.flags,!onPrimary)||
            !rx.accept(f.sequence))return false;
         RadioDecodedPayload parsed{};
+        if(f.type==RADIO_MSG_HEARTBEAT)
+            return radio_decodeHeartbeatPayload(f.payload,parsed);
         if(f.type==RADIO_MSG_ACK){
             if(!radio_decodeAckPayload(f.payload,parsed)||parsed.commandId!=f.commandId||
                parsed.commandType!=1||!onPrimary)return false;
@@ -131,5 +140,31 @@ int main(){
     assert(!next.receive(ack(1,903,8,key))); // old key, new epoch
     assert(next.receive(ack(1,903,8,freshKey)));
     assert(next.receive(status(2,1,8,freshKey))&&next.confirmed);
+    // R30H-21: authenticated full-frame *logical* high-traffic matrix.
+    // Interleave missing/double heartbeat and delayed stopped STATUS; a
+    // valid stopped status can NEVER precede the matching STOP ACK evidence.
+    Receiver loaded(11,key);
+    loaded.request(409U);
+    unsigned acceptedHeartbeats=0,networkDrops=0;
+    for(uint16_t sequence=1;sequence<=1024U;++sequence){
+        const RadioFrame packet=heartbeat(sequence,11,key);
+        if(sequence%7U==0U){++networkDrops;continue;} // simulated loss
+        assert(loaded.receive(packet));
+        ++acceptedHeartbeats;
+        assert(!loaded.receive(packet)); // authenticated duplicate replay
+        if(sequence%13U==0U){
+            const auto delayedStatus=status((uint16_t)(sequence-1U),1,11,key);
+            assert(!loaded.receive(delayedStatus)); // old frame, late arrival
+        }
+    }
+    assert(acceptedHeartbeats==1024U-networkDrops);
+    assert(networkDrops>100U);
+    assert(!loaded.confirmed);
+    // Even a valid, sequential primary stopped STATUS before ACK must NOT
+    // clear the new STOP latch after many unrelated authenticated frames.
+    assert(loaded.receive(status(1025U,1,11,key))&&!loaded.confirmed);
+    assert(loaded.receive(ack(1026U,409U,11,key))&&!loaded.confirmed);
+    assert(loaded.receive(status(1027U,2,11,key))&&!loaded.confirmed);
+    assert(loaded.receive(status(1028U,1,11,key))&&loaded.confirmed);
     std::cout<<"R30H-20 signed 32-byte STOP ACK/status replay/loss/rekey matrix PASS (host only)\n";
 }
