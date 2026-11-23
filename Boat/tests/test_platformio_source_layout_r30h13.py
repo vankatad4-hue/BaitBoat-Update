@@ -93,6 +93,24 @@ class TestSourceLayout(unittest.TestCase):
         errors,_=audit_module.audit(overrides={"Boat/source/boat_dual_radio_port.cpp":modified})
         self.assertTrue(any("Boat STOP ACK/STATUS priority broken" in e for e in errors),errors)
 
+    def test_r30h21_heartbeat_sequence_budget_guard_must_precede_frame_build(self):
+        src=(ROOT/"Boat/source/boat_dual_radio_port.cpp").read_text(encoding="utf-8")
+        start=src.find("bool BoatDualRadioPort::sendHeartbeat(")
+        end=src.find("bool BoatDualRadioPort::primaryFresh(",start)
+        self.assertGreaterEqual(start,0)
+        self.assertGreater(end,start)
+        segment=src[start:end]
+        guard="if(link==LINK_NRF_PRIMARY&&!primaryOrdinaryTxReady())return false;"
+        self.assertIn(guard,segment)
+        modified=src[:start]+segment.replace(guard,"if(false)return false;",1)+src[end:]
+        errors,_=audit_module.audit(overrides={"Boat/source/boat_dual_radio_port.cpp":modified})
+        self.assertTrue(any("R30H-21 busy-TX heartbeat" in e for e in errors),errors)
+
+    def test_r30h21_pending_status_and_stop_ack_deny_ordinary_tx(self):
+        self.check_rejects_edit("Boat/source/boat_r30h21_primary_tx_budget.h",
+            "!s.stopAckPending && !s.statusPending;",
+            "true;")
+
     def test_remote_radio_pin_lock_cannot_silently_disappear(self):
         self.check_rejects_edit("Remote/source/radio_hw_config.h",
              "#define REMOTE_NRF_PIN_AUDIT_SIGNED 0",
