@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "boat_pin_assignments_r30h32.h"
 // R23 MODULE-ONLY BOAT PIN CONTRACT — candidate header mapping verified
 // against published Espressif DevKitC-1 v1.1 J1/J3 headers.
 // Physical PCB revision, connector orientation, signal levels and actual
@@ -18,13 +19,13 @@ static constexpr Pin assigned[]={
  {"MDD_PWM1",39,"J3-9"}, {"MDD_PWM2",40,"J3-8"}
 };
 static constexpr uint8_t reserved[]={
-  0,1,2,3,19,20,35,36,37,38,41,42,43,44,45,46,47,48
+  0,3,19,20,35,36,37,38,43,44,45,46,47,48
 };
-// GPIO1/2/41/42 are held for possible safety interfaces but NOT wired;
+// GPIO1/2/41/42 are available spares; no safety interface assigned;
 // GPIO47/48 are 1.8V on the selected ESP32-S3-WROOM-2 'V' module.
 // 39/40 are repurposed JTAG and cannot simultaneously provide JTAG debug.
-static constexpr uint8_t I2C_MCP23017=0x27;
-static constexpr uint8_t I2C_ADS1115=0x48;
+static constexpr uint8_t I2C_MCP23017=boat_pins::MCP_ADDR;
+static constexpr uint8_t I2C_INA231=boat_pins::INA231_ADDR;
 static constexpr uint8_t I2C_QMC5883L=0x0D;
 static constexpr uint8_t I2C_MPU9250=0x68;
 static constexpr uint8_t I2C_BMP280_PRIMARY=0x76;
