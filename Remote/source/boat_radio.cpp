@@ -498,9 +498,20 @@ void boatRadio_update() {
     uint8_t missionPayload[8];
     if(g_missionUpload.next(now,safe,missionPayload))sendMissionPreparation(missionPayload);
     MissionControlRequest request{};
-    if(g_missionControl.next(now,request)&&missionPrimaryReady()){
+    if(g_missionControl.next(now,request)&&sessionReady()){
+         const bool primary=missionPrimaryReady();
+         const bool backup=!primary&&g_loraConfigured&&g_linkManager.backupHealthy(now)&&
+             (request.op==MCTRL_PAUSE||request.op==MCTRL_CANCEL)&&
+             (!g_backupTxSent||(uint32_t)(now-g_lastBackupTxMs)>=3000U);
+         if(!primary&&!backup)return;
         RadioFrame f;radio_frameInit(f,RADIO_MSG_MISSION_CONTROL,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,++g_txSequence,request.transaction,now,g_sessionEpoch);
-        if(missionControlEncode(request,f.payload)&&radio_frameSeal(f,g_authKey))g_nrf.sendFrame(f);
+        if(missionControlEncode(request,f.payload)){
+             if(backup)f.flags=RADIO_FLAG_BACKUP_LINK;
+             if(radio_frameSeal(f,g_authKey)){
+                 if(primary)g_nrf.sendFrame(f);
+                 else if(g_lora.sendFrame(f,now)){g_lastBackupTxMs=now;g_backupTxSent=true;}
+             }
+         }
     }
 }
 
