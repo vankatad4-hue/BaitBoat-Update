@@ -66,7 +66,7 @@ def check_guards():
         '#define REMOTE_NRF_SCK_PIN  (-1)' in remote,
         '#define REMOTE_NRF_MISO_PIN (-1)' in remote,
         '#define REMOTE_TF_SPI_MOSI_PIN 11' in remote,
-        '#define REMOTE_TF_SPI_SCK_PIN  12' in remote,
+        '#define REMOTE_TF_SPI_SCK_PIN 12' in remote,
         '#define REMOTE_TF_SPI_MISO_PIN 13' in remote,
         '#define REMOTE_R30H10_REJECTED_CE_GPIO 6' in remote,
         '#define REMOTE_R30H10_REJECTED_CSN_GPIO 15' in remote,
