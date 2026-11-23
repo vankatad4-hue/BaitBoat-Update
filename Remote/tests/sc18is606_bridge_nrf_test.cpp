@@ -32,6 +32,7 @@ public:
     int busyReadNacks=0,busyWriteNacks=0;
     uint8_t config=0,status=0x0e;
     std::array<uint8_t,32> registers{};
+    std::array<uint8_t,5> txAddress{},rxAddressP0{},rxAddressP1{};
     std::vector<uint8_t> reply;
     bool loaded=false,rxPending=false;
     std::array<uint8_t,RADIO_FRAME_SIZE> txPayload{},rxPayload{};
@@ -65,6 +66,11 @@ public:
                     registers[0]=config;
                 }else{
                     registers[reg]=data[2];
+                    if(count==7U){
+                        if(reg==0x10U)memcpy(txAddress.data(),data+2,5U);
+                        if(reg==0x0aU)memcpy(rxAddressP0.data(),data+2,5U);
+                        if(reg==0x0bU)memcpy(rxAddressP1.data(),data+2,5U);
+                    }
                 }
             }else if((cmd&0xe0U)==0x00U&&count>=3){
                 const uint8_t reg=(uint8_t)(cmd&0x1fU);
@@ -184,6 +190,20 @@ int main(){
         assert(fake.unexpectedCeCommands==0); // SS2 + EEPROM untouched
         assert(fake.registers[0x05]==76);
         assert(fake.registers[0x06]==0x22); // 250kbps PA_LOW
+        assert(fake.registers[0x04]==0x5f); // retry delay=5, count=15
+        assert(fake.registers[0x01]==0x03); // auto-ACK on pipes 0 and 1
+        assert(fake.registers[0x02]==0x03); // RX pipes 0 and 1 enabled
+        assert(fake.registers[0x03]==0x03); // five-byte addresses
+        assert(fake.registers[0x11]==RADIO_FRAME_SIZE);
+        assert(fake.registers[0x12]==RADIO_FRAME_SIZE);
+        assert(fake.registers[0x1c]==0 && fake.registers[0x1d]==0);
+        assert(fake.config==0x0f); // RX PWR_UP with 16-bit CRC
+        // Remote TX address must equal Boat RX pipe1, and vice versa.
+        const uint8_t remoteTx[5]={'B','O','A','T','1'};
+        const uint8_t remoteRx[5]={'R','M','T','E','1'};
+        assert(memcmp(fake.txAddress.data(),remoteTx,5U)==0);
+        assert(memcmp(fake.rxAddressP0.data(),remoteTx,5U)==0);
+        assert(memcmp(fake.rxAddressP1.data(),remoteRx,5U)==0);
         RadioFrame frame{};
         frame.magic[0]=RADIO_FRAME_MAGIC0;
         frame.magic[1]=RADIO_FRAME_MAGIC1;

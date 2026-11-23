@@ -139,6 +139,19 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
             errors.append(f"{endpoint}: custom upload must fail")
     for source, required in (
         ("Boat/source/nrf24_link.h", "TX_PENDING_TIMEOUT_MS = 120U"),
+        # R30H-14: cross-endpoint over-air profile must not drift silently.
+        ("Boat/source/boat_radio_hw_config.h", "#define BOAT_NRF_CHANNEL 76"),
+        ("Remote/source/radio_hw_config.h", "#define REMOTE_NRF_CHANNEL  76"),
+        ("Boat/source/nrf24_link.cpp", "radio_.setDataRate(RF24_250KBPS);"),
+        ("Boat/source/nrf24_link.cpp", "radio_.setPALevel(RF24_PA_LOW);"),
+        ("Boat/source/nrf24_link.cpp", "radio_.setRetries(5,15);"),
+        ("Boat/source/nrf24_link.cpp", "radio_.setCRCLength(RF24_CRC_16);"),
+        ("Boat/source/nrf24_link.cpp", "radio_.setPayloadSize(RADIO_FRAME_SIZE);"),
+        ("Boat/source/nrf24_link.cpp", "radio_.openReadingPipe(1,rxAddress_);"),
+        ("Remote/source/sc18is606_nrf_link.cpp", "!regWrite(REG_SETUP_RETR,0x5f)"),
+        ("Remote/source/sc18is606_nrf_link.cpp", "!regWrite(REG_RF_SETUP,0x22)"),
+        ("Remote/source/sc18is606_nrf_link.cpp", "!regWrite(REG_EN_AA,0x03)"),
+        ("Remote/source/sc18is606_nrf_link.cpp", "!regWrite(REG_RX_PW_P1,(uint8_t)RADIO_FRAME_SIZE)"),
         ("Boat/source/boat_dual_radio_port.cpp", "if(!nrf_.ready())"),
         ("Remote/source/boat_radio.cpp", "Sc18is606NrfLink g_nrf("),
         ("Remote/source/boat_radio.cpp", "REMOTE_NRF_BRIDGE_HARDWARE_AUDIT_SIGNED &&"),

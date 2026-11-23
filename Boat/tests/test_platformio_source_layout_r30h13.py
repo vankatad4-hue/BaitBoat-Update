@@ -35,6 +35,15 @@ class TestSourceLayout(unittest.TestCase):
         self.check_rejects_edit("Boat/source/nrf24_link.h",
              "TX_PENDING_TIMEOUT_MS = 120U","TX_PENDING_TIMEOUT_MS = 0U")
 
+    def test_cross_endpoint_radio_channel_mismatch_is_rejected(self):
+        self.check_rejects_edit("Remote/source/radio_hw_config.h",
+             "#define REMOTE_NRF_CHANNEL  76",
+             "#define REMOTE_NRF_CHANNEL  77")
+
+    def test_boat_retry_mismatch_is_rejected(self):
+        self.check_rejects_edit("Boat/source/nrf24_link.cpp",
+             "radio_.setRetries(5,15);","radio_.setRetries(5,10);")
+
     def test_remote_radio_pin_lock_cannot_silently_disappear(self):
         self.check_rejects_edit("Remote/source/radio_hw_config.h",
              "#define REMOTE_NRF_PIN_AUDIT_SIGNED 0",
