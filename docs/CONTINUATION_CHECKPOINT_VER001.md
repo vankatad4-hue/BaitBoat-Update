@@ -1,8 +1,16 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-23, **R30H-13 — VS Code + PlatformIO PRIMARY: 208 active Boat+Remote sources audited, 17 shared contracts verified, Remote direct RF24 archived, Boat nRF TX lock added; physical H10/H12 STOP/RF gates remain unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
+**Checkpoint:** 2026-11-23, **R30H-14 — VS Code + PlatformIO PRIMARY: Boat RF24 RX polling bounded; Boat/Remote channel, address pipes, retries, CRC and 32-byte payloads tested in host simulation; physical R30H-10/R30H-12 gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `hardware-ready-dual-radio-r1`
+
+## Current read-first status — R30H-14 cross-endpoint radio software integration (2026-11-23)
+
+**R30H-14 (2026-11-23) — nRF24 cross-endpoint source integration:** Boat RF24 RX is now polled **once per main radio tick** and bounded to the 3-deep hardware FIFO; `receiveFrame()` only drains its software queue. Real RF read and STOP latency **NOT MEASURED**. Host mocks cover CRC rejection, TX-in-progress isolation, 120 ms pending watchdog and consistent Boat/Remote channel 76, 250 kbps, CRC16, 32-byte frames, retries and opposing TX/RX pipe addresses. [R30H-14 report](R30H_14_CROSS_ENDPOINT_RF_INTEGRATION.md). Latest source-only host CI Boat **#45131342414 PASS**, Remote **#45131342373 PASS**, inventory **#45131342360 PASS**; refreshed PlatformIO target run **#45131342475** needs final status checked. All 18 H10 and 12 R12 physical gates still unsigned; Boat VER014 / Remote VER028 unchanged.
+
+**Next software/hardware boundary:** verify [updated PlatformIO run #45131342475](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45131342475) after it finishes. Then follow [R30H-14 RF integration and R30H-10 hardware handoff](R30H_14_CROSS_ENDPOINT_RF_INTEGRATION.md). No real STOP time, CE reset safety or independent current-zero measurements exist. Do **not** change signed hardware gates, release markers or enable upload.
+
+---
 
 ## Current read-first status — R30H-13 native VS Code + PlatformIO code audit (2026-11-23)
 
