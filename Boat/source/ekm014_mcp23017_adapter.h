@@ -1,14 +1,15 @@
 #pragma once
 #include <stdint.h>
 #include "mcp23017_direction_adapter.h"
+#include "boat_pin_assignments_r30h32.h"
 #include "ekm014_logical_interface_r16.h"
 
 // Low-level R20 I2C expander adapter: MCP23017 GPA0..3 -> EKM014 IN1..IN4.
 // This is only an output transport. It does NOT replace Ekm014PulseGuard,
-// independent cutoff, physical current-zero feedback or the Boat supervisor.
+// the software pulse limit or the Boat supervisor.
 class Ekm014Mcp23017Adapter {
 public:
- explicit Ekm014Mcp23017Adapter(Mcp23017RegisterBus &bus,uint8_t address=0x27)
+ explicit Ekm014Mcp23017Adapter(Mcp23017RegisterBus &bus,uint8_t address=boat_pins::MCP_ADDR)
   :bus_(bus),address_(address){}
  bool beginDisabled(){
   ready_=false;activeMask_=0;
