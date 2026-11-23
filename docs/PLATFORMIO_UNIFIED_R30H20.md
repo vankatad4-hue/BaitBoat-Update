@@ -77,3 +77,7 @@ The code branch now includes a conservative Boat output-gating fix, two portable
 ## R30H-25 driver-failure and safe radio recovery (2026-11-23)
 
 Production Boat now latches physical driver apply errors and enforces a new neutral primary-stick command after radio session rollover or local STOP. Tests exercise the real application adapter under host-injected faults. [Technical report](R30H_25_DRIVER_FAULT_AND_NEUTRAL_RECOVERY.md). No hardware authorization or version bump.
+
+## R30H-26 stuck output feedback monitoring (2026-11-23)
+
+Added the Boat local OFF-output motor/coil monitor, latched driver-fault response after persistent feedback disagreement, negative UNKNOWN fault ACK and 3 new non-actuating host tests integrated into CI. The provisional 250/500-ms thresholds require physical calibration. [Engineering report](R30H_26_STUCK_OUTPUT_FEEDBACK_GUARD.md). No new GPIO or hardware permission.

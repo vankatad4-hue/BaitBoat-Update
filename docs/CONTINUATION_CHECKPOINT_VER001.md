@@ -1,8 +1,14 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-23, **R30H-25 — VS Code + PlatformIO PRIMARY: correlated STOP command-ID acceptance ACK followed by authoritative primary Boat stopped-status, bounded retry and heartbeat recovery; physical gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
+**Checkpoint:** 2026-11-23, **R30H-26 — VS Code + PlatformIO PRIMARY: correlated STOP command-ID acceptance ACK followed by authoritative primary Boat stopped-status, bounded retry and heartbeat recovery; physical gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `platformio-unified-r30h20` (parent `hardware-ready-dual-radio-r1`)
+
+## Current read-first status — R30H-26 persistent physical output feedback contradiction (2026-11-23)
+
+> **R30H-26 (2026-11-23) — persistent physical-output feedback contradiction after STOP:** Added production Boat `boat_r30h26::OutputOffFeedbackGuard` and integrated it into `BoatApplicationPort`. After an accepted OFF request, locally fresh, valid feedback that still reports energized motor activity at **250 ms**, or a non-idle release mechanism at **500 ms**, now irreversibly latches the existing application driver fault/STOP path. Repeated OFF requests never postpone those deadlines; 32-bit `millis()` rollover is covered. Faults reassert `disable()`, reject subsequent controls and report **STOP=UNKNOWN**, not claimed current-zero. A pending manual one-shot fault ACK is explicitly rejected with physical STOP state **UNKNOWN**, preventing a pre-STOP sample from being misrepresented as post-STOP proof. New portable host guard test and actual `BoatApplicationPort.cpp` simulations for stuck motor and stuck coil are connected to Boat host, PlatformIO and mutation-audited safety gates. **Boat host tests** [#45211469334](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45211469334), **Remote host tests** [#45211469197](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45211469197), **source audit** [#45211469211](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45211469211) and **both PlatformIO targets** [#45211469212](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45211469212) must be checked for their final CI conclusions. [R30H-26 technical report](R30H_26_STUCK_OUTPUT_FEEDBACK_GUARD.md). **Software-only**; actual relay current, independent power cutoff and STOP-to-zero are unmeasured; settling times are provisional software thresholds. Physical acceptance R30H-10 **12 NOT_RUN / 6 BLOCKED** and R30H-12 **7 NOT_RUN / 5 BLOCKED**. Official **Boat VER014 / Remote VER028** unchanged.
+
+---
 
 ## Current read-first status — R30H-25 physical-driver fault latch and radio neutral rearm (2026-11-23)
 
