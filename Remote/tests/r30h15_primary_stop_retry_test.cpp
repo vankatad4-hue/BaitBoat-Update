@@ -1,4 +1,4 @@
-// R30H-15 local retry policy only, no RF, actuator, ESP or real clock.
+// R30H-16: bounded primary STOP attempts until Boat status, host only.
 #include "r30h15_primary_stop_retry.h"
 #include <assert.h>
 #include <stdint.h>
@@ -9,31 +9,52 @@ int main(){
     assert(!q.pending());
     assert(!q.mayAttempt(true,true,false,0U));
     assert(q.maySendPeriodic(true,false));
-    assert(!q.maySendPeriodic(true,true));
     q.queue({10U,1},100U);
     assert(q.pending()&&q.commandId()==10U);
     assert(q.command().type==1);
-    assert(!q.maySendPeriodic(true,false)); // STOP precedes heartbeat/mission
-    assert(!q.mayAttempt(false,true,false,100U)); // no session
-    assert(!q.mayAttempt(true,false,false,100U)); // no link
-    assert(!q.mayAttempt(true,true,true,100U)); // old TX outstanding
-    assert(q.mayAttempt(true,true,false,100U)); // TX done: retry first
-    assert(q.mayAttempt(true,true,false,2600U)); // exactly 2500 ms
+    assert(!q.maySendPeriodic(true,false));
+    assert(!q.mayAttempt(false,true,false,100U));
+    assert(!q.mayAttempt(true,false,false,100U));
+    assert(!q.mayAttempt(true,true,true,100U));
+    assert(q.mayAttempt(true,true,false,100U));
+    q.noteAdmitted(100U); // TX buffer admission, *not* Boat execution
+    assert(q.pending()&&q.transmissions()==1U);
+    assert(!q.maySendPeriodic(true,false));
+    assert(!q.mayAttempt(true,true,false,249U));
+    assert(q.mayAttempt(true,true,false,250U));
+    q.noteAdmitted(250U);
+    assert(q.commandId()==10U&&q.transmissions()==2U);
+    // ACK only says ACCEPTED; do not call reset until authenticated status.
+    assert(q.pending());
+    uint32_t at=400U;
+    while(q.transmissions()<Q::MAX_TRANSMISSIONS){
+        assert(q.mayAttempt(true,true,false,at));
+        q.noteAdmitted(at);
+        at+=Q::RETRANSMIT_GAP_MS;
+    }
+    assert(q.pending()&&q.transmissions()==Q::MAX_TRANSMISSIONS);
+    assert(!q.mayAttempt(true,true,false,at)); // bounded max retries
+    assert(!q.maySendPeriodic(true,false)); // status not yet confirmed
+    q.reset(); // only caller may do so on validated Boat status
+    assert(!q.pending()&&q.maySendPeriodic(true,false));
+    q.queue({11U,1},100U);
+    assert(q.mayAttempt(true,true,false,2600U));
     assert(!q.expired(2600U));
     assert(q.expired(2601U));
-    assert(!q.mayAttempt(true,true,false,2601U)); // never stale replay
+    assert(!q.mayAttempt(true,true,false,2601U));
     q.reset();
+    q.queue({12U,1},200U);
+    q.noteAdmitted(200U);
+    q.queue({13U,1},300U); // newer local STOP supersedes earlier ID
+    assert(q.commandId()==13U&&q.transmissions()==0U&&q.queuedAtMs()==300U);
+    q.reset(); // auth epoch change forgets old logical ID
     assert(!q.pending());
-    assert(q.maySendPeriodic(true,false)); // normal cycle after reset
-    q.queue({11U,1},300U);
-    q.queue({12U,1},302U); // latest local STOP supersedes pending old one
-    assert(q.commandId()==12U&&q.queuedAtMs()==302U);
-    q.reset(); // session epoch/key change flushes queued intent
-    assert(!q.pending()&&!q.mayAttempt(true,true,false,500U));
-    q.queue({13U,1},0xfffffffaU); // millis wrap
+    q.queue({14U,1},0xfffffffaU);
     assert(q.mayAttempt(true,true,false,115U));
-    assert(q.expired(2496U)); // modulo 2^32 elapsed >2500
+    q.noteAdmitted(115U);
+    assert(!q.mayAttempt(true,true,false,264U));
+    assert(q.mayAttempt(true,true,false,265U));
+    assert(q.expired(2496U)); // 32-bit rollover
     q.reset();
-    assert(!q.pending());
     return 0;
 }

@@ -215,15 +215,14 @@ bool boatRadio_sendCommand(const BoatCommand &command) {
     const uint32_t now=millis();
     bool queued=false;
     if(command.type==CMD_EMERGENCY_STOP&&sessionReady()){
-        bool primary=radioSendTransport(LINK_NRF_PRIMARY,command);
-        if(primary){
-            g_primaryStopRetry.reset();
-        }else if(g_nrfReady){
-            // A previously admitted RF24 frame still occupies the TX slot.
-            // Record the STOP locally and reattempt after nRF update(), BEFORE
-            // heartbeat or mission traffic. This is NOT Boat acknowledgement.
+        bool primary=false;
+        if(g_nrfReady){
+            // Keep the logical STOP until authenticated Boat STOP status.
+            // A TX-buffer admission is never proof of physical execution.
             g_primaryStopRetry.queue(command,now);
-            primary=true; // accepted into local STOP-only software queue
+            primary=radioSendTransport(LINK_NRF_PRIMARY,command);
+            if(primary)g_primaryStopRetry.noteAdmitted(now);
+            else primary=true; // accepted into bounded local STOP-only queue
         }
         const bool backup=radioSendTransport(LINK_LORA_BACKUP,command);
         queued=primary||backup;
@@ -349,7 +348,12 @@ static bool dispatchValidatedPayload(ManagedLink link,const RadioFrame &frame,ui
             if(!radio_decodeTelemetryPayload(frame.payload,decoded)) return false;
             if(!telemetryApplyRadioPayload(decoded,link==LINK_NRF_PRIMARY,now))return false;
             if(link==LINK_NRF_PRIMARY&&decoded.kind==RADIO_PAYLOAD_STATUS){
-                if(decoded.stopState==1)g_stopMustConfirm=false;
+                if(decoded.stopState==1){
+                    g_stopMustConfirm=false;
+                    // After HMAC/session/sequence validation and telemetryApply,
+                    // STOP is confirmed logically at Boat. Not physical current-zero.
+                    g_primaryStopRetry.reset();
+                }
                 if(!g_stopMustConfirm&&!boatRadio_missionLocked()&&decoded.boatMode==MODE_MANUAL&&!(decoded.safetyFlags&6U)&&((int32_t)(now-g_manualTransitionAt)>0))g_manualConfirmRequired=false;
             }
             return true;
@@ -423,7 +427,7 @@ void boatRadio_update() {
                                                g_nrf.txPending(),millis())){
             const BoatCommand pending=g_primaryStopRetry.command();
             if(radioSendTransport(LINK_NRF_PRIMARY,pending))
-                g_primaryStopRetry.reset(); // buffer admitted, NOT executed
+                g_primaryStopRetry.noteAdmitted(millis()); // await Boat STOP status
         }
     }
     if(sessionReady()){
