@@ -31,6 +31,11 @@ class TestTransportTaskQueue(unittest.TestCase):
   self.assertIn("stopLatched_.store(true, std::memory_order_release)",stop)
   self.assertIn("clearStopLatchAfterAuthorization()",s)
   self.assertIn("stopLatched_.load(std::memory_order_acquire)",s)
+  self.assertIn("xSemaphoreCreateMutex()",s)
+  self.assertIn("xSemaphoreTake(mutex_, 0)",s)
+  self.assertIn("xSemaphoreGive(mutex_)",s)
+  self.assertIn("if (ok) xQueueReset(ordinary_)",stop)
+  self.assertIn("caller must retry STOP admission",stop)
  def test_no_blocking_on_stop_path(self):
   s=(ROOT/"Boat/source/transport_task_queue.h").read_text()
   self.assertNotIn("portMAX_DELAY",s)
