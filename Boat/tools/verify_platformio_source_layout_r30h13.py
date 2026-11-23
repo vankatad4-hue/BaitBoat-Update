@@ -159,7 +159,7 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
         ("Remote/source/boat_radio.cpp", "g_stopConfirmation.acceptedAck(decoded.commandId,accepted);"),
         ("Remote/source/boat_radio.cpp", "g_stopConfirmation.allowsStopStatus(true,decoded.stopState==1)"),
         ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.noteAdmitted(millis());"),
-        ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.reset();\n                }"),
+        ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.reset();\n                    g_stopConfirmation.reset();"),
         ("Remote/source/r30h15_primary_stop_retry.h", "MAX_TRANSMISSIONS=8U"),
         ("Remote/source/r30h15_primary_stop_retry.h", "RETRANSMIT_GAP_MS=150U"),
         ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.mayAttempt(sessionReady(),g_nrfReady,"),
