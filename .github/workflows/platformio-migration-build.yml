@@ -98,7 +98,7 @@ jobs:
       - name: R30H-17 correlated STOP ACK and status regression
         if: matrix.endpoint == 'Remote'
         run: |
-          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/source \\
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
             Remote/tests/r30h17_stop_confirmation_gate_test.cpp -o /tmp/remote_stop_evidence
           /tmp/remote_stop_evidence
       - name: R30H-15 STOP TX-busy priority regression

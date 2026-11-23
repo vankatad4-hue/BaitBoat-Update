@@ -49,7 +49,7 @@ jobs:
             -fsyntax-only Remote/source/physical_button_scanner.cpp Remote/source/release_button_guard.cpp
       - name: R30H-17 correlated STOP ACK and Boat STATUS host regression
         run: |
-          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/source \\
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
             Remote/tests/r30h17_stop_confirmation_gate_test.cpp -o /tmp/remote_stop_evidence
           /tmp/remote_stop_evidence
       - name: R30H-15 STOP-only pending TX priority host regression
