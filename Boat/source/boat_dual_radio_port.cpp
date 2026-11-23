@@ -58,9 +58,17 @@ bool BoatDualRadioPort::sendMissionFeedback(const MissionControlFeedback &status
  const ManagedLink link=primaryFresh(now)?LINK_NRF_PRIMARY:
                         (backupFresh(now)?LINK_LORA_BACKUP:LINK_NONE);
  if(link==LINK_NONE||!sessionReady())return false;
+ if(link==LINK_LORA_BACKUP&&status.result!=MC_STATUS){
+  pendingBackupMissionFeedback_=status;
+  pendingBackupMissionFeedbackValid_=true;
+  pendingBackupMissionFeedbackAtMs_=now;
+ }
+ if(link==LINK_LORA_BACKUP&&pendingBackupMissionFeedbackValid_&&status.result==MC_STATUS)return false;
  if(link==LINK_NRF_PRIMARY&&!primaryOrdinaryTxReady())return false;
  RadioFrame f;radio_frameInit(f,RADIO_MSG_MISSION_FEEDBACK,BOAT_ID,REMOTE_ID,++txSequence_,status.transaction,now,sessionEpoch_);
- return missionFeedbackEncode(status,f.payload)&&radio_frameSeal(f,key_)&&sendFrame(link,f);
+ const bool sent=missionFeedbackEncode(status,f.payload)&&radio_frameSeal(f,key_)&&sendFrame(link,f);
+ if(sent&&link==LINK_LORA_BACKUP&&status.result!=MC_STATUS)pendingBackupMissionFeedbackValid_=false;
+ return sent;
 }
 bool BoatDualRadioPort::requestLowBatteryReturnHome(){
  const auto phase=controller_.status().phase;
@@ -116,6 +124,7 @@ void BoatDualRadioPort::resetSession(bool preserveMission){
  optionalDiagnostics_.reset();lastControlRxValid_=false;
  stopAck_.reset(); // Never replay a STOP ACK across session/epoch boundaries.
  statusOutbox_.reset(); // Pre-session status is not an authority.
+ pendingBackupMissionFeedbackValid_=false;
  havePrimaryHeartbeatSent_=false;
  utcSource_={};utcEverSent_=false;lastUtcTxMs_=0;
  radioWatchdog_.reset();
@@ -203,6 +212,19 @@ void BoatDualRadioPort::update() {
   }
  }
  if(sx1262Ready_){e22_.update();RadioFrame f;while(e22_.receiveFrame(f))receive(LINK_LORA_BACKUP,f);}
+ // Correlated feedback outranks periodic status/heartbeat when E22 was busy.
+ if(pendingBackupMissionFeedbackValid_){
+  const uint32_t retryNow=millis();
+  if(!sessionReady()||(uint32_t)(retryNow-pendingBackupMissionFeedbackAtMs_)>12000U)
+   pendingBackupMissionFeedbackValid_=false;
+  else if(backupFresh(retryNow)){
+   const MissionControlFeedback pending=pendingBackupMissionFeedback_;
+   RadioFrame reply{};
+   radio_frameInit(reply,RADIO_MSG_MISSION_FEEDBACK,BOAT_ID,REMOTE_ID,++txSequence_,pending.transaction,retryNow,sessionEpoch_);
+   if(missionFeedbackEncode(pending,reply.payload)&&radio_frameSeal(reply,key_)&&sendFrame(LINK_LORA_BACKUP,reply))
+    pendingBackupMissionFeedbackValid_=false;
+  }
+ }
 
  const uint32_t safetyNow=millis();
  const auto watchdogEvent=radioWatchdog_.update(primaryFresh(safetyNow),backupFresh(safetyNow));
