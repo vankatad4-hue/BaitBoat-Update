@@ -61,3 +61,7 @@ Continue R30H-20 with state-machine-level end-to-end STOP receipt/feedback tests
 ## R30H-21 follow-on (2026-11-23)
 
 The active PlatformIO branch now includes R30H-21 primary TX pre-admission sequence guarding, an authenticated 1,024-frame simulated load matrix, regression source mutation and safe source snapshot packaging. [Details](R30H_21_PRIMARY_TX_BUSY_SEQUENCE_BUDGET.md). No hardware permission or official release change.
+
+## R30H-22 two-endpoint STOP/ACK/STATUS (2026-11-23)
+
+The new branch adds a single timeline simulator using both actual endpoint wire codecs and Boat/Remote STOP retry/ACK/STATUS classes, with injected link faults and physical-status UNKNOWN. Boat/Remote host and source audit passed on `e1475248`; see [R30H-22 engineering report](R30H_22_DUAL_ENDPOINT_STOP_SCHEDULER.md). Do not treat this as a real RF/STOP current-zero measurement or commissioning permission.

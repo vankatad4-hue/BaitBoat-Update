@@ -1,8 +1,14 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-23, **R30H-21 — VS Code + PlatformIO PRIMARY: correlated STOP command-ID acceptance ACK followed by authoritative primary Boat stopped-status, bounded retry and heartbeat recovery; physical gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
+**Checkpoint:** 2026-11-23, **R30H-22 — VS Code + PlatformIO PRIMARY: correlated STOP command-ID acceptance ACK followed by authoritative primary Boat stopped-status, bounded retry and heartbeat recovery; physical gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `platformio-unified-r30h20` (parent `hardware-ready-dual-radio-r1`)
+
+## Current read-first status — R30H-22 two-endpoint STOP ACK STATUS simulation (2026-11-23)
+
+> **R30H-22 (2026-11-23) — two-endpoint authenticated STOP / ACK / STATUS failure-injection simulation:** New portable `tests/r30h22_dual_stop_scheduler_test.cpp` composes **production Boat STOP ACK/status priority outboxes, Remote bounded STOP retry, Remote ACK tracker/confirmation gate, and each endpoint's real 32-byte HMAC/CRC/command/payload codecs**. Tests busy TX, first-packet drops, failed Boat ACK TX, UNKNOWN feedback, all-STOP/ACK/STATUS loss, timeout/retry exhaustion, duplicate ACK, new STOP ID and new session/epoch key. Fixed cross-endpoint duplicate declarations with one shared portable payload-header guard; neither wire ABI nor operational GPIO changed. **Boat host PASS [#45201870070](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45201870070), Remote host PASS [#45201870153](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45201870153), source audit PASS [#45201870177](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45201870177) on `e1475248`; PlatformIO verdict must be checked for the same source commit. [R30H-22 report](R30H_22_DUAL_ENDPOINT_STOP_SCHEDULER.md). This is **logical software evidence only**, not real RF delay/current-zero or hardware commissioning. R30H-10 **12 NOT_RUN / 6 BLOCKED**, R30H-12 **7 NOT_RUN / 5 BLOCKED**; **Boat VER014 / Remote VER028 unchanged.**
+
+---
 
 ## Current read-first status — R30H-21 TX-busy primary sequence preservation (2026-11-23)
 
