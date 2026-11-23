@@ -11,10 +11,10 @@ class TestHandoffContract(unittest.TestCase):
         self.assertEqual(boat, remote)
     def test_stop_and_epoch_invariants(self):
         src = (ROOT / "Boat/source/transport_task_queue.h").read_text()
-        self.assertIn("std::atomic<bool> stopLatched_{true}", src)
-        self.assertIn("std::atomic<uint32_t> epoch_", src)
+        self.assertIn("std::atomic<uint32_t> state_{1U}", src)
+        self.assertIn("std::atomic<uint32_t> acknowledgedStopEpoch_", src)
         self.assertIn("xQueueOverwrite(stop_, &e)", src)
-        self.assertIn("epoch_.fetch_add(1", src)
+        self.assertIn("compare_exchange_strong(observed, desired", src)
         self.assertIn("bool receive(Command& cmd, bool& isStop, uint32_t& epochToken)", src)
         self.assertIn("bool mayExecute(uint32_t token) const", src)
         self.assertIn("bool executeIfCurrent(uint32_t token, Fn fn)", src)
