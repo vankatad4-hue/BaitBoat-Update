@@ -20,7 +20,9 @@
     "search.exclude": {
       "**/.pio": true
     },
-    "files.associations": {"*.ino": "cpp"},
+    "files.associations": {
+      "*.ino": "cpp"
+    },
     "C_Cpp.default.configurationProvider": "platformio.platformio-ide"
   },
   "extensions": {
@@ -28,6 +30,114 @@
       "platformio.platformio-ide",
       "ms-vscode.cpptools",
       "ms-python.python"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Flytec: source & safety audit (no hardware)",
+        "type": "shell",
+        "command": "python",
+        "args": [
+          "Boat/tools/verify_platformio_source_layout_r30h13.py"
+        ],
+        "options": {
+          "cwd": "${workspaceFolder:Flytec Boat — PlatformIO}/.."
+        },
+        "group": "test",
+        "problemMatcher": []
+      },
+      {
+        "label": "Flytec: R30H physical/RF locks (no hardware)",
+        "type": "shell",
+        "command": "python",
+        "args": [
+          "Boat/tools/verify_r30h10_physical_lock.py"
+        ],
+        "options": {
+          "cwd": "${workspaceFolder:Flytec Boat — PlatformIO}/.."
+        },
+        "group": "test",
+        "problemMatcher": []
+      },
+      {
+        "label": "Flytec: generate licensed Remote LVGL font",
+        "type": "shell",
+        "command": "python",
+        "args": [
+          "Remote/tools/stage_platformio_font.py",
+          "--font",
+          "${input:flytecBgFont}",
+          "--license",
+          "${input:flytecFontLicense}"
+        ],
+        "options": {
+          "cwd": "${workspaceFolder:Flytec Boat — PlatformIO}/.."
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "Flytec: Boat PlatformIO build (NO UPLOAD)",
+        "type": "shell",
+        "command": "pio",
+        "args": [
+          "run",
+          "-e",
+          "boat_n32r16v_diagnostic"
+        ],
+        "options": {
+          "cwd": "${workspaceFolder:Flytec Boat — PlatformIO}"
+        },
+        "problemMatcher": [
+          "$gcc"
+        ],
+        "group": "build"
+      },
+      {
+        "label": "Flytec: Remote PlatformIO build (NO UPLOAD)",
+        "type": "shell",
+        "command": "pio",
+        "args": [
+          "run",
+          "-e",
+          "remote_waveshare_43_diagnostic"
+        ],
+        "options": {
+          "cwd": "${workspaceFolder:Flytec Remote — PlatformIO}"
+        },
+        "problemMatcher": [
+          "$gcc"
+        ],
+        "group": "build"
+      },
+      {
+        "label": "Flytec: audit then compile Boat and Remote",
+        "dependsOn": [
+          "Flytec: source & safety audit (no hardware)",
+          "Flytec: R30H physical/RF locks (no hardware)",
+          "Flytec: Boat PlatformIO build (NO UPLOAD)",
+          "Flytec: Remote PlatformIO build (NO UPLOAD)"
+        ],
+        "dependsOrder": "sequence",
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "problemMatcher": []
+      }
+    ],
+    "inputs": [
+      {
+        "id": "flytecBgFont",
+        "type": "promptString",
+        "description": "Full path to a locally licensed Bulgarian TTF/OTF font (NO font file uploaded to GitHub)"
+      },
+      {
+        "id": "flytecFontLicense",
+        "type": "promptString",
+        "description": "Full path to a text file containing the font redistribution/conversion license"
+      }
     ]
   }
 }

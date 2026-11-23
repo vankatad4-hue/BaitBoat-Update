@@ -144,6 +144,7 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
         ("Remote/source/boat_radio.cpp", "REMOTE_NRF_BRIDGE_HARDWARE_AUDIT_SIGNED &&"),
         ("Remote/source/radio_hw_config.h", "#define REMOTE_NRF_CE_PIN   (-1)"),
         ("Remote/source/radio_hw_config.h", "#define REMOTE_NRF_CSN_PIN  (-1)"),
+        ("Remote/source/radio_hw_config.h", "#define REMOTE_NRF_PIN_AUDIT_SIGNED 0"),
         ("Remote/source/radio_hw_config.h", "#define REMOTE_NRF_BRIDGE_HARDWARE_AUDIT_SIGNED 0"),
         ("Remote/source/radio_hw_config.h", "#define REMOTE_NRF_BRIDGE_RF_INTEROPERABILITY_VERIFIED 0"),
         ("Boat/source/boat_radio_hw_config.h", "#define BOAT_NRF_PIN_AUDIT_SIGNED 0"),
