@@ -14,8 +14,12 @@ public:
         // snapshots must not repeatedly occupy the priority TX scheduler.
         if(status.kind!=RADIO_PAYLOAD_STATUS||status.stopState>2U||
            status.boatMode>4U||(status.safetyFlags&0x80U)!=0U||
-           (status.batteryPercent>100U&&status.batteryPercent!=255U))
+           (status.batteryPercent>100U&&status.batteryPercent!=255U)){
+            // Invalid/newer feedback revokes a previously queued stopped
+            // snapshot. Never send a stale STOP witness after a failed read.
+            reset();
             return false;
+        }
         status_=status;offeredAt_=now;pending_=true;return true;
     }
     bool pending()const{return pending_;}

@@ -100,6 +100,10 @@ int main(){
     assert(!post.offer(invalid,1001)&&!post.pending());
     invalid=status(1);invalid.batteryPercent=254;
     assert(!post.offer(invalid,1002)&&!post.pending());
+    // A new invalid sample must revoke earlier, previously valid queued data.
+    assert(post.offer(status(1),1002));
+    invalid=status(1);invalid.safetyFlags=0x80U;
+    assert(!post.offer(invalid,1003)&&!post.pending());
     invalid=status(1);invalid.safetyFlags=0x20U; // low/critical wire bit
     assert(post.offer(invalid,1003)&&post.due(1003,true,true,false,false));
     uint8_t encoded[8]{};

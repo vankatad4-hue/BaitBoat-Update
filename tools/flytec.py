@@ -100,6 +100,10 @@ def compile_host()->None:
              "Remote/source/radio_ack_tracker.cpp",
              "Remote/tests/r30h19_ack_wire_test.cpp"],
         ]
+        groups.append(["g++","-std=c++17","-Wall","-Wextra",
+                       "-Wpedantic","-Werror","-IBoat/source",
+                       "Boat/source/radio_payload_codec.cpp",
+                       "Boat/tests/boat_r30h20_battery_status_wire_test.cpp"])
         for endpoint in ("boat","remote"):
             src="Boat" if endpoint=="boat" else "Remote"
             inc=["-Itests/r30h20_stubs",

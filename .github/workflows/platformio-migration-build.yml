@@ -104,6 +104,14 @@ jobs:
             Remote/source/radio_protocol.cpp Remote/source/radio_payload_codec.cpp \
             tests/r30h20_radio_frame_fault_matrix_test.cpp -lcrypto -o /tmp/remote_r30h20
           /tmp/remote_r30h20
+      - name: R30H-20 Boat critical battery STATUS wire contract (no hardware)
+        if: matrix.endpoint == 'Boat'
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IBoat/source \
+            Boat/source/radio_payload_codec.cpp \
+            Boat/tests/boat_r30h20_battery_status_wire_test.cpp \
+            -o /tmp/boat_battery_status_contract
+          /tmp/boat_battery_status_contract
       - name: Cache downloaded PlatformIO packages (not firmware images)
         uses: actions/cache@v4
         with:

@@ -85,6 +85,13 @@ jobs:
             tests/r30h20_radio_frame_fault_matrix_test.cpp -lcrypto \
             -o /tmp/flytec_r30h20_boat
           /tmp/flytec_r30h20_boat
+      - name: R30H-20 critical battery real status encode and stale-feedback regression
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IBoat/source \
+            Boat/source/radio_payload_codec.cpp \
+            Boat/tests/boat_r30h20_battery_status_wire_test.cpp \
+            -o /tmp/boat_r30h20_battery_status
+          /tmp/boat_r30h20_battery_status
       - name: Compiler
         run: g++ --version
       - name: Payload encoder/decoder
