@@ -101,7 +101,7 @@ public:
  // check stopLatched() before each hardware output and fail closed.
  template <typename Fn> bool executeIfCurrent(uint32_t token, Fn fn) {
   if (!ready() || stopLatched() || xSemaphoreTake(mutex_, 0) != pdTRUE) return false;
-  const bool ok = !stopLatched() && token == epoch_.load(std::memory_order_acquire);
+  const bool ok = !stopLatched() && token == currentEpoch();
   // Recheck after acquiring the lock; STOP can still latch while fn runs.
   // This is for non-actuating preparation only. Never execute GPIO/motors here.
   if (ok) fn();
