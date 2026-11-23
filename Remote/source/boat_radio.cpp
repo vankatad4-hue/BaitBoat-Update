@@ -473,7 +473,7 @@ void boatRadio_update() {
         // E22 backup is limited to discrete PAUSE/CANCEL; do not consume a
         // retry for unsupported commands or when either transport is busy.
         if(primary||request.op==MCTRL_PAUSE||request.op==MCTRL_CANCEL){
-            const bool transportFree=primary?!g_nrf.txPending():!g_lora.txPending();
+            const bool transportFree=primary?!g_nrf.txPending():g_lora.ready();
             if(transportFree){
                 RadioFrame f;
                 radio_frameInit(f,RADIO_MSG_MISSION_CONTROL,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,
