@@ -20,6 +20,7 @@
 #include "r30h15_primary_stop_retry.h"
 #include "r30h17_stop_confirmation_gate.h"
 #include "radio_hw_config.h"
+#include "remote_pin_assignments_r30h32.h"
 #include "remote_r30h9_marker_config.h"
 #include "r30h9_marker_contract.h"
 // R30H-9: only read-only software events; do not turn Waveshare GPIO into probe output.
@@ -37,7 +38,7 @@ static flytec_time::Discipline g_gpsUtcClock;
 static remote_r30h3::StopTrace g_stopTrace;
 #endif
 static RadioAckTracker g_ackTracker;
-static SC16IS750Bridge g_uartBridge(Wire,0x48);
+static SC16IS750Bridge g_uartBridge(Wire,remote_pins::SC16IS750_E22);
 static E22UartLink g_lora(g_uartBridge,
     [](bool m0,bool m1,void*){ g_uartBridge.setE22Mode(m0,m1); },
     [](void*){ return g_uartBridge.e22AuxReady(); },
