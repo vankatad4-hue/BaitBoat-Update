@@ -11,6 +11,8 @@ on:
       - 'Boat/tests/test_r30h87_dual_core_contract.py'
       - 'Boat/source/dual_core_diagnostic.h'
       - 'Remote/source/dual_core_diagnostic.h'
+      - 'Boat/source/dual_core_diagnostic_compile.cpp'
+      - 'Remote/source/dual_core_diagnostic_compile.cpp'
       - '.github/workflows/r30h73-transport-queue-host.yml'
   workflow_dispatch:
 jobs:
