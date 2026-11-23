@@ -69,3 +69,7 @@ The new branch adds a single timeline simulator using both actual endpoint wire 
 ## R30H-23 failsafe integration (2026-11-23)
 
 The branch adds Boat local dual-radio-loss conditional Home, GPS/heading/Home, critical battery/INA231, physical-safety feedback and interrupted-coil simulation, plus host and PlatformIO CI jobs and source mutation audit. No GPIO admission or official release change. [Read the R30H-23 test report](R30H_23_LOCAL_FAILSAFE_SIMULATION.md).
+
+## R30H-24 (2026-11-23): last-actuator navigation witness and clock-wrap/real adapter tests
+
+The code branch now includes a conservative Boat output-gating fix, two portable tests, host/PlatformIO steps, source audit and mutation regression. [Technical report](R30H_24_WRAP_NAV_INPUT_APPLICATION_BATTERY.md). No live motor/coil/antenna or physical acceptance claim.

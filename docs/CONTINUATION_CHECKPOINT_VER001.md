@@ -1,8 +1,14 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-23, **R30H-23 — VS Code + PlatformIO PRIMARY: correlated STOP command-ID acceptance ACK followed by authoritative primary Boat stopped-status, bounded retry and heartbeat recovery; physical gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
+**Checkpoint:** 2026-11-23, **R30H-24 — VS Code + PlatformIO PRIMARY: correlated STOP command-ID acceptance ACK followed by authoritative primary Boat stopped-status, bounded retry and heartbeat recovery; physical gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `platformio-unified-r30h20` (parent `hardware-ready-dual-radio-r1`)
+
+## Current read-first status — R30H-24 cached navigation safety and monotonic wrap (2026-11-23)
+
+> **R30H-24 (2026-11-23) · local navigation witness, `millis()` rollover and application battery retry regression:** Boat's real actuator supervisor now independently refuses autonomous motor output on locally **stale GNSS/heading, invalid geofence/accuracy or invalid compass angle**, even if an earlier calculated navigation result is still marked valid. No manual-control/STOP admission is loosened. New host suites `boat_r30h24_wrap_failsafe_test.cpp` and `boat_r30h24_application_wrap_test.cpp` exercise exactly 100/300/2,000-ms local sample boundaries over 32-bit rollover; manual motor lease 200 ms; coil pulse and 500-ms idle-feedback deadline across rollover; backup-only interruption/no coil replay; battery low-RTH latch after 3 seconds, one Home request despite repeated 10.7-V reports; and immediate 9.8-V critical STOP with no auto-rearm. **Boat host CI PASS** at [#45207416020](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45207416020) on `1c21d511`. [Full report](R30H_24_WRAP_NAV_INPUT_APPLICATION_BATTERY.md). Check [Boat+Remote PlatformIO CI](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45207416065) conclusion for the same executable commit before calling target PASS. **Physical hardware/RF safety gates remain locked:** R30H-10 12 NOT_RUN / 6 BLOCKED; R30H-12 7 NOT_RUN / 5 BLOCKED. Official Boat **VER014** / Remote **VER028** unchanged.
+
+---
 
 ## Current read-first status — R30H-23 local conditional Home and independent software safety simulation (2026-11-23)
 
