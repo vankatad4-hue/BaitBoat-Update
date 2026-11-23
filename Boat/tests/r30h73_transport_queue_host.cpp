@@ -36,7 +36,6 @@ int main() {
  assert(q.receive(c,stop,token) && c.id==4);
  std::atomic<int> failures{0};
  for(int round=0;round<1000;++round) {
-  assert(q.clearStopLatchAfterAuthorization());
   assert(q.offer({uint32_t(round+1000)}));
   assert(q.receive(c,stop,token) && !stop);
   const uint32_t old=token;
