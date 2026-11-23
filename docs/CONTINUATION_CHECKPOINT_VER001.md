@@ -1,6 +1,6 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-23, **VS Code + PlatformIO PRIMARY; R30H-12 software I2C timeout/latency preflight added to isolated Remote SC18IS606/MCP23017 nRF candidate; original 18 H10 and new 12 R12 physical gates all unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
+**Checkpoint:** 2026-11-23, **R30H-13 — VS Code + PlatformIO PRIMARY: 208 active Boat+Remote sources audited, 17 shared contracts verified, Remote direct RF24 archived, Boat nRF TX lock added; physical H10/H12 STOP/RF gates remain unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `hardware-ready-dual-radio-r1`
 
