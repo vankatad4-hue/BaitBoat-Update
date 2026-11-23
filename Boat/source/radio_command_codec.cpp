@@ -9,8 +9,9 @@ static bool backupAllowed(const BoatCommand &cmd) {
     if (cmd.type == CMD_EMERGENCY_STOP) return true;
     if (cmd.type == CMD_SET_MODE) return cmd.mode == MODE_RETURN_HOME || cmd.mode == MODE_AUTOPILOT;
     if (cmd.type == CMD_MANUAL_MOTORS || cmd.type == CMD_CLEAR_STOP) return false;
-    // Discrete actions still pass through the Boat mission/solenoid interlocks.
-    return true;
+    // Explicit one-channel release commands still pass Boat interlocks.
+    return cmd.type == CMD_RELEASE_HOPPER_LEFT || cmd.type == CMD_RELEASE_HOPPER_RIGHT ||
+           cmd.type == CMD_RELEASE_HOOK_LEFT || cmd.type == CMD_RELEASE_HOOK_RIGHT;
 }
 
 bool radio_encodeCommand(const BoatCommand &cmd, uint8_t src, uint8_t dst,
