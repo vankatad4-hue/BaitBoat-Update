@@ -1,3 +1,5 @@
+> **Historical R1 sourcing notes (2026-11-21).** Latest [63-row priced BOM](procurement/Flytec_V080_Full_BOM_Prices_2026-11-23.csv) supersedes the budget and old Heltec controller assumption; use [VER001 purchasing gate summary](PROJECT_PRICED_BOM_VER001.md) for currently selected R20+ Boat architecture.
+
 # Whole-project modular BOM and shopping links R1 — 2026-11-21
 Links are verified supplier/catalogue or manufacturer pages where possible, NOT promises of current stock. Do not substitute electrical parts by appearance. Primary preference: reputable Bulgarian suppliers, Farnell Bulgaria, Cytron authorized distributors, Electrokit; AliExpress only after exact specifications and seller verification. Exclude OLX/eMAG.
 

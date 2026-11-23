@@ -1,3 +1,5 @@
+> **Priced full-project BOM VER001 — 2026-11-23:** [63-line purchase register](../../docs/procurement/Flytec_V080_Full_BOM_Prices_2026-11-23.csv) and [budget/pricing gates](../../docs/PROJECT_PRICED_BOM_VER001.md). **Boat €346.47 + Remote €389.71 = €736.18** provisional base, excluding seven **unpriced mandatory safety workstreams**, any selected CHIRP sonar, taxes/delivery differences and hardware tests. Retained Boat shell/motors/solenoids/3S4P pack counted at €0 new purchase; candidates and estimates are not confirmed orders. Official Boat **VER014** / Remote **VER028** remain frozen. Active PlatformIO Boat architecture uses ESP32-S3-DevKitC + HGLRC M100 PRO, **not** older Heltec Tracker draft.
+
 # R58 — verified core procurement shortlist (2026-11-22)
 
 User confirms all modules still to be purchased. No custom PCB. No Boat SD; Remote Waveshare integrated SD. Sonar deferred. **Do not order unverified safety parts.**
