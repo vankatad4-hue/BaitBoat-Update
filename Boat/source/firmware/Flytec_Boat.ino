@@ -5,6 +5,7 @@
  * No motor/solenoid pins are configured. Do not connect actuator power.
  */
 #include <Arduino.h>
+#include "core0_probe.h"
 #include <sys/time.h>
 #include "radio_utc_time_v1.h"
 #include "boat_dual_radio_port.h"
@@ -53,6 +54,7 @@ static bool calibrationStorageReady=false;
 void setup(){
  // R30H-63: runtime affinity evidence; no new task and no shared-state race.
  Serial.printf("R30H-63 Boat setup core=%d CPUs=%d\\n", xPortGetCoreID(), portNUM_PROCESSORS);
+ if (FLYTEC_ENABLE_CORE0_PROBE && !flytec_core_probe::start()) Serial.println("R30H-65 Core0 probe start FAILED");
  Serial.begin(115200);
  Serial.println("Flytec Boat: external E22 UART backup design; uncommissioned radio and actuator GPIO disabled.");
  const uint32_t flashBytes=(uint32_t)ESP.getFlashChipSize();
