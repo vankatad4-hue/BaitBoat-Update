@@ -54,6 +54,9 @@ def main() -> None:
         ],
         "Remote/source/radio_hw_config.h": [
             "#define REMOTE_NRF_PIN_AUDIT_SIGNED 0",
+            "#define REMOTE_NRF_BRIDGE_HARDWARE_AUDIT_SIGNED 0",
+            "#define REMOTE_NRF_BRIDGE_RF_INTEROPERABILITY_VERIFIED 0",
+            "#define REMOTE_NRF_BRIDGE_I2C_ADDRESS 0x28",
             "#define REMOTE_E22_BRIDGE_AUDIT_SIGNED 0",
             "#define REMOTE_E22_RF_INTEROPERABILITY_VERIFIED 0",
             "#define REMOTE_E22_RF_AIRTIME_AUDIT_SIGNED 0",

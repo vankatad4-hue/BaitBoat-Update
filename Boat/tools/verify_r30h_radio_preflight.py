@@ -47,6 +47,8 @@ REQUIRED = (
 LOCKED_MACROS = {
     "Remote/source/radio_hw_config.h": (
         "REMOTE_NRF_PIN_AUDIT_SIGNED",
+        "REMOTE_NRF_BRIDGE_HARDWARE_AUDIT_SIGNED",
+        "REMOTE_NRF_BRIDGE_RF_INTEROPERABILITY_VERIFIED",
         "REMOTE_E22_BRIDGE_AUDIT_SIGNED",
         "REMOTE_E22_RF_INTEROPERABILITY_VERIFIED",
         "REMOTE_E22_RF_AIRTIME_AUDIT_SIGNED",
@@ -93,7 +95,12 @@ def verify(source):
                 errors.append(f"{name}: {flag} must remain unsigned 0")
     remote = "Remote/source/boat_radio.cpp"
     boat = "Boat/source/boat_dual_radio_port.cpp"
-    need(remote, "g_nrfReady=REMOTE_NRF_PIN_AUDIT_SIGNED && g_nrf.begin(true)")
+    need(remote, "g_nrfReady=REMOTE_NRF_PIN_AUDIT_SIGNED &&")
+    need(remote, "REMOTE_NRF_BRIDGE_HARDWARE_AUDIT_SIGNED &&")
+    need(remote, "REMOTE_NRF_BRIDGE_RF_INTEROPERABILITY_VERIFIED &&")
+    need(remote, "g_nrf.begin(true)")
+    need(remote, "Sc18is606NrfLink g_nrf(")
+    need(remote, "g_linkManager.setTransportReady(LINK_NRF_PRIMARY,false)")
     for word in ("REMOTE_E22_BRIDGE_AUDIT_SIGNED &&",
                  "REMOTE_E22_RF_INTEROPERABILITY_VERIFIED &&",
                  "REMOTE_E22_RF_AIRTIME_AUDIT_SIGNED &&"):

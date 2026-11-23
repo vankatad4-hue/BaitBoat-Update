@@ -14,7 +14,8 @@
 #include "radio_session_platform.h"
 #include "sc16is750_bridge.h"
 #include "e22_uart_link.h"
-#include "nrf24_link.h"
+#include "sc18is606_wire_io.h"
+#include "sc18is606_nrf_link.h"
 #include "radio_hw_config.h"
 #include "remote_r30h9_marker_config.h"
 #include "r30h9_marker_contract.h"
@@ -24,7 +25,6 @@ static_assert(REMOTE_R30H9_MARKER_GPIO == -1 && REMOTE_R30H9_GPIO_OUTPUT_SIGNED 
 #include "radio_utc_time_v1.h"
 #include <sys/time.h>
 #include <Wire.h>
-#include <SPI.h>
 #include <esp_system.h>
 #include <string.h>
 
@@ -40,7 +40,10 @@ static E22UartLink g_lora(g_uartBridge,
     [](void*){ return g_uartBridge.e22AuxReady(); },
     [](bool released,void*){ g_uartBridge.setE22Reset(released); },
     nullptr);
-static NRF24Link g_nrf(REMOTE_NRF_CE_PIN,REMOTE_NRF_CSN_PIN,&SPI,REMOTE_NRF_CHANNEL,REMOTE_NRF_SCK_PIN,REMOTE_NRF_MISO_PIN,REMOTE_NRF_MOSI_PIN);
+// R30H-11: isolated I2C->SPI radio bridge, no ESP direct CE/CSN or TF SPI bus.
+// Guarded against initialization until actual SC18IS606-EVB + nRF are measured.
+static Sc18is606WireIo g_nrfBridgeIo(Wire);
+static Sc18is606NrfLink g_nrf(g_nrfBridgeIo,REMOTE_NRF_BRIDGE_I2C_ADDRESS,REMOTE_NRF_CHANNEL);
 static bool g_loraConfigured=false;
 static bool g_nrfReady=false;
 static bool g_begun=false;
@@ -166,9 +169,13 @@ bool boatRadio_begin() {
     g_lastPrimaryHeartbeat=g_lastBackupTxMs=g_lastBackupTxAttemptMs=0;g_backupTxSent=false;
     resetSession(millis());g_missionUpload=MissionUpload{};
 
-    // R30H-1: do not drive provisional Waveshare CE/CSN until exact PCB and
-    // shared peripherals are inspected and the pin/level audit is signed.
-    g_nrfReady=REMOTE_NRF_PIN_AUDIT_SIGNED && g_nrf.begin(true);
+    // R30H-11: the selected software nRF adapter is SC18IS606 (separate
+    // SPI), not GPIO6/15 or the TF bus. Four independent physical signoffs
+    // remain 0 and prevent bridge initialization and all RF output.
+    g_nrfReady=REMOTE_NRF_PIN_AUDIT_SIGNED &&
+               REMOTE_NRF_BRIDGE_HARDWARE_AUDIT_SIGNED &&
+               REMOTE_NRF_BRIDGE_RF_INTEROPERABILITY_VERIFIED &&
+               g_nrf.begin(true);
     g_linkManager.setTransportReady(LINK_NRF_PRIMARY,g_nrfReady);
 
     // E22 is also locked until the exact 0x48 carrier/clock/TTL wiring, matched
@@ -402,6 +409,12 @@ void boatRadio_update() {
     }
     if(g_nrfReady) {
         g_nrf.update();
+        if(!g_nrf.ready()){
+            // I2C/bridge fault revokes the primary immediately. Do NOT
+            // keep stale readiness or replay queued manual/release commands.
+            g_nrfReady=false;
+            g_linkManager.setTransportReady(LINK_NRF_PRIMARY,false);
+        }
         RadioFrame frame;
         while(g_nrf.receiveFrame(frame)) validateInboundFrame(LINK_NRF_PRIMARY,frame);
     }

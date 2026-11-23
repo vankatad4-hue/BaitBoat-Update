@@ -16,7 +16,7 @@ public:
     explicit Sc18is606Port(Sc18is606Io& io,uint8_t address=0x28)
         :io_(io),address_(address){}
     bool begin();             // verifies chip ID; CE held low
-    bool ce(bool high);       // SS1/GPIO1 -> nRF CE (requires external pulldown)
+    bool ce(bool high);       // SS2/GPIO2 -> nRF CE; SS1 is EVB EEPROM (external CE pulldown required)
     bool transfer(const uint8_t*tx,uint8_t*rx,size_t size); // SS0 -> nRF CSN
     bool ready() const{return ready_;}
     void disable();           // best-effort CE low; untrusted on I2C failure

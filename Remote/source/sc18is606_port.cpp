@@ -32,9 +32,9 @@ bool Sc18is606Port::begin(){
     const uint8_t spi[]={0xf0,0x01};
     // F4 GPIO latch low BEFORE F6/F7 enable push-pull to prevent CE glitch.
     const uint8_t ceLow[]={0xf4,0x00};
-    // GPIO1 / SS1 becomes output; SS0 remains automatic nRF CSN.
-    const uint8_t gpioEnable[]={0xf6,0x02};
-    const uint8_t gpioOutput[]={0xf7,0x04}; // SS1[1:0]=01: push-pull
+    // GPIO2 / SS2 becomes CE; SS0 stays nRF CSN; SS1 stays on-board EEPROM.
+    const uint8_t gpioEnable[]={0xf6,0x04};
+    const uint8_t gpioOutput[]={0xf7,0x10}; // SS2[1:0]=01: push-pull
     const uint8_t gpioRead[]={0xf5};
     uint8_t state=0xff;
     if(!command(spi,sizeof(spi),true)||
@@ -42,14 +42,14 @@ bool Sc18is606Port::begin(){
        !command(gpioEnable,sizeof(gpioEnable),true)||
        !command(gpioOutput,sizeof(gpioOutput),true)||
        !command(gpioRead,sizeof(gpioRead),true)||
-       !fetch(&state,1)||((state&0x02U)!=0U)){
+       !fetch(&state,1)||((state&0x04U)!=0U)){
         disable();return false;
     }
     ready_=true;return true;
 }
 bool Sc18is606Port::ce(bool high){
     if(!ready_)return false;
-    const uint8_t commandData[]={0xf4,(uint8_t)(high?0x02:0x00)};
+    const uint8_t commandData[]={0xf4,(uint8_t)(high?0x04:0x00)};
     if(command(commandData,sizeof(commandData),true))return true;
     disable();return false;
 }

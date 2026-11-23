@@ -64,7 +64,9 @@ def check_guards():
         '#define REMOTE_NRF_CSN_PIN  (-1)' in remote,
         '#define REMOTE_R30H10_REJECTED_CE_GPIO 6' in remote,
         '#define REMOTE_R30H10_REJECTED_CSN_GPIO 15' in remote,
-        '#error "R30H-10: no approved direct nRF' in remote,
+        '#define REMOTE_NRF_BRIDGE_HARDWARE_AUDIT_SIGNED 0' in remote,
+        '#define REMOTE_NRF_BRIDGE_RF_INTEROPERABILITY_VERIFIED 0' in remote,
+        '#error "R30H-11: no approved nRF hardware' in remote,
         'SD.begin(REMOTE_SD_DUMMY_CSN_PIN, SPI, 4000000)' in sd,
     )
     if not all(required):
