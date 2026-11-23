@@ -39,8 +39,14 @@ public:
  bool offer(const Command& cmd) {
   return ready() && xQueueSend(ordinary_, &cmd, 0) == pdTRUE;
  }
+ // STOP admission invalidates pending ordinary commands before delivery.
+ // An ordinary command already dequeued by the consumer still needs an
+ // application-level STOP epoch check immediately before execution.
  bool offerStop(const Command& cmd) {
-  return ready() && xQueueOverwrite(stop_, &cmd) == pdTRUE;
+  if (!ready()) return false;
+  if (xQueueOverwrite(stop_, &cmd) != pdTRUE) return false;
+  xQueueReset(ordinary_);
+  return true;
  }
  // STOP is always selected before ordinary traffic. Consumers must still
  // enforce the authenticated STOP policy; queue priority is not authorization.
