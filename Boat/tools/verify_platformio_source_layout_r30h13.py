@@ -148,6 +148,7 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
         ("Boat/source/boat_dual_radio_port.cpp", "if(stopAck_.pending()||statusOutbox_.pending())return false;"),
         ("Boat/source/boat_dual_radio_port.h", '#include "boat_r30h19_status_outbox.h"'),
         ("Boat/source/boat_dual_radio_port.h", '#include "boat_r30h21_primary_tx_budget.h"'),
+        ("Boat/source/boat_r30h21_primary_tx_budget.h", "!s.stopAckPending && !s.statusPending;"),
         ("Boat/source/boat_dual_radio_port.cpp", "bool BoatDualRadioPort::primaryOrdinaryTxReady() const"),
         ("Boat/source/boat_dual_radio_port.cpp", "if(link==LINK_NRF_PRIMARY&&!primaryOrdinaryTxReady())return false;"),
         ("Boat/source/boat_r30h19_status_outbox.h", "MAX_STATUS_AGE_MS=300U"),
