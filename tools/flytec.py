@@ -152,6 +152,13 @@ def compile_host()->None:
                 f"-I{staged}","-IBoat/source","-IBoat/tests/stubs",
                 str(staged/"boat_application_port.cpp"),
                 f"Boat/tests/boat_r30h25_{test}_test.cpp"])
+        groups.append(["g++","-std=c++17","-Wall","-Wextra","-Wpedantic","-Werror",
+            "-IBoat/source","Boat/tests/boat_r30h26_output_off_feedback_guard_test.cpp"])
+        for channel in ("motor","coil"):
+            groups.append(["g++","-std=c++17","-Wall","-Wextra","-Wpedantic","-Werror",
+                f"-I{staged}","-IBoat/source","-IBoat/tests/stubs",
+                str(staged/"boat_application_port.cpp"),
+                f"Boat/tests/boat_r30h26_stuck_{channel}_application_test.cpp"])
         for i,args in enumerate(groups):
             exe=str(Path(tmp)/f"host_{i}")
             command(*args,"-o",exe)

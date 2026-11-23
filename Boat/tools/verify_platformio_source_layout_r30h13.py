@@ -187,6 +187,9 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
         ("Boat/source/boat_r30h26_output_off_feedback_guard.h", "(uint32_t)(now-motorsOffSince_)>=MOTOR_OFF_SETTLE_MS"),
         ("Boat/source/boat_r30h26_output_off_feedback_guard.h", "(uint32_t)(now-releaseOffSince_)>=RELEASE_OFF_SETTLE_MS"),
         ("Boat/source/boat_application_port.cpp", "radio_.completeApplicationAction(manualRelease_,generation_,false,2,0);"),
+        ("Boat/tests/boat_r30h26_output_off_feedback_guard_test.cpp", "g.commandedDisable(base);"),
+        ("Boat/tests/boat_r30h26_stuck_motor_application_test.cpp", "assert(status.stopState==2U);"),
+        ("Boat/tests/boat_r30h26_stuck_coil_application_test.cpp", "assert(status.stopState==2U);"),
         # R30H-14: cross-endpoint over-air profile must not drift silently.
         ("Boat/source/boat_radio_hw_config.h", "#define BOAT_NRF_CHANNEL 76"),
         ("Remote/source/radio_hw_config.h", "#define REMOTE_NRF_CHANNEL  76"),

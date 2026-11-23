@@ -177,6 +177,24 @@ jobs:
               Boat/tests/boat_r30h25_${t}_test.cpp -o /tmp/r30h25_${t}
             /tmp/r30h25_${t}
           done
+      - name: R30H-26 Boat stuck motor and coil output feedback STOP/UNKNOWN tests
+        if: matrix.endpoint == 'Boat'
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror \
+            -IBoat/source Boat/tests/boat_r30h26_output_off_feedback_guard_test.cpp \
+            -o /tmp/boat_r30h26_guard
+          /tmp/boat_r30h26_guard
+          mkdir -p /tmp/flytec_r30h26_adapter
+          cp Boat/source/boat_application_port.cpp Boat/source/boat_application_port.h /tmp/flytec_r30h26_adapter/
+          cp Boat/tests/application_stubs/boat_dual_radio_port.h /tmp/flytec_r30h26_adapter/
+          for t in motor coil; do
+            g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror \
+              -I/tmp/flytec_r30h26_adapter -IBoat/source -IBoat/tests/stubs \
+              /tmp/flytec_r30h26_adapter/boat_application_port.cpp \
+              Boat/tests/boat_r30h26_stuck_${t}_application_test.cpp \
+              -o /tmp/boat_r30h26_stuck_${t}
+            /tmp/boat_r30h26_stuck_${t}
+          done
       - name: Cache downloaded PlatformIO packages (not firmware images)
         uses: actions/cache@v4
         with:
