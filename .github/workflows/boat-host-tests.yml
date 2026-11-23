@@ -60,6 +60,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: R30H-63 target core affinity instrumentation contract
+        run: python3 -m unittest discover -s Boat/tests -p test_r30h63_core_affinity.py -v
       - name: R30H-62 cross-endpoint FreeRTOS handoff source contract
         run: python3 -m unittest discover -s Boat/tests -p test_r30h62_transport_task_queue.py -v
       - name: R30H-61 bounded mailbox FIFO and overflow host test
