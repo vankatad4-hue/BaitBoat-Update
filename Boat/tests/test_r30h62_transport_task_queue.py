@@ -28,6 +28,9 @@ class TestTransportTaskQueue(unittest.TestCase):
   self.assertIn("xQueueReset(ordinary_)",stop)
   self.assertLess(stop.index("xQueueOverwrite(stop_, &cmd)"),stop.index("xQueueReset(ordinary_)"))
   self.assertIn("already dequeued",stop)
+  self.assertIn("stopLatched_.store(true, std::memory_order_release)",stop)
+  self.assertIn("clearStopLatchAfterAuthorization()",s)
+  self.assertIn("stopLatched_.load(std::memory_order_acquire)",s)
  def test_no_blocking_on_stop_path(self):
   s=(ROOT/"Boat/source/transport_task_queue.h").read_text()
   self.assertNotIn("portMAX_DELAY",s)
