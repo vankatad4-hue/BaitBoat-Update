@@ -53,9 +53,14 @@ bool BoatDualRadioPort::sendHardwareTelemetry(const RadioDecodedPayload &status)
  return radio_encodeTelemetryPayload(status,f.payload)&&radio_frameSeal(f,key_)&&sendFrame(LINK_NRF_PRIMARY,f);
 }
 bool BoatDualRadioPort::sendMissionFeedback(const MissionControlFeedback &status,uint32_t now){
- if(!primaryOrdinaryTxReady())return false;
+ // Never spend LoRa airtime on 250-ms status updates while nRF is healthy.
+ // On authenticated backup-only operation, return mission feedback via E22.
+ const ManagedLink link=primaryFresh(now)?LINK_NRF_PRIMARY:
+                        (backupFresh(now)?LINK_LORA_BACKUP:LINK_NONE);
+ if(link==LINK_NONE||!sessionReady())return false;
+ if(link==LINK_NRF_PRIMARY&&!primaryOrdinaryTxReady())return false;
  RadioFrame f;radio_frameInit(f,RADIO_MSG_MISSION_FEEDBACK,BOAT_ID,REMOTE_ID,++txSequence_,status.transaction,now,sessionEpoch_);
- return missionFeedbackEncode(status,f.payload)&&radio_frameSeal(f,key_)&&sendFrame(LINK_NRF_PRIMARY,f);
+ return missionFeedbackEncode(status,f.payload)&&radio_frameSeal(f,key_)&&sendFrame(link,f);
 }
 bool BoatDualRadioPort::requestLowBatteryReturnHome(){
  const auto phase=controller_.status().phase;
