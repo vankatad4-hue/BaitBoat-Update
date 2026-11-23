@@ -1,12 +1,12 @@
 // R30H-23 - real Boat safety policies + mission/actuator output requests.
 // Deterministic HOST simulation. No GPIO, no real sensor, no RF or motor feed.
 // Physics inputs are deliberately injected, not inferred from a radio ACK.
-#include "../Boat/source/boat_hardware_supervisor.h"
-#include "../Boat/source/boat_hardware_status.h"
-#include "../Boat/source/boat_shared_supply_fault_guard_r30b.h"
-#include "../Boat/source/boat_home_point_record.h"
-#include "../Boat/source/boat_radio_safety.h"
-#include "../Boat/source/mission_controller.h"
+#include "../source/boat_hardware_supervisor.h"
+#include "../source/boat_hardware_status.h"
+#include "../source/boat_shared_supply_fault_guard_r30b.h"
+#include "../source/boat_home_point_record.h"
+#include "../source/boat_radio_safety.h"
+#include "../source/mission_controller.h"
 #include <cassert>
 #include <cstdint>
 #include <iostream>
