@@ -12,15 +12,15 @@ class BackupMissionPriority(unittest.TestCase):
         self.assertIn("timeoutMs=backup?12000U:1800U",CLIENT)
 
     def test_discrete_mission_sent_before_backup_heartbeat(self):
-        self.assertLess(RADIO.index("g_missionControl.next(now,request,missionBackup)"),
+        self.assertLess(RADIO.index("g_missionControl.due(now,request,backup)"),
                         RADIO.index("if(sessionReady()&&g_loraConfigured&&(!g_backupTxSent"))
 
     def test_pending_stop_is_serviced_before_mission(self):
-        self.assertIn("if(sessionReady()&&!g_stopPending&&", RADIO)
+        self.assertIn("if(sessionReady()&&!g_stopPending&&(primary||(backup&&backupSlot))&&", RADIO)
         self.assertIn("if(g_stopPending){", RADIO)
 
     def test_backup_mission_retry_requires_available_slot(self):
-        self.assertIn("(!missionBackup||!g_backupTxSent||(uint32_t)(now-g_lastBackupTxMs)>=3000U)",RADIO)
+        self.assertIn("const bool backupSlot=!g_backupTxSent||(uint32_t)(now-g_lastBackupTxMs)>=3000U",RADIO)
 
 if __name__=="__main__":
     unittest.main()
