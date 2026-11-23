@@ -144,5 +144,14 @@ int main() {
  assert(!q.clearStopLatchAfterAuthorization());
  assert(q.receive(c,stop,token) && stop && c.id==81002);
  assert(q.clearStopLatchAfterAuthorization());
+ // R30H-81: fail-closed clear must preserve a STOP queued concurrently.
+ assert(q.offerStop({82001}));
+ q.clear();
+ assert(q.stopLatched());
+ assert(!q.clearStopLatchAfterAuthorization());
+ assert(q.receive(c,stop,token) && stop && c.id==82001);
+ // clear() advanced the generation, so a stale STOP dequeue alone is
+ // insufficient to authorize rearm. This is intentionally fail-closed.
+ assert(!q.clearStopLatchAfterAuthorization());
  std::cout<<"R30H80 actual header / mock FreeRTOS stress PASS (1000 STOP rounds, 400 delivered IDs, 2 concurrent STOP writers)\n";
 }
