@@ -44,7 +44,11 @@ pio run -d Boat -e boat_n32r16v_diagnostic
 pio run -d Remote -e remote_waveshare_43_diagnostic
 ```
 
-These commands **compile and simulate only**; do not use `pio upload`. Both projects intentionally deny upload. Host regression results for this code include [Boat portable tests #45131342414](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45131342414) **PASS**, [Remote portable tests #45131342373](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45131342373) **PASS**, and [source inventory #45131342360](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45131342360) **PASS**. The updated full PlatformIO build is [#45131342475](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45131342475); check its final status separately rather than inferring from older builds.
+These commands **compile and simulate only**; do not use `pio upload`. Both projects intentionally deny upload. Host regression results for this code include [Boat portable tests #45131342414](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45131342414) **PASS**, [Remote portable tests #45131342373](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45131342373) **PASS**, and [source inventory #45131342360](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45131342360) **PASS**. The [latest R30H-14 primary PlatformIO build #45131671825](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45131671825) is **PASS for Boat and Remote**, after the code changes. This is compile-only evidence, not a verified live RF or STOP test.
+
+## Verified target CI (2026-11-23)
+
+**Latest R30H-14 target compilation (2026-11-23):** [Primary PlatformIO #45131671825](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45131671825) **Boat PASS / Remote PASS** (compile-only, no hardware flash). [Boat Arduino reference #45131671920](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45131671920) **PASS**. Remote Arduino reference [#45131671831](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45131671831) **still processing at checkpoint write**, so its result is not claimed. Boat and Remote source/host tests PASS. The physical CE reset, shared-I2C latency, real RF packets and independent STOP/current-zero remain **NOT_RUN/BLOCKED**. Official Boat VER014 / Remote VER028 are unchanged.
 
 ## Next R30H-10 physical handoff
 
