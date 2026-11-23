@@ -2,6 +2,7 @@
 // Assumes outer RadioFrame HMAC/session/sequence acceptance by production
 // validateInboundFrame(); tests NO radio, GPIO, timing measurements or motors.
 #include "../source/radio_payload_codec.h"
+#include "../source/radio_payload_encoder.h"
 #include "../source/radio_ack_tracker.h"
 #include "../source/r30h17_stop_confirmation_gate.h"
 #include <cassert>
@@ -31,11 +32,14 @@ int main(){
  assert(!gate.allowsStopStatus(false,true)); // backup status not enough
  assert(!gate.allowsStopStatus(true,false));
  uint8_t wire[8]{};
- assert(radio_encodeTelemetryStatusPayload(0,2,0,255,0,0,wire));
+ RadioDecodedPayload sample{};sample.kind=RADIO_PAYLOAD_STATUS;
+ sample.boatMode=0;sample.stopState=2;sample.batteryPercent=255;
+ assert(radio_encodeTelemetryPayload(sample,wire));
  RadioDecodedPayload observed{};
  assert(radio_decodeTelemetryPayload(wire,observed));
  assert(!gate.allowsStopStatus(true,observed.stopState==1));
- assert(radio_encodeTelemetryStatusPayload(0,1,0,255,0,0,wire));
+ sample.stopState=1;
+ assert(radio_encodeTelemetryPayload(sample,wire));
  assert(radio_decodeTelemetryPayload(wire,observed));
  assert(gate.allowsStopStatus(true,observed.stopState==1));
  // A new STOP invalidates the old ACK/STATUS evidence.
