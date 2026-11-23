@@ -1,10 +1,13 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-23, **VS Code + PlatformIO PRIMARY; R30H-11 Remote nRF candidate isolated over SC18IS606-EVB I2C-SPI bridge (no TF SPI sharing); all RF and R30H-10 physical GPIO/PPS/STOP gates remain unsigned; current target CI needs recheck** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
+**Checkpoint:** 2026-11-23, **VS Code + PlatformIO PRIMARY; R30H-12 software I2C timeout/latency preflight added to isolated Remote SC18IS606/MCP23017 nRF candidate; original 18 H10 and new 12 R12 physical gates all unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `hardware-ready-dual-radio-r1`
 
 ## Current read-first status — R30H-12 I²C timing guard (2026-11-23)
+
+**Latest verified after R30H-12 addition:** [Remote portable host CI #45127040546](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45127040546) PASS; source inventory #45127040522 PASS. New full Boat/Remote PlatformIO and Remote Arduino targets were still processing at the documented readback; do not claim a refreshed target PASS until complete. All software outcomes are non-actuating and cannot satisfy hardware gates.
+
 
 The Remote bridge now **rejects delayed I²C results**, with a software-only elapsed-time budget of 12 ms for each SC18IS606 write/read transaction. Portable fault-injection tests cover busy NACKs, late successful reads, delayed SPI writes, and clock rollover, without replaying a possibly transmitted non-idempotent payload. New [R30H-12 latency/acceptance guide](../Remote/docs/REMOTE_R30H_12_BRIDGE_LATENCY_AND_ACCEPTANCE.md), [12 unsigned measurement probes](../Remote/docs/REMOTE_R30H_12_PHYSICAL_MEASUREMENTS.csv), and a compiled **minimum bus occupancy** model distinguish optimistic wire-only numbers from actual delay. **No physical results**: H10 still 12 NOT_RUN / 6 BLOCKED; H12 new sheet all NOT_RUN/BLOCKED. The 12 ms soft guard cannot interrupt a blocking Wire API and **does not establish STOP timing or independent CE shutoff**. Upload, RF, motors and solenoids remain locked; Boat VER014 / Remote VER028 unchanged. VS Code + PlatformIO remains primary; updated target CI requires a fresh verdict.
 
