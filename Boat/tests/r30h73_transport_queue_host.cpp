@@ -6,6 +6,8 @@
 #include <atomic>
 #include <thread>
 #include <iostream>
+#include <set>
+#include <mutex>
 struct Cmd { uint32_t id; };
 int main() {
  flytec_rtos::CommandHandoff<Cmd,8> q;
@@ -42,5 +44,39 @@ int main() {
   assert(q.receive(c,stop,token) && stop && c.id==777);
  }
  assert(failures.load()==0);
- std::cout<<"R30H73 actual header / mock FreeRTOS host stress PASS (1000 rounds)\n";
+ // R30H-74: two producers, one consumer. No STOP in this phase:
+ // contention can reject offers, but may never silently duplicate IDs.
+ assert(q.clearStopLatchAfterAuthorization());
+ std::atomic<bool> doneA{false},doneB{false};
+ std::atomic<int> admitted{0};
+ std::set<uint32_t> received;
+ std::mutex receivedMutex;
+ auto produce=[&](uint32_t base,std::atomic<bool>& done) {
+  for(uint32_t i=0;i<200;++i) {
+   const Cmd item{base+i};
+   while(!q.offer(item)) std::this_thread::yield();
+   ++admitted;
+  }
+  done.store(true);
+ };
+ std::thread producerA(produce,10000U,std::ref(doneA));
+ std::thread producerB(produce,20000U,std::ref(doneB));
+ std::thread consumer([&] {
+  while(!doneA.load() || !doneB.load() || received.size()<400U) {
+   Cmd item{}; bool stopFlag=false; uint32_t e=0;
+   if(q.receive(item,stopFlag,e)) {
+    assert(!stopFlag && q.mayExecute(e));
+    std::lock_guard<std::mutex> lock(receivedMutex);
+    assert(received.insert(item.id).second);
+   } else std::this_thread::yield();
+  }
+ });
+ producerA.join();producerB.join();consumer.join();
+ assert(admitted.load()==400 && received.size()==400);
+ // STOP under simultaneous ordinary producer pressure must invalidate all
+ // old tokens. A fresh STOP is eventually retrievable.
+ assert(q.offerStop({50000}));
+ assert(!q.offer({50001}));
+ assert(q.receive(c,stop,token) && stop && c.id==50000);
+ std::cout<<"R30H74 actual header / mock FreeRTOS stress PASS (1000 STOP rounds, 400 delivered IDs)\n";
 }
