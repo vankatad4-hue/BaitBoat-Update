@@ -42,7 +42,7 @@ int main(){
  assert(!boat_r23::ACTUATOR_OUTPUTS_COMMISSIONED);
  assert(!boat_r23::SENSOR_POWER_SEQUENCE_ACCEPTED);
  assert(boat_r23::I2C_MCP23017==0x27);
- assert(boat_r23::I2C_ADS1115==0x48);
+ assert(boat_r23::I2C_INA231==0x40);
  assert(boat_r23::I2C_QMC5883L==0x0d);
  assert(boat_r23::MCP_EKM_GPA_MASK==0x0f);
  assert(boat_r23::MCP_MDD_GPB_MASK==0x03);
