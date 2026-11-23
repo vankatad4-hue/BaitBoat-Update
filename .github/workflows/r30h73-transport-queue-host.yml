@@ -7,6 +7,7 @@ on:
       - 'Remote/source/transport_task_queue.h'
       - 'Boat/tests/r30h73*'
       - 'Boat/tests/run_r30h73_transport_queue_host.sh'
+      - 'Boat/tests/test_r30h71_transport_handoff_contract.py'
       - '.github/workflows/r30h73-transport-queue-host.yml'
   workflow_dispatch:
 jobs:
@@ -15,7 +16,11 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Compile and run real transport header with FreeRTOS host mocks
-        run: bash Boat/tests/run_r30h73_transport_queue_host.sh
+      - name: Compile and run real transport header with FreeRTOS host mocks (5 repetitions)
+        run: |
+          for run in 1 2 3 4 5; do
+            echo "=== Host transport run ${run}/5 ==="
+            bash Boat/tests/run_r30h73_transport_queue_host.sh
+          done
       - name: Source contract
         run: python -m unittest discover -s Boat/tests -p test_r30h71_transport_handoff_contract.py -v
