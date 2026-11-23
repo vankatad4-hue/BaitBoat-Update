@@ -19,6 +19,8 @@ class TestHandoffContract(unittest.TestCase):
         self.assertIn("bool mayExecute(uint32_t token) const", src)
         self.assertIn("bool executeIfCurrent(uint32_t token, Fn fn)", src)
         self.assertIn("return gotStop;", src)
+        self.assertNotIn("xQueueReset(ordinary_); xQueueReset(stop_);", src)
+        self.assertIn("clear() is a fail-closed cancellation", src)
     def test_no_radio_worker_activation(self):
         src = (ROOT / "Boat/source/transport_task_queue.h").read_text()
         self.assertNotIn("xTaskCreatePinnedToCore", src)
