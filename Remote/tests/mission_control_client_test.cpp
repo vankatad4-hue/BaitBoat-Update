@@ -31,7 +31,7 @@ int main(){
  MissionControlClient failover;MissionControlRequest pending{};
  failover.bind(21);assert(failover.request(MCTRL_PAUSE,100));
  assert(failover.due(100,pending,true));failover.admitted(100,true);
- assert(!failover.due(2200,pending,false)&&failover.pending()&&!failover.unknown());
+ assert(failover.due(2200,pending,false)&&failover.pending()&&!failover.unknown());
  assert(failover.due(3100,pending,false));failover.admitted(3100,false);
  assert(failover.observe({21,MC_PAUSED,MCTRL_PAUSE,pending.request,MC_ACCEPTED},3101,true));
  assert(!failover.pending()&&!failover.unknown());
