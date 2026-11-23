@@ -23,13 +23,20 @@ Previously the Boat application attempted STATUS telemetry immediately after `ra
 
 `Boat/tests/boat_r30h19_stop_ack_status_integration_test.cpp` composes the **actual portable Boat R30H-18 ACK outbox, new STATUS outbox and Remote R30H-17 confirmation gate**. It simulates a TX-busy packet, a failed ACK, a successful RF ACK dropped before the Remote application, command-ID-preserving STOP reattempt, an unknown STOP STATUS, a fresh primary stopped STATUS, new STOP supersession, expired and invalid STATUS, session/transport failure and `millis()` rollover.
 
-The test exercises state-machine *composition*; it does NOT instantiate physical RF24, Waveshare I²C→SPI bridge, actual actuator driver or prove end-to-end radio delivery.
+Additionally, `Remote/tests/r30h19_ack_wire_test.cpp` exercises the **real Remote ACK encoder, payload decoder, session-aware `RadioAckTracker`, and R30H-17 STOP gate** against wrong IDs, wrong command types, wrong epoch, rejected ACK, and unknown/confirmed STATUS. Each endpoint's real codec is compiled separately to avoid duplicate declarations. Both tests assume the production outer RadioFrame HMAC/session/sequence validation and do NOT claim over-air end-to-end evidence.
+
+The tests exercise state-machine *composition* and payload encoding; they do NOT instantiate physical RF24, Waveshare I²C→SPI bridge, actual actuator driver or prove end-to-end radio delivery.
 
 Both `.github/workflows/boat-host-tests.yml` and the Boat job in `.github/workflows/platformio-migration-build.yml` compile and run this integration test. The source/mutation audit checks ACK-before-STATUS-before-heartbeat order, cleanup of pre-STOP status and active priority interlocks. The existing R30G audit was updated to keep optional diagnostics below pending status.
 
 ```bash
 g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IBoat/source -IRemote/source \
+ Boat/source/radio_payload_codec.cpp \
  Boat/tests/boat_r30h19_stop_ack_status_integration_test.cpp -o /tmp/r30h19 && /tmp/r30h19
+g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
+ Remote/source/radio_payload_codec.cpp Remote/source/radio_payload_encoder.cpp \
+ Remote/source/radio_ack_tracker.cpp Remote/tests/r30h19_ack_wire_test.cpp \
+ -o /tmp/remote_r30h19 && /tmp/remote_r30h19
 python Boat/tools/verify_platformio_source_layout_r30h13.py
 python -m unittest discover -s Boat/tests -p test_platformio_source_layout_r30h13.py -v
 python Boat/tools/verify_r30g_optional_diag_priority.py
