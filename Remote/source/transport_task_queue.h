@@ -108,6 +108,8 @@ public:
   xSemaphoreGive(mutex_);
   return ok;
  }
+ // Caller MUST quiesce all STOP producers before authorization/rearm.
+ // A racing STOP request is not safely distinguishable from authorization.
  bool clearStopLatchAfterAuthorization() {
   // STOP producers latch before acquiring the ordinary queue mutex.
   // Never rearm while a STOP writer is active or an unconsumed STOP exists.
