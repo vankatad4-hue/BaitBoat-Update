@@ -1,4 +1,9 @@
 #pragma once
+// Cross-endpoint portable integration tests include both endpoint headers.
+// Their enum/struct wire ABI must be defined ONCE per translation unit, even
+// when the Boat and Remote source directories are included together.
+#ifndef FLYTEC_RADIO_PAYLOAD_CODEC_SHARED_TYPES_H
+#define FLYTEC_RADIO_PAYLOAD_CODEC_SHARED_TYPES_H
 #include <stdint.h>
 
 // Portable wire-payload decoder. No Arduino dependencies; all payloads are
@@ -70,3 +75,5 @@ struct RadioDecodedPayload {
 bool radio_decodeHeartbeatPayload(const uint8_t payload[8], RadioDecodedPayload &out);
 bool radio_decodeAckPayload(const uint8_t payload[8], RadioDecodedPayload &out);
 bool radio_decodeTelemetryPayload(const uint8_t payload[8], RadioDecodedPayload &out);
+
+#endif // FLYTEC_RADIO_PAYLOAD_CODEC_SHARED_TYPES_H
