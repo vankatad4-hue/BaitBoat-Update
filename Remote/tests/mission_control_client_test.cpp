@@ -15,5 +15,16 @@ int main(){
  assert(c.request(MCTRL_CANCEL,1701)&&c.next(1701,r));
  assert(c.observe({5,MC_ABORTED,MCTRL_CANCEL,r.request,MC_ACCEPTED},1702,true)&&!c.locked());
  assert(!c.fresh(2702));c.reset();assert(!c.locked());
+ // A blocked E22 slot must not consume a mission attempt.
+ MissionControlClient busy;MissionControlRequest due{};
+ busy.bind(11);assert(busy.request(MCTRL_PAUSE,100));
+ assert(busy.due(100,due,true)&&busy.due(200,due,true));
+ busy.admitted(200);
+ assert(!busy.due(3199,due,true));
+ assert(busy.due(3200,due,true)); // no second admission yet
+ assert(busy.due(3500,due,true));
+ busy.admitted(3500);
+ assert(!busy.due(6499,due,true));
+ assert(busy.due(6500,due,true));
  std::cout<<"Mission remote control ACK handling passed\n";
 }
