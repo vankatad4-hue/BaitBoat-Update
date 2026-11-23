@@ -11,10 +11,12 @@ public:
   if(unknown_&&op!=MCTRL_CANCEL)return false;
   request_={op,transaction_,++nextId_};pending_=true;tries_=0;started_=now;lastTx_=now;return true;
  }
- bool next(uint32_t now,MissionControlRequest &out){
+ bool next(uint32_t now,MissionControlRequest &out,bool backup=false){
   if(!pending_)return false;
-  if(now-started_>=1800U||(tries_>=3&&now-lastTx_>=400U)){pending_=false;unknown_=true;return false;}
-  if(tries_&&now-lastTx_<400U)return false;
+  const uint32_t retryMs=backup?3000U:400U;
+   const uint32_t timeoutMs=backup?12000U:1800U;
+   if(now-started_>=timeoutMs||(tries_>=3&&now-lastTx_>=retryMs)){pending_=false;unknown_=true;return false;}
+  if(tries_&&now-lastTx_<retryMs)return false;
   ++tries_;lastTx_=now;out=request_;return true;
  }
  bool observe(const MissionControlFeedback &f,uint32_t now,bool authenticated){
