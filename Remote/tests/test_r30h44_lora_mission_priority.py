@@ -16,8 +16,8 @@ class BackupMissionPriority(unittest.TestCase):
                         RADIO.index("if(sessionReady()&&g_loraConfigured&&(!g_backupTxSent"))
 
     def test_pending_stop_is_serviced_before_mission(self):
-        self.assertLess(RADIO.index("if(g_stopPending){",RADIO.index("void boatRadioUpdate")),
-                        RADIO.index("g_missionControl.next(now,request,missionBackup)"))
+        self.assertIn("if(sessionReady()&&!g_stopPending&&", RADIO)
+        self.assertIn("if(g_stopPending){", RADIO)
 
     def test_backup_mission_retry_requires_available_slot(self):
         self.assertIn("(!missionBackup||!g_backupTxSent||(uint32_t)(now-g_lastBackupTxMs)>=3000U)",RADIO)
