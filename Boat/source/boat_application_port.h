@@ -4,12 +4,12 @@
 #include "boat_dual_radio_port.h"
 // Current modular Boat uses ready-made ESP32-S3-DevKitC-1-N32R16V,
 // MDD20A, EKM014 and
-// independently reviewed commercial safety modules with removable harnesses.
+// existing ready-made power and actuator modules with removable harnesses.
 // No custom carrier PCB or live output pins exist in the default build.
 // Driver contract: the installed module-specific port must obtain real local
-// samples and enforce an independent electrical watchdog. apply() must reject
-// output if its hardware interlocks/lease have failed, including when the MCU
-// cannot service the loop. There is deliberately no default working driver.
+// samples and enforce the software command lease and output constraints.
+// The ESP32 internal watchdog provides software recovery, not an independent
+// power disconnect. There is deliberately no default working driver.
 struct BoatPhysicalDriver {
  bool (*read)(BoatHardwareSample &);
  bool (*apply)(const BoatActuatorOutput &,uint16_t maxLeaseMs);
