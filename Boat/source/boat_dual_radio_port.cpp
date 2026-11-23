@@ -59,6 +59,12 @@ bool BoatDualRadioPort::sendMissionFeedback(const MissionControlFeedback &status
                         (backupFresh(now)?LINK_LORA_BACKUP:LINK_NONE);
  if(link==LINK_NONE||!sessionReady())return false;
  if(link==LINK_LORA_BACKUP&&status.result!=MC_STATUS){
+  // Never overwrite an older unacknowledged correlated response with a
+  // different request. Remote will retry the newer request after this slot.
+  if(pendingBackupMissionFeedbackValid_&&
+     (pendingBackupMissionFeedback_.transaction!=status.transaction||
+      pendingBackupMissionFeedback_.request!=status.request||
+      pendingBackupMissionFeedback_.op!=status.op))return false;
   pendingBackupMissionFeedback_=status;
   pendingBackupMissionFeedbackValid_=true;
   pendingBackupMissionFeedbackAtMs_=now;
