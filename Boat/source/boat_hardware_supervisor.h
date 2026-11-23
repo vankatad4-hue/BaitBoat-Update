@@ -36,8 +36,9 @@ inline bool boatHardware_configValid(const BoatActuatorConfig &c){
  for(auto ms:c.pulseMs)if(!ms||ms>=4000)return false;
  return true;
 }
-// Actuator-side software watchdog. A separate hardware watchdog/current
-// cutoff is mandatory; this class cannot deenergize a stuck MCU by itself.
+// Actuator-side software watchdog and command lease. Dedicated external
+// failsafe electronics are outside the project scope. This class cannot
+// deenergize a stuck MCU or failed output driver by itself.
 class BoatActuatorSupervisor{
 public:
  bool configure(const BoatActuatorConfig &cfg){stop();cfg_=cfg;configured_=boatHardware_configValid(cfg);return configured_;}
