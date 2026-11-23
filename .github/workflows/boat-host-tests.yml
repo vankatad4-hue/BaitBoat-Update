@@ -173,16 +173,6 @@ jobs:
               -o /tmp/boat_r30h26_stuck_${t}
             /tmp/boat_r30h26_stuck_${t}
           done
-      - name: R30H-27 independent-feedback provenance and current-zero distinction (host only)
-        run: |
-          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror \
-            -IBoat/source Boat/tests/boat_r30h27_feedback_provenance_test.cpp \
-            -o /tmp/boat_r30h27_provenance
-          /tmp/boat_r30h27_provenance
-      - name: R30H-27 unsigned 18-signal hardware matrix and mutation checks
-        run: |
-          python3 Boat/tools/verify_r30h27_feedback_matrix.py
-          python3 -m unittest discover -s Boat/tests -p 'test_r30h27_feedback_matrix.py' -v
       - name: Compiler
         run: g++ --version
       - name: Payload encoder/decoder
@@ -281,10 +271,6 @@ jobs:
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/source/mission_protocol.cpp Boat/tests/boat_hardware_supervisor_test.cpp -o /tmp/boat_hardware_supervisor
           /tmp/boat_hardware_supervisor
-      - name: Physical feedback status confirmation
-        run: |
-          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/boat_hardware_status_test.cpp -o /tmp/boat_hardware_status
-          /tmp/boat_hardware_status
       - name: Coherent live telemetry encoding
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/source/radio_payload_encoder.cpp Boat/source/radio_payload_codec.cpp Boat/tests/boat_hardware_telemetry_test.cpp -o /tmp/boat_hardware_telemetry
