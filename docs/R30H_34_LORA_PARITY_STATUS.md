@@ -1,3 +1,5 @@
+> **R30H-35 implementation update (2026-11-23):** Root-authenticated session handshake HELLO/PROOF can now originate over E22 and Boat CHALLENGE/CONFIRM is returned over the same radio; Remote accepts root-authenticated LoRa handshake responses. Boat accepts authenticated mission PREPARE/CONTROL/STICKS packets on either radio and keeps staged missions while either link is fresh. Existing mission safety checks still apply. **Not yet full parity:** Remote mission upload scheduling/ACK and telemetry are primary-centric; manual motor lease remains primary-only; LoRa pacing (3 seconds) and 8-second handshake timeout may cause cold-boot retries; E22 RF flags remain 0 and builds unverified. Do not claim functioning backup until end-to-end testing.
+
 # R30H-34 — LoRa command parity implementation and limits
 
 **Scope:** expand authenticated E22 fallback beyond STOP/RTH, without making false claims of full nRF equivalence.
