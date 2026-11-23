@@ -86,6 +86,14 @@ jobs:
             ~/.platformio/platforms
             ~/.platformio/.cache
           key: ${{ runner.os }}-pio-${{ matrix.endpoint }}-${{ hashFiles('Boat/platformio.ini', 'Remote/platformio.ini') }}
+      - name: R30H-13 Boat radio stuck-TX watchdog (portable, no RF)
+        if: matrix.endpoint == 'Boat'
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror \
+            -IBoat/tests/r30h13_nrf_stubs -IBoat/source \
+            Boat/source/nrf24_link.cpp Boat/tests/r30h13_boat_nrf_timeout_test.cpp \
+            -o /tmp/boat_nrf_timeout
+          /tmp/boat_nrf_timeout
       - name: R30H-12 non-actuating I2C wire-budget regression
         if: matrix.endpoint == 'Remote'
         run: |
