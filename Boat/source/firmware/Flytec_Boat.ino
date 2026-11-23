@@ -52,7 +52,6 @@ static Figure8CalibrationNvs calibrationNvs;
 static bool calibrationStorageReady=false;
 void setup(){
  // R30H-63: runtime affinity evidence; no new task and no shared-state race.
- Serial.begin(115200);
  Serial.printf("R30H-63 Boat setup core=%d CPUs=%d\\n", xPortGetCoreID(), portNUM_PROCESSORS);
  Serial.begin(115200);
  Serial.println("Flytec Boat: external E22 UART backup design; uncommissioned radio and actuator GPIO disabled.");
