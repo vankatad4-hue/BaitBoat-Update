@@ -10,7 +10,12 @@ public:
     static constexpr uint32_t MAX_STATUS_AGE_MS=300U;
     void reset(){pending_=false;offeredAt_=0;status_={};}
     bool offer(const RadioDecodedPayload &status,uint32_t now){
-        if(status.kind!=RADIO_PAYLOAD_STATUS||status.stopState>2U)return false;
+        // Mirror the strict 8-byte on-wire STATUS encoder contract. Invalid
+        // snapshots must not repeatedly occupy the priority TX scheduler.
+        if(status.kind!=RADIO_PAYLOAD_STATUS||status.stopState>2U||
+           status.boatMode>4U||(status.safetyFlags&0x80U)!=0U||
+           (status.batteryPercent>100U&&status.batteryPercent!=255U))
+            return false;
         status_=status;offeredAt_=now;pending_=true;return true;
     }
     bool pending()const{return pending_;}

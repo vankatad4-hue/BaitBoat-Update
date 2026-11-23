@@ -91,6 +91,22 @@ int main(){
     assert(!post.due(903,true,false,false,false));assert(!post.pending());
     assert(!post.offer(RadioDecodedPayload{},999));
     assert(!post.pending());
+    // R30H-20: invalid STATUS must never enter a priority loop and
+    // block ACK/heartbeat; bit 7 is reserved in both firmware codecs.
+    RadioDecodedPayload invalid=status(1);
+    invalid.safetyFlags=0x80U;
+    assert(!post.offer(invalid,1000)&&!post.pending());
+    invalid=status(1);invalid.boatMode=5;
+    assert(!post.offer(invalid,1001)&&!post.pending());
+    invalid=status(1);invalid.batteryPercent=254;
+    assert(!post.offer(invalid,1002)&&!post.pending());
+    invalid=status(1);invalid.safetyFlags=0x20U; // low/critical wire bit
+    assert(post.offer(invalid,1003)&&post.due(1003,true,true,false,false));
+    uint8_t encoded[8]{};
+    assert(radio_encodeTelemetryStatusPayload(post.status().boatMode,
+           post.status().stopState,post.status().safetyFlags,
+           post.status().batteryPercent,0,0,encoded));
+    post.sent();
     // 32-bit millis wrap is safe.
     assert(post.offer(status(1),0xfffffff0U));
     assert(post.due(0x00000010U,true,true,false,false));

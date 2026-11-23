@@ -21,7 +21,9 @@ inline RadioDecodedPayload boatHardware_status(const BoatHardwareSample &s,uint3
  if(in.fix.fresh&&std::isfinite(in.fix.accuracyM)&&in.fix.accuracyM>0&&in.fix.accuracyM<=655.34&&in.fix.latE7>=-900000000&&in.fix.latE7<=900000000&&in.fix.lonE7>=-1800000000&&in.fix.lonE7<=1800000000&&s.gpsFixType>=3){out.safetyFlags|=8U;out.gpsFixType=s.gpsFixType;out.satellites=s.satellites;}
  if(in.fix.headingValid&&std::isfinite(in.fix.headingDeg)&&in.fix.headingDeg>=0&&in.fix.headingDeg<360)out.safetyFlags|=16U;
  if(s.batteryBand>=BOAT_BATTERY_RED)out.safetyFlags|=32U;
- if(s.batteryBand==BOAT_BATTERY_CRITICAL)out.safetyFlags|=128U;
+ // Wire safetyFlags bit 7 is RESERVED by BOTH payload codecs. Critical
+ // battery is already covered by the LOW bit (bit 5), percent and local RTH.
+ // Never emit an unencodable STATUS that could starve STOP confirmation.
  if(detached||!primary||out.boatMode==3)out.safetyFlags|=64U;
  out.batteryPercent=s.batteryPercent<=100?s.batteryPercent:255;
  return out;
