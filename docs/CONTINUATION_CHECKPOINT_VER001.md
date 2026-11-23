@@ -1,8 +1,14 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-23, **R30H-22 — VS Code + PlatformIO PRIMARY: correlated STOP command-ID acceptance ACK followed by authoritative primary Boat stopped-status, bounded retry and heartbeat recovery; physical gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
+**Checkpoint:** 2026-11-23, **R30H-23 — VS Code + PlatformIO PRIMARY: correlated STOP command-ID acceptance ACK followed by authoritative primary Boat stopped-status, bounded retry and heartbeat recovery; physical gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `platformio-unified-r30h20` (parent `hardware-ready-dual-radio-r1`)
+
+## Current read-first status — R30H-23 local conditional Home and independent software safety simulation (2026-11-23)
+
+> **R30H-23 (2026-11-23) — integrated simulated local failsafe acceptance matrix:** New `Boat/tests/boat_r30h23_failsafe_integration_test.cpp` exercises production Boat radio watchdog, 10,000-ms authenticated dual-link-loss gate, mission controller, motor/coil supervisor, locally sampled GNSS/heading/safety feedback, Home-record validation, and shared-3S battery/critical-voltage guards. **Software-only** scenarios include immediate STOP before 10s; eligible local Home-only navigation after 10s; backup-only continued outbound mission without release permission; 15 independently invalid Home-admission inputs; seven mid-RTH faults; 3-second low-battery RTH and immediate 9.8V critical STOP; interrupted coil with no replay; and primary STATUS=UNKNOWN when feedback is invalid. CI: [Boat host run #45205207217](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45205207217), [PlatformIO run #45205207291](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45205207291); verify exact commit verdict before announcing PASS. [R30H-23 engineering report](R30H_23_LOCAL_FAILSAFE_SIMULATION.md). **No live hardware acceptance:** R30H-10 12 NOT_RUN / 6 BLOCKED, R30H-12 7 NOT_RUN / 5 BLOCKED. Boat VER014 / Remote VER028 unchanged.
+
+---
 
 ## Current read-first status — R30H-22 two-endpoint STOP ACK STATUS simulation (2026-11-23)
 

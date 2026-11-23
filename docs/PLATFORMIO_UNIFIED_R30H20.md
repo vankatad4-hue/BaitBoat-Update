@@ -65,3 +65,7 @@ The active PlatformIO branch now includes R30H-21 primary TX pre-admission seque
 ## R30H-22 two-endpoint STOP/ACK/STATUS (2026-11-23)
 
 The new branch adds a single timeline simulator using both actual endpoint wire codecs and Boat/Remote STOP retry/ACK/STATUS classes, with injected link faults and physical-status UNKNOWN. Boat/Remote host and source audit passed on `e1475248`; see [R30H-22 engineering report](R30H_22_DUAL_ENDPOINT_STOP_SCHEDULER.md). Do not treat this as a real RF/STOP current-zero measurement or commissioning permission.
+
+## R30H-23 failsafe integration (2026-11-23)
+
+The branch adds Boat local dual-radio-loss conditional Home, GPS/heading/Home, critical battery/INA231, physical-safety feedback and interrupted-coil simulation, plus host and PlatformIO CI jobs and source mutation audit. No GPIO admission or official release change. [Read the R30H-23 test report](R30H_23_LOCAL_FAILSAFE_SIMULATION.md).
