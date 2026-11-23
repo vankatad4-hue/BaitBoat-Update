@@ -122,6 +122,15 @@ public:
    if(overrideActive&&in.primaryFresh&&in.releaseInterlocks&&overrideLeft>=-1000&&overrideLeft<=1000&&overrideRight>=-1000&&overrideRight<=1000)
     return {overrideLeft,overrideRight,-1};
    if(intent.intent!=INTENT_NAV_TARGET&&intent.intent!=INTENT_NAV_HOME)return off;
+   // R30H-24: validate the *local* navigation witness at the last actuator
+   // boundary, even if a previously cached navigation result still says valid.
+   // Neither a stale GNSS/heading sample nor an RF-derived display value can
+   // authorize autonomous motor demand. This is software defense-in-depth,
+   // NOT independent hardware output disable.
+   if(!in.fix.fresh||!in.fix.headingValid||!in.fix.geofenceValid||
+      !std::isfinite(in.fix.accuracyM)||in.fix.accuracyM<=0.0||
+      !std::isfinite(in.fix.headingDeg)||in.fix.headingDeg<0.0||
+      in.fix.headingDeg>=360.0)return off;
    if(!nav.valid||nav.arrived||!std::isfinite(nav.headingErrorDeg)||!std::isfinite(nav.distanceM)||!in.releaseInterlocks)return off;
    // Differential thrust ONLY: positive bearing error means clockwise/right,
    // hence the port/left propeller gets more forward thrust than starboard.
