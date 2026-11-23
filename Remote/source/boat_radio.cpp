@@ -89,10 +89,21 @@ static void resetSession(uint32_t now){
     g_lastHandshakeTx=now-500U;
 }
 static bool sendHandshake(const SessionHandshakePacket &packet,uint32_t now){
-    if(!g_rootReady||!g_nrfReady)return false;
+    if(!g_rootReady)return false;
     RadioFrame f;radio_frameInit(f,(RadioMessageType)packet.type,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,0,0,now,0);
     memcpy(f.payload,packet.payload,8);
-    return radio_frameSeal(f,g_rootKey)&&g_nrf.sendFrame(f);
+    if(!radio_frameSeal(f,g_rootKey))return false;
+    // Root-authenticated handshake may travel over either radio. E22 uses
+    // its own link flag and seal; never equate UART admission with receipt.
+    bool sent=false;
+    if(g_nrfReady)sent=g_nrf.sendFrame(f);
+    if(g_loraConfigured&&(!g_backupTxSent||now-g_lastBackupTxMs>=3000U)){
+        f.flags=RADIO_FLAG_BACKUP_LINK;
+        if(radio_frameSeal(f,g_rootKey)&&g_lora.sendFrame(f,now)){
+            g_lastBackupTxMs=now;g_backupTxSent=true;sent=true;
+        }
+    }
+    return sent;
 }
 static bool sessionReady(){return g_session.established()&&g_txSequence<RadioSessionCounter::REKEY_AT-1;}
 static BoatRadioLink toPublicLink(ManagedLink link) {
@@ -385,7 +396,7 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame){
     const uint32_t now=millis();
     if(!radioLinkFlagMatches(frame.flags,link==LINK_LORA_BACKUP)||frame.sourceId!=BOAT_DEVICE_ID||frame.destinationId!=REMOTE_DEVICE_ID)return;
     if(frame.type>=SESSION_HELLO&&frame.type<=SESSION_CONFIRM){
-        if(link!=LINK_NRF_PRIMARY||!g_rootReady||frame.sequence||frame.commandId||frame.sessionEpoch||!radio_frameVerify(frame,g_rootKey))return;
+        if(!g_rootReady||frame.sequence||frame.commandId||frame.sessionEpoch||!radio_frameVerify(frame,g_rootKey))return;
         if(g_session.remoteReceive((SessionHandshakeMessage)frame.type,frame.payload,g_rootKey,radioPlatformHmac,now,true)&&g_session.established()){
             g_session.frameKey(g_authKey);g_ackTracker.reset(g_sessionEpoch);
         }
@@ -417,7 +428,7 @@ void boatRadio_update() {
     // Sequence-limit rekey still uses the existing primary handshake.
     if(g_session.established()&&!sessionReady())resetSession(now);
     if(g_session.timeout(now))resetSession(now);
-    if(g_rootReady&&g_nrfReady&&!g_session.established()&&now-g_lastHandshakeTx>=500U){
+    if(g_rootReady&&(g_nrfReady||g_loraConfigured)&&!g_session.established()&&now-g_lastHandshakeTx>=500U){
         g_lastHandshakeTx=now;g_session.startRemote(radioPlatformNonce(),now);
         SessionHandshakePacket packet{};if(g_session.remotePacket(packet))sendHandshake(packet,now);
     }
