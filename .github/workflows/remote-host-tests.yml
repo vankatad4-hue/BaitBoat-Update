@@ -46,6 +46,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: R30H-61 bounded mailbox FIFO and overflow host test
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror Remote/tests/transport_mailbox_test.cpp -o /tmp/remote_transport_mailbox_test
+          /tmp/remote_transport_mailbox_test
       - name: R30H-20 authenticated Remote 32-byte frame fault matrix (host only)
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror \
