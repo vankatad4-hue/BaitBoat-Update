@@ -164,7 +164,7 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
         ("Remote/source/r30h15_primary_stop_retry.h", "RETRANSMIT_GAP_MS=150U"),
         ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.mayAttempt(sessionReady(),g_nrfReady,"),
         ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.maySendPeriodic(g_nrfReady,g_nrf.txPending())"),
-        ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.reset();g_missionId=0;"),
+        ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.reset();g_stopConfirmation.reset();g_missionId=0;"),
         ("Remote/source/sc18is606_nrf_link.cpp", "!regWrite(REG_RX_PW_P1,(uint8_t)RADIO_FRAME_SIZE)"),
         ("Boat/source/boat_dual_radio_port.cpp", "if(!nrf_.ready())"),
         ("Remote/source/boat_radio.cpp", "Sc18is606NrfLink g_nrf("),
