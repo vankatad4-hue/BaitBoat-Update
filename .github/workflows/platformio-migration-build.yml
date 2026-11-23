@@ -97,6 +97,12 @@ jobs:
             Boat/source/nrf24_link.cpp Boat/tests/r30h13_boat_nrf_timeout_test.cpp \
             -o /tmp/boat_nrf_timeout
           /tmp/boat_nrf_timeout
+      - name: R30H-18 Boat STOP ACK busy-TX bounded outbox (no hardware)
+        if: matrix.endpoint == 'Boat'
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IBoat/source \
+            Boat/tests/boat_r30h18_stop_ack_outbox_test.cpp -o /tmp/boat_r30h18_stop_ack
+          /tmp/boat_r30h18_stop_ack
       - name: R30H-17 correlated STOP ACK and status regression
         if: matrix.endpoint == 'Remote'
         run: |
