@@ -1,8 +1,16 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-23, **R30H-15 — VS Code + PlatformIO PRIMARY: Remote nRF STOP TX-busy single-slot retry added and ordered before heartbeat, session-reset and age protections tested; physical R30H-10/R30H-12 gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
+**Checkpoint:** 2026-11-23, **R30H-16 — VS Code + PlatformIO PRIMARY: bounded nRF STOP retransmissions until authenticated Boat STOP status, up to 8 admissions/150 ms gap/2.5 s deadline; physical gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `hardware-ready-dual-radio-r1`
+
+## Current read-first status — R30H-16 STOP confirmation-aware bounded retries (2026-11-23)
+
+**R30H-16 (2026-11-23) — bounded primary nRF STOP retransmission:** Remote now keeps STOP queued after an nRF buffer-admitted TX; it reattempts at most **8 transmissions** and at least **150 ms apart** within a **2,500 ms local deadline**, preserving command ID and preempting ordinary primary heartbeat. Only authenticated Boat STATUS `stopState==1` clears pending STOP and its confirmation latch; ACK ACCEPTED or TX admission does not. Queue resets on session/bridge fault/expiry; local STOP confirmation requirement remains asserted on failure. [Full R30H-16 report](docs/R30H_16_STOP_DELIVERY_CONFIRMATION.md). Code-commit host CI Boat #45133874972 PASS, Remote #45133874907 PASS, source inventory #45133874893 PASS; target compile verdict check [PIO #45133874886](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45133874886). No physical signoff: R30H-10 12 NOT_RUN/6 BLOCKED; R30H-12 7 NOT_RUN/5 BLOCKED. Boat 014 / Remote 028 unchanged.
+
+**Never interpret an RF24 buffer admission as Boat STOP execution or independent current-zero.** Physical CE reset and STOP interlocks remain BLOCKED. No official release/version change.
+
+---
 
 ## Current read-first status — R30H-15 pending primary STOP retry (2026-11-23)
 
