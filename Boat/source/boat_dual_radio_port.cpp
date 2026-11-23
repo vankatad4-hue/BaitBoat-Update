@@ -103,6 +103,7 @@ void BoatDualRadioPort::resetSession(bool preserveMission){
  // R30G: never carry a diagnostic offer or stale activity timestamp across
  // authenticated session/key/epoch rollover.
  optionalDiagnostics_.reset();lastControlRxValid_=false;
+ stopAck_.reset(); // Never replay a STOP ACK across session/epoch boundaries.
  havePrimaryHeartbeatSent_=false;
  utcSource_={};utcEverSent_=false;lastUtcTxMs_=0;
  radioWatchdog_.reset();
@@ -141,8 +142,12 @@ void BoatDualRadioPort::update() {
  }
  if(!missionGate_||!missionGate_()||!primaryFresh(now))mission_.reset();
  if(nrfReady_){
+  const bool stopAckWasInFlight=stopAck_.inFlight();
   nrf_.update();
+  if(stopAckWasInFlight&&!nrf_.txPending())
+   stopAck_.completed(nrf_.ready()&&nrf_.lastTxSuccess());
   if(!nrf_.ready()){
+   stopAck_.reset(); // A failed PHY cannot retain a response from a dead session.
    // R30H-13: revoke primary immediately on its transport watchdog fault.
    // Queued/stick primary commands cannot survive a transport failure.
    nrfReady_=false;lastNrfRxValid_=false;
@@ -152,6 +157,23 @@ void BoatDualRadioPort::update() {
   } else {
    RadioFrame f;
    while(nrf_.receiveFrame(f))receive(LINK_NRF_PRIMARY,f);
+   // R30H-18: after RX accepts STOP, its correlated ACK claims the first
+   // available primary TX slot. Never let heartbeat/status/diagnostics
+   // get ahead of an outstanding STOP response.
+   const uint32_t ackNow=millis();
+   if(stopAck_.due(ackNow,sessionReady(),nrfReady_,nrf_.txPending())){
+    const auto pending=stopAck_.ticket();
+    if(pending.epoch==sessionEpoch_){
+     RadioFrame reply{};
+     radio_frameInit(reply,RADIO_MSG_ACK,BOAT_ID,REMOTE_ID,
+                     ++txSequence_,pending.commandId,ackNow,sessionEpoch_);
+     if(radio_encodeAckPayload(pending.result,CMD_EMERGENCY_STOP,
+                               pending.commandId,pending.stopState,
+                               pending.interlocks,reply.payload)&&
+        radio_frameSeal(reply,key_)&&nrf_.sendFrame(reply))
+      stopAck_.admitted(millis()); // admission only, NOT Remote receipt
+    }else stopAck_.reset();
+   }
   }
  }
  if(sx1262Ready_){e22_.update();RadioFrame f;while(e22_.receiveFrame(f))receive(LINK_LORA_BACKUP,f);}
@@ -213,7 +235,7 @@ void BoatDualRadioPort::update() {
  opportunity.authenticatedSession=sessionReady();
  opportunity.primaryFresh=primaryFresh(millis());
  opportunity.txPending=nrf_.txPending();
- opportunity.commandQueued=commandQueue_.size()!=0;
+ opportunity.commandQueued=commandQueue_.size()!=0||stopAck_.pending();
  opportunity.activeMission=controller_.status().transaction!=0;
  opportunity.failsafeOrLinkLoss=linkLossHold_||detachedReturn_||failsafeRthActive_;
  opportunity.recentCommand=lastControlRxValid_ &&
@@ -296,6 +318,7 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
      // New authenticated epoch: discard any optional diagnostic from the
      // previous key/session and require a new successful primary heartbeat.
      optionalDiagnostics_.reset();lastControlRxValid_=false;
+     stopAck_.reset(); // new authenticated session invalidates prior ACK ID
      havePrimaryHeartbeatSent_=false;
 #if BOAT_R30H_LOCAL_TRACE_ENABLED
      havePrimaryTraceSample_=false;
@@ -457,6 +480,11 @@ bool BoatDualRadioPort::commandPending(uint8_t epoch,uint16_t commandId) const {
 }
 bool BoatDualRadioPort::sendCommandAck(ManagedLink link,const BoatCommand &cmd,uint8_t result,uint8_t stopState,uint8_t interlockFlags,uint32_t now) {
  if(!sessionReady())return false;
+ // A primary STOP ACK must never be discarded just because an earlier
+ // nRF packet still owns the asynchronous RF24 TX slot.
+ if(link==LINK_NRF_PRIMARY&&cmd.type==CMD_EMERGENCY_STOP)
+  return stopAck_.offer((uint16_t)cmd.commandId,sessionEpoch_,result,
+                        stopState,interlockFlags,now); // local queue, NOT delivered
  RadioFrame f;
  radio_frameInit(f,RADIO_MSG_ACK,BOAT_ID,REMOTE_ID,++txSequence_,(uint16_t)cmd.commandId,now,sessionEpoch_);
  if(!radio_encodeAckPayload(result,(uint8_t)cmd.type,(uint16_t)cmd.commandId,stopState,interlockFlags,f.payload))return false;
@@ -485,7 +513,13 @@ void BoatDualRadioPort::markActionExecuted(uint8_t sender,uint8_t epoch,uint16_t
 }
 bool BoatDualRadioPort::sendFrame(ManagedLink link,const RadioFrame &f) {
  if(!sessionStarted_||!radio_frameVerify(f,key_)||!f.sequence||f.sequence>=RadioSessionCounter::REKEY_AT)return false;
- if(link==LINK_NRF_PRIMARY && nrfReady_)return nrf_.sendFrame(f);
+ if(link==LINK_NRF_PRIMARY && nrfReady_){
+  // Strict STOP-only reply priority over heartbeat, status, mission, UTC,
+  // optional diagnostic and ordinary command ACK traffic. The STOP outbox
+  // itself sends through nrf_.sendFrame() after the RX poll.
+  if(stopAck_.pending())return false;
+  return nrf_.sendFrame(f);
+ }
  if(link==LINK_LORA_BACKUP && sx1262Ready_){RadioFrame backup=f;backup.flags=RADIO_FLAG_BACKUP_LINK;if(!radio_frameSeal(backup,key_))return false;return e22_.sendFrame(backup,millis());}
  return false;
 }
