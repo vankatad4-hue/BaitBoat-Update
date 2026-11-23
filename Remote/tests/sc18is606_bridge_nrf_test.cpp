@@ -28,13 +28,18 @@ class FakeBridge final:public Sc18is606Io{
 public:
     bool wrongId=false,failSpi=false,failAll=false,allowAck=true;
     unsigned spiRequests=0,unexpectedCeCommands=0;
+    uint32_t readLatencyMs=0,writeLatencyMs=0;
+    int busyReadNacks=0,busyWriteNacks=0;
     uint8_t config=0,status=0x0e;
     std::array<uint8_t,32> registers{};
     std::vector<uint8_t> reply;
     bool loaded=false,rxPending=false;
     std::array<uint8_t,RADIO_FRAME_SIZE> txPayload{},rxPayload{};
-    void pauseMs(unsigned duration)override{nowMs+=(uint32_t)duration;}
+    uint32_t tickMs()const override{return ::nowMs;}
+    void pauseMs(unsigned duration)override{::nowMs+=(uint32_t)duration;}
     bool write(uint8_t addr,const uint8_t*data,size_t count)override{
+        ::nowMs+=writeLatencyMs;
+        if(busyWriteNacks>0){--busyWriteNacks;return false;}
         if(failAll||addr!=0x28||!data||count==0)return false;
         const uint8_t fn=data[0];
         reply.clear();
@@ -80,6 +85,8 @@ public:
         return true;
     }
     bool read(uint8_t address,uint8_t*dst,size_t count)override{
+        ::nowMs+=readLatencyMs;
+        if(busyReadNacks>0){--busyReadNacks;return false;}
         if(failAll||address!=0x28||!dst||reply.size()!=count)return false;
         memcpy(dst,reply.data(),count);
         reply.clear();
@@ -247,6 +254,50 @@ int main(){
       io.fail=true;
       assert(!ce.write(true));
       assert(!ce.ready());
+    }
+    {
+        // NXP busy NACK: bounded retries for read and idempotent commands
+        // are safe, unlike non-idempotent SPI transactions.
+        ::nowMs=0;
+        FakeBridge fake;fake.busyWriteNacks=2;fake.busyReadNacks=3;
+        FakeMcpCe mcp(fake);Mcp23017CePort ce(mcp);
+        Sc18is606Port bridge(fake,ce,0x28);
+        assert(bridge.begin());
+        assert(bridge.ready());
+        assert((mcp.latch&1U)==0U);
+        assert(::nowMs<=Sc18is606Port::OPERATION_BUDGET_MS);
+    }
+    {
+        // A response accepted only AFTER the software deadline must not
+        // publish data, even if Wire eventually returned the right bytes.
+        ::nowMs=0;
+        FakeBridge fake;fake.readLatencyMs=13;
+        FakeMcpCe mcp(fake);Mcp23017CePort ce(mcp);
+        Sc18is606Port bridge(fake,ce,0x28);
+        assert(!bridge.begin());
+        assert(!bridge.ready());
+        assert(mcp.highTransitions==0);
+    }
+    {
+        // Single delayed non-idempotent command: never retry the SPI frame.
+        ::nowMs=0;
+        FakeBridge fake;FakeMcpCe mcp(fake);Mcp23017CePort ce(mcp);
+        Sc18is606Port bridge(fake,ce,0x28);
+        assert(bridge.begin());
+        fake.writeLatencyMs=13;
+        uint8_t tx[1]={0xff},rx[1]={};
+        const unsigned old=fake.spiRequests;
+        assert(!bridge.transfer(tx,rx,1));
+        assert(fake.spiRequests==old+1);
+        assert(!bridge.ready());
+    }
+    {
+        // Wraparound-safe unsigned elapsed-time arithmetic.
+        ::nowMs=0xfffffffDU;
+        FakeBridge fake;fake.busyReadNacks=2;
+        FakeMcpCe mcp(fake);Mcp23017CePort ce(mcp);
+        Sc18is606Port bridge(fake,ce,0x28);
+        assert(bridge.begin());
     }
     return 0;
 }

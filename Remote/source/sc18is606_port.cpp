@@ -3,20 +3,33 @@
 
 bool Sc18is606Port::command(const uint8_t*data,size_t count,bool retry){
     if(!data||count==0||count>MAX_TRANSFER+1)return false;
-    // NXP bridge temporarily NACKs when busy. Non-idempotent SPI commands
-    // NEVER retry: an ambiguous I2C failure could duplicate a transmitted frame.
+    // SC18IS606 can NACK its I2C address while it processes a previous
+    // request. Never replay a non-idempotent SPI command after an ambiguous
+    // write result: its 32-byte payload might already have transmitted.
     const unsigned attempts=retry?5U:1U;
+    const uint32_t start=io_.tickMs();
     for(unsigned i=0;i<attempts;i++){
-        if(io_.write(address_,data,count))return true;
-        if(i+1U<attempts)io_.pauseMs(1);
+        const bool ok=io_.write(address_,data,count);
+        const uint32_t elapsed=(uint32_t)(io_.tickMs()-start);
+        if(elapsed>OPERATION_BUDGET_MS)return false;
+        if(ok)return true;
+        if(!retry||i+1U>=attempts||elapsed>=OPERATION_BUDGET_MS)break;
+        io_.pauseMs(1);
     }
     return false;
 }
 bool Sc18is606Port::fetch(uint8_t*data,size_t count){
     if(!data||count==0||count>MAX_TRANSFER)return false;
-    for(unsigned i=0;i<12;i++){
-        if(io_.read(address_,data,count))return true;
-        io_.pauseMs(1); // bounded wait: SPI transfer may still be in progress
+    const uint32_t start=io_.tickMs();
+    for(unsigned i=0;i<12U;i++){
+        const bool ok=io_.read(address_,data,count);
+        const uint32_t elapsed=(uint32_t)(io_.tickMs()-start);
+        // Reject a late successful buffer read. It may already violate the
+        // expected STOP priority/heartbeat service interval.
+        if(elapsed>OPERATION_BUDGET_MS)return false;
+        if(ok)return true;
+        if(elapsed>=OPERATION_BUDGET_MS||i+1U>=12U)break;
+        io_.pauseMs(1);
     }
     return false;
 }
