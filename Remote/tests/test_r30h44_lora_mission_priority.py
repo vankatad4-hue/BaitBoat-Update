@@ -9,7 +9,7 @@ CLIENT=(ROOT/"Remote/source/mission_control_client.h").read_text(encoding="utf-8
 class BackupMissionPriority(unittest.TestCase):
     def test_backup_timeout_exceeds_transmit_interval(self):
         self.assertIn("retryMs=backup?3000U:400U",CLIENT)
-        self.assertIn("timeoutMs=backup?12000U:1800U",CLIENT)
+        self.assertIn("timeoutMs=(backup||backupEver_)?12000U:1800U",CLIENT)
 
     def test_discrete_mission_sent_before_backup_heartbeat(self):
         self.assertLess(RADIO.index("g_missionControl.due(now,request,backup)"),
