@@ -1,8 +1,14 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-23, **R30H-26 — VS Code + PlatformIO PRIMARY: correlated STOP command-ID acceptance ACK followed by authoritative primary Boat stopped-status, bounded retry and heartbeat recovery; physical gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
+**Checkpoint:** 2026-11-23, **R30H-27 — VS Code + PlatformIO PRIMARY: correlated STOP command-ID acceptance ACK followed by authoritative primary Boat stopped-status, bounded retry and heartbeat recovery; physical gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `platformio-unified-r30h20` (parent `hardware-ready-dual-radio-r1`)
+
+## Current read-first status — R30H-27 source provenance and independent STOP-current-zero acceptance (2026-11-23)
+
+> **R30H-27 (2026-11-23) — physical feedback provenance and STOP/current-zero separation:** Audited the active Boat runtime, historical R48 dual-contactor adapter, R30C ONE-common-3S feedback contract and uncommissioned R30D read-only diagnostic. **No real physical output driver or independently verified safety input is attached.** New read-only `Boat/source/boat_r30h27_feedback_provenance_audit.h` classifies seven observed source types (separate contact/current/limiter/voltage vs software command echo or MCP23017 output register readback), but has `PHYSICAL_FEEDBACK_SIGNOFF_COMPLETE=false` and **cannot authorize load current or certify current zero**. A new [18-line unsigned provenance register](../Boat/docs/BOAT_R30H_27_FEEDBACK_PROVENANCE_MATRIX.csv) maps every safety/feedback field to missing hardware evidence, polarity, timestamp, independent test and required fail-closed behavior. Host C++ fault tests, Python inventory audit and mutation tests reject spoofed source type/ID, invalid/stale observations, unsigned evidence and even simulated `STOP=1` used as electrical proof. Physical acceptance remains R30H-10 **12 NOT_RUN / 6 BLOCKED** and R30H-12 **7 NOT_RUN / 5 BLOCKED**. **Boat VER014 / Remote VER028 unchanged.** [Technical report](R30H_27_FEEDBACK_PROVENANCE_AND_STOP_MEASUREMENT.md) · [Future bench procedure](../Boat/docs/BOAT_R30H_27_STOP_CURRENT_ZERO_BENCH_PROCEDURE.md). [Boat host CI](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45213945400) and [source audit](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45213945722) PASS at executable commit `5fec767f`; [Boat/Remote PlatformIO CI](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45213945498) must be checked for its final result. All observations remain **software-only**.
+
+---
 
 ## Current read-first status — R30H-26 persistent physical output feedback contradiction (2026-11-23)
 

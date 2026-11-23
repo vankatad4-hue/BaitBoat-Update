@@ -81,3 +81,7 @@ Production Boat now latches physical driver apply errors and enforces a new neut
 ## R30H-26 stuck output feedback monitoring (2026-11-23)
 
 Added the Boat local OFF-output motor/coil monitor, latched driver-fault response after persistent feedback disagreement, negative UNKNOWN fault ACK and 3 new non-actuating host tests integrated into CI. The provisional 250/500-ms thresholds require physical calibration. [Engineering report](R30H_26_STUCK_OUTPUT_FEEDBACK_GUARD.md). No new GPIO or hardware permission.
+
+## R30H-27 non-actuating provenance audit (2026-11-23)
+
+New read-only seven-source origin classifier, 18-row unsigned physical test register, provenance mutation tests and reviewed dummy-load STOP/current-zero test procedure. All hardware commissioning locks remain false. [Engineering report](R30H_27_FEEDBACK_PROVENANCE_AND_STOP_MEASUREMENT.md).
