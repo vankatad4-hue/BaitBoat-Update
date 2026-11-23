@@ -1,8 +1,16 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-23, **R30H-14 — VS Code + PlatformIO PRIMARY: Boat RF24 RX polling bounded; Boat/Remote channel, address pipes, retries, CRC and 32-byte payloads tested in host simulation; physical R30H-10/R30H-12 gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
+**Checkpoint:** 2026-11-23, **R30H-15 — VS Code + PlatformIO PRIMARY: Remote nRF STOP TX-busy single-slot retry added and ordered before heartbeat, session-reset and age protections tested; physical R30H-10/R30H-12 gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `hardware-ready-dual-radio-r1`
+
+## Current read-first status — R30H-15 pending primary STOP retry (2026-11-23)
+
+**R30H-15 — Remote primary nRF24 STOP TX-busy priority (2026-11-23):** Fixed a STOP packet-admission gap: if nRF TX is busy the authenticated STOP is now queued locally and reattempted **before primary heartbeat/mission traffic**, with unchanged command ID, a maximum 2,500 ms local age, and clearing on session reset/bridge fault. Backup E22 STOP admission still runs separately. Local queue acceptance is **NOT** Boat receipt, physical STOP or current-zero. Portable queue/fault tests and an order-sensitive source audit added. [R30H-15 details](R30H_15_REMOTE_STOP_TX_PRIORITY.md). Physical R30H-10 **12 NOT_RUN + 6 BLOCKED** and R30H-12 **7 NOT_RUN + 5 BLOCKED**, all unsigned; hardware/RF/actuator/upload locks unchanged; Boat VER014 / Remote VER028 frozen.
+
+The STOP priority source policy has independent host checks; [continuation procedure](R30H_15_REMOTE_STOP_TX_PRIORITY.md). Current build/host CI outcomes must be verified against the latest commit. The local STOP flag remains asserted regardless of queue expiry, but the queue does not provide independent hardware cutoff. **Next R30H-10 physical evidence is NOT_RUN/BLOCKED.**
+
+---
 
 ## Current read-first status — R30H-14 cross-endpoint radio software integration (2026-11-23)
 
