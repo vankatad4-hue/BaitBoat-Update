@@ -7,9 +7,10 @@ static int16_t clampMotor(int16_t v) {
 }
 static bool backupAllowed(const BoatCommand &cmd) {
     if (cmd.type == CMD_EMERGENCY_STOP) return true;
-    if (cmd.type == CMD_SET_MODE && cmd.mode == MODE_RETURN_HOME) return true;
-    if (cmd.type == CMD_MANUAL_MOTORS) return false; // backup pacing exceeds motor lease
-    return false;
+    if (cmd.type == CMD_SET_MODE) return cmd.mode == MODE_RETURN_HOME || cmd.mode == MODE_AUTOPILOT;
+    if (cmd.type == CMD_MANUAL_MOTORS || cmd.type == CMD_CLEAR_STOP) return false;
+    // Discrete actions still pass through the Boat mission/solenoid interlocks.
+    return true;
 }
 
 bool radio_encodeCommand(const BoatCommand &cmd, uint8_t src, uint8_t dst,
