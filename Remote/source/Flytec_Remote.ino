@@ -69,6 +69,10 @@ static bool readJoystickHardware(JoystickRaw &raw)
 
 void setup()
 {
+    // R30H-63: core-affinity observation only; no concurrent application task.
+    Serial.begin(115200);
+    Serial.printf("R30H-63 Remote setup core=%d CPUs=%d\\n", xPortGetCoreID(), portNUM_PROCESSORS);
+
     Serial.begin(115200);
 
     // Initialise shared state in a safe, STOP-latched condition.
@@ -127,6 +131,12 @@ void setup()
 
 void loop()
 {
+    static bool r30h63CoreReported = false;
+    if (!r30h63CoreReported) {
+        r30h63CoreReported = true;
+        Serial.printf("R30H-63 Remote loop core=%d\\n", xPortGetCoreID());
+    }
+
     // Process incoming radio packets and boat acknowledgements.
     boatRadio_update();
 
