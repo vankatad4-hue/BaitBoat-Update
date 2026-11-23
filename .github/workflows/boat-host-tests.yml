@@ -60,6 +60,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: R30H-61 bounded mailbox FIFO and overflow host test
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror Boat/tests/transport_mailbox_test.cpp -o /tmp/boat_transport_mailbox_test
+          /tmp/boat_transport_mailbox_test
       - name: R30H-46 busy E22 mission feedback source regression
         run: python3 -m unittest Boat/tests/test_r30h46_backup_mission_feedback.py -v
       - name: R30H-30 software-only actuator output boundary host regression
