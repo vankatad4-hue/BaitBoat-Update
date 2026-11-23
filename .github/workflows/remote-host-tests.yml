@@ -103,7 +103,7 @@ jobs:
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
             Remote/tests/r30h12_i2c_wire_budget_test.cpp -o /tmp/remote_i2c_budget
           /tmp/remote_i2c_budget
-          python3 Boat/tools/verify_r30h10_physical_lock.py
+          python3 Boat/tools/verify_r30h10_gpio_map.py
       - name: ADS1115 full-frame, invalid config and I2C fault regression
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/adc_stubs -IRemote/source \
