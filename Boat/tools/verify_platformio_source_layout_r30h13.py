@@ -244,8 +244,9 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
         start=boat_radio.find(builder)
         end=boat_radio.find(limit,start)
         body=boat_radio[start:end] if start>=0 and end>=0 else ""
-        if not body or "primaryOrdinaryTxReady()" not in body or
-            ("++txSequence_" in body and body.find("primaryOrdinaryTxReady()")>body.find("++txSequence_")):
+        if (not body or "primaryOrdinaryTxReady()" not in body or
+                ("++txSequence_" in body and
+                 body.find("primaryOrdinaryTxReady()")>body.find("++txSequence_"))):
             errors.append(f"Boat R30H-21 TX sequence guard missing before allocation in {builder}")
     for endpoint in ("Boat", "Remote"):
         if not (root / f"{endpoint}/releases/VERSION").exists():
