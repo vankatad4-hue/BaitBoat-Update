@@ -17,7 +17,7 @@
 | 25% planning reserve | | €184.05 |
 | Base plus 25% reserve | | €920.23 |
 
-[**Current full 63-row BOM with supplier URLs, exact/candidate part references, unit and extended pricing, assumptions, owned items and missing quotes**](procurement/Flytec_V080_Full_BOM_Prices_2026-11-23.csv).
+[**Current full 56-row BOM with supplier URLs, exact/candidate part references, unit and extended pricing, assumptions, owned items and missing quotes**](procurement/Flytec_V080_Full_BOM_Prices_2026-11-23.csv).
 
 **Pricing limitation:** A mix of previously recorded shop listings, rough estimates and illustrative EUR/VAT conversions. This is not a fresh checkout or stock reservation. Confirm exact SKU, Bulgarian delivery/VAT, shipping, availability, RF legality, power/fit and pack protection before any order. `BUDGET` is not `SELECTED`; `CANDIDATE` is not approved procurement; `TBD` means **no cost estimate at all**. The €736.18 base is **not a full safe build price**.
 
