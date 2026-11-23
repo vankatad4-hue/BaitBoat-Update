@@ -169,6 +169,22 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
     ):
         if required not in read(source):
             errors.append(f"{source}: missing safety/source invariant {required!r}")
+    # R30H-15: source order is a safety property. The driver MUST release
+    # TX completions and attempt pending STOP BEFORE optional heartbeat slots.
+    remote_radio=read("Remote/source/boat_radio.cpp")
+    update_start=remote_radio.find("void boatRadio_update()")
+    update_end=remote_radio.find("bool boatRadio_utcNow",update_start)
+    sequence=(
+        "g_nrf.update();",
+        "g_primaryStopRetry.mayAttempt(sessionReady(),g_nrfReady,",
+        "g_primaryStopRetry.maySendPeriodic(g_nrfReady,g_nrf.txPending())",
+        "g_lastPrimaryHeartbeat>=100U",
+    )
+    positions=[remote_radio.find(word,update_start,update_end) for word in sequence]
+    if (update_start<0 or update_end<0 or
+            any(pos<0 for pos in positions) or positions!=sorted(positions) or
+            len(set(positions))!=len(positions)):
+        errors.append("Remote STOP priority broken: poll -> STOP retry -> heartbeat required")
     for endpoint in ("Boat", "Remote"):
         if not (root / f"{endpoint}/releases/VERSION").exists():
             errors.append(f"{endpoint}: release version marker missing")

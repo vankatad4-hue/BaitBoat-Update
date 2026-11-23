@@ -44,6 +44,18 @@ class TestSourceLayout(unittest.TestCase):
         self.check_rejects_edit("Boat/source/nrf24_link.cpp",
              "radio_.setRetries(5,15);","radio_.setRetries(5,10);")
 
+    def test_stop_priority_order_cannot_move_behind_heartbeat(self):
+        src=(ROOT/"Remote/source/boat_radio.cpp").read_text(encoding="utf-8")
+        a="g_primaryStopRetry.mayAttempt(sessionReady(),g_nrfReady,"
+        b="g_primaryStopRetry.maySendPeriodic(g_nrfReady,g_nrf.txPending())"
+        self.assertIn(a,src)
+        self.assertIn(b,src)
+        modified=src.replace(a,"NONSTOP_PLACEHOLDER",1).replace(b,a,1)
+        modified=modified.replace("NONSTOP_PLACEHOLDER",b,1)
+        errors,_=audit_module.audit(overrides={
+            "Remote/source/boat_radio.cpp":modified})
+        self.assertTrue(any("STOP priority broken" in e for e in errors),errors)
+
     def test_remote_radio_pin_lock_cannot_silently_disappear(self):
         self.check_rejects_edit("Remote/source/radio_hw_config.h",
              "#define REMOTE_NRF_PIN_AUDIT_SIGNED 0",
