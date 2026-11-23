@@ -57,6 +57,8 @@ def main() -> None:
             "#define REMOTE_NRF_BRIDGE_HARDWARE_AUDIT_SIGNED 0",
             "#define REMOTE_NRF_BRIDGE_RF_INTEROPERABILITY_VERIFIED 0",
             "#define REMOTE_NRF_BRIDGE_I2C_ADDRESS 0x28",
+            "#define REMOTE_NRF_CE_EXPANDER_ADDRESS 0x21",
+            "#define REMOTE_NRF_CE_EXPANDER_GPA 0",
             "#define REMOTE_E22_BRIDGE_AUDIT_SIGNED 0",
             "#define REMOTE_E22_RF_INTEROPERABILITY_VERIFIED 0",
             "#define REMOTE_E22_RF_AIRTIME_AUDIT_SIGNED 0",

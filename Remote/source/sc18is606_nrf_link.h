@@ -9,7 +9,7 @@
 // RF is gated OFF in boat_radio.cpp until independent physical signoff.
 class Sc18is606NrfLink {
 public:
-    Sc18is606NrfLink(Sc18is606Io&io,uint8_t address,uint8_t channel);
+    Sc18is606NrfLink(Sc18is606Io&io,Mcp23017CePort&ce,uint8_t address,uint8_t channel);
     bool begin(bool remoteRole);
     void update();
     bool sendFrame(const RadioFrame&frame);

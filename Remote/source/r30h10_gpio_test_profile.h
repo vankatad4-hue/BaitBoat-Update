@@ -7,11 +7,14 @@ constexpr int SD_DUMMY_CS=6,RS485_TX=15,RS485_RX=16;
 constexpr int NRF_CE=-1,NRF_CSN=-1,NRF_IRQ=-1,PPS=-1;
 constexpr int BUTTONS_MCP=0x20,OK_MCP=0x21;
 constexpr int ADS1115=0x4A,SC16IS750=0x48;
-constexpr int NRF_BRIDGE_I2C=0x28,NRF_BRIDGE_CE_SS2=2,NRF_BRIDGE_CSN_SS0=0;
+constexpr int NRF_BRIDGE_I2C=0x28,NRF_CE_MCP=0x21,NRF_CE_GPA=0;
+constexpr int NRF_BRIDGE_CSN_SS0=0;
 }
 static_assert(REMOTE_NRF_BRIDGE_HARDWARE_AUDIT_SIGNED==0 &&
               REMOTE_NRF_BRIDGE_RF_INTEROPERABILITY_VERIFIED==0 &&
-              REMOTE_NRF_BRIDGE_I2C_ADDRESS==0x28,"Bridge hardware unsigned");
+              REMOTE_NRF_BRIDGE_I2C_ADDRESS==0x28 &&
+              REMOTE_NRF_CE_EXPANDER_ADDRESS==0x21 &&
+              REMOTE_NRF_CE_EXPANDER_GPA==0,"Bridge/MCP CE hardware unsigned");
 static_assert(REMOTE_NRF_CE_PIN==-1 && REMOTE_NRF_CSN_PIN==-1 &&
               REMOTE_NRF_PIN_AUDIT_SIGNED==0,"Remote RF GPIO must stay unassigned");
 static_assert(REMOTE_SD_DUMMY_CSN_PIN==6 &&

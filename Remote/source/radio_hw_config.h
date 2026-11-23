@@ -3,8 +3,10 @@
 // Historical CE=GPIO6 collides with SD dummy CS/Sensor AD; historical CSN=GPIO15
 // collides with the onboard RS485 transmitter. Never wire these as nRF pins.
 // R30H-11 software selection: manufactured SC18IS606-EVB I2C->SPI bridge,
-// no MCU GPIO required for nRF control; SS0=nRF CSN, SS2/GPIO2=nRF CE,
-// SS1 remains connected to the evaluation board's onboard SPI EEPROM.
+// no MCU GPIO required: bridge SS0=nRF CSN and existing MCP23017 GPA0=nRF CE.
+// SS1 remains the EVB EEPROM and SS2 stays UNCONNECTED. NXP SS2 resets as
+// active-low slave select (idle high), so a CE pull-down alone is not
+// sufficient protection if SS2 were wired directly to active-high CE.
 // This *candidate* requires physical module, power, timing and RF acceptance.
 // Direct-pin nRF RF24 library stays archival; the active adapter uses a
 // separate SPI controller so the TF card on ESP SPI11/12/13 is untouched.
@@ -16,6 +18,8 @@
 // EVB JP3 all jumpers ON -> wire address 0x50, Arduino 7-bit I2C 0x28.
 // Actual jumper states and 3.3V levels must be measured.
 #define REMOTE_NRF_BRIDGE_I2C_ADDRESS 0x28
+#define REMOTE_NRF_CE_EXPANDER_ADDRESS 0x21
+#define REMOTE_NRF_CE_EXPANDER_GPA 0
 #define REMOTE_NRF_BRIDGE_HARDWARE_AUDIT_SIGNED 0
 #define REMOTE_NRF_BRIDGE_RF_INTEROPERABILITY_VERIFIED 0
 #define REMOTE_NRF_CHANNEL  76

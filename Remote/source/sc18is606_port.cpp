@@ -22,35 +22,26 @@ bool Sc18is606Port::fetch(uint8_t*data,size_t count){
 }
 bool Sc18is606Port::begin(){
     ready_=false;
-    if(address_<0x28||address_>0x2f)return false;
+    if(address_<0x28||address_>0x2f||!ce_.beginLow())return false;
     const uint8_t id=0xfe; // read version, no SPI/CE activity
     uint8_t version[16]={};
     static const char EXPECTED[]="SC18IS606";
     if(!command(&id,1,true)||!fetch(version,sizeof(version))||
        memcmp(version,EXPECTED,sizeof(EXPECTED)-1)!=0)return false;
-    // SPI mode 0, MSB first, 455kHz (conservative 0x01; NOT ESP TF SPI).
+    // NXP SS2 comes up as an inactive SPI select (likely driven HIGH).
+    // Do NOT tie it directly to the active-high nRF CE. CE is instead
+    // initialized low via existing MCP23017 GPA0 before any bridge setup.
+    // SS0 is nRF CSN, SS1 remains the EVB EEPROM, SS2 is unconnected.
+    // SPI mode 0, MSB first, conservative 455 kHz, separate from TF.
     const uint8_t spi[]={0xf0,0x01};
-    // F4 GPIO latch low BEFORE F6/F7 enable push-pull to prevent CE glitch.
-    const uint8_t ceLow[]={0xf4,0x00};
-    // GPIO2 / SS2 becomes CE; SS0 stays nRF CSN; SS1 stays on-board EEPROM.
-    const uint8_t gpioEnable[]={0xf6,0x04};
-    const uint8_t gpioOutput[]={0xf7,0x10}; // SS2[1:0]=01: push-pull
-    const uint8_t gpioRead[]={0xf5};
-    uint8_t state=0xff;
-    if(!command(spi,sizeof(spi),true)||
-       !command(ceLow,sizeof(ceLow),true)||
-       !command(gpioEnable,sizeof(gpioEnable),true)||
-       !command(gpioOutput,sizeof(gpioOutput),true)||
-       !command(gpioRead,sizeof(gpioRead),true)||
-       !fetch(&state,1)||((state&0x04U)!=0U)){
+    if(!command(spi,sizeof(spi),true)){
         disable();return false;
     }
     ready_=true;return true;
 }
 bool Sc18is606Port::ce(bool high){
     if(!ready_)return false;
-    const uint8_t commandData[]={0xf4,(uint8_t)(high?0x04:0x00)};
-    if(command(commandData,sizeof(commandData),true))return true;
+    if(ce_.write(high))return true;
     disable();return false;
 }
 bool Sc18is606Port::transfer(const uint8_t*tx,uint8_t*rx,size_t count){
@@ -65,7 +56,5 @@ bool Sc18is606Port::transfer(const uint8_t*tx,uint8_t*rx,size_t count){
 }
 void Sc18is606Port::disable(){
     ready_=false;
-    const uint8_t ceLow[]={0xf4,0x00};
-    // Best effort only: if I2C is broken this cannot physically force CE low.
-    (void)io_.write(address_,ceLow,sizeof(ceLow));
+    ce_.disable(); // best effort only; not an independent hardware cutoff
 }

@@ -23,5 +23,5 @@ UART0_RX,44,CH343,BOARD_OWNED,USB serial
 REMOTE_PPS,-1,UNASSIGNED,UNASSIGNED,Authenticated UTC is not PPS
 NRF_SPI_BRIDGE,-1,I2C_0x28,EXTERNAL_IO,NXP SC18IS606-EVB candidate isolated bridge; uncommissioned
 NRF_BRIDGE_CSN,-1,EVB_JP1_7,EXTERNAL_IO,SS0 automatic nRF CSN no ESP GPIO
-NRF_BRIDGE_CE,-1,EVB_JP1_5,EXTERNAL_IO,SS2 configured GPIO2 for nRF CE; needs external pulldown
+NRF_BRIDGE_CE,-1,I2C_0x21_GPA0,EXTERNAL_IO,Existing MCP23017 GPA0 to nRF CE; pulldown plus reset/fault test required
 NRF_BRIDGE_EEPROM,-1,EVB_JP1_6,EXTERNAL_IO,SS1 onboard EEPROM active-low CS; NOT GPIO for radio

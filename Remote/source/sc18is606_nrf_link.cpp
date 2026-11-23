@@ -15,8 +15,8 @@ constexpr uint8_t STAT_RX_DR=0x40,STAT_TX_DS=0x20,STAT_MAX_RT=0x10;
 constexpr uint8_t CONFIG_RX=0x0f,CONFIG_TX=0x0e; // 16-bit CRC, PWR_UP
 constexpr uint32_t TX_STUCK_MS=90;
 }
-Sc18is606NrfLink::Sc18is606NrfLink(Sc18is606Io&io,uint8_t addr,uint8_t channel)
-    :port_(io,addr),channel_(channel){}
+Sc18is606NrfLink::Sc18is606NrfLink(Sc18is606Io&io,Mcp23017CePort&ce,uint8_t addr,uint8_t channel)
+    :port_(io,ce,addr),channel_(channel){}
 void Sc18is606NrfLink::trip(){
     ready_=false;txPending_=false;lastTxSuccess_=false;
     port_.disable(); // never authorize new traffic on an uncertain bridge

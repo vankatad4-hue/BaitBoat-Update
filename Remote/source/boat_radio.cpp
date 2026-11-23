@@ -15,6 +15,7 @@
 #include "sc16is750_bridge.h"
 #include "e22_uart_link.h"
 #include "sc18is606_wire_io.h"
+#include "mcp23017_ce_wire_io.h"
 #include "sc18is606_nrf_link.h"
 #include "radio_hw_config.h"
 #include "remote_r30h9_marker_config.h"
@@ -43,7 +44,10 @@ static E22UartLink g_lora(g_uartBridge,
 // R30H-11: isolated I2C->SPI radio bridge, no ESP direct CE/CSN or TF SPI bus.
 // Guarded against initialization until actual SC18IS606-EVB + nRF are measured.
 static Sc18is606WireIo g_nrfBridgeIo(Wire);
-static Sc18is606NrfLink g_nrf(g_nrfBridgeIo,REMOTE_NRF_BRIDGE_I2C_ADDRESS,REMOTE_NRF_CHANNEL);
+static Mcp23017CeWireIo g_nrfCeWireIo(Wire);
+static Mcp23017CePort g_nrfCe(g_nrfCeWireIo,REMOTE_NRF_CE_EXPANDER_ADDRESS);
+static Sc18is606NrfLink g_nrf(g_nrfBridgeIo,g_nrfCe,
+                              REMOTE_NRF_BRIDGE_I2C_ADDRESS,REMOTE_NRF_CHANNEL);
 static bool g_loraConfigured=false;
 static bool g_nrfReady=false;
 static bool g_begun=false;
