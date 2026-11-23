@@ -63,6 +63,12 @@ jobs:
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IBoat/source \
             Boat/tests/boat_r30h18_stop_ack_outbox_test.cpp -o /tmp/boat_r30h18_stop_ack
           /tmp/boat_r30h18_stop_ack
+      - name: R30H-19 full STOP ACK and primary STATUS loss/busy fault matrix (host only)
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IBoat/source -IRemote/source \
+            Boat/tests/boat_r30h19_stop_ack_status_integration_test.cpp \
+            -o /tmp/boat_r30h19_flow
+          /tmp/boat_r30h19_flow
       - name: Compiler
         run: g++ --version
       - name: Payload encoder/decoder
