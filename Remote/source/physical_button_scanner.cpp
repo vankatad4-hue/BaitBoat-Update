@@ -1,8 +1,9 @@
 #include "physical_button_scanner.h"
+#include "remote_pin_assignments_r30h32.h"
 #include "release_button_guard.h"
 #include <Wire.h>
-static constexpr uint8_t BTN_EXP=0x20, RADIO_IO=0x21;
-static constexpr uint8_t IODIRA=0x00, IODIRB=0x01, GPPUA=0x0C, GPPUB=0x0D, GPIOA=0x12, GPIOB=0x13, OK_BIT=4;
+static constexpr uint8_t BTN_EXP=remote_pins::BUTTONS_MCP, RADIO_IO=remote_pins::RADIO_IO_MCP;
+static constexpr uint8_t IODIRA=0x00, IODIRB=0x01, GPPUA=0x0C, GPPUB=0x0D, GPIOA=0x12, GPIOB=0x13, OK_BIT=remote_pins::OK_GPA;
 static constexpr uint32_t DEBOUNCE_MS=25;
 static PhysicalButtonCallback cb=nullptr;
 static uint16_t stable=0xFFFF, candidate=0xFFFF;
@@ -44,7 +45,7 @@ void physicalButtons_update(uint32_t now){
  if((releases&&(releases&(releases-1)))||!(raw&1U)||(releases&&!rk)){
   releaseGuard_cancel();releaseBlocked=true;okOwned=true;
  }
- for(uint8_t i=0;i<15;i++){
+ for(uint8_t i=0;i<remote_pins::BUTTON_BANK_COUNT;i++){
   bool rp=(raw&(1U<<i))==0,sp=(stable&(1U<<i))==0,cp=(candidate&(1U<<i))==0;
   if(rp!=cp){if(rp)candidate&=(uint16_t)~(1U<<i);else candidate|=(uint16_t)(1U<<i);debounceAt[i]=now;}
   else if(rp!=sp&&(uint32_t)(now-debounceAt[i])>=DEBOUNCE_MS){
