@@ -113,5 +113,29 @@ int main() {
  assert(q.offerStop({50000}));
  assert(!q.offer({50001}));
  assert(q.receive(c,stop,token) && stop && c.id==50000);
- std::cout<<"R30H74 actual header / mock FreeRTOS stress PASS (1000 STOP rounds, 400 delivered IDs)\n";
+ // R30H-77: concurrent STOP writers must leave STOP latched, regardless
+ // of which caller wins the single overwrite slot. Losing caller retries
+ // only after the first writer has completed.
+ assert(q.clearStopLatchAfterAuthorization());
+ std::atomic<bool> fire{false};
+ std::atomic<int> stopAccepted{0};
+ auto stopProducer=[&](uint32_t id) {
+  while(!fire.load(std::memory_order_acquire)) std::this_thread::yield();
+  for(int attempt=0;attempt<100000;++attempt) {
+   if(q.offerStop({id})) { ++stopAccepted; return; }
+   std::this_thread::yield();
+  }
+  assert(false && "STOP producer retry budget exhausted");
+ };
+ std::thread stopA(stopProducer,71001U);
+ std::thread stopB(stopProducer,71002U);
+ fire.store(true,std::memory_order_release);
+ stopA.join();stopB.join();
+ assert(stopAccepted.load()==2 && q.stopLatched());
+ assert(!q.clearStopLatchAfterAuthorization()); // pending STOP
+ assert(q.receive(c,stop,token) && stop);
+ assert(c.id==71001U || c.id==71002U);
+ assert(q.stopLatched());
+ assert(q.clearStopLatchAfterAuthorization());
+ std::cout<<"R30H77 actual header / mock FreeRTOS stress PASS (1000 STOP rounds, 400 delivered IDs, 2 concurrent STOP writers)\n";
 }
