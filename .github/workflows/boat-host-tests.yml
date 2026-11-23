@@ -58,6 +58,11 @@ jobs:
             Boat/source/nrf24_link.cpp Boat/tests/r30h13_boat_nrf_timeout_test.cpp \
             -o /tmp/boat_nrf_timeout
           /tmp/boat_nrf_timeout
+      - name: R30H-18 Boat STOP ACK TX-busy priority, bounded resend and reset (host only)
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IBoat/source \
+            Boat/tests/boat_r30h18_stop_ack_outbox_test.cpp -o /tmp/boat_r30h18_stop_ack
+          /tmp/boat_r30h18_stop_ack
       - name: Compiler
         run: g++ --version
       - name: Payload encoder/decoder
