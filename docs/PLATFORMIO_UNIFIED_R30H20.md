@@ -73,3 +73,7 @@ The branch adds Boat local dual-radio-loss conditional Home, GPS/heading/Home, c
 ## R30H-24 (2026-11-23): last-actuator navigation witness and clock-wrap/real adapter tests
 
 The code branch now includes a conservative Boat output-gating fix, two portable tests, host/PlatformIO steps, source audit and mutation regression. [Technical report](R30H_24_WRAP_NAV_INPUT_APPLICATION_BATTERY.md). No live motor/coil/antenna or physical acceptance claim.
+
+## R30H-25 driver-failure and safe radio recovery (2026-11-23)
+
+Production Boat now latches physical driver apply errors and enforces a new neutral primary-stick command after radio session rollover or local STOP. Tests exercise the real application adapter under host-injected faults. [Technical report](R30H_25_DRIVER_FAULT_AND_NEUTRAL_RECOVERY.md). No hardware authorization or version bump.

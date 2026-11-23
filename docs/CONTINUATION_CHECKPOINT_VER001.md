@@ -1,8 +1,14 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-23, **R30H-24 — VS Code + PlatformIO PRIMARY: correlated STOP command-ID acceptance ACK followed by authoritative primary Boat stopped-status, bounded retry and heartbeat recovery; physical gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
+**Checkpoint:** 2026-11-23, **R30H-25 — VS Code + PlatformIO PRIMARY: correlated STOP command-ID acceptance ACK followed by authoritative primary Boat stopped-status, bounded retry and heartbeat recovery; physical gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `platformio-unified-r30h20` (parent `hardware-ready-dual-radio-r1`)
+
+## Current read-first status — R30H-25 physical-driver fault latch and radio neutral rearm (2026-11-23)
+
+> **R30H-25 (2026-11-23) · physical-driver fail-closed latch and radio-session neutral rearm:** Boat's **production** application adapter `Boat/source/boat_application_port.cpp/.h` and motor supervisor now (a) require a fresh authenticated **neutral** manual input on a noninitial radio-session generation change or local fault before accepting nonzero manual sticks; and (b) permanently refuse all subsequent actuator commands in the same application instance after `BoatPhysicalDriver::apply()` reports failure, reasserting `disable()`, rejecting queued requests and reporting physical STOP as UNKNOWN rather than claiming current zero. One-shot sensor-read failure locally STOP-latches; fresh primary CLEAR_STOP plus neutral is required for controlled *software* recovery. A 9.8-V simulated pack collapse also remains STOP after voltage and session recovery. New host-only suites use real `BoatApplicationPort.cpp` with replaceable stubs and run in Boat host and PlatformIO CI, plus mutation-enforced source audit. **Boat host PASS [#45209114670](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45209114670)** at source commit `6f51c14c`; verify [both PlatformIO targets](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45209114729) before declaring PASS. [R30H-25 report](R30H_25_DRIVER_FAULT_AND_NEUTRAL_RECOVERY.md). **No hardware tests or physical STOP/current-zero acceptance**; R30H-10 12 NOT_RUN / 6 BLOCKED, R30H-12 7 NOT_RUN / 5 BLOCKED. Boat **VER014**, Remote **VER028** remain frozen.
+
+---
 
 ## Current read-first status — R30H-24 cached navigation safety and monotonic wrap (2026-11-23)
 
