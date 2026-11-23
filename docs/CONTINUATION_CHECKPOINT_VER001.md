@@ -4,6 +4,16 @@
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `hardware-ready-dual-radio-r1`
 
+## Current read-first status — R30H-13 native VS Code + PlatformIO code audit (2026-11-23)
+
+**CURRENT R30H-13 PlatformIO source migration (2026-11-23):** All **208 active** Boat/Remote source files covered by [repository-wide audit](R30H_13_PLATFORMIO_SOURCE_MIGRATION.md); 17 exact shared protocol pair checks. Remote obsolete direct-SPI RF24 code archived, dead Remote RF24 dependency removed, Boat nRF TX 120 ms software watchdog/fail-closed transport handling added. VS Code multi-root tasks and optional local licensed LVGL font staging available. Both endpoints remain PlatformIO **compile-only**, independent physical STOP unverified; all 18 R30H-10 + 12 R30H-12 physical evidence gates unsigned. Versions Boat **014** / Remote **028** frozen. CI results must be read per last commit; target build PASS is not hardware acceptance.
+
+**Active scope:** 104 Boat + 104 Remote source files, 17 exact mirrored protocol contracts. Old Remote direct RF24 driver moved to archival folder; Boat retains RF24 and now fail-closes stuck TX after 120 ms, revoking primary readiness. Project-local VS Code build/audit tasks and Python font staging are provided; no physical signoffs changed. [Full implementation report](R30H_13_PLATFORMIO_SOURCE_MIGRATION.md).
+
+**Build status caution:** do not infer that a previous target build passed this new commit; inspect the latest GitHub Actions jobs after each source/document update. No official release marker increased.
+
+---
+
 ## Current read-first status — R30H-12 I²C timing guard (2026-11-23)
 
 **Latest verified after R30H-12 addition:** [Remote portable host CI #45127040546](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45127040546) PASS; source inventory #45127040522 PASS. New full Boat/Remote PlatformIO and Remote Arduino targets were still processing at the documented readback; do not claim a refreshed target PASS until complete. All software outcomes are non-actuating and cannot satisfy hardware gates.
