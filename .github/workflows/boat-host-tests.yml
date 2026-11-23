@@ -92,6 +92,12 @@ jobs:
             Boat/tests/boat_r30h20_battery_status_wire_test.cpp \
             -o /tmp/boat_r30h20_battery_status
           /tmp/boat_r30h20_battery_status
+      - name: R30H-21 Boat primary busy-TX sequence budget stress (host only)
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IBoat/source \
+            Boat/tests/boat_r30h21_primary_tx_priority_test.cpp \
+            -o /tmp/boat_r30h21_budget
+          /tmp/boat_r30h21_budget
       - name: Compiler
         run: g++ --version
       - name: Payload encoder/decoder

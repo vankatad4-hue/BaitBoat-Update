@@ -112,6 +112,13 @@ jobs:
             Boat/tests/boat_r30h20_battery_status_wire_test.cpp \
             -o /tmp/boat_battery_status_contract
           /tmp/boat_battery_status_contract
+      - name: R30H-21 no sequence-budget burn under busy primary radio
+        if: matrix.endpoint == 'Boat'
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IBoat/source \
+            Boat/tests/boat_r30h21_primary_tx_priority_test.cpp \
+            -o /tmp/boat_r30h21_budget
+          /tmp/boat_r30h21_budget
       - name: Cache downloaded PlatformIO packages (not firmware images)
         uses: actions/cache@v4
         with:

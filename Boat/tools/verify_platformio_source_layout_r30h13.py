@@ -147,6 +147,9 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
         ("Boat/source/boat_dual_radio_port.cpp", "stopAck_.completed(nrf_.ready()&&nrf_.lastTxSuccess());"),
         ("Boat/source/boat_dual_radio_port.cpp", "if(stopAck_.pending()||statusOutbox_.pending())return false;"),
         ("Boat/source/boat_dual_radio_port.h", '#include "boat_r30h19_status_outbox.h"'),
+        ("Boat/source/boat_dual_radio_port.h", '#include "boat_r30h21_primary_tx_budget.h"'),
+        ("Boat/source/boat_dual_radio_port.cpp", "bool BoatDualRadioPort::primaryOrdinaryTxReady() const"),
+        ("Boat/source/boat_dual_radio_port.cpp", "if(link==LINK_NRF_PRIMARY&&!primaryOrdinaryTxReady())return false;"),
         ("Boat/source/boat_r30h19_status_outbox.h", "MAX_STATUS_AGE_MS=300U"),
         ("Boat/source/boat_dual_radio_port.cpp", "statusOutbox_.offer(status,now);"),
         ("Boat/source/boat_dual_radio_port.cpp", "statusOutbox_.reset(); // discard any STATUS sampled before this STOP"),
@@ -223,6 +226,27 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
             boat_positions!=sorted(boat_positions) or
             len(set(boat_positions))!=len(boat_positions)):
         errors.append("Boat STOP ACK/STATUS priority broken: poll -> RX -> ACK -> STATUS -> heartbeat -> optional")
+    # R30H-21: primary retry/heartbeat churn must not consume sequence IDs
+    # while STOP ACK, STATUS or a busy nRF transmitter owns the slot.
+    boat_send=boat_radio.find("bool BoatDualRadioPort::sendHeartbeat(")
+    boat_next=boat_radio.find("bool BoatDualRadioPort::primaryFresh(",boat_send)
+    heartbeat=boat_radio[boat_send:boat_next] if boat_send>=0 and boat_next>=0 else ""
+    if (not heartbeat or
+        heartbeat.find("if(link==LINK_NRF_PRIMARY&&!primaryOrdinaryTxReady())return false;") < 0 or
+        heartbeat.find("if(link==LINK_NRF_PRIMARY&&!primaryOrdinaryTxReady())return false;") >
+        heartbeat.find("++txSequence_")):
+        errors.append("Boat R30H-21 busy-TX heartbeat must check slot before sequence allocation")
+    for builder,limit in (
+        ("bool BoatDualRadioPort::sendHardwareTelemetry(", "bool BoatDualRadioPort::sendMissionFeedback("),
+        ("bool BoatDualRadioPort::sendMissionFeedback(", "bool BoatDualRadioPort::requestLowBatteryReturnHome("),
+        ("bool BoatDualRadioPort::sendCommandAck(", "bool BoatDualRadioPort::enqueue("),
+    ):
+        start=boat_radio.find(builder)
+        end=boat_radio.find(limit,start)
+        body=boat_radio[start:end] if start>=0 and end>=0 else ""
+        if not body or "primaryOrdinaryTxReady()" not in body or
+            ("++txSequence_" in body and body.find("primaryOrdinaryTxReady()")>body.find("++txSequence_")):
+            errors.append(f"Boat R30H-21 TX sequence guard missing before allocation in {builder}")
     for endpoint in ("Boat", "Remote"):
         if not (root / f"{endpoint}/releases/VERSION").exists():
             errors.append(f"{endpoint}: release version marker missing")

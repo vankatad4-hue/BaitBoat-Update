@@ -102,6 +102,9 @@ def compile_host()->None:
         ]
         groups.append(["g++","-std=c++17","-Wall","-Wextra",
                        "-Wpedantic","-Werror","-IBoat/source",
+                       "Boat/tests/boat_r30h21_primary_tx_priority_test.cpp"])
+        groups.append(["g++","-std=c++17","-Wall","-Wextra",
+                       "-Wpedantic","-Werror","-IBoat/source",
                        "Boat/source/radio_payload_codec.cpp",
                        "Boat/tests/boat_r30h20_battery_status_wire_test.cpp"])
         for endpoint in ("boat","remote"):

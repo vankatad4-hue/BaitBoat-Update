@@ -48,11 +48,12 @@ bool BoatDualRadioPort::sendHardwareTelemetry(const RadioDecodedPayload &status)
   if(!radio_encodeTelemetryPayload(status,payload))return false;
   return optionalDiagnostics_.offer(payload,now);
  }
+ if(!primaryOrdinaryTxReady())return false; // Never burn a sequence on busy TX.
  RadioFrame f;radio_frameInit(f,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,++txSequence_,0,now,sessionEpoch_);
  return radio_encodeTelemetryPayload(status,f.payload)&&radio_frameSeal(f,key_)&&sendFrame(LINK_NRF_PRIMARY,f);
 }
 bool BoatDualRadioPort::sendMissionFeedback(const MissionControlFeedback &status,uint32_t now){
- if(!sessionReady()||!nrfReady_)return false;
+ if(!primaryOrdinaryTxReady())return false;
  RadioFrame f;radio_frameInit(f,RADIO_MSG_MISSION_FEEDBACK,BOAT_ID,REMOTE_ID,++txSequence_,status.transaction,now,sessionEpoch_);
  return missionFeedbackEncode(status,f.payload)&&radio_frameSeal(f,key_)&&sendFrame(LINK_NRF_PRIMARY,f);
 }
@@ -507,6 +508,9 @@ bool BoatDualRadioPort::sendCommandAck(ManagedLink link,const BoatCommand &cmd,u
  if(link==LINK_NRF_PRIMARY&&cmd.type==CMD_EMERGENCY_STOP)
   return stopAck_.offer((uint16_t)cmd.commandId,sessionEpoch_,result,
                         stopState,interlockFlags,now); // local queue, NOT delivered
+ // Reject ordinary primary ACK while STOP/STATUS holds the slot BEFORE
+ // allocating an authenticated sequence ID. Backup E22 is independent.
+ if(link==LINK_NRF_PRIMARY&&!primaryOrdinaryTxReady())return false;
  RadioFrame f;
  radio_frameInit(f,RADIO_MSG_ACK,BOAT_ID,REMOTE_ID,++txSequence_,(uint16_t)cmd.commandId,now,sessionEpoch_);
  if(!radio_encodeAckPayload(result,(uint8_t)cmd.type,(uint16_t)cmd.commandId,stopState,interlockFlags,f.payload))return false;
@@ -545,8 +549,17 @@ bool BoatDualRadioPort::sendFrame(ManagedLink link,const RadioFrame &f) {
  if(link==LINK_LORA_BACKUP && sx1262Ready_){RadioFrame backup=f;backup.flags=RADIO_FLAG_BACKUP_LINK;if(!radio_frameSeal(backup,key_))return false;return e22_.sendFrame(backup,millis());}
  return false;
 }
+bool BoatDualRadioPort::primaryOrdinaryTxReady() const {
+ return boat_r30h21::ordinarySlotFree({
+     sessionReady(),nrfReady_,nrf_.txPending(),
+     stopAck_.pending(),statusOutbox_.pending()
+ });
+}
 bool BoatDualRadioPort::sendHeartbeat(ManagedLink link,uint32_t now) {
  if(!sessionReady())return false;
+ // R30H-21: a blocked 100-ms heartbeat may be retried every main loop.
+ // Refuse it BEFORE ++txSequence_ so radio load cannot force early rekey.
+ if(link==LINK_NRF_PRIMARY&&!primaryOrdinaryTxReady())return false;
  RadioFrame f;radio_frameInit(f,RADIO_MSG_HEARTBEAT,BOAT_ID,REMOTE_ID,++txSequence_,0,now,sessionEpoch_);
  f.payload[0]=(uint8_t)(1U|(nrfReady_?2U:0U)|(sx1262Ready_?4U:0U)); // alive + radio availability; STOP state unknown
  f.payload[1]=1; // protocol build-major placeholder; reserved payload bytes remain zero

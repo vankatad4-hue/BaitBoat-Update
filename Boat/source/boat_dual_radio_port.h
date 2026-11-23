@@ -20,6 +20,7 @@ static_assert(BOAT_R30H9_MARKER_GPIO == -1 && BOAT_R30H9_GPIO_OUTPUT_SIGNED == 0
 #include "boat_r30g_optional_diag_budget.h"
 #include "boat_r30h18_stop_ack_outbox.h"
 #include "boat_r30h19_status_outbox.h"
+#include "boat_r30h21_primary_tx_budget.h"
 #include "boat_command_queue.h"
 #include "mission_wire.h"
 #include "mission_controller.h"
@@ -133,6 +134,7 @@ private:
     void noteAuthenticatedRx(uint32_t now){lastAnyAuthenticatedRxMs_=now;haveAuthenticatedRx_=true;}
     bool maybeStartFailsafeReturnHome(uint32_t now);
     bool sendMissionFeedback(const MissionControlFeedback &f,uint32_t now);
+    bool primaryOrdinaryTxReady() const;
     void abortMission();
     bool (*missionGate_)()=nullptr;
     uint32_t lastNrfRxMs_,lastBackupRxMs_;
