@@ -23,6 +23,7 @@ public:
     void setTransportReady(ManagedLink link, bool ready);
     void tick(uint32_t now);
     bool send(const BoatCommand &cmd, RadioSendFn sendFn, uint32_t now);
+    static bool backupCommandAllowed(const BoatCommand &cmd);
     ManagedLink active() const { return active_; }
     ManagedState state() const { return state_; }
     bool primaryHealthy(uint32_t now) const;
@@ -34,5 +35,4 @@ private:
     ManagedState state_;
     uint32_t recoveryStartMs_;
     uint8_t recoveryStreak_;
-    static bool backupCommandAllowed(const BoatCommand &cmd);
 };
