@@ -19,4 +19,4 @@ class TestMap(unittest.TestCase):
     def test_pwm_stays_locked(self):
         self.flip(mod.B,"MDD_PWM1,39,J3-9,BLOCKED_ACTUATOR","MDD_PWM1,39,J3-9,PROBE_ONLY")
     def test_pps_not_invented(self):
-        self.flip(mod.B,"GNSS_PPS,-1,UNASSIGNED,UNASSIGNED","GNSS_PPS,2,J3-5,PROBE_ONLY")
+        self.flip(mod.B,"GNSS_PPS,-1,NOT_CONNECTED,NOT_REQUIRED","GNSS_PPS,2,J3-5,PROBE_ONLY")
