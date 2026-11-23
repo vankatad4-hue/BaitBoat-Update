@@ -234,7 +234,7 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
     if (not heartbeat or
         heartbeat.find("if(link==LINK_NRF_PRIMARY&&!primaryOrdinaryTxReady())return false;") < 0 or
         heartbeat.find("if(link==LINK_NRF_PRIMARY&&!primaryOrdinaryTxReady())return false;") >
-        heartbeat.find("++txSequence_")):
+        heartbeat.find("RadioFrame f;radio_frameInit(f,RADIO_MSG_HEARTBEAT")):
         errors.append("Boat R30H-21 busy-TX heartbeat must check slot before sequence allocation")
     for builder,limit in (
         ("bool BoatDualRadioPort::sendHardwareTelemetry(", "bool BoatDualRadioPort::sendMissionFeedback("),
