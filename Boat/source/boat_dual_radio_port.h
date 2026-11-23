@@ -125,6 +125,7 @@ private:
     MissionControlFeedback pendingBackupMissionFeedback_{};
     bool pendingBackupMissionFeedbackValid_=false;
     uint32_t pendingBackupMissionFeedbackAtMs_=0;
+    uint32_t lastBackupMissionFeedbackAttemptMs_=0;
     // R30G single best-effort diagnostic slot. STOP/ACK/heartbeat/mission
     // always precede optional telemetry. Never extend command leases.
     boat_r30g::OptionalDiagnosticBudget optionalDiagnostics_{};
