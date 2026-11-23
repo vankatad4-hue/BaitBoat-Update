@@ -27,14 +27,14 @@ int main() {
 
   c.type=CMD_SET_MODE; c.mode=MODE_AUTOPILOT;
   assert(radio_encodeCommand(c,1,2,9,f,key));
-  assert(!radio_decodeCommand(f,1,2,200,2500,true,out,key));
+  assert(radio_decodeCommand(f,1,2,200,2500,true,out,key)); // authenticated autonomous mode allowed
   c.mode=MODE_RETURN_HOME;
   assert(radio_encodeCommand(c,1,2,9,f,key));
   assert(radio_decodeCommand(f,1,2,200,2500,true,out,key));
 
   c.type=CMD_RELEASE_HOOK_LEFT; c.activate=true;
   assert(radio_encodeCommand(c,1,2,9,f,key));
-  assert(!radio_decodeCommand(f,1,2,200,2500,true,out,key));
+  assert(radio_decodeCommand(f,1,2,200,2500,true,out,key)); // single release allowed; interlocks still apply
   assert(radio_decodeCommand(f,1,2,200,2500,false,out,key));
 
   c.type=CMD_HOOK_RELEASE; c.activate=true;
