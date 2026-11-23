@@ -45,11 +45,12 @@ int main() {
   assert(!q.mayExecute(old));
   assert(q.stopLatched());
   assert(q.receive(c,stop,token) && stop && c.id==777);
+  assert(q.clearStopLatchAfterAuthorization());
  }
  assert(failures.load()==0);
  // R30H-74: two producers, one consumer. No STOP in this phase:
  // contention can reject offers, but may never silently duplicate IDs.
- assert(q.clearStopLatchAfterAuthorization());
+ assert(!q.stopLatched());
  std::atomic<bool> doneA{false},doneB{false};
  std::atomic<int> admitted{0};
  std::set<uint32_t> received;
