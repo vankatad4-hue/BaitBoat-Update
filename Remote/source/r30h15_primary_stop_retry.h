@@ -39,7 +39,11 @@ public:
                 (uint32_t)(now-lastAdmissionAtMs_)>=RETRANSMIT_GAP_MS);
     }
     bool maySendPeriodic(bool transportReady,bool txBusy)const{
-        return transportReady&&!txBusy&&!pending_;
+        // Until the STOP retry budget is exhausted, never let heartbeat
+        // steal its TX slot. Afterwards allow heartbeat so Boat can keep
+        // reporting authoritative STOP feedback while confirmation waits.
+        return transportReady&&!txBusy&&
+               (!pending_||transmissions_>=MAX_TRANSMISSIONS);
     }
     const Command&command()const{return queued_;}
 private:

@@ -34,7 +34,8 @@ int main(){
     }
     assert(q.pending()&&q.transmissions()==Q::MAX_TRANSMISSIONS);
     assert(!q.mayAttempt(true,true,false,at)); // bounded max retries
-    assert(!q.maySendPeriodic(true,false)); // status not yet confirmed
+    assert(q.maySendPeriodic(true,false)); // cap reached: keep telemetry link alive
+    assert(!q.maySendPeriodic(true,true)); // never while RF24 is TX-busy
     q.reset(); // only caller may do so on validated Boat status
     assert(!q.pending()&&q.maySendPeriodic(true,false));
     q.queue({11U,1},100U);
