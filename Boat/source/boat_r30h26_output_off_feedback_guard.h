@@ -5,7 +5,8 @@
 // R30H-26: SOFTWARE-ONLY mismatch monitor for locally reported motor/coil
 // output state after the physical driver was commanded OFF.
 // Feedback names are not independently calibrated current measurements.
-// The commercial hardware watchdog/current cutoff remains mandatory.
+// No external cutoff or independent current-zero sensor is required by the
+// selected software-only design. This monitor cannot prove power is off.
 namespace boat_r30h26 {
 class OutputOffFeedbackGuard {
 public:
