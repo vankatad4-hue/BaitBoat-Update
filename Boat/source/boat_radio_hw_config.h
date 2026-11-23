@@ -43,9 +43,9 @@ static_assert(BOAT_NRF_SCK_PIN == boat_pins::NRF_SCK, "R30H-33 pin-map mismatch:
 static_assert(BOAT_NRF_MISO_PIN == boat_pins::NRF_MISO, "R30H-33 pin-map mismatch: BOAT_NRF_MISO_PIN");
 static_assert(BOAT_NRF_MOSI_PIN == boat_pins::NRF_MOSI, "R30H-33 pin-map mismatch: BOAT_NRF_MOSI_PIN");
 static_assert(BOAT_NRF_IRQ_PIN == boat_pins::NRF_IRQ, "R30H-33 pin-map mismatch: BOAT_NRF_IRQ_PIN");
-static_assert(BOAT_E22_UART_PIN_TX == boat_pins::BOAT_E22_UART_TX, "R30H-33 pin-map mismatch: BOAT_E22_UART_PIN_TX");
-static_assert(BOAT_E22_UART_PIN_RX == boat_pins::BOAT_E22_UART_RX, "R30H-33 pin-map mismatch: BOAT_E22_UART_PIN_RX");
-static_assert(BOAT_E22_UART_PIN_M0 == boat_pins::BOAT_E22_UART_M0, "R30H-33 pin-map mismatch: BOAT_E22_UART_PIN_M0");
-static_assert(BOAT_E22_UART_PIN_M1 == boat_pins::BOAT_E22_UART_M1, "R30H-33 pin-map mismatch: BOAT_E22_UART_PIN_M1");
-static_assert(BOAT_E22_UART_PIN_AUX == boat_pins::BOAT_E22_UART_AUX, "R30H-33 pin-map mismatch: BOAT_E22_UART_PIN_AUX");
-static_assert(BOAT_E22_UART_PIN_NRST == boat_pins::BOAT_E22_UART_NRST, "R30H-33 pin-map mismatch: BOAT_E22_UART_PIN_NRST");
+static_assert(BOAT_E22_UART_PIN_TX == boat_pins::E22_TX, "R30H-33 pin-map mismatch: BOAT_E22_UART_PIN_TX");
+static_assert(BOAT_E22_UART_PIN_RX == boat_pins::E22_RX, "R30H-33 pin-map mismatch: BOAT_E22_UART_PIN_RX");
+static_assert(BOAT_E22_UART_PIN_M0 == boat_pins::E22_M0, "R30H-33 pin-map mismatch: BOAT_E22_UART_PIN_M0");
+static_assert(BOAT_E22_UART_PIN_M1 == boat_pins::E22_M1, "R30H-33 pin-map mismatch: BOAT_E22_UART_PIN_M1");
+static_assert(BOAT_E22_UART_PIN_AUX == boat_pins::E22_AUX, "R30H-33 pin-map mismatch: BOAT_E22_UART_PIN_AUX");
+static_assert(BOAT_E22_UART_PIN_NRST == boat_pins::E22_NRST, "R30H-33 pin-map mismatch: BOAT_E22_UART_PIN_NRST");
