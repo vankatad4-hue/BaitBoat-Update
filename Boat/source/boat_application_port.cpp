@@ -2,6 +2,7 @@
 #include "boat_hardware_status.h"
 #include "boat_hardware_telemetry.h"
 #include "boat_shared_supply_fault_guard_r30b.h"
+#include "boat_r30h30_software_output_boundary.h"
 BoatApplicationPort *BoatApplicationPort::active_=nullptr;
 bool BoatApplicationPort::attach(const BoatPhysicalDriver &driver,const BoatActuatorConfig &config){
  if(attached_||active_||!driver.read||!driver.apply||!driver.disable)return false;
@@ -178,7 +179,8 @@ void BoatApplicationPort::tick(){
  int16_t left=0,right=0;const bool overrideActive=radio_.missionOverrideOutput(left,right);
  // The driver must check and enforce the output lease independently.
  const auto out=executor_.tick(in,millis(),intent,radio_.missionNavigation(),missionActive,overrideActive,left,right,sample_.safetyAt);
- if(!driver_.apply(out,100)){
+ if(!boat_r30h30::validOutput(out.left,out.right,out.releaseChannel,100U)||
+    !driver_.apply(out,100U)){
   driverFaultLatched_=true; // never trust subsequent radio/sensor rearm
   fault();return;
  }
