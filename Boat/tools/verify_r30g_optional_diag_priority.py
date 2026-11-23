@@ -24,7 +24,8 @@ assert "optionalDiagnostics_.offer(payload,now)" in s
 assert "if(!sessionReady()||!primaryFresh(now))" in s
 assert "if(!radio_encodeTelemetryPayload(status,payload))return false" in s
 assert "opportunity.txPending=nrf_.txPending();" in s
-assert "opportunity.commandQueued=commandQueue_.size()!=0;" in s
+assert "opportunity.commandQueued=commandQueue_.size()!=0||stopAck_.pending();" in s
+# R30H-18 STOP ACK explicitly blocks optional diagnostics during TX-busy recovery.
 assert "opportunity.activeMission=controller_.status().transaction!=0;" in s
 assert "opportunity.failsafeOrLinkLoss=linkLossHold_||detachedReturn_||failsafeRthActive_;" in s
 assert "opportunity.recentCommand=lastControlRxValid_" in s
