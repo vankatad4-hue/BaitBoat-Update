@@ -1,8 +1,14 @@
 # Flytec V080 retrofit — current continuation checkpoint
 
-**Checkpoint:** 2026-11-23, **R30H-18 — VS Code + PlatformIO PRIMARY: correlated STOP command-ID acceptance ACK followed by authoritative primary Boat stopped-status, bounded retry and heartbeat recovery; physical gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
+**Checkpoint:** 2026-11-23, **R30H-19 — VS Code + PlatformIO PRIMARY: correlated STOP command-ID acceptance ACK followed by authoritative primary Boat stopped-status, bounded retry and heartbeat recovery; physical gates unsigned** (R78/R79 safety, R27 INA231, R29 single 3S bus; all real hardware checks unsigned)  
 **Repository:** https://github.com/vankatad4-hue/BaitBoat-Update  
 **Branch:** `hardware-ready-dual-radio-r1`
+
+## Current read-first status — R30H-19 STOP ACK/STATUS integration (2026-11-23)
+
+> **R30H-19 (2026-11-23) — prioritized real Boat STATUS after STOP ACK:** A new one-slot/latest-status outbox prevents 100 ms heartbeat TX from starving the subsequent 200 ms Boat STATUS. Scheduler order: nRF TX completion → authenticated RX → correlated STOP ACK → latest STATUS → heartbeat → optional diagnostics/UTC. Each STOP or session/PHY fault invalidates prior STATUS; snapshots expire after 300 ms. No synthetic stopped reading: status still comes only from application safety/output-feedback samples. Integrated portable Boat ACK + STATUS + Remote gate simulation and source/CI audits added. **Boat host test PASS** on code commit 7863ea0; both PlatformIO targets on code commit 99a7046 require final CI verdict. [R30H-19 report](R30H_19_STOP_ACK_STATUS_INTEGRATION.md). Physical R30H-10 **12 NOT_RUN / 6 BLOCKED**; R30H-12 **7 NOT_RUN / 5 BLOCKED**. Boat VER014 / Remote VER028 unchanged.
+
+---
 
 ## Current read-first status — R30H-18 Boat STOP ACK TX-busy priority (2026-11-23)
 
