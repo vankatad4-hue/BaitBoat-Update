@@ -132,6 +132,16 @@ jobs:
             tests/r30h22_dual_stop_scheduler_test.cpp -lcrypto \
             -o /tmp/flytec_r30h22_endpoints
           /tmp/flytec_r30h22_endpoints
+      - name: R30H-23 software-only Boat radio-loss RTH battery and output safety matrix
+        if: matrix.endpoint == 'Boat'
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror \
+            -IBoat/tests/stubs -IBoat/source \
+            Boat/source/mission_protocol.cpp Boat/source/boat_radio_safety.cpp \
+            Boat/source/radio_payload_codec.cpp \
+            Boat/tests/boat_r30h23_failsafe_integration_test.cpp \
+            -o /tmp/boat_r30h23_failsafe
+          /tmp/boat_r30h23_failsafe
       - name: Cache downloaded PlatformIO packages (not firmware images)
         uses: actions/cache@v4
         with:

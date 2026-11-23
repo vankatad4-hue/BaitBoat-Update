@@ -156,6 +156,13 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
         ("Boat/source/boat_dual_radio_port.cpp", "statusOutbox_.reset(); // discard any STATUS sampled before this STOP"),
         ("Boat/source/boat_dual_radio_port.cpp", "statusOutbox_.due(statusNow,sessionReady(),nrfReady_,"),
         ("Boat/source/boat_dual_radio_port.cpp", "statusOutbox_.sent(); // TX started; not an actuator/safety ACK"),
+        # R30H-23: preserve the actual layered fail-closed admission paths.
+        ("Boat/source/boat_radio_safety.h", "(uint32_t)(nowMs-lastAuthenticatedRxMs)>=timeoutMs;"),
+        ("Boat/source/boat_hardware_supervisor.h", "if(!in.primaryFresh&&!in.backupFresh&&!radioIndependentHome)"),
+        ("Boat/source/boat_hardware_supervisor.h", "if(!configured_||stopLatched_||in.stopActive||!in.fix.batteryHealthy)"),
+        ("Boat/source/boat_shared_supply_fault_guard_r30b.h", "snapshot.critical"),
+        ("Boat/source/boat_dual_radio_port.cpp", "maybeStartFailsafeReturnHome(safetyNow);"),
+        ("Boat/source/boat_dual_radio_port.cpp", "if(!boatRadioLossRthDue(linkLossHold_&&!primaryFresh(now)&&!backupFresh(now),"),
         # R30H-14: cross-endpoint over-air profile must not drift silently.
         ("Boat/source/boat_radio_hw_config.h", "#define BOAT_NRF_CHANNEL 76"),
         ("Remote/source/radio_hw_config.h", "#define REMOTE_NRF_CHANNEL  76"),

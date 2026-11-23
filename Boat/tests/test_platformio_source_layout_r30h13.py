@@ -111,6 +111,20 @@ class TestSourceLayout(unittest.TestCase):
             "!s.stopAckPending && !s.statusPending;",
             "true;")
 
+    def test_r30h23_no_early_or_unauthenticated_home(self):
+        self.check_rejects_edit("Boat/source/boat_radio_safety.h",
+            "(uint32_t)(nowMs-lastAuthenticatedRxMs)>=timeoutMs;",
+            "true;")
+
+    def test_r30h23_both_radios_stale_stops_outputs(self):
+        self.check_rejects_edit("Boat/source/boat_hardware_supervisor.h",
+            "if(!in.primaryFresh&&!in.backupFresh&&!radioIndependentHome)",
+            "if(false)")
+
+    def test_r30h23_critical_battery_gate_cannot_be_removed(self):
+        self.check_rejects_edit("Boat/source/boat_shared_supply_fault_guard_r30b.h",
+            "snapshot.critical", "false")
+
     def test_remote_radio_pin_lock_cannot_silently_disappear(self):
         self.check_rejects_edit("Remote/source/radio_hw_config.h",
              "#define REMOTE_NRF_PIN_AUDIT_SIGNED 0",

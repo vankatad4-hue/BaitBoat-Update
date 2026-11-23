@@ -116,7 +116,8 @@ static void noLinkThenHome(){
     assert(driving(r.step(11002U,true,false)));
     assert(r.mission.status().phase==MC_RETURNING);
     // Navigation fixes and course must stay locally fresh DURING RTH.
-    r.sample.gnssAt=11002U;
+    r.sample.safetyAt=13003U;r.sample.headingAt=13003U;
+    r.sample.gnssAt=11002U; // only GNSS is stale here
     assert(off(r.step(13003U,false,false)));
     assert(r.mission.status().phase==MC_ABORTED);
     // A restored radio does NOT implicitly revive the aborted mission.

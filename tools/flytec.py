@@ -127,6 +127,11 @@ def compile_host()->None:
                 f"{endpoint}/source/radio_command_codec.cpp",
                 "Remote/source/radio_ack_tracker.cpp",
                 "tests/r30h22_dual_stop_scheduler_test.cpp","-lcrypto"])
+        groups.append(["g++","-std=c++17","-Wall","-Wextra","-Wpedantic","-Werror",
+            "-IBoat/tests/stubs","-IBoat/source",
+            "Boat/source/mission_protocol.cpp","Boat/source/boat_radio_safety.cpp",
+            "Boat/source/radio_payload_codec.cpp",
+            "Boat/tests/boat_r30h23_failsafe_integration_test.cpp"])
         for i,args in enumerate(groups):
             exe=str(Path(tmp)/f"host_{i}")
             command(*args,"-o",exe)
