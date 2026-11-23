@@ -78,8 +78,16 @@ public:
  // Legacy receive must not be used for actuator commands; it cannot carry
  // the epoch to the final execution boundary.
  bool receive(Command& cmd, bool& isStop) {
+  // Never hand ordinary work to a consumer that cannot validate its epoch.
   uint32_t ignored = 0;
-  return receive(cmd, isStop, ignored);
+  if (!ready() || xSemaphoreTake(mutex_, 0) != pdTRUE) return false;
+  Entry e{};
+  const bool gotStop = xQueueReceive(stop_, &e, 0) == pdTRUE;
+  if (gotStop) { cmd = e.command; isStop = true; }
+  else isStop = false;
+  xSemaphoreGive(mutex_);
+  (void)ignored;
+  return gotStop;
  }
  bool mayExecute(uint32_t token) const {
   return ready() && !stopLatched() &&
@@ -92,6 +100,8 @@ public:
  template <typename Fn> bool executeIfCurrent(uint32_t token, Fn fn) {
   if (!ready() || stopLatched() || xSemaphoreTake(mutex_, 0) != pdTRUE) return false;
   const bool ok = !stopLatched() && token == epoch_.load(std::memory_order_acquire);
+  // Recheck after acquiring the lock; STOP can still latch while fn runs.
+  // This is for non-actuating preparation only. Never execute GPIO/motors here.
   if (ok) fn();
   xSemaphoreGive(mutex_);
   return ok;
