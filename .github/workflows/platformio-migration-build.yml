@@ -95,6 +95,12 @@ jobs:
             Boat/source/nrf24_link.cpp Boat/tests/r30h13_boat_nrf_timeout_test.cpp \
             -o /tmp/boat_nrf_timeout
           /tmp/boat_nrf_timeout
+      - name: R30H-15 STOP TX-busy priority regression
+        if: matrix.endpoint == 'Remote'
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
+            Remote/tests/r30h15_primary_stop_retry_test.cpp -o /tmp/remote_stop_retry
+          /tmp/remote_stop_retry
       - name: R30H-12 non-actuating I2C wire-budget regression
         if: matrix.endpoint == 'Remote'
         run: |

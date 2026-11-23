@@ -17,6 +17,7 @@
 #include "sc18is606_wire_io.h"
 #include "mcp23017_ce_wire_io.h"
 #include "sc18is606_nrf_link.h"
+#include "r30h15_primary_stop_retry.h"
 #include "radio_hw_config.h"
 #include "remote_r30h9_marker_config.h"
 #include "r30h9_marker_contract.h"
@@ -59,6 +60,7 @@ static uint32_t g_lastPrimaryHeartbeat=0;
 static uint32_t g_lastBackupTxMs=0,g_lastBackupTxAttemptMs=0;
 static bool g_backupTxSent=false,g_stopPending=false;
 static BoatCommand g_pendingStop{};
+static flytec_r30h15::PrimaryStopRetry<BoatCommand> g_primaryStopRetry;
 static uint8_t g_authKey[32],g_rootKey[32];
 static bool g_rootReady=false;
 static SessionHandshake g_session;
@@ -76,7 +78,7 @@ static void resetSession(uint32_t now){
     g_session.reset();radioSession_wipe(g_authKey,32);
     g_gpsUtcClock.reset(); // no stale UTC authority across auth epochs
     g_manualConfirmRequired=true;g_stopMustConfirm=true;g_manualTransitionAt=now;
-    g_txSequence=0;g_stopPending=false;g_missionId=0;g_missionUpload.fail();g_missionControl.reset();g_lastStickTx=now-50U;
+    g_txSequence=0;g_stopPending=false;g_primaryStopRetry.reset();g_missionId=0;g_missionUpload.fail();g_missionControl.reset();g_lastStickTx=now-50U;
     g_boatSequenceGuard.resetAfterHandshake();g_boatPrimarySequenceGuard.resetAfterHandshake();g_boatBackupSequenceGuard.resetAfterHandshake();
     g_ackTracker.reset(0);telemetryInit();
     boatState.emergencyStop=true;boatState.emergencyStopConfirmed=false;boatState.actuatorSafetyReady=false;
@@ -213,7 +215,16 @@ bool boatRadio_sendCommand(const BoatCommand &command) {
     const uint32_t now=millis();
     bool queued=false;
     if(command.type==CMD_EMERGENCY_STOP&&sessionReady()){
-        const bool primary=radioSendTransport(LINK_NRF_PRIMARY,command);
+        bool primary=radioSendTransport(LINK_NRF_PRIMARY,command);
+        if(primary){
+            g_primaryStopRetry.reset();
+        }else if(g_nrfReady){
+            // A previously admitted RF24 frame still occupies the TX slot.
+            // Record the STOP locally and reattempt after nRF update(), BEFORE
+            // heartbeat or mission traffic. This is NOT Boat acknowledgement.
+            g_primaryStopRetry.queue(command,now);
+            primary=true; // accepted into local STOP-only software queue
+        }
         const bool backup=radioSendTransport(LINK_LORA_BACKUP,command);
         queued=primary||backup;
     }else queued=g_linkManager.send(command,radioSendTransport,now);
@@ -392,8 +403,32 @@ void boatRadio_update() {
         g_lastHandshakeTx=now;g_session.startRemote(radioPlatformNonce(),now);
         SessionHandshakePacket packet{};if(g_session.remotePacket(packet))sendHandshake(packet,now);
     }
+    // R30H-15: release TX completions before heartbeat can claim the slot.
+    // No RF on default-locked builds: g_nrfReady remains false until signoff.
+    if(g_nrfReady) {
+        g_nrf.update();
+        if(!g_nrf.ready()){
+            // I2C/bridge fault revokes the primary immediately. Do NOT
+            // keep stale readiness or replay queued manual/release commands.
+            g_nrfReady=false;
+            g_linkManager.setTransportReady(LINK_NRF_PRIMARY,false);
+        }
+        RadioFrame frame;
+        while(g_nrf.receiveFrame(frame)) validateInboundFrame(LINK_NRF_PRIMARY,frame);
+    }
+    if(g_primaryStopRetry.pending()){
+        if(!sessionReady()||!g_nrfReady||g_primaryStopRetry.expired(millis())){
+            g_primaryStopRetry.reset(); // never replay after timeout/epoch loss
+        }else if(g_primaryStopRetry.mayAttempt(sessionReady(),g_nrfReady,
+                                               g_nrf.txPending(),millis())){
+            const BoatCommand pending=g_primaryStopRetry.command();
+            if(radioSendTransport(LINK_NRF_PRIMARY,pending))
+                g_primaryStopRetry.reset(); // buffer admitted, NOT executed
+        }
+    }
     if(sessionReady()){
-        if(g_nrfReady&&now-g_lastPrimaryHeartbeat>=100U){
+        if(g_primaryStopRetry.maySendPeriodic(g_nrfReady,g_nrf.txPending())&&
+           now-g_lastPrimaryHeartbeat>=100U){
             g_lastPrimaryHeartbeat=now;RadioFrame hb;radio_frameInit(hb,RADIO_MSG_HEARTBEAT,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,++g_txSequence,0,now,g_sessionEpoch);
             hb.payload[0]=(uint8_t)(1U|(g_nrfReady?2U:0U)|(g_loraConfigured?4U:0U)|(boatState.emergencyStopConfirmed&&boatState.emergencyStop?8U:0U));hb.payload[1]=1;
             if(radio_frameSeal(hb,g_authKey))g_nrf.sendFrame(hb);
@@ -410,17 +445,6 @@ void boatRadio_update() {
                 if(radio_frameSeal(hb,g_authKey)&&g_lora.sendFrame(hb,now)){g_lastBackupTxMs=now;g_backupTxSent=true;}
             }
         }
-    }
-    if(g_nrfReady) {
-        g_nrf.update();
-        if(!g_nrf.ready()){
-            // I2C/bridge fault revokes the primary immediately. Do NOT
-            // keep stale readiness or replay queued manual/release commands.
-            g_nrfReady=false;
-            g_linkManager.setTransportReady(LINK_NRF_PRIMARY,false);
-        }
-        RadioFrame frame;
-        while(g_nrf.receiveFrame(frame)) validateInboundFrame(LINK_NRF_PRIMARY,frame);
     }
     if(g_loraConfigured) {
         g_lora.update();

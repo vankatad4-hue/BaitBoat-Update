@@ -151,6 +151,11 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
         ("Remote/source/sc18is606_nrf_link.cpp", "!regWrite(REG_SETUP_RETR,0x5f)"),
         ("Remote/source/sc18is606_nrf_link.cpp", "!regWrite(REG_RF_SETUP,0x22)"),
         ("Remote/source/sc18is606_nrf_link.cpp", "!regWrite(REG_EN_AA,0x03)"),
+        # R30H-15 STOP may not be lost when the prior RF24 TX owns the slot.
+        ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.queue(command,now);"),
+        ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.mayAttempt(sessionReady(),g_nrfReady,"),
+        ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.maySendPeriodic(g_nrfReady,g_nrf.txPending())"),
+        ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.reset();g_missionId=0;"),
         ("Remote/source/sc18is606_nrf_link.cpp", "!regWrite(REG_RX_PW_P1,(uint8_t)RADIO_FRAME_SIZE)"),
         ("Boat/source/boat_dual_radio_port.cpp", "if(!nrf_.ready())"),
         ("Remote/source/boat_radio.cpp", "Sc18is606NrfLink g_nrf("),
