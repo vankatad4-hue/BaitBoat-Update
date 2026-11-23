@@ -1,3 +1,5 @@
+> **R30H-61 IMPLEMENTATION (2026-11-23):** Added identical `Boat/source/transport_mailbox.h` and `Remote/source/transport_mailbox.h`: allocation-free bounded FIFO with explicit overflow rejection/count, no silent overwrites. Added corresponding C++ host regression tests and wired them into both GitHub host workflows. **Important:** this primitive is *not thread-safe* and is **not yet wired to live RF tasks**; STOP must remain out-of-band. A FreeRTOS queue or critical-section-protected handoff is required before cross-core use. No dual-core task started; existing single-owner runtime remains unchanged. Prior PlatformIO Boat+Remote PASS [45256674129](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45256674129); new tests pending. Official Boat VER014 / Remote VER028 unchanged.
+
 # R30H-60 — Source consolidation and dual-core rollout
 
 ## Cleanup evidence
