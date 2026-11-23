@@ -124,7 +124,7 @@ void BoatDualRadioPort::resetSession(bool preserveMission){
  optionalDiagnostics_.reset();lastControlRxValid_=false;
  stopAck_.reset(); // Never replay a STOP ACK across session/epoch boundaries.
  statusOutbox_.reset(); // Pre-session status is not an authority.
- pendingBackupMissionFeedbackValid_=false;
+ pendingBackupMissionFeedbackValid_=false;lastBackupMissionFeedbackAttemptMs_=0;
  havePrimaryHeartbeatSent_=false;
  utcSource_={};utcEverSent_=false;lastUtcTxMs_=0;
  radioWatchdog_.reset();
