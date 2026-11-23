@@ -69,7 +69,7 @@ def main() -> None:
             "#define REMOTE_NRF_SCK_PIN  (-1)",
             "#define REMOTE_NRF_MISO_PIN (-1)",
             "#define REMOTE_TF_SPI_MOSI_PIN 11",
-            "#define REMOTE_TF_SPI_SCK_PIN  12",
+            "#define REMOTE_TF_SPI_SCK_PIN 12",
             "#define REMOTE_TF_SPI_MISO_PIN 13",
             "#define REMOTE_R30H10_REJECTED_CE_GPIO 6",
             "#define REMOTE_R30H10_REJECTED_CSN_GPIO 15",
