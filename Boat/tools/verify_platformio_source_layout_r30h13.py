@@ -154,6 +154,10 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
         # R30H-15 STOP may not be lost when the prior RF24 TX owns the slot.
         ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.queue(command,now);"),
         ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.noteAdmitted(now);"),
+        # R30H-17: STOP status alone cannot confirm a new button request.
+        ("Remote/source/boat_radio.cpp", "g_stopConfirmation.request(command.commandId);"),
+        ("Remote/source/boat_radio.cpp", "g_stopConfirmation.acceptedAck(decoded.commandId,accepted);"),
+        ("Remote/source/boat_radio.cpp", "g_stopConfirmation.allowsStopStatus(true,decoded.stopState==1)"),
         ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.noteAdmitted(millis());"),
         ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.reset();\n                }"),
         ("Remote/source/r30h15_primary_stop_retry.h", "MAX_TRANSMISSIONS=8U"),

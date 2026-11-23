@@ -44,6 +44,11 @@ class TestSourceLayout(unittest.TestCase):
         self.check_rejects_edit("Boat/source/nrf24_link.cpp",
              "radio_.setRetries(5,15);","radio_.setRetries(5,10);")
 
+    def test_r30h17_stop_ack_correlation_cannot_disappear(self):
+        self.check_rejects_edit("Remote/source/boat_radio.cpp",
+             "g_stopConfirmation.allowsStopStatus(true,decoded.stopState==1)",
+             "decoded.stopState==1")
+
     def test_stop_confirmation_gate_cannot_disappear(self):
         self.check_rejects_edit("Remote/source/boat_radio.cpp",
              "g_primaryStopRetry.noteAdmitted(millis());",

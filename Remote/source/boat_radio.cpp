@@ -18,6 +18,7 @@
 #include "mcp23017_ce_wire_io.h"
 #include "sc18is606_nrf_link.h"
 #include "r30h15_primary_stop_retry.h"
+#include "r30h17_stop_confirmation_gate.h"
 #include "radio_hw_config.h"
 #include "remote_r30h9_marker_config.h"
 #include "r30h9_marker_contract.h"
@@ -61,6 +62,7 @@ static uint32_t g_lastBackupTxMs=0,g_lastBackupTxAttemptMs=0;
 static bool g_backupTxSent=false,g_stopPending=false;
 static BoatCommand g_pendingStop{};
 static flytec_r30h15::PrimaryStopRetry<BoatCommand> g_primaryStopRetry;
+static flytec_r30h17::StopConfirmationGate g_stopConfirmation;
 static uint8_t g_authKey[32],g_rootKey[32];
 static bool g_rootReady=false;
 static SessionHandshake g_session;
@@ -78,7 +80,7 @@ static void resetSession(uint32_t now){
     g_session.reset();radioSession_wipe(g_authKey,32);
     g_gpsUtcClock.reset(); // no stale UTC authority across auth epochs
     g_manualConfirmRequired=true;g_stopMustConfirm=true;g_manualTransitionAt=now;
-    g_txSequence=0;g_stopPending=false;g_primaryStopRetry.reset();g_missionId=0;g_missionUpload.fail();g_missionControl.reset();g_lastStickTx=now-50U;
+    g_txSequence=0;g_stopPending=false;g_primaryStopRetry.reset();g_stopConfirmation.reset();g_missionId=0;g_missionUpload.fail();g_missionControl.reset();g_lastStickTx=now-50U;
     g_boatSequenceGuard.resetAfterHandshake();g_boatPrimarySequenceGuard.resetAfterHandshake();g_boatBackupSequenceGuard.resetAfterHandshake();
     g_ackTracker.reset(0);telemetryInit();
     boatState.emergencyStop=true;boatState.emergencyStopConfirmed=false;boatState.actuatorSafetyReady=false;
@@ -207,7 +209,10 @@ bool boatRadio_sendCommand(const BoatCommand &command) {
         g_stopTrace.record(remote_r30h3::STOP_BUTTON_REQUEST,millis(),
                            (uint16_t)command.commandId,0);
 #endif
-    if(command.type==CMD_EMERGENCY_STOP){g_missionControl.reset();g_stopMustConfirm=true;g_manualConfirmRequired=true;g_manualTransitionAt=millis();}
+    if(command.type==CMD_EMERGENCY_STOP){
+        g_missionControl.reset();g_stopMustConfirm=true;g_manualConfirmRequired=true;
+        g_manualTransitionAt=millis();g_stopConfirmation.request(command.commandId);
+    }
     if(command.type==CMD_EMERGENCY_STOP && (g_missionUpload.state()==UPLOAD_ACTIVE||g_missionUpload.state()==UPLOAD_PREPARED))g_missionUpload.fail();
     if(!g_begun) return false;
     if(command.type==CMD_MANUAL_MOTORS&&!boatRadio_manualModeConfirmed())return false;
@@ -332,8 +337,15 @@ static bool dispatchValidatedPayload(ManagedLink link,const RadioFrame &frame,ui
         case RADIO_MSG_ACK:
             if(!radio_decodeAckPayload(frame.payload,decoded)) return false;
             // Authenticated, session-bound ACKs may update only a matching command record.
-            g_ackTracker.observe(decoded,link==LINK_NRF_PRIMARY?RADIO_ACK_LINK_PRIMARY:RADIO_ACK_LINK_BACKUP,
-                                 frame.sessionEpoch,now);
+            if(g_ackTracker.observe(decoded,link==LINK_NRF_PRIMARY?RADIO_ACK_LINK_PRIMARY:RADIO_ACK_LINK_BACKUP,
+                                    frame.sessionEpoch,now) &&
+               decoded.commandType==CMD_EMERGENCY_STOP){
+                // ACCEPTED does not prove physical STOP; it only binds the
+                // next sequenced primary status to this logical request ID.
+                const bool accepted=decoded.ackResult==RADIO_ACK_ACCEPTED||
+                                    decoded.ackResult==RADIO_ACK_EXECUTED;
+                g_stopConfirmation.acceptedAck(decoded.commandId,accepted);
+            }
             return true;
         case RADIO_MSG_TELEMETRY:
             if(frame.payload[0]==flytec_time::SUBTYPE){
@@ -348,11 +360,12 @@ static bool dispatchValidatedPayload(ManagedLink link,const RadioFrame &frame,ui
             if(!radio_decodeTelemetryPayload(frame.payload,decoded)) return false;
             if(!telemetryApplyRadioPayload(decoded,link==LINK_NRF_PRIMARY,now))return false;
             if(link==LINK_NRF_PRIMARY&&decoded.kind==RADIO_PAYLOAD_STATUS){
-                if(decoded.stopState==1){
+                if(g_stopConfirmation.allowsStopStatus(true,decoded.stopState==1)){
                     g_stopMustConfirm=false;
                     // After HMAC/session/sequence validation and telemetryApply,
                     // STOP is confirmed logically at Boat. Not physical current-zero.
                     g_primaryStopRetry.reset();
+                    g_stopConfirmation.reset();
                 }
                 if(!g_stopMustConfirm&&!boatRadio_missionLocked()&&decoded.boatMode==MODE_MANUAL&&!(decoded.safetyFlags&6U)&&((int32_t)(now-g_manualTransitionAt)>0))g_manualConfirmRequired=false;
             }
