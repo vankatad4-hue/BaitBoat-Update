@@ -23,6 +23,7 @@ int main() {
  assert(q.receive(c,stop,token) && !stop && c.id==2);
  assert(q.mayExecute(token));
  assert(q.offerStop({99}));
+ assert(!q.clearStopLatchAfterAuthorization()); // STOP still pending
  assert(q.stopLatched() && !q.mayExecute(token));
  assert(!q.executeIfCurrent(token,[]{ assert(false); }));
  assert(q.receive(c,stop,token) && stop && c.id==99);
