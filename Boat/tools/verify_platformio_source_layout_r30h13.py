@@ -139,6 +139,13 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
             errors.append(f"{endpoint}: custom upload must fail")
     for source, required in (
         ("Boat/source/nrf24_link.h", "TX_PENDING_TIMEOUT_MS = 120U"),
+        ("Boat/source/boat_dual_radio_port.h", '#include "boat_r30h18_stop_ack_outbox.h"'),
+        ("Boat/source/boat_r30h18_stop_ack_outbox.h", "MAX_TX_ATTEMPTS=8U"),
+        ("Boat/source/boat_r30h18_stop_ack_outbox.h", "MAX_AGE_MS=2500U"),
+        ("Boat/source/boat_dual_radio_port.cpp", "stopAck_.offer((uint16_t)cmd.commandId,sessionEpoch_,result,"),
+        ("Boat/source/boat_dual_radio_port.cpp", "stopAck_.due(ackNow,sessionReady(),nrfReady_,nrf_.txPending())"),
+        ("Boat/source/boat_dual_radio_port.cpp", "stopAck_.completed(nrf_.ready()&&nrf_.lastTxSuccess());"),
+        ("Boat/source/boat_dual_radio_port.cpp", "if(stopAck_.pending())return false;"),
         # R30H-14: cross-endpoint over-air profile must not drift silently.
         ("Boat/source/boat_radio_hw_config.h", "#define BOAT_NRF_CHANNEL 76"),
         ("Remote/source/radio_hw_config.h", "#define REMOTE_NRF_CHANNEL  76"),
@@ -194,6 +201,21 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
             any(pos<0 for pos in positions) or positions!=sorted(positions) or
             len(set(positions))!=len(positions)):
         errors.append("Remote STOP priority broken: poll -> STOP retry -> heartbeat required")
+    # R30H-18: Boat STOP ACK must be serviced after RX, before heartbeat and
+    # optional diagnostic. Mere inclusion of the outbox is not sufficient.
+    boat_radio=read("Boat/source/boat_dual_radio_port.cpp")
+    boat_start=boat_radio.find("void BoatDualRadioPort::update()")
+    boat_end=boat_radio.find("bool BoatDualRadioPort::maybeStartFailsafeReturnHome",boat_start)
+    boat_sequence=("nrf_.update();",
+                   "while(nrf_.receiveFrame(f))receive(LINK_NRF_PRIMARY,f);",
+                   "stopAck_.due(ackNow,sessionReady(),nrfReady_,nrf_.txPending())",
+                   "sendHeartbeat(LINK_NRF_PRIMARY,now)",
+                   "optionalDiagnostics_.take(opportunity,optionalNow,optionalPayload)")
+    boat_positions=[boat_radio.find(word,boat_start,boat_end) for word in boat_sequence]
+    if (boat_start<0 or boat_end<0 or any(pos<0 for pos in boat_positions) or
+            boat_positions!=sorted(boat_positions) or
+            len(set(boat_positions))!=len(boat_positions)):
+        errors.append("Boat STOP ACK priority broken: poll -> RX -> STOP ACK -> heartbeat -> optional")
     for endpoint in ("Boat", "Remote"):
         if not (root / f"{endpoint}/releases/VERSION").exists():
             errors.append(f"{endpoint}: release version marker missing")
