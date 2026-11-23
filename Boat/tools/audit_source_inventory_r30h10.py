@@ -78,7 +78,8 @@ def check_guards():
         'SD.begin(REMOTE_SD_DUMMY_CSN_PIN, SPI, 4000000)' in sd,
     )
     if not all(required):
-        raise RuntimeError('active-source or unsigned GPIO safety invariant changed')
+        failing=[str(i+1) for i,ok in enumerate(required) if not ok]
+        raise RuntimeError('active-source invariant(s) failed at guard index: '+', '.join(failing))
 
 def main():
     parser = argparse.ArgumentParser()
