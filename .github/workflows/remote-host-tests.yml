@@ -50,8 +50,8 @@ jobs:
       - name: R30H-19 Remote ACK wire and STOP STATUS evidence integration (host only)
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
-            Remote/source/radio_payload_codec.cpp Remote/source/radio_ack_tracker.cpp \
-            Remote/tests/r30h19_ack_wire_test.cpp -o /tmp/remote_r30h19_wire
+            Remote/source/radio_payload_codec.cpp Remote/source/radio_payload_encoder.cpp \
+            Remote/source/radio_ack_tracker.cpp Remote/tests/r30h19_ack_wire_test.cpp -o /tmp/remote_r30h19_wire
           /tmp/remote_r30h19_wire
       - name: R30H-17 correlated STOP ACK and Boat STATUS host regression
         run: |
