@@ -107,10 +107,17 @@ jobs:
         if: matrix.endpoint == 'Boat'
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IBoat/source -IRemote/source \
-            Boat/source/radio_payload_codec.cpp Remote/source/radio_ack_tracker.cpp \
+            Boat/source/radio_payload_codec.cpp \
             Boat/tests/boat_r30h19_stop_ack_status_integration_test.cpp \
             -o /tmp/boat_r30h19_flow
           /tmp/boat_r30h19_flow
+      - name: R30H-19 Remote real STOP ACK wire/tracker/STATUS gate (host only)
+        if: matrix.endpoint == 'Remote'
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
+            Remote/source/radio_payload_codec.cpp Remote/source/radio_ack_tracker.cpp \
+            Remote/tests/r30h19_ack_wire_test.cpp -o /tmp/remote_r30h19_wire
+          /tmp/remote_r30h19_wire
       - name: R30H-17 correlated STOP ACK and status regression
         if: matrix.endpoint == 'Remote'
         run: |
