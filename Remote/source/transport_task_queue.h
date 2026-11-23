@@ -145,7 +145,9 @@ public:
  void clear() {
   latchAndAdvance();
   if (!ready() || xSemaphoreTake(mutex_, 0) != pdTRUE) return;
-  xQueueReset(ordinary_); xQueueReset(stop_);
+  // Do not erase an authenticated STOP already admitted by another task.
+  // clear() is a fail-closed cancellation, not a STOP acknowledgement.
+  xQueueReset(ordinary_);
   xSemaphoreGive(mutex_);
  }
  bool stopLatched() const { return (state_.load(std::memory_order_acquire) & 1U) != 0U; }
