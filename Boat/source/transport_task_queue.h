@@ -158,7 +158,13 @@ private:
   for (;;) {
    const uint32_t oldEpoch=observed >> 1;
    // Exhausted generation space is permanently fail-closed until restart.
-   if (oldEpoch >= 0x7FFFFFFEU) return oldEpoch;
+   if (oldEpoch >= 0x7FFFFFFEU) {
+    // Saturate into STOP-latched state, never recycle old tokens.
+    const uint32_t terminal=(0x7FFFFFFFU << 1) | 1U;
+    if (state_.compare_exchange_weak(observed,terminal,
+          std::memory_order_acq_rel,std::memory_order_acquire)) return 0x7FFFFFFFU;
+    continue;
+   }
    const uint32_t nextEpoch=oldEpoch + 1U;
    const uint32_t desired=(nextEpoch << 1) | 1U;
    if (state_.compare_exchange_weak(observed,desired,
