@@ -1,9 +1,7 @@
 #pragma once
-// R30H-62: FreeRTOS transport handoff. This header is intentionally dormant
-// until a single radio producer and a single application consumer are assigned.
-// STOP uses a dedicated length-one overwrite queue and is always read first.
-// No heap allocation during send/receive; FreeRTOS queue creation allocates
-// during startup. A failed initialization must deny the task migration.
+// R30H-70: dormant Core-0/Core-1 handoff; no radio task is enabled here.
+// Only authenticated STOP may enter offerStop(). A successful queue write is
+// NOT a Boat STOP ACK or physical motor-current-zero measurement.
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
 #include <freertos/semphr.h>
@@ -13,89 +11,111 @@
 #include <atomic>
 namespace flytec_rtos {
 template <typename Command, size_t Depth> class CommandHandoff {
- static_assert(Depth > 0, "Depth must be positive");
- static_assert(Depth <= 0xFFFFU, "Depth exceeds FreeRTOS queue limit");
- static_assert(std::is_trivially_copyable<Command>::value,
-               "FreeRTOS byte-copy queue requires trivially copyable payload");
+ static_assert(Depth > 0 && Depth <= 0xFFFFU, "Invalid queue depth");
+ static_assert(std::is_trivially_copyable<Command>::value, "Command must be trivially copyable");
+ struct Entry { Command command; uint32_t epoch; };
 public:
  CommandHandoff() = default;
  CommandHandoff(const CommandHandoff&) = delete;
  CommandHandoff& operator=(const CommandHandoff&) = delete;
  bool begin() {
-  // A partially initialized instance must not retain stale queue handles.
-  if (ordinary_ || stop_ || mutex_) {
-   if (ready()) return true;
-   end();
-  }
+  if (ordinary_ || stop_ || mutex_) { if (ready()) return true; end(); }
   mutex_ = xSemaphoreCreateMutex();
-  ordinary_ = xQueueCreate(static_cast<UBaseType_t>(Depth), sizeof(Command));
-  stop_ = xQueueCreate(1, sizeof(Command));
+  ordinary_ = xQueueCreate(static_cast<UBaseType_t>(Depth), sizeof(Entry));
+  stop_ = xQueueCreate(1, sizeof(Entry));
   if (!ready()) { end(); return false; }
   return true;
  }
+ // Caller must first stop and join both worker tasks.
  void end() {
   stopLatched_.store(true, std::memory_order_release);
+  epoch_.fetch_add(1, std::memory_order_acq_rel);
   if (ordinary_) { vQueueDelete(ordinary_); ordinary_ = nullptr; }
   if (stop_) { vQueueDelete(stop_); stop_ = nullptr; }
   if (mutex_) { vSemaphoreDelete(mutex_); mutex_ = nullptr; }
  }
  ~CommandHandoff() { end(); }
- bool ready() const { return ordinary_ != nullptr && stop_ != nullptr && mutex_ != nullptr; }
+ bool ready() const { return ordinary_ && stop_ && mutex_; }
  bool offer(const Command& cmd) {
-  if (!ready() || stopLatched_.load(std::memory_order_acquire)) return false;
+  if (!ready() || stopLatched()) return false;
   if (xSemaphoreTake(mutex_, 0) != pdTRUE) return false;
-  const bool ok = !stopLatched_.load(std::memory_order_acquire) &&
-                  xQueueSend(ordinary_, &cmd, 0) == pdTRUE;
+  Entry e{cmd, epoch_.load(std::memory_order_acquire)};
+  const bool ok = !stopLatched() && xQueueSend(ordinary_, &e, 0) == pdTRUE;
   xSemaphoreGive(mutex_);
   return ok;
  }
- // STOP admission invalidates pending ordinary commands before delivery.
- // An ordinary command already dequeued by the consumer still needs an
- // application-level STOP epoch check immediately before execution.
+ // STOP latch is immediate even if the mutex is occupied. The STOP queue is
+ // a separate FreeRTOS thread-safe single-slot overwrite: no mutex contention
+ // can drop STOP admission. A caller retries if this returns false.
  bool offerStop(const Command& cmd) {
-  if (!ready()) return false;
   stopLatched_.store(true, std::memory_order_release);
-  // Fail closed if the short lock is busy; caller must retry STOP admission.
-  if (xSemaphoreTake(mutex_, 0) != pdTRUE) return false;
-  const bool ok = xQueueOverwrite(stop_, &cmd) == pdTRUE;
-  if (ok) xQueueReset(ordinary_);
-  xSemaphoreGive(mutex_);
-  return ok;
+  const uint32_t newEpoch = epoch_.fetch_add(1, std::memory_order_acq_rel) + 1U;
+  if (!ready()) return false;
+  Entry e{cmd, newEpoch};
+  const bool admitted = xQueueOverwrite(stop_, &e) == pdTRUE;
+  if (xSemaphoreTake(mutex_, 0) == pdTRUE) {
+   xQueueReset(ordinary_);
+   xSemaphoreGive(mutex_);
+  }
+  return admitted;
  }
- // STOP is always selected before ordinary traffic. Consumers must still
- // enforce the authenticated STOP policy; queue priority is not authorization.
- bool receive(Command& cmd, bool& isStop) {
+ // epochToken must travel with the dequeued command to the execution gate.
+ bool receive(Command& cmd, bool& isStop, uint32_t& epochToken) {
   isStop = false;
   if (!ready() || xSemaphoreTake(mutex_, 0) != pdTRUE) return false;
-  if (xQueueReceive(stop_, &cmd, 0) == pdTRUE) {
-   isStop = true;
+  Entry e{};
+  if (xQueueReceive(stop_, &e, 0) == pdTRUE) {
+   cmd = e.command; epochToken = e.epoch; isStop = true;
    xSemaphoreGive(mutex_);
    return true;
   }
-  const bool ok = !stopLatched_.load(std::memory_order_acquire) &&
-                  xQueueReceive(ordinary_, &cmd, 0) == pdTRUE;
+  const bool ok = !stopLatched() && xQueueReceive(ordinary_, &e, 0) == pdTRUE &&
+                  e.epoch == epoch_.load(std::memory_order_acquire) && !stopLatched();
+  if (ok) { cmd = e.command; epochToken = e.epoch; }
   xSemaphoreGive(mutex_);
   return ok;
  }
- // Reinitialize on a new authenticated session to prevent stale commands.
- // Only the application STOP-clear policy may call this, never radio RX.
- void clearStopLatchAfterAuthorization() {
-  if (!ready() || xSemaphoreTake(mutex_, 0) != pdTRUE) return;
-  xQueueReset(ordinary_);
-  xQueueReset(stop_);
+ // Legacy receive must not be used for actuator commands; it cannot carry
+ // the epoch to the final execution boundary.
+ bool receive(Command& cmd, bool& isStop) {
+  uint32_t ignored = 0;
+  return receive(cmd, isStop, ignored);
+ }
+ bool mayExecute(uint32_t token) const {
+  return ready() && !stopLatched() &&
+         token == epoch_.load(std::memory_order_acquire);
+ }
+ // The final authorization + command dispatch must occur inside this critical
+ // section. Callback must be bounded/nonblocking and must not call this queue.
+ // STOP can latch atomically while callback runs; the actuator owner must also
+ // check stopLatched() before each hardware output and fail closed.
+ template <typename Fn> bool executeIfCurrent(uint32_t token, Fn fn) {
+  if (!ready() || stopLatched() || xSemaphoreTake(mutex_, 0) != pdTRUE) return false;
+  const bool ok = !stopLatched() && token == epoch_.load(std::memory_order_acquire);
+  if (ok) fn();
+  xSemaphoreGive(mutex_);
+  return ok;
+ }
+ bool clearStopLatchAfterAuthorization() {
+  if (!ready() || xSemaphoreTake(mutex_, 0) != pdTRUE) return false;
+  xQueueReset(ordinary_); xQueueReset(stop_);
+  epoch_.fetch_add(1, std::memory_order_acq_rel);
   stopLatched_.store(false, std::memory_order_release);
   xSemaphoreGive(mutex_);
+  return true;
  }
  void clear() {
   stopLatched_.store(true, std::memory_order_release);
+  epoch_.fetch_add(1, std::memory_order_acq_rel);
   if (!ready() || xSemaphoreTake(mutex_, 0) != pdTRUE) return;
-  xQueueReset(ordinary_);
-  xQueueReset(stop_);
+  xQueueReset(ordinary_); xQueueReset(stop_);
   xSemaphoreGive(mutex_);
  }
  bool stopLatched() const { return stopLatched_.load(std::memory_order_acquire); }
+ uint32_t currentEpoch() const { return epoch_.load(std::memory_order_acquire); }
 private:
- std::atomic<bool> stopLatched_{false};
+ std::atomic<bool> stopLatched_{true};
+ std::atomic<uint32_t> epoch_{0};
  SemaphoreHandle_t mutex_ = nullptr;
  QueueHandle_t ordinary_ = nullptr;
  QueueHandle_t stop_ = nullptr;
