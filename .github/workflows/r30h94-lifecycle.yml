@@ -6,6 +6,8 @@ on:
       - '**/source/radio_worker.h'
       - '**/source/radio_watchdog.h'
       - 'Boat/tests/r30h96_watchdog.cpp'
+      - '**/source/radio_frame_handoff.h'
+      - 'Boat/tests/r30h99_frame_handoff.cpp'
       - 'Boat/tests/r30h98_i2c_guard.cpp'
       - 'Remote/source/i2c_bus_guard.h'
       - 'Boat/tests/r30h95_radio_worker.cpp'
@@ -30,3 +32,6 @@ jobs:
           /tmp/watchdog
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IBoat/tests/r30h73_freertos_mock -IRemote/source Boat/tests/r30h98_i2c_guard.cpp -o /tmp/i2c_guard
           timeout 10s /tmp/i2c_guard
+          cmp Boat/source/radio_frame_handoff.h Remote/source/radio_frame_handoff.h
+          g++ -std=c++17 -pthread -Wall -Wextra -Werror -IBoat/tests/r30h94_mock -IBoat/tests/r30h73_freertos_mock -IBoat/source Boat/tests/r30h99_frame_handoff.cpp -o /tmp/frame_handoff
+          timeout 10s /tmp/frame_handoff
