@@ -30,9 +30,14 @@ public:
  using Request=typename Bus::Request;
  bool begin(){return bus_.invalidate(1);}
  void close(){bus_.invalidate(0);}
- template<class Policy> bool submit(const Frame &f,uint32_t now,Policy permitted){
+ template<class Policy> bool submit(const Frame &f,uint32_t now,Policy permitted,flytec_r30h118::Ticket *ticket=nullptr){
   if(f.sessionEpoch!=0||f.sequence!=0||f.commandId!=0||!permitted(f))return false;
-  return bus_.submit(f,now,false);
+  return bus_.submit(f,now,false,ticket);
+ }
+ // Application session rollover deliberately does not close this lane.
+ uint32_t activeGeneration()const{return bus_.activeGeneration();}
+ template<class Policy,class Verify> bool submitAuthenticated(const Frame &f,uint32_t now,Policy permitted,Verify verify,flytec_r30h118::Ticket *ticket=nullptr){
+  return submit(f,now,[&](const Frame &candidate){return permitted(candidate)&&verify(candidate);},ticket);
  }
  bool take(Request &r){return bus_.take(r);}
  template<class Policy> bool allows(const Request &r,uint32_t now,uint32_t age,Policy permitted)const{
