@@ -19,3 +19,6 @@ jobs:
       - run: pip install platformio
       - name: Compile only
         run: pio run -d Boat -e boat_r30h118_mock
+
+      - name: Compile dual PHY mock only
+        run: pio run -d Boat -e boat_r30h118_dual_mock
