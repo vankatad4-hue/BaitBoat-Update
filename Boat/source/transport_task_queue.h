@@ -51,6 +51,9 @@ public:
   // immediately invalidates ordinary commands and cannot be erased by rearm.
   // Rejected producers must retry for payload delivery; this is not an ACK.
   const uint32_t newEpoch = latchAndAdvance();
+#ifdef FLYTEC_HOST_STOP_INTERLEAVE
+  FLYTEC_HOST_STOP_INTERLEAVE(newEpoch);
+#endif
   if (stopWriter_.test_and_set(std::memory_order_acquire)) return false;
   if (!ready()) { stopWriter_.clear(std::memory_order_release); return false; }
   // Reject a delayed writer whose generation was superseded before it
