@@ -13,7 +13,7 @@ struct StopAck {
 template<uint32_t AgeMs=2500U>
 class BasicStopAckOutbox final {
 public:
-    static constexpr uint32_t MAX_AGE_MS=2500U;
+    static constexpr uint32_t MAX_AGE_MS=AgeMs;
     static constexpr uint32_t RETRY_GAP_MS=75U;
     static constexpr uint8_t MAX_TX_ATTEMPTS=8U;
     void reset(){ticket_={};pending_=false;inFlight_=false;attempts_=0;queuedAt_=lastTryAt_=0;}
