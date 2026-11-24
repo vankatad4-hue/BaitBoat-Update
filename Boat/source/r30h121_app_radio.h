@@ -29,8 +29,9 @@ public:
  bool healthy(uint32_t now,uint32_t age)const{
   return healthSeen_&&!events_.stickyFault()&&health_.configured&&health_.ready&&!health_.fault&&age&&uint32_t(now-health_.observedAt)<age;
  }
+ bool terminalPending()const{return !terminalTaken_&&ticket_.serial&&state_!=TxState::Idle&&state_!=TxState::Queued&&state_!=TxState::Admitted;}
  bool submit(const Frame &frame,uint32_t now,bool stop){
-  if(state_==TxState::Queued||state_==TxState::Admitted)return false;
+  if(state_==TxState::Queued||state_==TxState::Admitted||(!stop&&terminalPending()))return false;
   Ticket next{};
   if(!bus_.submit(frame,now,stop,&next))return false;
   ticket_=next;terminalTaken_=false;submittedAt_=now;admissionSeen_=admitted_=outcomeSeen_=false;state_=TxState::Queued;return true;
@@ -54,7 +55,7 @@ public:
  }
  bool stopRetryPending()const{return stopRetry_;}
  bool rearm(uint8_t epoch,bool authorized){
-  if(!authorized||stopRetry_||state_==TxState::Queued||state_==TxState::Admitted)return false;
+  if(!authorized||stopRetry_||terminalPending()||state_==TxState::Queued||state_==TxState::Admitted)return false;
   if(!bus_.rearm(epoch))return false;
   state_=TxState::Idle;return true;
  }
@@ -124,7 +125,7 @@ public:
  AppRadio<Frame>& backup(){return backup_;}
  template<class Service> static bool serviceLink(AppRadio<Frame>& ep,uint32_t now,uint32_t age,uint8_t mask,Service service){
   if(ep.stopRetryPending()){ep.serviceStop(now,age);return false;}
-  if(ep.state()==TxState::Queued||ep.state()==TxState::Admitted)return false;
+  if(ep.terminalPending()||ep.state()==TxState::Queued||ep.state()==TxState::Admitted)return false;
   return flytec_r30h120::servicePriority(mask,ep.healthy(now,age),[&](flytec_r30h120::TxPriority p){return service(ep,p);});
  }
  template<class P,class B> void step(uint32_t now,uint32_t healthAge,uint32_t txTimeout,uint8_t pm,uint8_t bm,P ps,B bs){
