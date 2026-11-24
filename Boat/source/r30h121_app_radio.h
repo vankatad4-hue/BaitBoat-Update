@@ -80,6 +80,7 @@ public:
   return false;
  }
  // Owner consumes a correlated terminal result once; never an authenticated ACK.
+ Ticket currentTicket()const{return ticket_;}
  bool takeTerminal(Ticket &ticket,TxState &result){
   if(terminalTaken_||!ticket_.serial||state_==TxState::Idle||state_==TxState::Queued||state_==TxState::Admitted)return false;
   ticket=ticket_;result=state_;terminalTaken_=true;return true;
@@ -88,6 +89,28 @@ public:
  TxState state()const{return state_;}
 };
 
+// Owner-side STOP ACK correlation. One instance per link; reset on session
+// change or outbox replacement. LocalComplete is not Remote confirmation.
+class StopAckCorrelation {
+ Ticket expected_{};
+ uint16_t command_=0;
+ uint8_t epoch_=0;
+ bool pending_=false;
+public:
+ void reset(){pending_=false;}
+ bool track(const Ticket &t,uint16_t command,uint8_t epoch){
+  if(pending_||!command||!epoch||!t.generation||!t.serial||t.epoch!=epoch||t.domain!=TicketDomain::Application)return false;
+  expected_=t;command_=command;epoch_=epoch;pending_=true;return true;
+ }
+ template<class Outbox> bool complete(Outbox &box,const Ticket &t,TxState state){
+  if(!pending_||!sameTicket(t,expected_))return false;
+  if(state!=TxState::LocalComplete&&state!=TxState::Failed&&state!=TxState::Uncertain&&state!=TxState::Rejected)return false;
+  pending_=false;
+  const auto ack=box.ticket();
+  if(!box.pending()||!box.inFlight()||ack.commandId!=command_||ack.epoch!=epoch_)return false;
+  box.completed(state==TxState::LocalComplete);return true;
+ }
+};
 // Owner-side coordinator: distinct queues and health for each physical link.
 // External callbacks own frame construction, authentication and handshake routing.
 template<class Frame> class DualAppRadio {
