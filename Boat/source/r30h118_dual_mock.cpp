@@ -3,6 +3,7 @@
 #include "r30h118_phy_adapters.h"
 #include "r30h118_transport.h"
 #include "r30h120_phy_service.h"
+#include "r30h120_lifecycle.h"
 #include "r30h118_stop_retry.h"
 #include "r30h118_outcome_gate.h"
 using namespace flytec_r30h118;
@@ -33,22 +34,26 @@ Transport<uint32_t> primary,backup;
 StopRetry<uint32_t> primaryStop;
 OutcomeGate pg,bg;
 PhyEvents<uint32_t> pe,be;
-Nrf n; E22 e;
-NrfAdapter<uint32_t,Nrf> na(n,pe);
-E22Adapter<uint32_t,E22> ea(e,be);
-std::atomic<bool> stop{false},done{false};
+flytec_r30h120::Lifecycle life;
+using flytec_r30h120::Phase;
 bool launched=false,reported=false,gotP=false,gotB=false,okP=false,okB=false;
-bool healthOK=false;
+bool healthOK=false,timedOut=false;
 uint32_t began=0;
 void task(void*){
  flytec_r30h120::PhyService<uint32_t> p(primary),b(backup);
- while(!stop.load(std::memory_order_acquire)){
+ Nrf n; E22 e;
+ NrfAdapter<uint32_t,Nrf> na(n,pe);
+ E22Adapter<uint32_t,E22> ea(e,be);
+ life.ready();
+ while(life.enabled()){
   uint32_t now=millis();na.poll(now);ea.poll(now);
-  p.step(now,1000U,!stop.load(std::memory_order_acquire),[&](const auto& r){return na.admit(r.ticket,r.frame);});
-  b.step(now,1000U,!stop.load(std::memory_order_acquire),[&](const auto& r){return ea.admit(r.ticket,r.frame,now);});
+  p.step(now,1000U,life.enabled(),[&](const auto& r){return na.admit(r.ticket,r.frame);});
+  b.step(now,1000U,life.enabled(),[&](const auto& r){return ea.admit(r.ticket,r.frame,now);});
   vTaskDelay(1);
  }
- done.store(true,std::memory_order_release);vTaskDelete(nullptr);
+ // Fake drivers only: no physical bus or RF shutdown is claimed.
+ na.poll(millis());ea.poll(millis());
+ life.finish(!n.txPending()&&!e.txPending());vTaskDelete(nullptr);
 }
 }
 void setup(){
@@ -59,12 +64,12 @@ void setup(){
  primaryStop.arm(primary,1,4,began); // saturate reserved slot with obsolete STOP
  primaryStop.service(primary,began,1000U);
  Ticket bt{};if(backup.submit(3,began,false,&bt))bg.expect(bt);
- launched=xTaskCreatePinnedToCore(task,"dualMock",4096,nullptr,1,nullptr,0)==pdPASS;
- if(!launched)Serial.println("DUAL MOCK START FAIL");
+ launched=life.start()&&xTaskCreatePinnedToCore(task,"dualMock",4096,nullptr,1,nullptr,0)==pdPASS;
+ if(!launched){life.finish(false);Serial.println("DUAL MOCK START FAIL");}
 }
 void loop(){
  bool admitted=false;primary.poll(admitted);backup.poll(admitted);
- if(launched&&!stop.load()&&primaryStop.pending()){Ticket pt{};if(primaryStop.service(primary,millis(),1000U,&pt))pg.expect(pt);}
+ if(launched&&life.enabled()&&primaryStop.pending()){Ticket pt{};if(primaryStop.service(primary,millis(),1000U,&pt))pg.expect(pt);}
  PhyEvents<uint32_t>::Health hp{},hb{};
  const bool haveP=pe.latestHealth(hp);be.latestHealth(hb);
  if(haveP)healthOK=healthyFresh(hp,millis(),1000U)&&!pe.stickyFault()&&be.stickyFault();
@@ -72,10 +77,12 @@ void loop(){
  PhyEvents<uint32_t>::Outcome o{};
  while(pe.takeOutcome(o)){if(!pg.accept(o.ticket,primary.activeGeneration()))continue;gotP=true;okP=o.result==PhyOutcome::LocalComplete&&o.ticket.generation==3;}
  while(be.takeOutcome(o)){if(!bg.accept(o.ticket,backup.activeGeneration()))continue;gotB=true;okB=o.result==PhyOutcome::Uncertain;}
- if(launched&&!stop.load()&&((gotP&&gotB&&healthOK)||uint32_t(millis()-began)>=5000U)){
-  primaryStop.reset();primary.invalidate(0);backup.invalidate(0);stop.store(true,std::memory_order_release);
+ const bool expired=uint32_t(millis()-began)>=5000U;
+ if(launched&&(life.phase()==Phase::Starting||life.enabled())&&((gotP&&gotB&&healthOK)||expired)){
+  timedOut=expired&&!(gotP&&gotB&&healthOK);
+  primaryStop.reset();primary.invalidate(0);backup.invalidate(0);life.stop();
  }
- if(done.load(std::memory_order_acquire)&&!reported){reported=true;Serial.println(gotP&&gotB&&okP&&okB&&healthOK?"DUAL MOCK PASS":"DUAL MOCK FAIL");}
+ if((life.phase()==Phase::Stopped||life.phase()==Phase::Failed)&&!reported){reported=true;Serial.println(life.phase()==Phase::Stopped&&!timedOut&&gotP&&gotB&&okP&&okB&&healthOK?"DUAL MOCK PASS":"DUAL MOCK FAIL");}
  delay(1);
 }
 #endif
