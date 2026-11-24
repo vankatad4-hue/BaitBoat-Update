@@ -407,6 +407,22 @@ bool BoatDualRadioPort::maybeStartFailsafeReturnHome(uint32_t now){
 }
 
 void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
+ receiveCaptured(link,f,millis());
+}
+#if BOAT_R30H121_ENDPOINT_COMPILE
+unsigned BoatDualRadioPort::drainAsyncRx(ManagedLink link,uint32_t now){
+ // Deliberately unreachable until the legacy transmit boundary is migrated.
+ // Do not dispatch into legacy PHY calls while a physical worker owns them.
+ if(!BOAT_R30H121_PHYSICAL_OWNER||legacyBeginAttempted_||!authenticated_)return 0;
+ if(link!=LINK_NRF_PRIMARY&&link!=LINK_LORA_BACKUP)return 0;
+ auto &rx=link==LINK_NRF_PRIMARY?asyncPrimaryRx_:asyncBackupRx_;
+ return rx.drain(now,100U,[&](){return sessionStarted_?sessionEpoch_:uint8_t(0);},
+  [&](const RadioFrame &f){return radio_frameVerify(f,rootKey_);},
+  [&](const RadioFrame &f){return radio_frameVerify(f,key_);},
+  [&](const RadioFrame &f,uint32_t capturedAt){receiveCaptured(link,f,capturedAt);});
+}
+#endif
+void BoatDualRadioPort::receiveCaptured(ManagedLink link,const RadioFrame &f,uint32_t capturedAt) {
  const uint32_t now=millis();
  if(!authenticated_||!radioLinkFlagMatches(f.flags,link==LINK_LORA_BACKUP)||f.sourceId!=REMOTE_ID||f.destinationId!=BOAT_ID)return;
  if(f.type>=SESSION_HELLO&&f.type<=SESSION_CONFIRM){
@@ -455,7 +471,7 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  bool &rxValid=link==LINK_NRF_PRIMARY?lastNrfRxValid_:lastBackupRxValid_;
  uint32_t &lastRx=link==LINK_NRF_PRIMARY?lastNrfRxMs_:lastBackupRxMs_;
  if(f.type==RADIO_MSG_HEARTBEAT){
-   lastRx=lastSessionRx_=now;rxValid=true;noteAuthenticatedRx(now);
+   lastRx=capturedAt;lastSessionRx_=now;rxValid=true;noteAuthenticatedRx(capturedAt);
 #if BOAT_R30H_LOCAL_TRACE_ENABLED
    const bool sample=link==LINK_LORA_BACKUP||!havePrimaryTraceSample_||
                      (uint32_t)(now-lastPrimaryTraceSampleAtMs_)>=1000U;
@@ -477,7 +493,7 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
    if(link!=LINK_NRF_PRIMARY||!crossSequenceAccepted)return;
    MissionStickInput input{};if(!missionStickDecode(f.payload,input)||f.commandId!=input.transaction)return;
    if(detachedReturn_&&(!input.neutral||input.left||input.right))return;
-   if(stickLease_.receive(input,controller_.status().transaction,now,true)){lastRx=lastSessionRx_=now;rxValid=true;noteAuthenticatedRx(now);}
+   if(stickLease_.receive(input,controller_.status().transaction,capturedAt,true)){lastRx=capturedAt;lastSessionRx_=now;rxValid=true;noteAuthenticatedRx(capturedAt);}
    return;
  }
  if(f.type==RADIO_MSG_MISSION_CONTROL){
@@ -485,7 +501,7 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
    MissionControlRequest request{};if(!missionControlDecode(f.payload,request)||f.commandId!=request.transaction)return;
    // Slow E22 supports discrete autonomous PAUSE/CANCEL only; no manual takeover.
    if(link==LINK_LORA_BACKUP&&request.op!=MCTRL_PAUSE&&request.op!=MCTRL_CANCEL)return;
-   lastRx=lastSessionRx_=now;rxValid=true;noteAuthenticatedRx(now);
+   lastRx=capturedAt;lastSessionRx_=now;rxValid=true;noteAuthenticatedRx(capturedAt);
    if(detachedReturn_&&request.op!=MCTRL_SWITCH_MANUAL){
     sendMissionFeedback({request.transaction,controller_.status().phase,(uint8_t)request.op,request.request,MC_REJECTED},now);return;
    }
@@ -507,7 +523,7 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
    const uint16_t id=(uint16_t)f.payload[1]|((uint16_t)f.payload[2]<<8);
    const MissionOpcode op=(MissionOpcode)f.payload[0];
    if(!id||id!=f.commandId||op<MISSION_BEGIN||op>MISSION_CANCEL)return;
-   lastRx=lastSessionRx_=now;rxValid=true;noteAuthenticatedRx(now);
+   lastRx=capturedAt;lastSessionRx_=now;rxValid=true;noteAuthenticatedRx(capturedAt);
    const bool stopped=missionGate_&&missionGate_();
    MissionReceive result=mission_.ingest(f.payload,now,true,stopped);
    if(result==MISSION_PREPARED){
@@ -531,11 +547,11 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  }
  if(f.type==RADIO_MSG_HEARTBEAT || f.type==RADIO_MSG_TELEMETRY || f.type==RADIO_MSG_ACK || f.type==RADIO_MSG_LINK_PROBE) return;
  BoatCommand cmd;
- if(!radio_decodeCommand(f,REMOTE_ID,BOAT_ID,now,2500,link==LINK_LORA_BACKUP,cmd,key_)) return;
+ if(!radio_decodeCommand(f,REMOTE_ID,BOAT_ID,capturedAt,2500,link==LINK_LORA_BACKUP,cmd,key_)) return;
  const uint16_t id=(uint16_t)cmd.commandId;
  if(id==0) return;
  // An authenticated STOP invalidates any prepared plan before queue handling.
- lastRx=lastSessionRx_=now;rxValid=true;noteAuthenticatedRx(now);
+ lastRx=capturedAt;lastSessionRx_=now;rxValid=true;noteAuthenticatedRx(capturedAt);
  if(cmd.type==CMD_EMERGENCY_STOP){
 #if BOAT_R30H_LOCAL_TRACE_ENABLED
    localTrace_.push(boat_r30h2::STOP_AUTH_RECEIVED,now,lastAnyAuthenticatedRxMs_,
