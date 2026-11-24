@@ -30,9 +30,13 @@ public:
   return true;
 #endif
  }
+ // Nonblocking owner request; completed callbacks and task retirement
+ // must be observed separately. Never equate exit with RF quiescence.
+ void requestStop(){running_.store(false);}
+ bool exited()const{return done_.load();}
  void stop() {
-  running_.store(false);
-  while (!done_.load()) vTaskDelay(1);
+  requestStop();
+  while (!exited()) vTaskDelay(1);
  }
  ~RadioWorker(){stop();}
  uint32_t heartbeat() const {return heartbeat_.load();}
