@@ -10,6 +10,7 @@
 #include "r30h118_outcome_gate.h"
 #include "r30h120_phy_service.h"
 #include "r30h120_lifecycle.h"
+#include "r30h120_handshake_lane.h"
 using namespace flytec_r30h118;
 int main(){
  CompletionGate g; Ticket a,b,c;
@@ -176,4 +177,28 @@ int main(){
  assert(failed.phase()==Phase::Failed&&!failed.start());
  Lifecycle unsafe;assert(unsafe.start());assert(unsafe.ready());unsafe.stop();
  assert(unsafe.finish(false)&&unsafe.phase()==Phase::Failed);
+ using namespace flytec_r30h120;
+ for(unsigned mask=0;mask<256;++mask){
+  unsigned expected=0;while(expected<7&&!(mask&(1U<<expected)))++expected;
+  assert(static_cast<unsigned>(choosePriority(static_cast<uint8_t>(mask)))==expected);
+ }
+ struct HandshakeFrame {uint8_t type,sourceId,destinationId,flags,sessionEpoch;uint16_t sequence,commandId;};
+ HandshakeLane<HandshakeFrame> lane;
+ HandshakeFrame hf{11,1,2,0,0,0,0};
+ auto policy=[](const HandshakeFrame &f){return boatReplyShape(f,1,2,false);};
+ assert(!lane.submit(hf,0,policy));assert(lane.begin());
+ for(unsigned type=0;type<17;++type){hf.type=type;assert(policy(hf)==(type==11||type==13));}
+ hf.type=11;hf.flags=1;assert(!lane.submit(hf,0,policy));hf.flags=0;
+ hf.commandId=1;assert(!lane.submit(hf,0,policy));hf.commandId=0;
+ hf.sessionEpoch=1;assert(!lane.submit(hf,0,policy));hf.sessionEpoch=0;
+ assert(lane.submit(hf,10,policy));
+ HandshakeLane<HandshakeFrame>::Request hr{};
+ assert(lane.take(hr));assert(lane.allows(hr,11,100,policy));
+ assert(!lane.allows(hr,110,100,policy));
+ lane.close();assert(!lane.allows(hr,11,100,policy));
+ assert(lane.complete(hr,true));bool handshakeAdmitted=false;
+ assert(!lane.poll(handshakeAdmitted));assert(lane.begin());
+ assert(lane.submit(hf,12,policy));assert(lane.take(hr));
+ assert(lane.allows(hr,13,100,policy));assert(lane.complete(hr,true));
+ assert(lane.poll(handshakeAdmitted)&&handshakeAdmitted);
 }
