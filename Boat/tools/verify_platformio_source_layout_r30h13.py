@@ -141,7 +141,7 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
         ("Boat/source/nrf24_link.h", "TX_PENDING_TIMEOUT_MS = 120U"),
         ("Boat/source/boat_dual_radio_port.h", '#include "boat_r30h18_stop_ack_outbox.h"'),
         ("Boat/source/boat_r30h18_stop_ack_outbox.h", "MAX_TX_ATTEMPTS=8U"),
-        ("Boat/source/boat_r30h18_stop_ack_outbox.h", "MAX_AGE_MS=2500U"),
+        ("Boat/source/boat_r30h18_stop_ack_outbox.h", "template<uint32_t AgeMs=2500U>"),
         ("Boat/source/boat_dual_radio_port.cpp", "stopAck_.offer((uint16_t)cmd.commandId,sessionEpoch_,result,"),
         ("Boat/source/boat_dual_radio_port.cpp", "stopAck_.due(ackNow,sessionReady(),nrfReady_,nrf_.txPending())"),
         ("Boat/source/boat_dual_radio_port.cpp", "stopAck_.completed(nrf_.ready()&&nrf_.lastTxSuccess());"),
