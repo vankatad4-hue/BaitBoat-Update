@@ -14,6 +14,7 @@ public:
     bool setE22Reset(bool released);
     bool e22AuxReady();
 
+    int availableForWrite() override;
     int available() override;
     int read() override;
     int peek() override;
