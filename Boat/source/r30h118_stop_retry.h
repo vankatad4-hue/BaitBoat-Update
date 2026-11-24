@@ -13,10 +13,10 @@ public:
   if(!bus.invalidate(epoch))return false;
   frame_=frame;started_=now;pending_=true;return true;
  }
- bool service(Transport<Frame>& bus,uint32_t now,uint32_t maxAge){
+ bool service(Transport<Frame>& bus,uint32_t now,uint32_t maxAge,Ticket *submitted=nullptr){
   if(!pending_)return false;
   if(!maxAge||uint32_t(now-started_)>=maxAge){pending_=false;return false;}
-  if(!bus.submit(frame_,started_,true))return false;
+  if(!bus.submit(frame_,started_,true,submitted))return false;
   pending_=false;return true;
  }
  void reset(){pending_=false;}
