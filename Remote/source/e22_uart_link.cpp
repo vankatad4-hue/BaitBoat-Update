@@ -64,6 +64,7 @@ void E22UartLink::update(){
         const int value=uart_.read();if(value<0)break;
         parserByte((uint8_t)value);++processed;
     }
+    if(rxQueueCount_==4U && rxFullPollCount_!=UINT32_MAX) ++rxFullPollCount_;
 }
 void E22UartLink::parserByte(uint8_t v){
     if(rxIndex_==0){if(v==RADIO_FRAME_MAGIC0) rxBuffer_[rxIndex_++]=v;return;}
