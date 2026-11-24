@@ -2,6 +2,7 @@
 #if defined(FLYTEC_I2C_INTEGRATED_BENCH) && FLYTEC_I2C_INTEGRATED_BENCH
 #include <Arduino.h>
 #include "dual_phy_worker.h"
+#include "remote_worker_runtime.h"
 #include "remote_i2c_request_scheduler.h"
 #include "remote_i2c_phy_service.h"
 #include "nrf_phy_adapter.h"
@@ -50,6 +51,7 @@ static E22PhyAdapter<MockE22> backup(lora);
 static RemoteI2cPhyService<decltype(primary),decltype(backup)> owner(dispatcher,primary,backup,handoff,gate);
 static TimedPoller<S> timedScheduler(scheduler,clockUs);
 static DualPhyWorker<decltype(timedScheduler)> worker(timedScheduler,clockMs);
+static RemoteWorkerRuntime<decltype(worker),decltype(owner)> runtime(worker,owner);
 static PollTiming ownerTiming;
 static uint32_t stopQueuedUs=0,stopAdmissionUs=0,stopLocalUs=0,faultInjectedMs=0,faultObservedMs=0;
 static bool stopLocal=false,faultObserved=false;
@@ -64,7 +66,7 @@ void setup(){
  Serial.println("R30H-114 mock PHY / owner-task bench; no hardware drivers");
  if(xPortGetCoreID()!=1||!bindRemoteI2cOwner()||!dispatcher.begin()||
     !handoff.begin()||!gate.transition(1)||!submit(PhyLink::Primary,1)||
-    !submit(PhyLink::Backup,2)||!worker.begin(true)){
+    !submit(PhyLink::Backup,2)||!runtime.begin(true,true)){
   Serial.println("FAIL setup");return;
  }
  started=millis();running=true;
@@ -73,10 +75,8 @@ void loop(){
  if(!running){delay(20);return;}
  const uint32_t now=millis(),elapsed=now-started;
  ownerTiming.begin(micros());
- if(!owner.service(now))failed=true;
+ if(!runtime.tick(now))failed=true;
  ownerTiming.end(micros());
- const auto watchdog=worker.supervise();
- if(watchdog==RadioWatchdog::State::Fault)failed=true;
  TxCompletion c;
  if(handoff.takeCompletion(PhyLink::Primary,c)){
   primaryEvidence=c.ticket==1&&c.success&&c.evidence==TxEvidence::NrfAck;
@@ -97,8 +97,8 @@ void loop(){
  if(elapsed>=1200||failed){
   const bool pass=!failed&&primaryEvidence&&backupEvidence&&stopLocal&&faultObserved&&injected&&
     scheduler.status(P)==S::State::Fault&&scheduler.status(B)!=S::State::Fault&&
-    lora.polls>backupBefore&&worker.permit();
-  worker.stop();running=false;
+    lora.polls>backupBefore&&runtime.permit();
+  runtime.requestStop();worker.stop();running=false;
   const auto& t=timedScheduler.timing();
   const auto pm=dispatcher.metrics(P),bm=dispatcher.metrics(B);
   Serial.printf("core0 callbacks=%lu mean_us=%lu max_us=%lu gap_max_us=%lu\\n",(unsigned long)t.duration.count,(unsigned long)t.duration.mean(),(unsigned long)t.duration.max,(unsigned long)t.gap.max);
