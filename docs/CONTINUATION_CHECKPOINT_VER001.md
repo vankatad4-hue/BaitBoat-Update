@@ -1,3 +1,12 @@
+## Active continuation — R30H-124J (2026-11-24)
+
+Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged; production radio worker and upload remain disabled.
+
+- Previous head 8368364 combined status and PR-filtered workflow lookup returned empty. Latest CI/PlatformIO results UNVERIFIED.
+- Added separate authenticated mock application composition and simulated Boat peer (test root only, no physical IO), shared actual protocol/HMAC/ACK tracker, bounded RX, session reset, primary/backup STOP correlation. New PlatformIO environment remote_authenticated_mock_bench uses real worker scheduler, exclusive runtime, PHY adapters and 3000 ms backup PHY gap, with simulated primary failure and then backup failure/retirement.
+- Added deterministic host integration regression for primary STOP ACK+STATUS, degraded backup STOP evidence (never primary confirmation), and retirement. Registered in lifecycle CI. Actual tests/build not yet observed. Production boat_radio.cpp remains Legacy-only startup; tightened ACK header/payload ID correlation. No ordinary/mission TX enabled.
+- Next R30H-124K: obtain real GitHub Actions push run IDs or run local host and PlatformIO tests, correct failures, review backup-only handshake/rekey recovery with actual Boat implementation, then design independently authorized ordinary/mission TX completion routing. No hardware signoff inferred from mock.
+
 ## Active continuation — R30H-124I (2026-11-24)
 
 Branch `platformio-unified-r30h20`; Boat VER014 / Remote VER028 unchanged. Physical workers and uploads remain disabled.

@@ -24,6 +24,9 @@ on:
       - 'Remote/source/remote_i2c_request_scheduler.h'
       - 'Remote/source/remote_worker_runtime.h'
       - 'Remote/source/remote_exclusive_runtime.h'
+      - 'Remote/source/remote_authenticated_mock_app.h'
+      - 'Remote/source/remote_mock_peer.h'
+      - 'Remote/tests/r30h124j_authenticated_mock.cpp'
       - 'Remote/tests/r30h124i_exclusive_runtime.cpp'
       - 'Remote/tests/r30h124_runtime.cpp'
       - 'Remote/source/remote_async_tx.h'
@@ -114,3 +117,6 @@ jobs:
 
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -IRemote/source Remote/tests/r30h124i_exclusive_runtime.cpp -o /tmp/remote_exclusive_runtime
           timeout 10s /tmp/remote_exclusive_runtime
+
+          g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -Itests/r30h20_stubs -IRemote/source Remote/source/radio_protocol.cpp Remote/source/radio_command_codec.cpp Remote/source/radio_payload_codec.cpp Remote/source/radio_ack_tracker.cpp Remote/tests/r30h124j_authenticated_mock.cpp -lcrypto -o /tmp/remote_authenticated_mock
+          timeout 10s /tmp/remote_authenticated_mock

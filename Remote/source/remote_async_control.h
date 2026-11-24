@@ -69,6 +69,7 @@ public:
   if(!tx_.cancelStop(stopId_)){invalidate(now);return false;}
   primary_=Pending{};backup_=Pending{};confirmed_=true;return true;
  }
+ bool backupConfirmed()const{return owner_.worker()&&active_&&backupConfirmed_;}
  bool confirmed()const{return owner_.worker()&&active_&&confirmed_;}
  unsigned primaryReservations()const{return owner_.worker()?attempts_:0;}
  // Completion first, then STOP before heartbeat. No direct PHY calls.

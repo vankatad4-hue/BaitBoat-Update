@@ -411,7 +411,7 @@ static bool dispatchValidatedPayload(ManagedLink link,const RadioFrame &frame,ui
         case RADIO_MSG_HEARTBEAT:
             return radio_decodeHeartbeatPayload(frame.payload,decoded);
         case RADIO_MSG_ACK:
-            if(!radio_decodeAckPayload(frame.payload,decoded)) return false;
+            if(!radio_decodeAckPayload(frame.payload,decoded)||frame.commandId!=decoded.commandId) return false;
             // Authenticated, session-bound ACKs may update only a matching command record.
             if(g_ackTracker.observe(decoded,link==LINK_NRF_PRIMARY?RADIO_ACK_LINK_PRIMARY:RADIO_ACK_LINK_BACKUP,
                                     frame.sessionEpoch,now) &&
