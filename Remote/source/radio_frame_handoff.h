@@ -35,13 +35,29 @@ struct RadioFrameHandoff {
  FrameQueue<TxRequest,4> primaryTx,backupTx;
  // Critical classification is supplied only by the authenticated application.
  FrameQueue<TxRequest,2> primaryCritical,backupCritical;
- FrameQueue<TxCompletion,8> completions;
+ FrameQueue<TxCompletion,8> primaryCompletions,backupCompletions;
+ // A malformed link identity must not redirect a completion into the other radio.
+ bool offerCompletion(PhyLink link,const TxCompletion& c){
+  if(link==PhyLink::Primary)return primaryCompletions.offer(c);
+  if(link==PhyLink::Backup)return backupCompletions.offer(c);
+  return false;
+ }
+ bool takeCompletion(PhyLink link,TxCompletion& c){
+  if(link==PhyLink::Primary)return primaryCompletions.take(c);
+  if(link==PhyLink::Backup)return backupCompletions.take(c);
+  return false;
+ }
+ bool fault(PhyLink link)const{
+  if(link==PhyLink::Primary)return primaryRx.fault()||primaryTx.fault()||primaryCritical.fault()||primaryCompletions.fault();
+  if(link==PhyLink::Backup)return backupRx.fault()||backupTx.fault()||backupCritical.fault()||backupCompletions.fault();
+  return true;
+ }
  bool takeTx(PhyLink link,TxRequest& out){
   if(link==PhyLink::Primary)return primaryCritical.take(out)||primaryTx.take(out);
   if(link==PhyLink::Backup)return backupCritical.take(out)||backupTx.take(out);
   return false;
  }
- bool begin(){return primaryRx.begin()&&backupRx.begin()&&primaryTx.begin()&&backupTx.begin()&&primaryCritical.begin()&&backupCritical.begin()&&completions.begin();}
- bool fault()const{return primaryRx.fault()||backupRx.fault()||primaryTx.fault()||backupTx.fault()||primaryCritical.fault()||backupCritical.fault()||completions.fault();}
+ bool begin(){return primaryRx.begin()&&backupRx.begin()&&primaryTx.begin()&&backupTx.begin()&&primaryCritical.begin()&&backupCritical.begin()&&primaryCompletions.begin()&&backupCompletions.begin();}
+ bool fault()const{return fault(PhyLink::Primary)||fault(PhyLink::Backup);}
 };
 }
