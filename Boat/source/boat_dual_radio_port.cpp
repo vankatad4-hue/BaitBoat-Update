@@ -34,6 +34,10 @@ bool BoatDualRadioPort::missionReleaseComplete(uint16_t transaction,uint16_t tok
 }
 bool BoatDualRadioPort::sendHardwareTelemetry(const RadioDecodedPayload &status){
  const uint32_t now=millis();
+ if(sessionReady()&&backupFresh(now)&&status.kind==RADIO_PAYLOAD_STATUS){
+  if(status.stopState==1U)backupStatusOutbox_.offer(status,now);
+  else backupStatusOutbox_.reset();
+ }
  if(!sessionReady()||!primaryFresh(now)){
   optionalDiagnostics_.discard();return false;
  }
@@ -131,7 +135,7 @@ void BoatDualRadioPort::resetSession(bool preserveMission){
  // R30G: never carry a diagnostic offer or stale activity timestamp across
  // authenticated session/key/epoch rollover.
  optionalDiagnostics_.reset();lastControlRxValid_=false;
- backupStopAck_.reset();
+ backupStopAck_.reset();backupStatusOutbox_.reset();
  stopAck_.reset(); // Never replay a STOP ACK across session/epoch boundaries.
  statusOutbox_.reset(); // Pre-session status is not an authority.
  pendingBackupMissionFeedbackValid_=false;lastBackupMissionFeedbackAttemptMs_=0;
@@ -225,7 +229,7 @@ void BoatDualRadioPort::update() {
   e22_.update();
   if(e22_.transportFault()){
    // R30H-116 closeout: local UART fault must revoke stale backup health.
-   sx1262Ready_=false;lastBackupRxValid_=false;backupStopAck_.reset();
+   sx1262Ready_=false;lastBackupRxValid_=false;backupStopAck_.reset();backupStatusOutbox_.reset();
    pendingBackupMissionFeedbackValid_=false;
    commandQueue_.discardLink((uint8_t)LINK_LORA_BACKUP,true);
   }else{
@@ -243,6 +247,16 @@ void BoatDualRadioPort::update() {
    reply.flags=RADIO_FLAG_BACKUP_LINK;
    if(radio_encodeAckPayload(pending.result,CMD_EMERGENCY_STOP,pending.commandId,pending.stopState,pending.interlocks,reply.payload)&&
       radio_frameSeal(reply,key_)&&e22_.sendFrame(reply,backupAckNow))backupStopAck_.reset(); // UART admission only; Remote retries cover loss
+  }
+ }
+ const uint32_t backupStatusNow=millis();
+ if(backupStatusOutbox_.due(backupStatusNow,sessionReady(),sx1262Ready_,!e22_.ready(),backupStopAck_.pending())&&
+    (uint32_t)(backupStatusNow-lastBackupHeartbeatTxMs_)>=3000U){
+  RadioFrame report{};
+  radio_frameInit(report,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,++txSequence_,0,backupStatusNow,sessionEpoch_);
+  report.flags=RADIO_FLAG_BACKUP_LINK;
+  if(radio_encodeTelemetryPayload(backupStatusOutbox_.status(),report.payload)&&radio_frameSeal(report,key_)&&e22_.sendFrame(report,backupStatusNow)){
+   backupStatusOutbox_.sent();lastBackupHeartbeatTxMs_=backupStatusNow;
   }
  }
  // Correlated feedback outranks periodic status/heartbeat when E22 was busy.
@@ -404,7 +418,7 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
      // New authenticated epoch: discard any optional diagnostic from the
      // previous key/session and require a new successful primary heartbeat.
      optionalDiagnostics_.reset();lastControlRxValid_=false;
-     backupStopAck_.reset();
+     backupStopAck_.reset();backupStatusOutbox_.reset();
      stopAck_.reset(); // new authenticated session invalidates prior ACK ID
      statusOutbox_.reset(); // no pre-handshake stopped status
      havePrimaryHeartbeatSent_=false;
@@ -527,6 +541,7 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
    const bool wasDetached=detachedReturn_;
    detachedReturn_=false;failsafeRthActive_=false;linkLossHold_=false;
    abortMission();
+   backupStatusOutbox_.reset();
    statusOutbox_.reset(); // discard any STATUS sampled before this STOP
 #if BOAT_R30H_LOCAL_TRACE_ENABLED
    localTrace_.push(boat_r30h2::STOP_LOGICAL_INTENT,millis(),lastAnyAuthenticatedRxMs_,
