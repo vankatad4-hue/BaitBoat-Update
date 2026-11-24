@@ -563,4 +563,26 @@ int main(){
  assert(supersede.reset(2));
  assert(supersede.takeSuperseded(saved,savedState)&&sameTicket(saved,secondStop)&&savedState==TxState::Uncertain);
  assert(!supersede.takeSuperseded(saved,savedState));
+ // Deterministic priority change inside handshake validation.
+ Transport<HandshakeFrame> raceApp;
+ HandshakeLane<HandshakeFrame> raceHs;
+ SharedPriority raceMask;
+ flytec_r30h120::SharedPhyService<HandshakeFrame> raceWorker(raceApp,raceHs,raceMask);
+ assert(raceApp.invalidate(1)&&raceHs.begin());
+ assert(raceHs.submit(hf,500,policy));
+ raceMask.publish(4);
+ unsigned raceHsCalls=0,raceStopCalls=0;
+ auto racePolicy=[&](const HandshakeFrame &f){
+  raceMask.publish(5);
+  return policy(f);
+ };
+ auto raceAppAdmit=[&](const Transport<HandshakeFrame>::Request &req){assert(req.stop);++raceStopCalls;return true;};
+ auto raceHsAdmit=[&](const HandshakeLane<HandshakeFrame>::Request &){++raceHsCalls;return true;};
+ raceWorker.step(501,100,false,true,racePolicy,raceAppAdmit,raceHsAdmit);
+ assert(raceHsCalls==0&&raceStopCalls==0);
+ assert(raceHs.poll(handshakeAdmitted)&&!handshakeAdmitted);
+ assert(raceApp.submit(hf,502,true));
+ raceWorker.step(503,100,false,true,policy,raceAppAdmit,raceHsAdmit);
+ assert(raceStopCalls==1&&raceHsCalls==0);
+ assert(raceApp.poll(handshakeAdmitted)&&handshakeAdmitted);
 }
