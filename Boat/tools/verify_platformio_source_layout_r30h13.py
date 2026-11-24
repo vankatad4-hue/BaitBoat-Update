@@ -218,12 +218,12 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
         ("Remote/source/boat_radio.cpp", "g_stopConfirmation.acceptedAck(decoded.commandId,accepted);"),
         ("Remote/source/boat_radio.cpp", "g_stopConfirmation.allowsStopStatus(true,decoded.stopState==1)"),
         ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.noteAdmitted(millis());"),
-        ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.reset();\n                    g_stopConfirmation.reset();"),
+        ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.reset();\n                    g_stopPending=false;\n                    g_stopConfirmation.reset();"),
         ("Remote/source/r30h15_primary_stop_retry.h", "MAX_TRANSMISSIONS=8U"),
         ("Remote/source/r30h15_primary_stop_retry.h", "RETRANSMIT_GAP_MS=150U"),
         ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.mayAttempt(sessionReady(),g_nrfReady,"),
         ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.maySendPeriodic(g_nrfReady,g_nrf.txPending())"),
-        ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.reset();g_stopConfirmation.reset();g_missionId=0;"),
+        ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.reset();g_stopConfirmation.reset();g_backupStopConfirmation.reset();g_backupStopConfirmed=false;g_missionId=0;"),
         ("Remote/source/sc18is606_nrf_link.cpp", "!regWrite(REG_RX_PW_P1,(uint8_t)RADIO_FRAME_SIZE)"),
         ("Boat/source/boat_dual_radio_port.cpp", "if(!nrf_.ready())"),
         ("Remote/source/boat_radio.cpp", "Sc18is606NrfLink g_nrf("),
@@ -259,7 +259,7 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
     boat_start=boat_radio.find("void BoatDualRadioPort::update()")
     boat_end=boat_radio.find("bool BoatDualRadioPort::maybeStartFailsafeReturnHome",boat_start)
     boat_sequence=("nrf_.update();",
-                   "while(nrf_.receiveFrame(f))receive(LINK_NRF_PRIMARY,f);",
+                   "for(unsigned i=0;i<RX_FRAME_BUDGET&&nrf_.receiveFrame(f);++i)receive(LINK_NRF_PRIMARY,f);",
                    "stopAck_.due(ackNow,sessionReady(),nrfReady_,nrf_.txPending())",
                    "statusOutbox_.due(statusNow,sessionReady(),nrfReady_,",
                    "sendHeartbeat(LINK_NRF_PRIMARY,now)",
