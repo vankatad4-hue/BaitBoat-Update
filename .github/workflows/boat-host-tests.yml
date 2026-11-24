@@ -82,7 +82,7 @@ jobs:
           /tmp/r30h118_backup_ack
       - name: R30H-117I E22 production UART driver regression
         run: |
-          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -Itests/r30h117_stubs -IBoat/source Boat/source/e22_uart_link.cpp tests/r30h117_e22_test.cpp -o /tmp/r30h117_e22
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -DFLYTEC_TEST_BOAT_SHUTDOWN -Itests/r30h117_stubs -IBoat/source Boat/source/e22_uart_link.cpp tests/r30h117_e22_test.cpp -o /tmp/r30h117_e22
           /tmp/r30h117_e22
       - name: R30H-65 opt-in core-0 probe isolation contract
         run: python3 -m unittest discover -s Boat/tests -p test_r30h65_core0_probe.py -v
