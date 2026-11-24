@@ -16,3 +16,4 @@ template class flytec_rtos::E22PhyAdapter<E22UartLink>;
 using DiagnosticDualPoll=flytec_rtos::DualPhyPoll<flytec_rtos::NrfPhyAdapter<Sc18is606NrfLink>,flytec_rtos::E22PhyAdapter<E22UartLink>>;
 template class flytec_rtos::DualPhyPoll<flytec_rtos::NrfPhyAdapter<Sc18is606NrfLink>,flytec_rtos::E22PhyAdapter<E22UartLink>>;
 template class flytec_rtos::DualPhyWorker<DiagnosticDualPoll>;
+#include "remote_i2c_dispatcher.h"
