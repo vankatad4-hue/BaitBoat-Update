@@ -33,6 +33,7 @@ static_assert(BOAT_R30H9_MARKER_GPIO == -1 && BOAT_R30H9_GPIO_OUTPUT_SIGNED == 0
 #endif
 #if BOAT_R30H121_ENDPOINT_COMPILE
 #include "r30h123_stop_ack_service.h"
+#include "r30h123_status_service.h"
 #endif
 
 // Link values match the Remote manager and queue records.
@@ -134,6 +135,10 @@ private:
 #endif
     boat_r30h19::StatusOutbox backupStatusOutbox_;
     boat_r30h19::StatusOutbox statusOutbox_; // Latest real status, never synthesized
+#if BOAT_R30H121_ENDPOINT_COMPILE
+    flytec_r30h123::StatusService<RadioFrame> asyncPrimaryStatus_{asyncPrimaryOwner_,statusOutbox_};
+    flytec_r30h123::StatusService<RadioFrame> asyncBackupStatus_{asyncBackupOwner_,backupStatusOutbox_};
+#endif
     MissionAssembler mission_;
     BoatMissionController controller_;
     MissionStickLease stickLease_;
