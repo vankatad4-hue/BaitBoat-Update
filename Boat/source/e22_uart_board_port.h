@@ -13,7 +13,7 @@ inline bool e22BoardPinsValid(const E22BoardPins &p) {
 class E22UartBoardPort {
 public:
  explicit E22UartBoardPort(HardwareSerial &serial):serial_(serial),
-  link_(serial_,setMode,auxReady,setReset,this){}
+  link_(serial_,setMode,auxReady,setReset,this,txCapacity){}
  bool begin(const E22BoardPins &p){
   active_=false;
   if(!e22BoardPinsValid(p))return false;
@@ -31,7 +31,17 @@ public:
  bool sendFrame(const RadioFrame &f,uint32_t ms){return active_&&link_.sendFrame(f,ms);}
  bool receiveFrame(RadioFrame &f){return active_&&link_.receiveFrame(f);}
  bool ready()const{return active_&&link_.ready();}
+ using Admission=E22UartLink::Admission;
+ Admission trySendFrame(const RadioFrame& f,uint32_t ms){return active_?link_.trySendFrame(f,ms):Admission::Unavailable;}
+ bool configured()const{return active_&&link_.configured();}
+ bool transportFault()const{return link_.transportFault();}
+ bool txPending()const{return link_.txPending();}
+ flytec_rtos::E22TxState::Outcome txOutcome()const{return link_.txOutcome();}
 private:
+ static size_t txCapacity(void* ctx){
+  auto& p=*static_cast<E22UartBoardPort*>(ctx);
+  const int n=p.serial_.availableForWrite();return n>0?static_cast<size_t>(n):0U;
+ }
  static void setMode(bool m0,bool m1,void *ctx){
   auto *p=static_cast<E22UartBoardPort*>(ctx);
   digitalWrite(p->pins_.m0,m0?HIGH:LOW);
