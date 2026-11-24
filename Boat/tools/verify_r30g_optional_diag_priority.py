@@ -23,7 +23,8 @@ assert "if(status.kind==RADIO_PAYLOAD_SAFETY_DIAGNOSTIC)" in s
 assert "optionalDiagnostics_.offer(payload,now)" in s
 assert "if(!sessionReady()||!primaryFresh(now))" in s
 assert "if(!radio_encodeTelemetryPayload(status,payload))return false" in s
-assert "opportunity.txPending=nrf_.txPending();" in s
+assert "opportunity.txPending=primaryDriverPending();" in s
+assert "bool BoatDualRadioPort::primaryDriverPending() const{return nrf_.txPending();}" in s
 assert "opportunity.commandQueued=commandQueue_.size()!=0||stopAck_.pending()||statusOutbox_.pending();" in s
 # R30H-19 STOP ACK and pending real STATUS both block optional diagnostics.
 assert "opportunity.activeMission=controller_.status().transaction!=0;" in s
