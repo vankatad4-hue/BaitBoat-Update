@@ -86,6 +86,11 @@ bool BoatDualRadioPort::sendMissionFeedback(const MissionControlFeedback &status
   pendingBackupMissionFeedbackAtMs_=now;
  }
  if(link==LINK_LORA_BACKUP&&pendingBackupMissionFeedbackValid_&&status.result==MC_STATUS)return false;
+#if BOAT_R30H121_ENDPOINT_COMPILE
+ // The owner cycle retries this retained reply using its original deadline.
+ // Queue acceptance must not erase a correlated backup response.
+ if(runtimeOwner_.worker()&&link==LINK_LORA_BACKUP&&status.result!=MC_STATUS)return true;
+#endif
  if(link==LINK_NRF_PRIMARY&&!primaryOrdinaryTxReady())return false;
  RadioFrame f;radio_frameInit(f,RADIO_MSG_MISSION_FEEDBACK,BOAT_ID,REMOTE_ID,++txSequence_,status.transaction,now,sessionEpoch_);
  const bool sent=missionFeedbackEncode(status,f.payload)&&radio_frameSeal(f,key_)&&sendFrame(link,f);
@@ -507,6 +512,7 @@ bool BoatDualRadioPort::queueAsyncApplication(ManagedLink link,const RadioFrame 
  if(!BOAT_R30H121_PHYSICAL_OWNER||legacyBeginAttempted_||!authenticated_||!sessionReady()||!age)return false;
  if(link!=LINK_NRF_PRIMARY&&link!=LINK_LORA_BACKUP)return false;
  const bool backup=link==LINK_LORA_BACKUP;
+ if(backup?!sx1262Ready_:!nrfReady_)return false;
  if(frame.sourceId!=BOAT_ID||frame.destinationId!=REMOTE_ID||
     frame.sessionEpoch!=sessionEpoch_||!frame.sequence||
     frame.sequence>=RadioSessionCounter::REKEY_AT||!radio_frameVerify(frame,key_))return false;
@@ -579,7 +585,7 @@ bool BoatDualRadioPort::resetAsyncSession(uint8_t epoch){
  return p&&b;
 }
 void BoatDualRadioPort::serviceAsyncOwner(ManagedLink link,uint32_t now,bool linkTrusted){
- if(!BOAT_R30H121_PHYSICAL_OWNER||legacyBeginAttempted_||!authenticated_)return;
+ if(!BOAT_R30H121_PHYSICAL_OWNER||!runtimeOwner_.worker()||legacyBeginAttempted_||!authenticated_)return;
  if(link!=LINK_NRF_PRIMARY&&link!=LINK_LORA_BACKUP)return;
  const bool backup=link==LINK_LORA_BACKUP;
  auto buildAck=[&](const boat_r30h18::StopAck &ack,RadioFrame &frame){
@@ -929,6 +935,15 @@ void BoatDualRadioPort::markActionExecuted(uint8_t sender,uint8_t epoch,uint16_t
  dedupe_.markExecuted(sender,epoch,commandId);
 }
 bool BoatDualRadioPort::sendFrame(ManagedLink link,const RadioFrame &f) {
+#if BOAT_R30H121_ENDPOINT_COMPILE
+ if(runtimeOwner_.worker()){
+  if(!BOAT_R30H121_PHYSICAL_OWNER)return false;
+  // Non-STOP command ACKs and mission replies share the authenticated
+  // ordinary lane. STOP ACK and STATUS always use dedicated outboxes.
+  const uint32_t age=link==LINK_LORA_BACKUP?12000U:250U;
+  return queueAsyncApplication(link,f,millis(),age);
+ }
+#endif
  if(!runtimeOwner_.legacy())return false; // no legacy PHY access in worker mode
  if(!sessionStarted_||!radio_frameVerify(f,key_)||!f.sequence||f.sequence>=RadioSessionCounter::REKEY_AT)return false;
  if(link==LINK_NRF_PRIMARY && nrfReady_){
@@ -942,6 +957,10 @@ bool BoatDualRadioPort::sendFrame(ManagedLink link,const RadioFrame &f) {
  return false;
 }
 bool BoatDualRadioPort::primaryOrdinaryTxReady() const {
+#if BOAT_R30H121_ENDPOINT_COMPILE
+ if(runtimeOwner_.worker())return BOAT_R30H121_PHYSICAL_OWNER&&sessionReady()&&nrfReady_&&
+  asyncPrimaryOwner_.feedbackReady()&&!asyncPrimaryTx_.pending()&&!stopAck_.pending()&&!statusOutbox_.pending();
+#endif
  if(!runtimeOwner_.legacy())return false;
  return boat_r30h21::ordinarySlotFree({
      sessionReady(),nrfReady_,primaryDriverPending(),
