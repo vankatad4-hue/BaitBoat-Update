@@ -1,0 +1,21 @@
+name: R30H-118 mock target
+on:
+  push:
+    branches: [platformio-unified-r30h20]
+    paths:
+      - 'Boat/source/r30h118*'
+      - 'Boat/platformio.ini'
+      - '.github/workflows/r30h118-mock-build.yml'
+  workflow_dispatch:
+jobs:
+  mock-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install platformio
+      - name: Compile only
+        run: pio run -d Boat -e boat_r30h118_mock
