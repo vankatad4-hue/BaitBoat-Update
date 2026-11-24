@@ -6,6 +6,7 @@
 #include "r30h118_worker.h"
 #include "r30h118_phy_events.h"
 #include "r30h118_phy_pump.h"
+#include "r30h118_stop_retry.h"
 using namespace flytec_r30h118;
 int main(){
  CompletionGate g; Ticket a,b,c;
@@ -114,4 +115,12 @@ int main(){
  PhyEvents<uint32_t>::Health fresh{0xfffffffeU,true,true,false,false};
  assert(healthyFresh(fresh,1,10));assert(!healthyFresh(fresh,8,10));
  fresh.fault=true;assert(!healthyFresh(fresh,1,10));
+ Transport<uint32_t> retryBus;
+ StopRetry<uint32_t> retry;
+ assert(retry.arm(retryBus,1,10,0));assert(retry.service(retryBus,0,100));
+ assert(retry.arm(retryBus,1,20,1));assert(!retry.service(retryBus,2,100));assert(retry.pending());
+ assert(retryBus.take(req)&&req.frame==10&&!retryBus.allows(req,2,100));
+ assert(retry.service(retryBus,3,100));assert(retryBus.take(req)&&req.frame==20&&req.queuedAt==1);
+ assert(retryBus.allows(req,3,100));
+ assert(retry.arm(retryBus,1,30,4));assert(!retry.service(retryBus,104,100));assert(!retry.pending());
 }
