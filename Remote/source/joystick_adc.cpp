@@ -1,5 +1,6 @@
 #include "joystick_adc.h"
 #include <Wire.h>
+#include "remote_i2c_owner.h"
 
 static JoystickAdcConfig cfg{0x4A,0,1,2,3};
 static bool ready=false;
@@ -7,10 +8,12 @@ static const uint8_t ADS_REG_CONVERSION=0x00, ADS_REG_CONFIG=0x01;
 static const uint16_t PGA_4096=0x0200, MODE_SINGLE=0x0100, RATE_860SPS=0x00E0, COMP_DISABLE=0x0003;
 
 static bool writeRegister(uint8_t reg,uint16_t value){
+  if(!flytec_rtos::remoteI2cAllowed())return false;
   Wire.beginTransmission(cfg.address); Wire.write(reg); Wire.write((uint8_t)(value>>8)); Wire.write((uint8_t)value);
   return Wire.endTransmission()==0;
 }
 static bool readRegister(uint8_t reg,uint16_t &value){
+  if(!flytec_rtos::remoteI2cAllowed())return false;
   Wire.beginTransmission(cfg.address); Wire.write(reg);
   if(Wire.endTransmission(false)!=0) return false;
   if(Wire.requestFrom((int)cfg.address,2)!=2) return false;
