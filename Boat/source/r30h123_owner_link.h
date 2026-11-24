@@ -74,7 +74,7 @@ public:
   return ok;
  }
  void poll(uint32_t now,uint32_t appTimeout,uint32_t handshakeTimeout){
-  app_.poll();app_.expire(now,appTimeout);handshake_.poll(now,handshakeTimeout);
+  app_.poll();app_.expire(now,appTimeout,epoch_);handshake_.poll(now,handshakeTimeout);
   if(app_.stopRetryPending())app_.serviceStop(now);
   if(!app_.stopRetryPending()&&app_.state()!=TxState::Queued&&app_.state()!=TxState::Admitted)appClass_=TxPriority::None;
   publish();
