@@ -37,6 +37,11 @@ public:
   preserveSuperseded();stopRetry_=false;state_=TxState::Idle;admissionSeen_=admitted_=outcomeSeen_=false;
   healthSeen_=false;ticket_={};return bus_.invalidate(epoch);
  }
+ // Physical availability is independent of instantaneous TX busy state.
+ bool available(uint32_t now,uint32_t age)const{
+  return healthSeen_&&!events_.stickyFault()&&health_.configured&&!health_.fault&&age&&uint32_t(now-health_.observedAt)<age;
+ }
+ void pollHealth(){if(events_.latestHealth(health_))healthSeen_=true;}
  bool healthy(uint32_t now,uint32_t age)const{
   return healthSeen_&&!events_.stickyFault()&&health_.configured&&health_.ready&&!health_.fault&&age&&uint32_t(now-health_.observedAt)<age;
  }
@@ -88,7 +93,7 @@ public:
   state_=TxState::Idle;return true;
  }
  void poll(){
-  if(events_.latestHealth(health_))healthSeen_=true;
+  pollHealth();
   bool admitted=false;
   for(unsigned i=0;i<3;++i)if(bus_.poll(admitted)){admissionSeen_=true;admitted_=admitted;}
   typename Events::Outcome event{};
