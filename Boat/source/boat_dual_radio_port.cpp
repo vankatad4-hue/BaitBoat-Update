@@ -179,6 +179,14 @@ bool BoatDualRadioPort::begin() {
 }
 void BoatDualRadioPort::update() {
  const uint32_t now=millis();
+ prepareApplicationCycle(now);
+ serviceLegacyRxAndFeedback();
+ advanceApplicationCycle(millis());
+ serviceLegacyPeriodicTx(now);
+}
+void BoatDualRadioPort::prepareApplicationCycle(uint32_t now){
+ // Core 1 application preparation; no physical driver calls.
+
  // Radio inactivity is handled by BoatRadioWatchdog, not by tearing down
  // the authenticated session. Keeping the session lets the backup E22 link
  // recover after a long RF outage without requiring the primary radio.
@@ -191,6 +199,9 @@ void BoatDualRadioPort::update() {
   commandQueue_.discardLink((uint8_t)LINK_NRF_PRIMARY,true);
  }
  if(!missionGate_||!missionGate_()||(!primaryFresh(now)&&!backupFresh(now)))mission_.reset();
+}
+void BoatDualRadioPort::serviceLegacyRxAndFeedback(){
+ if(!legacyBeginAttempted_)return;
  if(nrfReady_){
   const bool stopAckWasInFlight=stopAck_.inFlight();
   nrf_.update();
@@ -290,7 +301,8 @@ void BoatDualRadioPort::update() {
   }
  }
 
- const uint32_t safetyNow=millis();
+}
+void BoatDualRadioPort::advanceApplicationCycle(uint32_t safetyNow){
  const auto watchdogEvent=radioWatchdog_.update(primaryFresh(safetyNow),backupFresh(safetyNow));
  if(watchdogEvent==BOAT_RADIO_WATCHDOG_LOST){
   linkLossHold_=true;
@@ -332,6 +344,9 @@ void BoatDualRadioPort::update() {
     }
  }
  maybeStartFailsafeReturnHome(safetyNow);
+}
+void BoatDualRadioPort::serviceLegacyPeriodicTx(uint32_t now){
+ if(!legacyBeginAttempted_)return;
  if(sessionReady()) {
    if(nrfReady_ && (uint32_t)(now-lastNrfHeartbeatTxMs_)>=100U) {
      // A busy TX must not advance the heartbeat schedule. The next update
