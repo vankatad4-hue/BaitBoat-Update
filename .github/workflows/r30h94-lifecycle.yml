@@ -18,6 +18,8 @@ on:
       - '**/source/dual_phy_worker.h'
       - 'Remote/source/remote_i2c_owner.h'
       - 'Remote/source/remote_i2c_dispatcher.h'
+      - 'Remote/source/radio_latency_stats.h'
+      - 'Remote/tests/r30h116_latency.cpp'
       - 'Remote/source/remote_i2c_phy_service.h'
       - 'Remote/source/remote_i2c_request_scheduler.h'
       - 'Remote/tests/r30h113_i2c_scheduler.cpp'
@@ -86,3 +88,5 @@ jobs:
           timeout 10s /tmp/i2c_scheduler
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -IRemote/source Remote/tests/r30h115_integrated_phy.cpp -o /tmp/integrated_phy
           timeout 10s /tmp/integrated_phy
+          g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -IRemote/source Remote/tests/r30h116_latency.cpp -o /tmp/radio_latency
+          timeout 10s /tmp/radio_latency
