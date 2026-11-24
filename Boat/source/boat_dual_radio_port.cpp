@@ -206,7 +206,7 @@ void BoatDualRadioPort::update() {
      if(radio_encodeAckPayload(pending.result,CMD_EMERGENCY_STOP,
                                pending.commandId,pending.stopState,
                                pending.interlocks,reply.payload)&&
-        radio_frameSeal(reply,key_)&&nrf_.sendFrame(reply))
+        radio_frameSeal(reply,key_)&&admitPrimaryLegacy(reply))
       stopAck_.admitted(millis()); // admission only, NOT Remote receipt
     }else stopAck_.reset();
    }
@@ -220,7 +220,7 @@ void BoatDualRadioPort::update() {
     radio_frameInit(report,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,
                     ++txSequence_,0,statusNow,sessionEpoch_);
     if(radio_encodeTelemetryPayload(statusOutbox_.status(),report.payload)&&
-       radio_frameSeal(report,key_)&&nrf_.sendFrame(report))
+       radio_frameSeal(report,key_)&&admitPrimaryLegacy(report))
        statusOutbox_.sent(); // TX started; not an actuator/safety ACK
    }
   }
@@ -246,7 +246,7 @@ void BoatDualRadioPort::update() {
    radio_frameInit(reply,RADIO_MSG_ACK,BOAT_ID,REMOTE_ID,++txSequence_,pending.commandId,backupAckNow,sessionEpoch_);
    reply.flags=RADIO_FLAG_BACKUP_LINK;
    if(radio_encodeAckPayload(pending.result,CMD_EMERGENCY_STOP,pending.commandId,pending.stopState,pending.interlocks,reply.payload)&&
-      radio_frameSeal(reply,key_)&&e22_.sendFrame(reply,backupAckNow))backupStopAck_.reset(); // UART admission only; Remote retries cover loss
+      radio_frameSeal(reply,key_)&&admitBackupLegacy(reply,backupAckNow))backupStopAck_.reset(); // UART admission only; Remote retries cover loss
   }
  }
  const uint32_t backupStatusNow=millis();
@@ -255,7 +255,7 @@ void BoatDualRadioPort::update() {
   RadioFrame report{};
   radio_frameInit(report,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,++txSequence_,0,backupStatusNow,sessionEpoch_);
   report.flags=RADIO_FLAG_BACKUP_LINK;
-  if(radio_encodeTelemetryPayload(backupStatusOutbox_.status(),report.payload)&&radio_frameSeal(report,key_)&&e22_.sendFrame(report,backupStatusNow)){
+  if(radio_encodeTelemetryPayload(backupStatusOutbox_.status(),report.payload)&&radio_frameSeal(report,key_)&&admitBackupLegacy(report,backupStatusNow)){
    backupStatusOutbox_.sent();lastBackupHeartbeatTxMs_=backupStatusNow;
   }
  }
@@ -432,8 +432,8 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
    memcpy(ack.payload,reply.payload,8);
     if(link==LINK_LORA_BACKUP){
       ack.flags=RADIO_FLAG_BACKUP_LINK;
-      if(radio_frameSeal(ack,rootKey_)&&sx1262Ready_)e22_.sendFrame(ack,now);
-    }else if(radio_frameSeal(ack,rootKey_)&&nrfReady_)nrf_.sendFrame(ack);
+      if(radio_frameSeal(ack,rootKey_)&&sx1262Ready_)admitBackupLegacy(ack,now);
+    }else if(radio_frameSeal(ack,rootKey_)&&nrfReady_)admitPrimaryLegacy(ack);
    return;
  }
  if(!sessionStarted_||f.sessionEpoch!=sessionEpoch_||!radio_frameVerify(f,key_))return;
@@ -631,11 +631,11 @@ bool BoatDualRadioPort::sendFrame(ManagedLink link,const RadioFrame &f) {
  if(link==LINK_NRF_PRIMARY && nrfReady_){
   // Strict STOP-only reply priority over heartbeat, status, mission, UTC,
   // optional diagnostic and ordinary command ACK traffic. The STOP outbox
-  // itself sends through nrf_.sendFrame() after the RX poll.
+  // itself sends through admitPrimaryLegacy() after the RX poll.
   if(stopAck_.pending()||statusOutbox_.pending())return false;
-  return nrf_.sendFrame(f);
+  return admitPrimaryLegacy(f);
  }
- if(link==LINK_LORA_BACKUP && sx1262Ready_&&!backupStopAck_.pending()){RadioFrame backup=f;backup.flags=RADIO_FLAG_BACKUP_LINK;if(!radio_frameSeal(backup,key_))return false;return e22_.sendFrame(backup,millis());}
+ if(link==LINK_LORA_BACKUP && sx1262Ready_&&!backupStopAck_.pending()){RadioFrame backup=f;backup.flags=RADIO_FLAG_BACKUP_LINK;if(!radio_frameSeal(backup,key_))return false;return admitBackupLegacy(backup,millis());}
  return false;
 }
 bool BoatDualRadioPort::primaryOrdinaryTxReady() const {
@@ -662,3 +662,7 @@ BoatFailsafeDecision BoatDualRadioPort::evaluateFailsafe(uint32_t now,bool missi
  return boatEvaluateLinkFailsafe(in);
 }
 
+
+// Keep synchronous admission semantics until asynchronous consumers are migrated.
+bool BoatDualRadioPort::admitPrimaryLegacy(const RadioFrame &frame){return nrf_.sendFrame(frame);}
+bool BoatDualRadioPort::admitBackupLegacy(const RadioFrame &frame,uint32_t now){return e22_.sendFrame(frame,now);}
