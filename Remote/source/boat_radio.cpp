@@ -64,6 +64,8 @@ static uint32_t g_lastPrimaryHeartbeat=0;
 static uint32_t g_lastBackupTxMs=0,g_lastBackupTxAttemptMs=0;
 static bool g_backupTxSent=false,g_stopPending=false;
 static BoatCommand g_pendingStop{};
+static uint32_t g_backupStopStartedMs=0;
+static constexpr uint32_t BACKUP_STOP_RETRY_LIFETIME_MS=15000U;
 static flytec_r30h15::PrimaryStopRetry<BoatCommand> g_primaryStopRetry;
 static flytec_r30h17::StopConfirmationGate g_stopConfirmation;
 static uint8_t g_authKey[32],g_rootKey[32];
@@ -243,6 +245,9 @@ bool boatRadio_sendCommand(const BoatCommand &command) {
             if(primary)g_primaryStopRetry.noteAdmitted(now);
             else primary=true; // accepted into bounded local STOP-only queue
         }
+        if(g_loraConfigured){
+            g_pendingStop=command;g_stopPending=true;g_backupStopStartedMs=now;
+        }
         const bool backup=radioSendTransport(LINK_LORA_BACKUP,command);
         queued=primary||backup;
     }else queued=g_linkManager.send(command,radioSendTransport,now);
@@ -379,6 +384,7 @@ static bool dispatchValidatedPayload(ManagedLink link,const RadioFrame &frame,ui
                     // After HMAC/session/sequence validation and telemetryApply,
                     // STOP is confirmed logically at Boat. Not physical current-zero.
                     g_primaryStopRetry.reset();
+                    g_stopPending=false;
                     g_stopConfirmation.reset();
                 }
                 if(!g_stopMustConfirm&&!boatRadio_missionLocked()&&decoded.boatMode==MODE_MANUAL&&!(decoded.safetyFlags&6U)&&((int32_t)(now-g_manualTransitionAt)>0))g_manualConfirmRequired=false;
@@ -459,6 +465,9 @@ void boatRadio_update() {
             for(unsigned i=0;i<RX_FRAME_BUDGET&&g_lora.receiveFrame(frame);++i) validateInboundFrame(LINK_LORA_BACKUP,frame);
         }
     }
+    if(g_stopPending&&(!sessionReady()||!g_loraConfigured||
+       (uint32_t)(millis()-g_backupStopStartedMs)>=BACKUP_STOP_RETRY_LIFETIME_MS))
+        g_stopPending=false; // expiry never clears the confirmation interlock
     if(g_primaryStopRetry.pending()){
         if(!sessionReady()||!g_nrfReady||g_primaryStopRetry.expired(millis())){
             g_primaryStopRetry.reset(); // never replay after timeout/epoch loss
@@ -509,7 +518,7 @@ void boatRadio_update() {
         if(sessionReady()&&g_loraConfigured&&(!g_backupTxSent||now-g_lastBackupTxMs>=3000U)&&now-g_lastBackupTxAttemptMs>=250U){
             g_lastBackupTxAttemptMs=now;
             if(g_stopPending){
-                BoatCommand pending=g_pendingStop;g_stopPending=false;
+                BoatCommand pending=g_pendingStop; // retain through UART admission
                 radioSendTransport(LINK_LORA_BACKUP,pending);
             }else{
                 RadioFrame hb;radio_frameInit(hb,RADIO_MSG_HEARTBEAT,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,++g_txSequence,0,now,g_sessionEpoch);
