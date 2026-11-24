@@ -2,6 +2,7 @@
 #include <cassert>
 #include "r30h118_radio_handoff.h"
 #include "r30h118_worker_guard.h"
+#include "r30h118_transport.h"
 using namespace flytec_r30h118;
 int main(){
  CompletionGate g; Ticket a,b,c;
@@ -42,4 +43,21 @@ int main(){
  assert(!guard.allows(t,0,1,100));
  assert(owner.issue(t));assert(guard.allows(t,0,1,100));
  guard.disable();assert(!guard.allows(t,0,1,100));
+ Transport<uint32_t> transport;
+ Transport<uint32_t>::Request req{};
+ assert(!transport.submit(1,0,false));
+ assert(transport.invalidate(1));
+ assert(transport.submit(1,0,false));
+ assert(transport.invalidate(1));
+ assert(transport.submit(2,1,true));
+ assert(transport.take(req)&&req.stop&&req.frame==2);
+ assert(transport.allows(req,2,100));
+ assert(transport.complete(req,true));
+ assert(transport.poll(admitted)&&admitted);
+ assert(transport.take(req)&&!req.stop);
+ assert(!transport.allows(req,2,100));
+ assert(transport.complete(req,false));
+ assert(!transport.poll(admitted));
+ assert(transport.invalidate(0)==false);
+ assert(!transport.submit(3,3,true));
 }
