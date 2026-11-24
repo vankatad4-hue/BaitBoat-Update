@@ -330,6 +330,11 @@ int main(){
  dualEndpoint.step(15,100,200,32,32,dpService,dbService);
  assert(!dualEndpoint.primary().stopRetryPending());
  assert(dualP.take(dpr)&&dpr.stop&&dpr.frame==91&&dpr.queuedAt==14);
+ // Backup terminal must be consumed before another ordinary admission.
+ assert(dpCalls==1&&dbCalls==2);
+ assert(dualEndpoint.backup().terminalPending());
+ assert(dualEndpoint.backup().takeTerminal(auditDone,auditState)&&auditState==TxState::LocalComplete);
+ flytec_r30h121::DualAppRadio<uint32_t>::serviceLink(dualEndpoint.backup(),16,100,32,dbService);
  assert(dpCalls==1&&dbCalls==3);
 
  PhyEvents<uint32_t>::Rx freshRx{};
