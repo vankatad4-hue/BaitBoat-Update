@@ -37,6 +37,7 @@ static_assert(BOAT_R30H9_MARKER_GPIO == -1 && BOAT_R30H9_GPIO_OUTPUT_SIGNED == 0
 #include "r30h123_owner_rx.h"
 #include "r30h123_ordinary_tx.h"
 #include "r30h123_telemetry_slots.h"
+#include "r30h120_physical_task.h"
 #endif
 
 // Link values match the Remote manager and queue records.
@@ -114,6 +115,18 @@ private:
     flytec_r30h121::DualAppRadio<RadioFrame> asyncRadio_{asyncPrimaryBus_,asyncPrimaryEvents_,asyncBackupBus_,asyncBackupEvents_};
     flytec_r30h120::HandshakeLane<RadioFrame> asyncPrimaryHandshake_,asyncBackupHandshake_;
     flytec_r30h120::SharedPriority asyncPrimaryPriority_,asyncBackupPriority_;
+    // Retained for the entire endpoint lifetime. Unsigned compile profile:
+    // neither physical radio is commissioned, and the ownership lock is 0.
+    flytec_r30h120::PhysicalTask asyncTask_{
+      {BOAT_NRF_CE_PIN,BOAT_NRF_CSN_PIN,&SPI,BOAT_NRF_CHANNEL,
+       BOAT_NRF_SCK_PIN,BOAT_NRF_MISO_PIN,BOAT_NRF_MOSI_PIN,
+       {BOAT_E22_UART_PIN_TX,BOAT_E22_UART_PIN_RX,BOAT_E22_UART_PIN_M0,
+        BOAT_E22_UART_PIN_M1,BOAT_E22_UART_PIN_AUX,BOAT_E22_UART_PIN_NRST,
+        false,false,false},false,false},
+      asyncPrimaryBus_,asyncBackupBus_,asyncPrimaryEvents_,asyncBackupEvents_};
+    bool beginAsyncRuntime(bool commissioned);
+    void serviceAsyncRuntime(uint32_t now);
+    void stopAsyncRuntime();
     flytec_r30h123::OwnerLink<RadioFrame> asyncPrimaryOwner_{asyncRadio_.primary(),asyncPrimaryHandshake_,asyncPrimaryEvents_,asyncPrimaryPriority_};
     flytec_r30h123::OwnerLink<RadioFrame> asyncBackupOwner_{asyncRadio_.backup(),asyncBackupHandshake_,asyncBackupEvents_,asyncBackupPriority_};
     flytec_r30h123::OwnerRx<RadioFrame> asyncPrimaryRx_{asyncRadio_.primary(),0x01,0x02,false};
