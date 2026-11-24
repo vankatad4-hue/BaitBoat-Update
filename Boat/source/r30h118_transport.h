@@ -42,6 +42,7 @@ public:
  }
  // Call invalidate before submitting a new STOP to revoke ordinary tickets.
  bool takeStop(Request &r){return stop_.pop(r);}
+ bool ordinaryQueued()const{return !ordinary_.empty();}
  bool takeOrdinary(Request &r){return ordinary_.pop(r);}
  bool take(Request &r){return takeStop(r)||takeOrdinary(r);}
  bool allows(const Request &r,uint32_t now,uint32_t maxAge)const{

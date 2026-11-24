@@ -60,6 +60,7 @@ public:
  }
  // Application session rollover deliberately does not close this lane.
  uint32_t activeGeneration()const{return bus_.activeGeneration();}
+ bool queued()const{return bus_.ordinaryQueued();}
  template<class Policy,class Verify> bool submitAuthenticated(const Frame &f,uint32_t now,Policy permitted,Verify verify,flytec_r30h118::Ticket *ticket=nullptr){
   return submit(f,now,[&](const Frame &candidate){return permitted(candidate)&&verify(candidate);},ticket);
  }
@@ -108,6 +109,10 @@ public:
  HandshakeEndpoint(HandshakeLane<Frame>& lane,Events& events):lane_(lane),events_(events){}
  bool begin(){if(state_==HandshakeTx::Pending)return false;state_=HandshakeTx::Idle;ticket_={};return lane_.begin();}
  void close(){lane_.close();if(state_==HandshakeTx::Pending)state_=HandshakeTx::Uncertain;}
+ // Explicit transcript cancellation: retire the ticket, discard any local
+ // result and let the worker drain stale immutable entries by generation.
+ void cancel(){lane_.close();ticket_={};state_=HandshakeTx::Idle;admission_=outcome_=false;}
+ bool needsService()const{return state_==HandshakeTx::Pending||lane_.queued();}
  template<class Policy,class Verify> bool submit(const Frame& f,uint32_t now,Policy policy,Verify verify){
   if(state_!=HandshakeTx::Idle)return false;
   if(!lane_.submitAuthenticated(f,now,policy,verify,&ticket_))return false;

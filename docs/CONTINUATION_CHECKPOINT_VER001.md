@@ -1,3 +1,12 @@
+## Active continuation — R30H-124M (2026-11-24)
+
+Branch `platformio-unified-r30h20`; Boat VER014 / Remote VER028 unchanged; physical activation and upload locked.
+
+- R30H-124L exact commit combined status empty; direct Git checkout DNS failure reproduced; no PlatformIO executable. Full regression/target results unverified.
+- Boat asynchronous root reply cancellation now invalidates lane generation, drops old local authority, ignores obsolete completion, and publishes advisory cleanup priority while stale entries remain. Worker rejects stale tickets before driver admission. Application session rollover/new proof, candidate expiry, accepted authenticated traffic and per-PHY health loss cancel obsolete replies. STOP and safety priority unchanged. Already admitted RF cannot be revoked. Ordinary producer waits while handshake/cleanup pending.
+- Added host regression for dequeued cancellation, stale outcome, full stale queue drain, and subsequent valid handshake completion. Registered lifecycle CI. Actual end-to-end backup-only recovery and PlatformIO remain unverified.
+- Next R30H-124N: verify new regression and all outstanding CI, resolve backup handshake duration/pacing and actual busy reply integration across both endpoints, then implement independently authorized ordinary/mission TX. No release bump.
+
 ## Active continuation — R30H-124L (2026-11-24)
 
 Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged; physical worker activation and upload locked.

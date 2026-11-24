@@ -206,12 +206,20 @@ private:
     uint32_t lastUtcTxMs_=0;
     bool utcEverSent_=false;
     bool missionInputs(ExecInputs &in,uint32_t now)const;
+    void cancelHandshakeReplies(){
+      primaryHandshakeReply_.reset();backupHandshakeReply_.reset();
+#if BOAT_R30H121_ENDPOINT_COMPILE
+      if(BOAT_R30H121_PHYSICAL_OWNER&&runtimeOwner_.worker()){
+        asyncPrimaryOwner_.cancelHandshake();asyncBackupOwner_.cancelHandshake();
+      }
+#endif
+    }
     void noteAuthenticatedRx(uint32_t observedAt){
       const uint32_t now=millis();
       if(!haveAuthenticatedRx_||uint32_t(now-observedAt)<=uint32_t(now-lastAnyAuthenticatedRxMs_))lastAnyAuthenticatedRxMs_=observedAt;
       haveAuthenticatedRx_=true;
       recoveryHandshake_.reset(); // accepted old traffic cancels recovery
-      primaryHandshakeReply_.reset();backupHandshakeReply_.reset();
+      cancelHandshakeReplies();
     }
     bool maybeStartFailsafeReturnHome(uint32_t now);
     bool sendMissionFeedback(const MissionControlFeedback &f,uint32_t now);

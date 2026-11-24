@@ -16,6 +16,8 @@ public:
   if(next==tail_.load(std::memory_order_acquire))return false;
   slots_[h]=v;head_.store(next,std::memory_order_release);return true;
  }
+ // Advisory snapshot; only the consumer may pop.
+ bool empty()const{return tail_.load(std::memory_order_acquire)==head_.load(std::memory_order_acquire);}
  bool pop(T &v){
   const size_t t=tail_.load(std::memory_order_relaxed);
   if(t==head_.load(std::memory_order_acquire))return false;

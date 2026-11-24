@@ -143,7 +143,7 @@ void BoatDualRadioPort::resetSession(bool preserveMission){
   missionIntent_={INTENT_STOP,-1,0};
   haveAuthenticatedRx_=false;lastAnyAuthenticatedRxMs_=0;
  }
- recoveryHandshake_.reset();primaryHandshakeReply_.reset();backupHandshakeReply_.reset();handshake_.reset();radioSession_wipe(key_,32);sessionStarted_=false;
+ recoveryHandshake_.reset();cancelHandshakeReplies();handshake_.reset();radioSession_wipe(key_,32);sessionStarted_=false;
 #if BOAT_R30H121_ENDPOINT_COMPILE
  if(BOAT_R30H121_PHYSICAL_OWNER){asyncPrimaryTx_.reset();asyncBackupTx_.reset();asyncTelemetry_.reset();asyncPrimaryCycle_.close();asyncBackupCycle_.close();}
 #endif
@@ -204,7 +204,7 @@ void BoatDualRadioPort::prepareApplicationCycle(uint32_t now){
  // Sequence-limit rekey still uses the existing primary handshake.
  if(sessionStarted_&&!sessionReady())resetSession(true);
  if(handshake_.timeout(now))resetSession(linkLossHold_||detachedReturn_);
- if(recoveryHandshake_.expire(now)){primaryHandshakeReply_.reset();backupHandshakeReply_.reset();}
+ if(recoveryHandshake_.expire(now))cancelHandshakeReplies();
  primaryHandshakeReply_.expire(now,3500U);backupHandshakeReply_.expire(now,6000U);
  // Primary-only actions and stick leases must never survive primary-link loss.
  if(!primaryFresh(now)){
@@ -490,11 +490,13 @@ void BoatDualRadioPort::serviceAsyncRuntime(uint32_t now){
  const bool p=asyncRadio_.primary().available(now,250U);
  const bool b=asyncRadio_.backup().available(now,250U);
  if(nrfReady_&&!p){
+  asyncPrimaryOwner_.cancelHandshake();
   lastNrfRxValid_=false;stickLease_.reset();mission_.reset();
   controller_.cancelOverrideForLinkLoss();
   commandQueue_.discardLink((uint8_t)LINK_NRF_PRIMARY,true);
  }
  if(sx1262Ready_&&!b){
+  asyncBackupOwner_.cancelHandshake();
   lastBackupRxValid_=false;pendingBackupMissionFeedbackValid_=false;
   commandQueue_.discardLink((uint8_t)LINK_LORA_BACKUP,true);
  }
@@ -617,7 +619,7 @@ void BoatDualRadioPort::serviceAsyncOwner(ManagedLink link,uint32_t now,bool lin
  // committed only by completeAsyncApplication, never by queue admission.
  auto ordinary=[&](flytec_r30h123::OwnerLink<RadioFrame>& owner){
   auto &tx=backup?asyncBackupTx_:asyncPrimaryTx_;
-  if(!owner.feedbackReady()||tx.pending()||!sessionReady())return;
+  if(owner.handshakePending()||!owner.feedbackReady()||tx.pending()||!sessionReady())return;
   if(backup&&pendingBackupMissionFeedbackValid_){
    const uint32_t elapsed=uint32_t(now-pendingBackupMissionFeedbackAtMs_);
    if(elapsed>=12000U)pendingBackupMissionFeedbackValid_=false;
@@ -720,7 +722,7 @@ void BoatDualRadioPort::receiveCaptured(ManagedLink link,const RadioFrame &f,uin
      newSession=recovered;
    }
    if(newSession){
-     recoveryHandshake_.reset();primaryHandshakeReply_.reset();backupHandshakeReply_.reset();
+     recoveryHandshake_.reset();cancelHandshakeReplies();
      const bool preserveLossClock=haveAuthenticatedRx_&&(linkLossHold_||detachedReturn_||recovered);
      if(recovered&&controller_.canDivertHome()&&!detachedReturn_)linkLossHold_=true;
      ++generation_;releaseIdSeen_=false;

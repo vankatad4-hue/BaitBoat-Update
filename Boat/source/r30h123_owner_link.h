@@ -17,7 +17,7 @@ template<class Frame> class OwnerLink {
   const bool appPending=app_.state()==TxState::Queued||app_.state()==TxState::Admitted;
   uint8_t mask=appPending?priorityBit(appClass_):0;
   if(app_.stopRetryPending())mask|=priorityBit(TxPriority::Stop);
-  if(handshake_.state()==HandshakeTx::Pending)mask|=priorityBit(TxPriority::Handshake);
+  if(handshake_.needsService())mask|=priorityBit(TxPriority::Handshake);
   priority_.publish(mask);
  }
 public:
@@ -30,6 +30,8 @@ public:
   if(ok)epoch_=epoch;
   publish();return ok;
  }
+ void cancelHandshake(){handshake_.cancel();publish();}
+ bool handshakePending()const{return handshake_.needsService();}
  bool beginHandshake(){
   if(handshake_.state()!=HandshakeTx::Idle)return false;
   const bool ok=handshake_.begin();publish();return ok;
