@@ -40,12 +40,13 @@ public:
  bool healthy(uint32_t now,uint32_t age)const{
   return healthSeen_&&!events_.stickyFault()&&health_.configured&&health_.ready&&!health_.fault&&age&&uint32_t(now-health_.observedAt)<age;
  }
- bool ordinaryReady()const{return bus_.ordinaryEnabled()&&!stopRetry_&&!terminalPending()&&state_!=TxState::Queued&&state_!=TxState::Admitted;}
+ bool feedbackReady()const{return bus_.feedbackEnabled()&&!stopRetry_&&!terminalPending()&&state_!=TxState::Queued&&state_!=TxState::Admitted;}
+ bool ordinaryReady()const{return bus_.ordinaryEnabled()&&feedbackReady();}
  bool terminalPending()const{return !terminalTaken_&&ticket_.serial&&state_!=TxState::Idle&&state_!=TxState::Queued&&state_!=TxState::Admitted;}
- bool submit(const Frame &frame,uint32_t now,bool stop,uint32_t requestAge=0){
+ bool submit(const Frame &frame,uint32_t now,bool stop,uint32_t requestAge=0,bool outboundFeedback=false){
   if(state_==TxState::Queued||state_==TxState::Admitted||(!stop&&terminalPending()))return false;
   Ticket next{};
-  if(!bus_.submit(frame,now,stop,&next,requestAge))return false;
+  if(!bus_.submit(frame,now,stop,&next,requestAge,outboundFeedback))return false;
   if(stop)preserveSuperseded();
   ticket_=next;terminalTaken_=false;submittedAt_=now;admissionSeen_=admitted_=outcomeSeen_=false;state_=TxState::Queued;return true;
  }
