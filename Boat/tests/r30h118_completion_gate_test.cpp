@@ -604,4 +604,28 @@ int main(){
  assert(pressureStops==1&&pressure.poll(handshakeAdmitted)&&handshakeAdmitted);
  assert(!pressure.poll(handshakeAdmitted));
  assert(pressureWorker.flush());
+ // Dedicated STOP retry deadline across millis rollover.
+ Transport<uint32_t> timingBus;
+ PhyEvents<uint32_t> timingEvents;
+ AppRadio<uint32_t> timing(timingBus,timingEvents);
+ assert(timing.reset(1));
+ assert(timing.preemptStop(1,UINT32_MAX-20,1));
+ assert(!timing.preemptStop(2,UINT32_MAX-10,1,50));
+ assert(timing.stopRetryPending());
+ auto noTimingService=[](AppRadio<uint32_t>&,flytec_r30h120::TxPriority){return false;};
+ flytec_r30h121::DualAppRadio<uint32_t>::serviceLink(timing,5,1,1,noTimingService);
+ assert(timing.stopRetryPending());
+ Transport<uint32_t>::Request timingReq{};
+ assert(timingBus.takeStop(timingReq));
+ flytec_r30h121::DualAppRadio<uint32_t>::serviceLink(timing,10,1,1,noTimingService);
+ assert(!timing.stopRetryPending());
+ assert(timingBus.takeStop(timingReq)&&timingReq.queuedAt==UINT32_MAX-10);
+ assert(timingBus.allows(timingReq,10,50));
+ assert(!timingBus.allows(timingReq,39,50));
+ // Expiry at the exact boundary while queue remains occupied.
+ assert(timing.preemptStop(3,100,1,50));
+ assert(!timing.preemptStop(4,101,1,50));
+ assert(timing.stopRetryPending());
+ assert(!timing.serviceStop(151)&&!timing.stopRetryPending());
+ assert(timingBus.activeGeneration()==0);
 }
