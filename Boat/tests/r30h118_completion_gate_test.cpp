@@ -134,4 +134,13 @@ int main(){
  assert(!og.accept(eventTicket,8));assert(og.accept(eventTicket,7));
  assert(!og.accept(eventTicket,7));assert(og.expect(eventTicket));
  og.reset();assert(!og.accept(eventTicket,7));
+ PhyEvents<uint32_t> congested,independent;
+ for(uint32_t i=0;i<4;++i)assert(congested.publishHealth({i,true,true,false,false}));
+ assert(!congested.publishHealth({4,true,false,true,false}));
+ assert(congested.stickyFault());assert(!independent.stickyFault());
+ assert(congested.latestHealth(health));assert(health.observedAt==3&&health.fault&&!health.ready);
+ assert(!healthyFresh(health,4,100));
+ assert(congested.publishHealth({5,true,true,false,false}));
+ assert(congested.latestHealth(health)&&health.fault&&!health.ready);
+ assert(!congested.latestHealth(health)&&health.fault);
 }
