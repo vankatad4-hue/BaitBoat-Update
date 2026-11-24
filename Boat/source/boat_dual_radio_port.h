@@ -34,6 +34,7 @@ static_assert(BOAT_R30H9_MARKER_GPIO == -1 && BOAT_R30H9_GPIO_OUTPUT_SIGNED == 0
 #if BOAT_R30H121_ENDPOINT_COMPILE
 #include "r30h123_owner_cycle.h"
 #include "r30h123_owner_rx.h"
+#include "r30h123_ordinary_tx.h"
 #endif
 
 // Link values match the Remote manager and queue records.
@@ -114,6 +115,8 @@ private:
     flytec_r30h123::OwnerLink<RadioFrame> asyncBackupOwner_{asyncRadio_.backup(),asyncBackupHandshake_,asyncBackupEvents_,asyncBackupPriority_};
     flytec_r30h123::OwnerRx<RadioFrame> asyncPrimaryRx_{asyncRadio_.primary(),0x01,0x02,false};
     flytec_r30h123::OwnerRx<RadioFrame> asyncBackupRx_{asyncRadio_.backup(),0x01,0x02,true};
+    flytec_r30h123::OrdinaryTx<RadioFrame> asyncPrimaryTx_,asyncBackupTx_;
+    void completeAsyncApplication(ManagedLink link,const flytec_r30h118::Ticket &ticket,flytec_r30h121::TxState state,uint32_t now);
     unsigned drainAsyncRx(ManagedLink link,uint32_t now);
     // Queue admission only; caller must correlate terminal completion separately.
     bool queueAsyncHandshake(ManagedLink link,const RadioFrame &frame,uint32_t now);
