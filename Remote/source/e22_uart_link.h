@@ -6,11 +6,12 @@
 
 typedef void (*E22SetModeFn)(bool m0,bool m1,void *context);
 typedef bool (*E22AuxReadyFn)(void *context);
+typedef size_t (*E22TxCapacityFn)(void *context);
 typedef void (*E22ResetFn)(bool released,void *context);
 
 class E22UartLink {
 public:
-    E22UartLink(Stream &uart,E22SetModeFn modeFn,E22AuxReadyFn auxFn,E22ResetFn resetFn,void *context);
+    E22UartLink(Stream &uart,E22SetModeFn modeFn,E22AuxReadyFn auxFn,E22ResetFn resetFn,void *context,E22TxCapacityFn capacityFn=nullptr);
     bool configureEU868TestProfile(); // blocking setup-only readback/config
     void update();                    // non-blocking RX/TX-state poll
     bool sendFrame(const RadioFrame &frame,uint32_t nowMs);
@@ -19,6 +20,7 @@ public:
     bool receiveFrame(RadioFrame &frame); // pure software dequeue
     bool txPending()const{return txState_.pending();}
     flytec_rtos::E22TxState::Outcome txOutcome()const{return txState_.outcome();}
+    bool configured()const{return configured_;}
     bool transportFault()const{return txState_.fault();}
     bool ready() const { return configured_ && auxReadyNow_ && !txState_.pending() && !txState_.fault(); }
     uint32_t estimatedAirtimeMs() const { return EST_AIRTIME_MS; }
@@ -34,6 +36,7 @@ private:
     E22AuxReadyFn auxFn_;
     E22ResetFn resetFn_;
     void *context_;
+    E22TxCapacityFn capacityFn_;
     bool configured_;
     bool auxReadyNow_;
     flytec_rtos::E22TxState txState_;
