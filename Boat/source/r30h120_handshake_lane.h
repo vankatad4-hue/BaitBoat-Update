@@ -1,5 +1,6 @@
 #pragma once
 #include "r30h118_transport.h"
+#include <atomic>
 namespace flytec_r30h120 {
 // Owner-side priority selection: no lower class may bypass pending safety.
 // A busy PHY call already underway cannot be preempted.
@@ -25,6 +26,18 @@ bool serviceSharedPhy(uint8_t pending,bool busy,bool enabled,App app,Handshake h
   return selected==TxPriority::Handshake?handshake():app(selected);
  });
 }
+// One instance per PHY. Single application publisher, worker snapshot reader.
+// A snapshot is advisory: worker must still validate the actual queued ticket.
+class SharedPriority {
+ std::atomic<uint8_t> pending_{0};
+public:
+ void publish(uint8_t mask){pending_.store(mask&0x7fU,std::memory_order_release);}
+ uint8_t snapshot()const{return pending_.load(std::memory_order_acquire);}
+ template<class App,class Handshake>
+ bool service(bool busy,bool enabled,App app,Handshake handshake)const{
+  return serviceSharedPhy(snapshot(),busy,enabled,app,handshake);
+ }
+};
 // Wire message IDs from radio_protocol.h: CHALLENGE=11, CONFIRM=13.
 // Authentication callback is owner-local; the worker checks immutable shape only.
 template<class Frame> bool boatReplyShape(const Frame &f,uint8_t boat,uint8_t remote,bool backup){
