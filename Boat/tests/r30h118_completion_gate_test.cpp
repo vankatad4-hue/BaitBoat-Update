@@ -516,4 +516,31 @@ int main(){
   assert(domainEvents.takeHandshakeOutcome(routed)&&sameTicket(routed.ticket,hsOutcomeTicket)&&routed.observedAt==i);
  }
  assert(!domainEvents.takeHandshakeOutcome(routed));
+ // Handshake endpoint accepts outcome before admission, rejects stale tickets.
+ HandshakeLane<HandshakeFrame> endpointHsLane;
+ PhyEvents<HandshakeFrame> endpointHsEvents;
+ flytec_r30h120::HandshakeEndpoint<HandshakeFrame> endpointHs(endpointHsLane,endpointHsEvents);
+ using HsState=flytec_r30h120::HandshakeTx;
+ Ticket hsDone{}; HsState hsState=HsState::Idle;
+ assert(endpointHs.begin());
+ assert(endpointHs.submit(hf,300,policy,acceptAuth));
+ assert(!endpointHs.submit(hf,300,policy,acceptAuth));
+ assert(endpointHsLane.take(hr));
+ assert(endpointHsEvents.publishOutcome({hr.ticket,301,PhyOutcome::LocalComplete}));
+ endpointHs.poll(301,100);
+ assert(endpointHs.state()==HsState::Pending);
+ assert(endpointHsLane.complete(hr,true));
+ endpointHs.poll(302,100);
+ assert(endpointHs.takeTerminal(hsDone,hsState)&&sameTicket(hsDone,hr.ticket)&&hsState==HsState::LocalComplete);
+ assert(!endpointHs.takeTerminal(hsDone,hsState));
+ assert(endpointHs.submit(hf,303,policy,acceptAuth));
+ assert(endpointHsLane.take(hr));
+ assert(endpointHsEvents.publishOutcome({hsDone,304,PhyOutcome::LocalComplete}));
+ assert(endpointHsLane.complete(hr,true));
+ endpointHs.poll(304,100);
+ assert(endpointHs.state()==HsState::Pending);
+ endpointHs.poll(403,100);
+ assert(endpointHs.takeTerminal(hsDone,hsState)&&hsState==HsState::Uncertain);
+ assert(endpointHsLane.activeGeneration()==0);
+ assert(endpointHs.begin());
 }
