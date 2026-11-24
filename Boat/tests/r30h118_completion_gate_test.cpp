@@ -279,4 +279,17 @@ int main(){
  stopEndpoint.poll();assert(stopEndpoint.state()==TxState::LocalComplete);
  assert(!stopEndpoint.rearm(1,false));assert(!stopEndpoint.submit(9,14,false));
  assert(stopEndpoint.rearm(1,true));assert(stopEndpoint.submit(9,14,false));
+
+ // Strict arbitration: failed highest-priority admission never falls through.
+ for(unsigned mask=0;mask<256;++mask){
+  unsigned calls=0;
+  auto reject=[&](TxPriority p){++calls;assert(p==choosePriority(static_cast<uint8_t>(mask)));return false;};
+  assert(!servicePriority(static_cast<uint8_t>(mask),false,reject));assert(calls==0);
+  assert(!servicePriority(static_cast<uint8_t>(mask),true,reject));
+  assert(calls==((mask&127U)?1U:0U));
+ }
+ unsigned primaryCalls=0,backupCalls=0;
+ assert(!servicePriority(0x7f,true,[&](TxPriority p){++primaryCalls;assert(p==TxPriority::Stop);return false;}));
+ assert(servicePriority(0x04,true,[&](TxPriority p){++backupCalls;assert(p==TxPriority::Handshake);return true;}));
+ assert(primaryCalls==1&&backupCalls==1);
 }
