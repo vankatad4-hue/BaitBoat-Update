@@ -14,6 +14,9 @@ on:
       - '**/source/nrf_phy_adapter.h'
       - '**/source/e22_tx_state.h'
       - '**/source/e22_phy_adapter.h'
+      - '**/source/dual_phy_poll.h'
+      - '**/source/dual_phy_worker.h'
+      - 'Boat/tests/r30h109_dual_phy.cpp'
       - 'Boat/tests/r30h108_e22_adapter.cpp'
       - 'Boat/tests/r30h107_e22_state.cpp'
       - 'Boat/tests/r30h106_nrf_adapter.cpp'
@@ -62,3 +65,7 @@ jobs:
           cmp Boat/source/e22_phy_adapter.h Remote/source/e22_phy_adapter.h
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IBoat/tests/r30h94_mock -IBoat/tests/r30h73_freertos_mock -IBoat/source Boat/tests/r30h108_e22_adapter.cpp -o /tmp/e22_adapter
           timeout 10s /tmp/e22_adapter
+          cmp Boat/source/dual_phy_poll.h Remote/source/dual_phy_poll.h
+          cmp Boat/source/dual_phy_worker.h Remote/source/dual_phy_worker.h
+          g++ -std=c++17 -pthread -Wall -Wextra -Werror -IBoat/tests/r30h94_mock -IBoat/tests/r30h73_freertos_mock -IBoat/source Boat/tests/r30h109_dual_phy.cpp -o /tmp/dual_phy
+          timeout 10s /tmp/dual_phy
