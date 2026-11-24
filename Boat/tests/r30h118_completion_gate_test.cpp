@@ -259,4 +259,24 @@ int main(){
  assert(asyncBus.take(asyncReq)&&!asyncBus.allows(asyncReq,34,100));
  assert(asyncEvents.publishHealth({34,true,false,true,false}));
  endpoint.poll();assert(!endpoint.healthy(34,100));
+
+ Transport<uint32_t> saturatedStopBus;
+ PhyEvents<uint32_t> saturatedStopEvents;
+ AppRadio<uint32_t> stopEndpoint(saturatedStopBus,saturatedStopEvents);
+ assert(stopEndpoint.reset(1));
+ assert(stopEndpoint.preemptStop(100,10,1));
+ assert(!stopEndpoint.preemptStop(101,11,1));
+ assert(stopEndpoint.stopRetryPending());
+ assert(!stopEndpoint.rearm(1,true));
+ assert(saturatedStopBus.take(asyncReq)&&asyncReq.frame==100);
+ assert(!saturatedStopBus.allows(asyncReq,12,100));
+ assert(stopEndpoint.serviceStop(12,100));
+ assert(!stopEndpoint.stopRetryPending());
+ assert(saturatedStopBus.take(asyncReq)&&asyncReq.frame==101&&asyncReq.queuedAt==11);
+ assert(saturatedStopBus.allows(asyncReq,12,100));
+ assert(saturatedStopBus.complete(asyncReq,true));
+ assert(saturatedStopEvents.publishOutcome({asyncReq.ticket,13,PhyOutcome::LocalComplete}));
+ stopEndpoint.poll();assert(stopEndpoint.state()==TxState::LocalComplete);
+ assert(!stopEndpoint.rearm(1,false));assert(!stopEndpoint.submit(9,14,false));
+ assert(stopEndpoint.rearm(1,true));assert(stopEndpoint.submit(9,14,false));
 }
