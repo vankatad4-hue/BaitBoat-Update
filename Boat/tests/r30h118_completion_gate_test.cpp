@@ -123,4 +123,8 @@ int main(){
  assert(retry.service(retryBus,3,100));assert(retryBus.take(req)&&req.frame==20&&req.queuedAt==1);
  assert(retryBus.allows(req,3,100));
  assert(retry.arm(retryBus,1,30,4));assert(!retry.service(retryBus,104,100));assert(!retry.pending());
+ assert(!retryBus.submit(99,105,false));
+ assert(retryBus.invalidate(2));assert(!retryBus.submit(99,105,false));
+ assert(!retryBus.rearm(0));assert(!retryBus.submit(99,105,false));
+ assert(retryBus.rearm(2));assert(retryBus.submit(99,105,false));
 }
