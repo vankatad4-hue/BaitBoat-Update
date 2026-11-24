@@ -1,7 +1,11 @@
 // Compile the REAL Boat transport_task_queue.h against deterministic
 // thread-safe host substitutes for the FreeRTOS queue and mutex APIs.
 // Not an ESP32 FreeRTOS runtime test.
+#include <stdint.h>
+static void stopInterleave(uint32_t);
+#define FLYTEC_HOST_STOP_INTERLEAVE(epoch) stopInterleave(epoch)
 #include "transport_task_queue.h"
+#undef FLYTEC_HOST_STOP_INTERLEAVE
 #include <cassert>
 #include <atomic>
 #include <thread>
@@ -11,6 +15,16 @@
 #include <functional>
 #include <chrono>
 #include <condition_variable>
+static std::mutex seamMutex;
+static std::condition_variable seamCv;
+static bool seamEnabled=false, seamWaiting=false, seamRelease=false;
+static uint32_t seamEpoch=0;
+static void stopInterleave(uint32_t epoch) {
+ std::unique_lock<std::mutex> lock(seamMutex);
+ if (!seamEnabled || epoch!=seamEpoch) return;
+ seamWaiting=true; seamCv.notify_all();
+ seamCv.wait(lock,[]{return seamRelease;});
+}
 struct Cmd { uint32_t id; };
 int main() {
  flytec_rtos::CommandHandoff<Cmd,8> q;
@@ -185,6 +199,29 @@ int main() {
   assert(concurrent.receive(pending,pendingStop,pendingToken) &&
          pendingStop && pending.id==uint32_t(92000+race));
   (void)rearmed;
+ }
+ // R30H-93: pause older producer after latch, before writer arbitration.
+ {
+  flytec_rtos::CommandHandoff<Cmd,4> dual;
+  assert(dual.begin() && dual.clearStopLatchAfterAuthorization());
+  seamEpoch=dual.currentEpoch()+1; seamEnabled=true;
+  bool oldAccepted=true;
+  std::thread older([&]{oldAccepted=dual.offerStop({101});});
+  {
+   std::unique_lock<std::mutex> lock(seamMutex);
+   assert(seamCv.wait_for(lock,std::chrono::seconds(5),[]{return seamWaiting;}));
+  }
+  assert(dual.offerStop({202}));
+  {
+   std::lock_guard<std::mutex> lock(seamMutex);
+   seamRelease=true;
+  }
+  seamCv.notify_all(); older.join(); seamEnabled=false;
+  assert(!oldAccepted && dual.stopLatched());
+  assert(!dual.clearStopLatchAfterAuthorization());
+  assert(dual.receive(c,stop,token) && stop && c.id==202);
+  assert(token==dual.currentEpoch());
+  assert(dual.clearStopLatchAfterAuthorization());
  }
  std::cout<<"R30H84 actual header / mock FreeRTOS stress PASS (1000 STOP rounds, 400 delivered IDs, 2 concurrent STOP writers)\n";
 }
