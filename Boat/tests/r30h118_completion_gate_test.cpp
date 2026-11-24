@@ -3,6 +3,7 @@
 #include "r30h118_radio_handoff.h"
 #include "r30h118_worker_guard.h"
 #include "r30h118_transport.h"
+#include "r30h118_worker.h"
 using namespace flytec_r30h118;
 int main(){
  CompletionGate g; Ticket a,b,c;
@@ -60,4 +61,21 @@ int main(){
  assert(!transport.poll(admitted));
  assert(transport.invalidate(0)==false);
  assert(!transport.submit(3,3,true));
+ Transport<uint32_t> bus;
+ Worker<uint32_t> worker(bus);
+ unsigned calls=0;
+ auto admit=[&](uint32_t){++calls;return true;};
+ assert(bus.invalidate(1));
+ assert(bus.submit(1,0,false));
+ worker.step(1,100,admit);
+ assert(bus.poll(admitted)&&admitted&&calls==1);
+ assert(bus.submit(2,0,false));
+ worker.step(100,100,admit);
+ assert(bus.poll(admitted)&&!admitted&&calls==1);
+ assert(bus.submit(3,100,false));
+ worker.requestStop();
+ worker.step(101,100,admit);
+ assert(worker.exited()&&calls==1);
+ worker.step(102,100,admit);
+ assert(calls==1);
 }
