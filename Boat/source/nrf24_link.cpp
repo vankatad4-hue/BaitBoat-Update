@@ -85,3 +85,12 @@ bool NRF24Link::receiveFrame(RadioFrame &frame) {
  if(!ready_ || rxQueueCount_==0) return false;
  frame=rxQueue_[rxHead_];rxHead_=(uint8_t)((rxHead_+1U)%4U);--rxQueueCount_;return true;
 }
+
+void NRF24Link::shutdownInitialized(){
+ disableAdmission();
+ if(txPending_){++txFailCount_;txPending_=false;lastTxSuccess_=false;}
+ radio_.stopListening();
+ radio_.flush_tx();
+ radio_.flush_rx();
+ radio_.powerDown();
+}
