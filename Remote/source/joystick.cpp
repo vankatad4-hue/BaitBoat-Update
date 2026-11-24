@@ -81,9 +81,9 @@ static bool fullCalibrationValid(const JoystickCalibration &v)
 }
 static bool saveCalibrationNvs()
 {
-    if (!joystickPrefs.begin("flytec-joy",false)) return false;
+    if (!joystickPrefs.begin("flytec-joy",false)) { calibrationValid=false; snapshot.calibrationValid=false; return false; }
     bool ok = joystickPrefs.putBool("valid",false) != 0;
-    if (!ok) { joystickPrefs.end(); return false; }
+    if (!ok) { joystickPrefs.end(); calibrationValid=false; snapshot.calibrationValid=false; return false; }
     ok = (joystickPrefs.putInt("lxmin",calibration.leftX.minimum) != 0) && ok; ok = (joystickPrefs.putInt("lxctr",calibration.leftX.centre) != 0) && ok; ok = (joystickPrefs.putInt("lxmax",calibration.leftX.maximum) != 0) && ok;
     ok = (joystickPrefs.putInt("lymin",calibration.leftY.minimum) != 0) && ok; ok = (joystickPrefs.putInt("lyctr",calibration.leftY.centre) != 0) && ok; ok = (joystickPrefs.putInt("lymax",calibration.leftY.maximum) != 0) && ok;
     ok = (joystickPrefs.putInt("rxmin",calibration.rightX.minimum) != 0) && ok; ok = (joystickPrefs.putInt("rxctr",calibration.rightX.centre) != 0) && ok; ok = (joystickPrefs.putInt("rxmax",calibration.rightX.maximum) != 0) && ok;
