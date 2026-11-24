@@ -79,7 +79,7 @@ void E22UartLink::parserByte(uint8_t v){
     }
 }
 bool E22UartLink::sendFrame(const RadioFrame &frame,uint32_t now){
-    update();
+    // Owner schedules update explicitly; admission never consumes RX bytes.
     return trySendFrame(frame,now)==Admission::Accepted;
 }
 E22UartLink::Admission E22UartLink::trySendFrame(const RadioFrame &frame,uint32_t now){
