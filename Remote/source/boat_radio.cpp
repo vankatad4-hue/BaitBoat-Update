@@ -447,6 +447,18 @@ void boatRadio_update() {
         RadioFrame frame;
         for(unsigned i=0;g_nrfReady&&i<RX_FRAME_BUDGET&&g_nrf.receiveFrame(frame);++i) validateInboundFrame(LINK_NRF_PRIMARY,frame);
     }
+    if(g_loraConfigured) {
+        g_lora.update();
+        if(g_lora.transportFault()){
+            // Revoke stale backup health; do not clear the STOP confirmation gate.
+            g_loraConfigured=false;g_stopPending=false;
+            g_linkManager.setTransportReady(LINK_LORA_BACKUP,false);
+            g_linkManager.reportFailure(LINK_LORA_BACKUP);
+        }else{
+            RadioFrame frame;
+            for(unsigned i=0;i<RX_FRAME_BUDGET&&g_lora.receiveFrame(frame);++i) validateInboundFrame(LINK_LORA_BACKUP,frame);
+        }
+    }
     if(g_primaryStopRetry.pending()){
         if(!sessionReady()||!g_nrfReady||g_primaryStopRetry.expired(millis())){
             g_primaryStopRetry.reset(); // never replay after timeout/epoch loss
@@ -505,18 +517,6 @@ void boatRadio_update() {
                 hb.flags=RADIO_FLAG_BACKUP_LINK;
                 if(radio_frameSeal(hb,g_authKey)&&g_lora.sendFrame(hb,now)){g_lastBackupTxMs=now;g_backupTxSent=true;}
             }
-        }
-    }
-    if(g_loraConfigured) {
-        g_lora.update();
-        if(g_lora.transportFault()){
-            // Revoke stale backup health; do not clear the STOP confirmation gate.
-            g_loraConfigured=false;g_stopPending=false;
-            g_linkManager.setTransportReady(LINK_LORA_BACKUP,false);
-            g_linkManager.reportFailure(LINK_LORA_BACKUP);
-        }else{
-            RadioFrame frame;
-            for(unsigned i=0;i<RX_FRAME_BUDGET&&g_lora.receiveFrame(frame);++i) validateInboundFrame(LINK_LORA_BACKUP,frame);
         }
     }
     g_ackTracker.update(now);
