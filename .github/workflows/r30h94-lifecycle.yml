@@ -10,6 +10,8 @@ on:
       - 'Boat/tests/r30h99_frame_handoff.cpp'
       - '**/source/bounded_tx_service.h'
       - '**/source/bounded_rx_service.h'
+      - '**/source/tx_generation_gate.h'
+      - 'Boat/tests/r30h103_generation.cpp'
       - 'Boat/tests/r30h101_tx_service.cpp'
       - 'Boat/tests/r30h98_i2c_guard.cpp'
       - 'Remote/source/i2c_bus_guard.h'
@@ -42,3 +44,6 @@ jobs:
           cmp Boat/source/bounded_tx_service.h Remote/source/bounded_tx_service.h
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IBoat/tests/r30h94_mock -IBoat/tests/r30h73_freertos_mock -IBoat/source Boat/tests/r30h101_tx_service.cpp -o /tmp/tx_service
           timeout 10s /tmp/tx_service
+          cmp Boat/source/tx_generation_gate.h Remote/source/tx_generation_gate.h
+          g++ -std=c++17 -Wall -Wextra -Werror -IBoat/source Boat/tests/r30h103_generation.cpp -o /tmp/generation
+          /tmp/generation
