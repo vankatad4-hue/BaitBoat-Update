@@ -20,7 +20,10 @@ public:
     uint32_t txCount()const{return txCount_;}
     uint32_t rxCount()const{return rxCount_;}
     uint32_t txFailCount()const{return txFailCount_;}
+    // Owner-task diagnostic only: full queue observations, not lost frames.
+    uint32_t rxFullPollCount() const { return rxFullPollCount_; }
 private:
+    uint32_t rxFullPollCount_=0;
     bool regWrite(uint8_t reg,uint8_t value);
     bool regRead(uint8_t reg,uint8_t&value);
     bool regWriteBytes(uint8_t reg,const uint8_t*data,size_t count);
