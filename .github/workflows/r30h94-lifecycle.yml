@@ -9,6 +9,7 @@ on:
       - '**/source/radio_frame_handoff.h'
       - 'Boat/tests/r30h99_frame_handoff.cpp'
       - '**/source/bounded_tx_service.h'
+      - '**/source/bounded_rx_service.h'
       - 'Boat/tests/r30h101_tx_service.cpp'
       - 'Boat/tests/r30h98_i2c_guard.cpp'
       - 'Remote/source/i2c_bus_guard.h'
@@ -37,6 +38,7 @@ jobs:
           cmp Boat/source/radio_frame_handoff.h Remote/source/radio_frame_handoff.h
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IBoat/tests/r30h94_mock -IBoat/tests/r30h73_freertos_mock -IBoat/source Boat/tests/r30h99_frame_handoff.cpp -o /tmp/frame_handoff
           timeout 10s /tmp/frame_handoff
+          cmp Boat/source/bounded_rx_service.h Remote/source/bounded_rx_service.h
           cmp Boat/source/bounded_tx_service.h Remote/source/bounded_tx_service.h
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IBoat/tests/r30h94_mock -IBoat/tests/r30h73_freertos_mock -IBoat/source Boat/tests/r30h101_tx_service.cpp -o /tmp/tx_service
           timeout 10s /tmp/tx_service
