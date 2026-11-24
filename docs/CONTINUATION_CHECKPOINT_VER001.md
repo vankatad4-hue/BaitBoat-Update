@@ -1,3 +1,13 @@
+## Active continuation — R30H-123V (2026-11-24)
+
+Branch `platformio-unified-r30h20`; Boat VER014 / Remote VER028 unchanged. Physical worker activation remains hard locked (`BOAT_R30H121_PHYSICAL_OWNER=0`). No flashing or hardware acceptance.
+
+- R30H-123T: GPS coordinate pairing by snapshot timestamp and sample ID; host adapter overload/strict compiler fixes. Host PASS at 4c8c84d (#45471876564).
+- R30H-123U: primary-only optional diagnostics and UTC through experimental owner scheduler; original source deadline and 15–40 ms heartbeat gap bound; local terminal completion accounting. Host PASS at 5838afd (#45472138632); inventory #45472138297 and packaging #45472138283 PASS. Primary/experimental target results were pending when checked. Dedicated UTC scheduling tests remain to be added.
+- R30H-123V: deadline-aware application TX expiry (b9ffdaf), owner epoch-preserving generation recovery (765e32b), stale-completion/STOP-latch regression (ed53ff0). Latest regression and target CI not yet verified.
+- Audit: experimental serviceAsyncOwner/drainAsyncRx are not called by production update(); begin() still owns legacy PHYs. Direct legacy RX/poll, STOP/STATUS outbox sends, mission feedback/ACK and ordinary sendFrame() remain. PhysicalTask still lacks proven quiescence and an instantiated exclusive Boat lifecycle. No production dual-core claim. Do not simply flip the static ownership lock.
+- Next R30H-123W: verify latest CI; separate common application tick from legacy PHY service; introduce compile-only runtime coordinator with explicit ownership and shutdown gates, route all remaining TX callers without mistaking queue acceptance for delivery; test optional traffic deadlines, link-trust revocation and scheduler starvation. Remote physical worker migration remains separate. Hardware acceptance NOT_RUN/BLOCKED.
+
 ## Active continuation — R30H-123S (2026-11-24)
 
 Branch: `platformio-unified-r30h20`. Official Boat VER014 / Remote VER028 unchanged. VS Code + PlatformIO primary. No flashing or physical ownership activation; BOAT_R30H121_PHYSICAL_OWNER remains 0. Software STOP and conditional dual-radio-loss RTH remain requirements; no independent hardware safety electronics added.
