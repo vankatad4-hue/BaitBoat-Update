@@ -36,7 +36,7 @@ public:
  }
  // Returns only after a heartbeat has already been serviced this cycle.
  // On no slot: NEVER touch nRF TX. No deferred FIFO or forced retry.
- bool take(const Opportunity &state,uint32_t nowMs,uint8_t out[8]) {
+ bool take(const Opportunity &state,uint32_t nowMs,uint8_t out[8],uint32_t *remainingAge=nullptr) {
   if(!pending_||!out)return false;
   if((uint32_t)(nowMs-offeredAtMs_)>MAX_PENDING_AGE_MS) {
    discard();return false;
@@ -53,6 +53,7 @@ public:
   if(haveSent_ &&
      (uint32_t)(nowMs-lastSentAtMs_)<MIN_DIAGNOSTIC_PERIOD_MS)return false;
   for(unsigned i=0;i<8;i++)out[i]=payload_[i];
+  if(remainingAge)*remainingAge=MAX_PENDING_AGE_MS+1U-(uint32_t)(nowMs-offeredAtMs_);
   pending_=false;
   return true;
  }
