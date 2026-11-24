@@ -543,4 +543,24 @@ int main(){
  assert(endpointHs.takeTerminal(hsDone,hsState)&&hsState==HsState::Uncertain);
  assert(endpointHsLane.activeGeneration()==0);
  assert(endpointHs.begin());
+ // STOP preemption preserves prior ticket without blocking safety admission.
+ Transport<uint32_t> supersedeBus;
+ PhyEvents<uint32_t> supersedeEvents;
+ AppRadio<uint32_t> supersede(supersedeBus,supersedeEvents);
+ assert(supersede.reset(1)&&supersede.submit(1,10,false));
+ const Ticket original=supersede.currentTicket();
+ assert(supersede.preemptStop(2,11,1));
+ const Ticket firstStop=supersede.currentTicket();
+ assert(!sameTicket(original,firstStop));
+ Transport<uint32_t>::Request supersedeReq{};
+ assert(supersedeBus.take(supersedeReq)&&supersedeReq.stop);
+ assert(supersede.preemptStop(3,12,1));
+ assert(supersede.supersededOverflow()==1);
+ Ticket saved{};TxState savedState=TxState::Idle;
+ assert(supersede.takeSuperseded(saved,savedState)&&sameTicket(saved,original)&&savedState==TxState::Uncertain);
+ assert(!supersede.takeSuperseded(saved,savedState));
+ const Ticket secondStop=supersede.currentTicket();
+ assert(supersede.reset(2));
+ assert(supersede.takeSuperseded(saved,savedState)&&sameTicket(saved,secondStop)&&savedState==TxState::Uncertain);
+ assert(!supersede.takeSuperseded(saved,savedState));
 }
