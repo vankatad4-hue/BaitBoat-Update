@@ -27,6 +27,8 @@ public:
   active_=link_.configureEU868TestProfile();
   return active_;
  }
+ // Owner-only shutdown. UART/module RF inactivity is not certified.
+ void shutdownLocal(){link_.shutdownLocal();active_=false;}
  void update(){if(active_)link_.update();}
  bool sendFrame(const RadioFrame &f,uint32_t ms){return active_&&link_.sendFrame(f,ms);}
  bool receiveFrame(RadioFrame &f){return active_&&link_.receiveFrame(f);}
