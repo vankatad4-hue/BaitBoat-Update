@@ -9,6 +9,7 @@ template<class Frame> class StopRetry {
 public:
  bool arm(Transport<Frame>& bus,uint8_t epoch,const Frame &frame,uint32_t now){
   pending_=false;
+  bus.latchStop();
   if(!bus.invalidate(epoch))return false;
   frame_=frame;started_=now;pending_=true;return true;
  }
