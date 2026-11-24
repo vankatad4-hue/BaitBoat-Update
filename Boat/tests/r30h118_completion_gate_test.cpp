@@ -1,6 +1,7 @@
 #include "../source/boat_r30h18_stop_ack_outbox.h"
 #include "../source/r30h121_app_radio.h"
 #include "../source/r30h123_stop_ack_service.h"
+#include "../source/r30h123_status_service.h"
 #include "r30h118_completion_gate.h"
 #include <cassert>
 #include "r30h118_radio_handoff.h"
@@ -798,4 +799,51 @@ int main(){
  assert(!ackPBox.pending());
  ackPSvc.reset();ackPOwner.close();
  assert(!ackPSvc.pending()&&!ackPBox.pending());
+ // Independent STATUS feedback, ACK precedence, replacement and expiry.
+ Transport<HandshakeFrame> statusPBus,statusBBus;
+ PhyEvents<HandshakeFrame> statusPEvents,statusBEvents;
+ AppRadio<HandshakeFrame> statusPApp(statusPBus,statusPEvents),statusBApp(statusBBus,statusBEvents);
+ HandshakeLane<HandshakeFrame> statusPHs,statusBHs;
+ SharedPriority statusPMask,statusBMask;
+ flytec_r30h123::OwnerLink<HandshakeFrame> statusPOwner(statusPApp,statusPHs,statusPEvents,statusPMask),statusBOwner(statusBApp,statusBHs,statusBEvents,statusBMask);
+ boat_r30h19::StatusOutbox statusPBox,statusBBox;
+ flytec_r30h123::StatusService<HandshakeFrame> statusPSvc(statusPOwner,statusPBox),statusBSvc(statusBOwner,statusBBox);
+ auto buildStatus=[](const RadioDecodedPayload& feedback,HandshakeFrame& f){
+  f={1,1,2,0,7,1,static_cast<uint16_t>(feedback.stopState)};return true;
+ };
+ RadioDecodedPayload stoppedFeedback{};
+ stoppedFeedback.kind=RADIO_PAYLOAD_STATUS;stoppedFeedback.stopState=1;
+ assert(statusPOwner.setSession(7)&&statusBOwner.setSession(7));
+ assert(statusPBox.offer(stoppedFeedback,1000)&&statusBBox.offer(stoppedFeedback,1000));
+ assert(!statusPSvc.step(1001,true,true,true,buildStatus,acceptAuth));
+ assert(statusBSvc.step(1001,true,true,false,buildStatus,acceptAuth));
+ assert(statusBBus.takeStop(ownerReq)&&ownerReq.maxAge==300);
+ assert(statusBBus.complete(ownerReq,true));
+ assert(statusBEvents.publishOutcome({ownerReq.ticket,1002,PhyOutcome::LocalComplete,true}));
+ statusBOwner.poll(1002,100,100);
+ assert(statusBOwner.takeApplication(auditDone,auditState)&&statusBSvc.complete(auditDone,auditState));
+ assert(!statusBBox.pending()&&statusPBox.pending());
+ assert(statusPSvc.step(1003,true,true,false,buildStatus,acceptAuth));
+ assert(statusPBus.takeStop(ownerReq));
+ const auto obsoleteStatusTicket=ownerReq.ticket;
+ stoppedFeedback.stopState=2;
+ assert(statusPBox.offer(stoppedFeedback,1004));
+ statusPSvc.reconcile(1004,true,true,false);
+ assert(!statusPBus.allows(ownerReq,1004,100));
+ assert(statusPOwner.takeApplication(auditDone,auditState)&&auditState==TxState::Uncertain);
+ assert(!statusPSvc.complete(obsoleteStatusTicket,TxState::LocalComplete));
+ assert(statusPBox.pending()&&statusPBox.status().stopState==2);
+ assert(statusPSvc.step(1005,true,true,false,buildStatus,acceptAuth));
+ assert(statusPBus.takeOrdinary(ownerReq)&&ownerReq.maxAge==300);
+ statusPSvc.reconcile(1305,true,true,false);
+ assert(!statusPBox.pending()&&!statusPSvc.pending());
+ assert(!statusPBus.allows(ownerReq,1305,100));
+ assert(statusPOwner.takeApplication(auditDone,auditState));
+ stoppedFeedback.stopState=1;
+ assert(statusPBox.offer(stoppedFeedback,1400));
+ assert(statusPSvc.step(1401,true,true,false,buildStatus,acceptAuth));
+ assert(statusPBus.takeStop(ownerReq));
+ statusPSvc.reconcile(1402,true,true,true);
+ assert(!statusPBus.allows(ownerReq,1402,100));
+ assert(statusPBox.pending()&&!statusPSvc.pending());
 }
