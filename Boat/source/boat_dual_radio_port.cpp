@@ -179,9 +179,9 @@ void BoatDualRadioPort::update() {
  if(nrfReady_){
   const bool stopAckWasInFlight=stopAck_.inFlight();
   nrf_.update();
-  if(stopAckWasInFlight&&!nrf_.txPending())
-   stopAck_.completed(nrf_.ready()&&nrf_.lastTxSuccess());
-  if(!nrf_.ready()){
+  if(stopAckWasInFlight&&!primaryDriverPending())
+   stopAck_.completed(primaryDriverReady()&&primaryDriverSuccess());
+  if(!primaryDriverReady()){
    stopAck_.reset(); // A failed PHY cannot retain a response from a dead session.
    statusOutbox_.reset();
    // R30H-13: revoke primary immediately on its transport watchdog fault.
@@ -192,12 +192,12 @@ void BoatDualRadioPort::update() {
    commandQueue_.discardLink((uint8_t)LINK_NRF_PRIMARY,true);
   } else {
    RadioFrame f;
-   for(unsigned i=0;i<RX_FRAME_BUDGET&&nrf_.receiveFrame(f);++i)receive(LINK_NRF_PRIMARY,f);
+   for(unsigned i=0;i<RX_FRAME_BUDGET&&receivePrimaryLegacy(f);++i)receive(LINK_NRF_PRIMARY,f);
    // R30H-18: after RX accepts STOP, its correlated ACK claims the first
    // available primary TX slot. Never let heartbeat/status/diagnostics
    // get ahead of an outstanding STOP response.
    const uint32_t ackNow=millis();
-   if(stopAck_.due(ackNow,sessionReady(),nrfReady_,nrf_.txPending())){
+   if(stopAck_.due(ackNow,sessionReady(),nrfReady_,primaryDriverPending())){
     const auto pending=stopAck_.ticket();
     if(pending.epoch==sessionEpoch_){
      RadioFrame reply{};
@@ -215,7 +215,7 @@ void BoatDualRadioPort::update() {
    // (real local feedback) and expires quickly if the slot stays busy.
    const uint32_t statusNow=millis();
    if(statusOutbox_.due(statusNow,sessionReady(),nrfReady_,
-                        nrf_.txPending(),stopAck_.pending())){
+                        primaryDriverPending(),stopAck_.pending())){
     RadioFrame report{};
     radio_frameInit(report,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,
                     ++txSequence_,0,statusNow,sessionEpoch_);
@@ -227,18 +227,18 @@ void BoatDualRadioPort::update() {
  }
  if(sx1262Ready_){
   e22_.update();
-  if(e22_.transportFault()){
+  if(backupDriverFault()){
    // R30H-116 closeout: local UART fault must revoke stale backup health.
    sx1262Ready_=false;lastBackupRxValid_=false;backupStopAck_.reset();backupStatusOutbox_.reset();
    pendingBackupMissionFeedbackValid_=false;
    commandQueue_.discardLink((uint8_t)LINK_LORA_BACKUP,true);
   }else{
-   RadioFrame f;for(unsigned i=0;i<RX_FRAME_BUDGET&&e22_.receiveFrame(f);++i)receive(LINK_LORA_BACKUP,f);
+   RadioFrame f;for(unsigned i=0;i<RX_FRAME_BUDGET&&receiveBackupLegacy(f);++i)receive(LINK_LORA_BACKUP,f);
   }
  }
  // Backup STOP ACK claims the first available UART admission slot.
  const uint32_t backupAckNow=millis();
- if(backupStopAck_.due(backupAckNow,sessionReady(),sx1262Ready_,!e22_.ready())){
+ if(backupStopAck_.due(backupAckNow,sessionReady(),sx1262Ready_,!backupDriverReady())){
   const auto pending=backupStopAck_.ticket();
   if(pending.epoch!=sessionEpoch_)backupStopAck_.reset();
   else{
@@ -250,7 +250,7 @@ void BoatDualRadioPort::update() {
   }
  }
  const uint32_t backupStatusNow=millis();
- if(backupStatusOutbox_.due(backupStatusNow,sessionReady(),sx1262Ready_,!e22_.ready(),backupStopAck_.pending())&&
+ if(backupStatusOutbox_.due(backupStatusNow,sessionReady(),sx1262Ready_,!backupDriverReady(),backupStopAck_.pending())&&
     (uint32_t)(backupStatusNow-lastBackupHeartbeatTxMs_)>=3000U){
   RadioFrame report{};
   radio_frameInit(report,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,++txSequence_,0,backupStatusNow,sessionEpoch_);
@@ -334,7 +334,7 @@ void BoatDualRadioPort::update() {
  boat_r30g::Opportunity opportunity{};
  opportunity.authenticatedSession=sessionReady();
  opportunity.primaryFresh=primaryFresh(millis());
- opportunity.txPending=nrf_.txPending();
+ opportunity.txPending=primaryDriverPending();
  opportunity.commandQueued=commandQueue_.size()!=0||stopAck_.pending()||statusOutbox_.pending();
  opportunity.activeMission=controller_.status().transaction!=0;
  opportunity.failsafeOrLinkLoss=linkLossHold_||detachedReturn_||failsafeRthActive_;
@@ -366,7 +366,7 @@ void BoatDualRadioPort::update() {
     opportunity.primaryFresh&&opportunity.haveHeartbeat&&
     !opportunity.commandQueued&&!opportunity.activeMission&&
     !opportunity.failsafeOrLinkLoss&&!opportunity.recentCommand&&
-    !nrf_.txPending()&&gap>=boat_r30g::HEARTBEAT_GAP_BEGIN_MS&&
+    !primaryDriverPending()&&gap>=boat_r30g::HEARTBEAT_GAP_BEGIN_MS&&
     gap<=boat_r30g::HEARTBEAT_GAP_END_MS&&
     (!utcEverSent_||(uint32_t)(utcNow-lastUtcTxMs_)>=5000U)){
    uint64_t ms=0;
@@ -640,7 +640,7 @@ bool BoatDualRadioPort::sendFrame(ManagedLink link,const RadioFrame &f) {
 }
 bool BoatDualRadioPort::primaryOrdinaryTxReady() const {
  return boat_r30h21::ordinarySlotFree({
-     sessionReady(),nrfReady_,nrf_.txPending(),
+     sessionReady(),nrfReady_,primaryDriverPending(),
      stopAck_.pending(),statusOutbox_.pending()
  });
 }
@@ -666,3 +666,12 @@ BoatFailsafeDecision BoatDualRadioPort::evaluateFailsafe(uint32_t now,bool missi
 // Keep synchronous admission semantics until asynchronous consumers are migrated.
 bool BoatDualRadioPort::admitPrimaryLegacy(const RadioFrame &frame){return nrf_.sendFrame(frame);}
 bool BoatDualRadioPort::admitBackupLegacy(const RadioFrame &frame,uint32_t now){return e22_.sendFrame(frame,now);}
+
+// Legacy owner-only RX and health boundary.
+bool BoatDualRadioPort::primaryDriverReady(){return nrf_.ready();}
+bool BoatDualRadioPort::primaryDriverPending(){return nrf_.txPending();}
+bool BoatDualRadioPort::primaryDriverSuccess(){return nrf_.lastTxSuccess();}
+bool BoatDualRadioPort::backupDriverReady(){return e22_.ready();}
+bool BoatDualRadioPort::backupDriverFault(){return e22_.transportFault();}
+bool BoatDualRadioPort::receivePrimaryLegacy(RadioFrame &f){return nrf_.receiveFrame(f);}
+bool BoatDualRadioPort::receiveBackupLegacy(RadioFrame &f){return e22_.receiveFrame(f);}
