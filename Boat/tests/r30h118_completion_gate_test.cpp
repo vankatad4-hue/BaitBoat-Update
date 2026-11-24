@@ -5,6 +5,7 @@
 #include "r30h118_transport.h"
 #include "r30h118_worker.h"
 #include "r30h118_phy_events.h"
+#include "r30h118_phy_pump.h"
 using namespace flytec_r30h118;
 int main(){
  CompletionGate g; Ticket a,b,c;
@@ -94,4 +95,23 @@ int main(){
  Ticket eventTicket{7,8,1};
  assert(primaryEvents.publishOutcome({eventTicket,20,PhyOutcome::Uncertain}));
  assert(primaryEvents.takeOutcome(outcome)&&sameTicket(outcome.ticket,eventTicket)&&outcome.result==PhyOutcome::Uncertain);
+ PhyEvents<uint32_t> pumpEvents;
+ PhyPump<uint32_t> pump(pumpEvents);
+ uint32_t nextRx=0;
+ auto receive=[&](uint32_t &v){if(nextRx==5)return false;v=nextRx++;return true;};
+ pump.pollRx(10,receive);assert(nextRx==4);
+ pump.pollRx(11,receive);assert(nextRx==5);
+ assert(pumpEvents.takeRx(rx)&&rx.frame==0);
+ pump.pollRx(12,receive);
+ for(uint32_t i=1;i<5;++i){assert(pumpEvents.takeRx(rx)&&rx.frame==i);if(i==4)assert(rx.capturedAt==11);}
+ for(unsigned i=0;i<4;++i)assert(pumpEvents.publishOutcome({eventTicket,1,PhyOutcome::Failed}));
+ assert(pump.track(eventTicket));assert(!pump.canAdmit());
+ assert(pump.terminal(PhyOutcome::Uncertain,20));
+ pump.flushOutcome();assert(!pump.canAdmit());
+ assert(pumpEvents.takeOutcome(outcome));pump.flushOutcome();assert(pump.canAdmit());
+ for(unsigned i=0;i<4;++i)assert(pumpEvents.takeOutcome(outcome));
+ assert(outcome.result==PhyOutcome::Uncertain&&sameTicket(outcome.ticket,eventTicket));
+ PhyEvents<uint32_t>::Health fresh{0xfffffffeU,true,true,false,false};
+ assert(healthyFresh(fresh,1,10));assert(!healthyFresh(fresh,8,10));
+ fresh.fault=true;assert(!healthyFresh(fresh,1,10));
 }
