@@ -7,7 +7,7 @@ static const uint8_t E22_READ_CMD[3]={0xC1,0x00,0x09};
 
 E22UartLink::E22UartLink(Stream &uart,E22SetModeFn mode,E22AuxReadyFn aux,E22ResetFn reset,void *ctx)
  : uart_(uart),modeFn_(mode),auxFn_(aux),resetFn_(reset),context_(ctx),configured_(false),
-   auxReadyNow_(false),txPending_(false),txStartedMs_(0),rxIndex_(0),rxHead_(0),rxTail_(0),rxQueueCount_(0),
+   auxReadyNow_(false),rxIndex_(0),rxHead_(0),rxTail_(0),rxQueueCount_(0),
    txCount_(0),rxCount_(0),rejectedDutyCount_(0) {
     memset(rxBuffer_,0,sizeof(rxBuffer_)); memset(rxQueue_,0,sizeof(rxQueue_)); clearBuckets();
 }
@@ -38,6 +38,7 @@ bool E22UartLink::configCommand(const uint8_t *cmd,size_t length,const uint8_t *
 }
 bool E22UartLink::configureEU868TestProfile(){
     configured_=false;
+    txState_.reset();rxIndex_=rxHead_=rxTail_=rxQueueCount_=0;
     if(!modeFn_ || !auxFn_) return false;
     if(resetFn_){resetFn_(false,context_);delay(5);resetFn_(true,context_);delay(20);}
     modeFn_(false,true,context_); // M1=1, M0=0 configuration mode
@@ -55,9 +56,14 @@ bool E22UartLink::configureEU868TestProfile(){
 }
 void E22UartLink::update(){
     auxReadyNow_=auxFn_?auxFn_(context_):false;
-    if(txPending_ && auxReadyNow_ && (uint32_t)(millis()-txStartedMs_)>=EST_AIRTIME_MS) txPending_=false;
+    txState_.poll(millis(),auxReadyNow_);
+    if(txState_.fault()){configured_=false;rxIndex_=rxHead_=rxTail_=rxQueueCount_=0;return;}
+    if(!configured_)return;
     uint8_t processed=0;
-    while(processed<32 && uart_.available()){parserByte((uint8_t)uart_.read());++processed;}
+    while(processed<32U && uart_.available()){
+        const int value=uart_.read();if(value<0)break;
+        parserByte((uint8_t)value);++processed;
+    }
 }
 void E22UartLink::parserByte(uint8_t v){
     if(rxIndex_==0){if(v==RADIO_FRAME_MAGIC0) rxBuffer_[rxIndex_++]=v;return;}
@@ -73,17 +79,25 @@ void E22UartLink::parserByte(uint8_t v){
 }
 bool E22UartLink::sendFrame(const RadioFrame &frame,uint32_t now){
     update();
-    if(!configured_ || !auxReadyNow_ || txPending_) return false;
-    if(!dutyAllows(now)){++rejectedDutyCount_;return false;}
-    if(frame.magic[0]!=RADIO_FRAME_MAGIC0 || frame.magic[1]!=RADIO_FRAME_MAGIC1) return false;
+    return trySendFrame(frame,now)==Admission::Accepted;
+}
+E22UartLink::Admission E22UartLink::trySendFrame(const RadioFrame &frame,uint32_t now){
+    if(txState_.fault())return Admission::Uncertain;
+    if(!configured_)return Admission::Unavailable;
+    if(!auxReadyNow_ || txState_.pending())return Admission::Busy;
+    if(!dutyAllows(now)){++rejectedDutyCount_;return Admission::DutyLimited;}
+    if(frame.magic[0]!=RADIO_FRAME_MAGIC0 || frame.magic[1]!=RADIO_FRAME_MAGIC1)return Admission::Invalid;
     const size_t n=uart_.write((const uint8_t*)&frame,sizeof(frame));
-    if(n!=sizeof(frame)) return false;
+    // Even a reported zero write can be ambiguous on a failed bridge transaction.
     recordAirtime(now,EST_AIRTIME_MS);
-    ++txCount_;txPending_=true;txStartedMs_=now;
-    return true;
+    if(n!=sizeof(frame)){
+        txState_.uncertain();configured_=false;rxIndex_=rxHead_=rxTail_=rxQueueCount_=0;
+        return Admission::Uncertain;
+    }
+    ++txCount_;txState_.accepted(millis());
+    return Admission::Accepted;
 }
 bool E22UartLink::receiveFrame(RadioFrame &frame){
-    update();
-    if(rxQueueCount_==0) return false;
+    if(!configured_||rxQueueCount_==0) return false;
     frame=rxQueue_[rxHead_];rxHead_=(uint8_t)((rxHead_+1U)%4U);--rxQueueCount_;return true;
 }
