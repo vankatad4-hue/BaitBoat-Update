@@ -104,6 +104,7 @@ private:
     BoatCommandQueue commandQueue_;
     boat_r30h18::StopAckOutbox backupStopAck_; // independent E22 response slot
     boat_r30h18::StopAckOutbox stopAck_; // STOP-only priority ACK, never a physical STOP witness
+    boat_r30h19::StatusOutbox backupStatusOutbox_;
     boat_r30h19::StatusOutbox statusOutbox_; // Latest real status, never synthesized
     MissionAssembler mission_;
     BoatMissionController controller_;
