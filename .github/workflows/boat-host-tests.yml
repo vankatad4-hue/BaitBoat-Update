@@ -64,6 +64,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: R30H-118P PHY adapter regression
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IBoat/source Boat/tests/r30h118_phy_adapters_test.cpp -o /tmp/r30h118_phy
+          /tmp/r30h118_phy
       - name: R30H-118F concurrent SPSC queue regression
         run: |
           g++ -std=c++17 -pthread -Wall -Wextra -Wpedantic -Werror -IBoat/source Boat/tests/r30h118_spsc_test.cpp -o /tmp/r30h118_spsc
