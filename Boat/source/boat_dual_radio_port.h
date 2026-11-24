@@ -115,6 +115,9 @@ private:
     flytec_r30h123::OwnerRx<RadioFrame> asyncPrimaryRx_{asyncRadio_.primary(),0x01,0x02,false};
     flytec_r30h123::OwnerRx<RadioFrame> asyncBackupRx_{asyncRadio_.backup(),0x01,0x02,true};
     unsigned drainAsyncRx(ManagedLink link,uint32_t now);
+    // Queue admission only; caller must correlate terminal completion separately.
+    bool queueAsyncHandshake(ManagedLink link,const RadioFrame &frame,uint32_t now);
+    bool queueAsyncApplication(ManagedLink link,const RadioFrame &frame,uint32_t now,uint32_t age);
 #endif
     bool legacyBeginAttempted_=false;
     NRF24Link nrf_;
