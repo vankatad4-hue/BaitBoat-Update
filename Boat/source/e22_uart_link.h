@@ -27,7 +27,10 @@ public:
     uint32_t txCount() const { return txCount_; }
     uint32_t rxCount() const { return rxCount_; }
     uint32_t rejectedDutyCount() const { return rejectedDutyCount_; }
+    // Owner-task diagnostic only: full queue observations, not lost frames.
+    uint32_t rxFullPollCount() const { return rxFullPollCount_; }
 private:
+    uint32_t rxFullPollCount_=0;
     static constexpr uint32_t EST_AIRTIME_MS=25; // UNVERIFIED estimate; RF TX locked until actual airtime is measured
     static constexpr uint32_t MAX_AIRTIME_PER_HOUR_MS=36000; // PROVISIONAL 1% policy; actual EU band conditions need signoff
     static constexpr uint8_t SUBPACKET_BYTES=32;
