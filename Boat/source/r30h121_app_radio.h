@@ -19,6 +19,7 @@ template<class Frame> class AppRadio {
  bool healthSeen_=false, admissionSeen_=false, admitted_=false, outcomeSeen_=false;
  PhyOutcome outcome_=PhyOutcome::Uncertain;
  TxState state_=TxState::Idle;
+ bool terminalTaken_=false;
 public:
  AppRadio(Bus &bus,Events &events):bus_(bus),events_(events){}
  bool reset(uint8_t epoch){
@@ -32,7 +33,7 @@ public:
   if(state_==TxState::Queued||state_==TxState::Admitted)return false;
   Ticket next{};
   if(!bus_.submit(frame,now,stop,&next))return false;
-  ticket_=next;submittedAt_=now;admissionSeen_=admitted_=outcomeSeen_=false;state_=TxState::Queued;return true;
+  ticket_=next;terminalTaken_=false;submittedAt_=now;admissionSeen_=admitted_=outcomeSeen_=false;state_=TxState::Queued;return true;
  }
  // Timeout revokes queued work; an already active PHY call cannot be revoked.
  bool expire(uint32_t now,uint32_t timeout){
@@ -77,6 +78,11 @@ public:
   for(unsigned i=0;i<4&&events_.takeRx(rx);++i)
    if(maxAge&&uint32_t(now-rx.capturedAt)<maxAge)return true;
   return false;
+ }
+ // Owner consumes a correlated terminal result once; never an authenticated ACK.
+ bool takeTerminal(Ticket &ticket,TxState &result){
+  if(terminalTaken_||!ticket_.serial||state_==TxState::Idle||state_==TxState::Queued||state_==TxState::Admitted)return false;
+  ticket=ticket_;result=state_;terminalTaken_=true;return true;
  }
  bool receive(typename Events::Rx &rx){return events_.takeRx(rx);}
  TxState state()const{return state_;}
