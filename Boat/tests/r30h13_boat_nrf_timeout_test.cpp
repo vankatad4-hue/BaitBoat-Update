@@ -149,5 +149,14 @@ int main(){
             assert(boat.receiveFrame(out)&&out.commandId==i);
         assert(!boat.receiveFrame(out));
     }
+    { // R30H-120F3 owner shutdown during pending TX.
+        fakeRadio={};NRF24Link boat(10,9,&spi);
+        assert(boat.begin(false));assert(boat.sendFrame(validFrame()));
+        boat.shutdownInitialized();
+        assert(!boat.ready()&&!boat.txPending()&&!boat.lastTxSuccess());
+        assert(fakeRadio.powerDowns==1&&fakeRadio.rxFlushes==1&&fakeRadio.flushes==1);
+        assert(!boat.sendFrame(validFrame()));boat.update();
+        assert(fakeRadio.statusCalls==0);
+    }
     return 0;
 }
