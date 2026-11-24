@@ -410,6 +410,49 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  receiveCaptured(link,f,millis());
 }
 #if BOAT_R30H121_ENDPOINT_COMPILE
+bool BoatDualRadioPort::queueAsyncHandshake(ManagedLink link,const RadioFrame &frame,uint32_t now){
+ if(!BOAT_R30H121_PHYSICAL_OWNER||legacyBeginAttempted_||!authenticated_)return false;
+ if(link!=LINK_NRF_PRIMARY&&link!=LINK_LORA_BACKUP)return false;
+ const bool backup=link==LINK_LORA_BACKUP;
+ auto &owner=backup?asyncBackupOwner_:asyncPrimaryOwner_;
+ auto shape=[&](const RadioFrame &f){return flytec_r30h120::boatReplyShape(f,BOAT_ID,REMOTE_ID,backup);};
+ if(!shape(frame)||!radio_frameVerify(frame,rootKey_))return false;
+ if(!owner.beginHandshake())return false;
+ return owner.submitHandshake(frame,now,shape,[&](const RadioFrame &f){return radio_frameVerify(f,rootKey_);});
+}
+bool BoatDualRadioPort::queueAsyncApplication(ManagedLink link,const RadioFrame &frame,uint32_t now,uint32_t age){
+ if(!BOAT_R30H121_PHYSICAL_OWNER||legacyBeginAttempted_||!authenticated_||!sessionReady()||!age)return false;
+ if(link!=LINK_NRF_PRIMARY&&link!=LINK_LORA_BACKUP)return false;
+ const bool backup=link==LINK_LORA_BACKUP;
+ if(frame.sourceId!=BOAT_ID||frame.destinationId!=REMOTE_ID||
+    frame.sessionEpoch!=sessionEpoch_||!frame.sequence||
+    frame.sequence>=RadioSessionCounter::REKEY_AT||!radio_frameVerify(frame,key_))return false;
+ // STOP ACK and STATUS have dedicated outboxes. Never bypass them.
+ if(backup?(backupStopAck_.pending()||backupStatusOutbox_.pending()):
+           (stopAck_.pending()||statusOutbox_.pending()))return false;
+ using flytec_r30h120::TxPriority;
+ TxPriority priority=TxPriority::None;
+ RadioDecodedPayload decoded{};
+ switch(frame.type){
+  case RADIO_MSG_HEARTBEAT:
+   if(!radio_decodeHeartbeatPayload(frame.payload,decoded))return false;
+   priority=TxPriority::Heartbeat;break;
+  case RADIO_MSG_ACK:
+   if(!radio_decodeAckPayload(frame.payload,decoded)||decoded.commandType==CMD_EMERGENCY_STOP||decoded.commandId!=frame.commandId)return false;
+   priority=TxPriority::Mission;break;
+  case RADIO_MSG_MISSION_ACK:
+  case RADIO_MSG_MISSION_FEEDBACK:priority=TxPriority::Mission;break;
+  case RADIO_MSG_TELEMETRY:
+   if(!radio_decodeTelemetryPayload(frame.payload,decoded)||decoded.kind==RADIO_PAYLOAD_STATUS)return false;
+   priority=decoded.kind==RADIO_PAYLOAD_SAFETY_DIAGNOSTIC?TxPriority::Diagnostic:TxPriority::Telemetry;break;
+  default:return false;
+ }
+ RadioFrame outgoing=frame;
+ outgoing.flags=backup?RADIO_FLAG_BACKUP_LINK:0;
+ if(!radio_frameSeal(outgoing,key_))return false;
+ auto &owner=backup?asyncBackupOwner_:asyncPrimaryOwner_;
+ return owner.submitApplication(outgoing,now,priority,age,[&](const RadioFrame &f){return radio_frameVerify(f,key_);});
+}
 unsigned BoatDualRadioPort::drainAsyncRx(ManagedLink link,uint32_t now){
  // Deliberately unreachable until the legacy transmit boundary is migrated.
  // Do not dispatch into legacy PHY calls while a physical worker owns them.
