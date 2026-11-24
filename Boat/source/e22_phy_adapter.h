@@ -7,7 +7,8 @@
 namespace flytec_rtos {
 template<class Driver> class E22PhyAdapter {
 public:
- explicit E22PhyAdapter(Driver& driver):driver_(driver){}
+ // Optional minimum spacing at the PHY boundary (Remote worker: 3000 ms).
+ explicit E22PhyAdapter(Driver& driver,uint32_t minimumGapMs=0):driver_(driver),minimumGapMs_(minimumGapMs){}
  E22PhyAdapter(const E22PhyAdapter&)=delete;
  E22PhyAdapter& operator=(const E22PhyAdapter&)=delete;
  bool tick(RadioFrameHandoff& h,TxGenerationGate& gate,uint32_t now){
@@ -17,7 +18,7 @@ public:
   if(outstanding_&&(!driver_.txPending()||driver_.transportFault())){
    const auto local=driver_.configured()&&!driver_.transportFault()&&
      driver_.txOutcome()==E22TxState::Outcome::LocalReady;
-   outstanding_=false;
+   outstanding_=false;lastPossibleTx_=now;hasPossibleTx_=true;
    if(!h.offerCompletion(link,TxCompletion{request_.ticket,request_.generation,link,false,
           local?TxEvidence::LocalReady:TxEvidence::None}))return false;
   }
@@ -34,7 +35,9 @@ private:
  static bool start(void* p,const TxRequest& r){
   auto& c=*static_cast<Context*>(p);auto& self=*c.self;
   using A=typename Driver::Admission;
+  if(self.hasPossibleTx_&&uint32_t(c.now-self.lastPossibleTx_)<self.minimumGapMs_)return false;
   const auto result=self.driver_.trySendFrame(r.frame,c.now);
+  if(result==A::Accepted||result==A::Uncertain){self.lastPossibleTx_=c.now;self.hasPossibleTx_=true;}
   if(result==A::Accepted){self.request_=r;self.outstanding_=true;return true;}
   if(result==A::Busy||result==A::DutyLimited)return false;
   // Terminal rejection consumes the request and emits a failure, never retries
@@ -46,6 +49,8 @@ private:
  BoundedTxService tx_;
  BoundedRxService rx_;
  TxRequest request_{};
- bool outstanding_=false;
+ const uint32_t minimumGapMs_;
+ uint32_t lastPossibleTx_=0;
+ bool outstanding_=false,hasPossibleTx_=false;
 };
 }

@@ -27,6 +27,8 @@ public:
  }
  bool tick(uint32_t now,bool primaryReady,bool backupReady,const uint8_t root[32]){
   if(!owner_.worker()||!active_||!root||session_.timeout(now))return false;
+  uint8_t nonzero=0;for(unsigned i=0;i<32;++i)nonzero|=root[i];
+  if(!nonzero)return false;
   drain(PhyLink::Primary,primaryTicket_,now);
   drain(PhyLink::Backup,backupTicket_,now);
   SessionHandshakePacket packet{};
@@ -52,7 +54,10 @@ public:
      f.sourceId!=2||f.destinationId!=1||f.sequence||f.commandId||f.sessionEpoch||
      (f.type!=RADIO_MSG_SESSION_CHALLENGE&&f.type!=RADIO_MSG_SESSION_CONFIRM)||
      !radio_frameVerify(f,root))return false;
-  if(!session_.remoteReceive((SessionHandshakeMessage)f.type,f.payload,root,hmac,now,true))return false;
+  if(!session_.remoteReceive((SessionHandshakeMessage)f.type,f.payload,root,hmac,now,true)){
+   if(!session_.established()){SessionHandshakePacket pending{};if(!session_.remotePacket(pending))reset(now,true);}
+   return false;
+  }
   if(backupTicket_)markBackup(now);
   primaryTicket_=backupTicket_=0;primarySent_=false;
   // New phase cancels old HELLO/PROOF, including already dequeued work.

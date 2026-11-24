@@ -44,6 +44,9 @@ bool boatRadio_stopConfirmationPending();
 bool boatRadio_sendMissionSticks(int16_t left,int16_t right,bool neutral);
 bool boatRadio_sendCommand(const BoatCommand &command);
 void boatRadio_update();
+// Experimental owner-task lifecycle callbacks. Never start hardware.
+void boatRadio_workerFault(bool primaryFault,bool backupFault);
+void boatRadio_retireWorker();
 // R30H-5: estimated UTC from authenticated Boat GPS, only for UI/RTC.
 // This is NOT PPS, verified E2E STOP timing, radio lease or navigation safety.
 bool boatRadio_utcNow(uint64_t &unixMs);

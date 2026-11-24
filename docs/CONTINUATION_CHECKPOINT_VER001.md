@@ -1,3 +1,13 @@
+## Active continuation — R30H-124I (2026-11-24)
+
+Branch `platformio-unified-r30h20`; Boat VER014 / Remote VER028 unchanged. Physical workers and uploads remain disabled.
+
+- R30H-124H exact-commit combined status contains no entries; latest CI and PlatformIO builds still UNVERIFIED.
+- Exclusive runtime composition now owns one-shot claim, handoff initialization, initializer, launch, fault retirement and idempotent application revocation. Integrated mock bench uses it. Actual Remote application has owner-only lane-fault and terminal retirement callbacks, wipes session/root key on retirement and rejects all legacy mission TX from Worker. Actual scheduler binding and full authenticated mock application target are not yet wired to boat_radio.cpp.
+- Optional E22 PHY minimum gap from terminal local completion, across generation changes, added to identical Boat/Remote adapters. Existing bench and legacy tests retain default zero to preserve timing tests; new test explicitly configures 3000 ms. Must configure it in any future Remote production worker adapter. Not RF airtime approval.
+- Extended handshake host test for timeout, replayed CONFIRM, rekey and new session key. Added lifecycle/PHY pacing test and CI command; unexecuted. Zero root rejected. 100 ms RX age provisional.
+- Next R30H-124J: obtain actual CI run IDs/results and correct build/test failures, connect exclusive runtime to a full authenticated mock application (including live scheduler lane fault callbacks), then implement ordinary/mission TX correlation behind independent authorization. Verify physical signoffs separately. No release bump.
+
 ## Active continuation — R30H-124H (2026-11-24)
 
 Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged; VS Code + PlatformIO primary. Production worker activation and upload remain locked.

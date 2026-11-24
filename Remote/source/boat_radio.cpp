@@ -112,8 +112,22 @@ static void resetSession(uint32_t now){
     g_linkManager.begin(now);g_linkManager.setTransportReady(LINK_NRF_PRIMARY,g_nrfReady);g_linkManager.setTransportReady(LINK_LORA_BACKUP,g_loraConfigured);
     g_lastHandshakeTx=now-500U;
 }
+// Callback seam for the future exclusive runtime: no direct RF calls.
+void boatRadio_workerFault(bool primaryFault,bool backupFault){
+    if(!g_radioOwner.worker())return;
+    if(primaryFault){g_nrfReady=false;g_linkManager.setTransportReady(LINK_NRF_PRIMARY,false);}
+    if(backupFault){g_loraConfigured=false;g_linkManager.setTransportReady(LINK_LORA_BACKUP,false);g_backupStopConfirmed=false;}
+    if(!g_nrfReady&&!g_loraConfigured)boatRadio_retireWorker();
+}
+void boatRadio_retireWorker(){
+    if(!g_radioOwner.worker())return;
+    g_nrfReady=false;g_loraConfigured=false;g_begun=false;
+    resetSession(millis());
+    radioSession_wipe(g_rootKey,32);g_rootReady=false;
+    g_radioOwner.retire();
+}
 static bool sendHandshake(const SessionHandshakePacket &packet,uint32_t now){
-    if(!g_rootReady)return false;
+    if(!g_radioOwner.legacy()||!g_rootReady)return false;
     RadioFrame f;radio_frameInit(f,(RadioMessageType)packet.type,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,0,0,now,0);
     memcpy(f.payload,packet.payload,8);
     if(!radio_frameSeal(f,g_rootKey))return false;
@@ -298,6 +312,7 @@ bool boatRadio_sendCommand(const BoatCommand &command) {
 }
 
 static bool missionPreparationSafe(){
+    if(!g_radioOwner.legacy())return false;
     const uint32_t now=millis();
     const bool batteryFresh=telemetry.batteryPercentValid&&
         (uint32_t)(now-telemetry.batteryPercentReceivedAtMs)<=1500U&&
@@ -311,7 +326,7 @@ static bool missionPreparationSafe(){
            !boatState.failsafeActive && sessionReady();
 }
 static bool sendMissionPreparation(const uint8_t payload[8]){
-    if(!g_nrfReady||!sessionReady())return false;
+    if(!g_radioOwner.legacy()||!g_nrfReady||!sessionReady())return false;
     RadioFrame frame;
     const uint16_t id=(uint16_t)payload[1]|((uint16_t)payload[2]<<8);
     radio_frameInit(frame,RADIO_MSG_MISSION_PREPARE,REMOTE_DEVICE_ID,BOAT_DEVICE_ID,++g_txSequence,id,millis(),g_sessionEpoch);
@@ -514,12 +529,9 @@ void boatRadio_update() {
             if(rx.link==flytec_rtos::PhyLink::Primary)validateInboundCaptured(LINK_NRF_PRIMARY,rx.frame,rx.receivedMs);
         for(unsigned i=0;i<RX_FRAME_BUDGET&&g_workerHandoff.backupRx.take(rx);++i)
             if(rx.link==flytec_rtos::PhyLink::Backup)validateInboundCaptured(LINK_LORA_BACKUP,rx.frame,rx.receivedMs);
-        if(g_workerTx.linkFault(flytec_rtos::PhyLink::Primary)){
-            g_nrfReady=false;g_linkManager.setTransportReady(LINK_NRF_PRIMARY,false);
-        }
-        if(g_workerTx.linkFault(flytec_rtos::PhyLink::Backup)){
-            g_loraConfigured=false;g_linkManager.setTransportReady(LINK_LORA_BACKUP,false);
-        }
+        boatRadio_workerFault(g_workerTx.linkFault(flytec_rtos::PhyLink::Primary),
+                             g_workerTx.linkFault(flytec_rtos::PhyLink::Backup));
+        if(!g_radioOwner.worker())return;
         if(!g_session.established()){
             const uint32_t at=millis();
             if(g_rootReady&&(g_nrfReady||g_loraConfigured)){
@@ -663,6 +675,7 @@ static void advanceRemoteApplication(uint32_t now){
         tv.tv_usec=(suseconds_t)((unixMs%1000ULL)*1000ULL);
         if(settimeofday(&tv,nullptr)==0)g_gpsUtcClock.markRtcSet(utcLocalNow);
     }
+    if(!g_radioOwner.legacy())return; // mission TX remains legacy-only
     const bool safe=missionPreparationSafe();
     if(g_missionUpload.state()==UPLOAD_ACTIVE&&(!safe||now-g_missionStarted>=9000U))boatRadio_cancelMissionPreparation();
     uint8_t missionPayload[8];

@@ -74,7 +74,26 @@ int main(){
  uint16_t seq=0;assert(control.tick(3,true,true,7,seq,30000,key));poll(P,p,3);
  assert(p.last.frame.type==RADIO_MSG_HEARTBEAT&&radio_frameVerify(p.last.frame,key)&&!radio_frameVerify(p.last.frame,root));
  poll(B,b,3);assert(b.starts==0); // pacing crosses session transition
- w.health=RadioWatchdog::State::Fault;assert(!runtime.tick(4));
+ // Rekey cancels pending authenticated TX and resets sequence authority.
+ seq=29999;assert(!control.tick(4,true,true,7,seq,30000,key));assert(gate.stopped());
+ assert(hs.reset(4,control.backupRecentlyUsed(4)));
+ assert(hs.start(789,4));assert(hs.tick(4,true,false,root));poll(P,p,4);
+ assert(p.last.frame.type==RADIO_MSG_SESSION_HELLO);
+ assert(!hs.receive(P,confirm,5,5,root,mac)); // old transcript CONFIRM
+ assert(!hs.tick(8004,true,false,root));assert(hs.reset(8004,true));
+ assert(hs.start(987,8005));assert(hs.tick(8005,true,false,root));poll(P,p,8005);
+ boat.reset();
+ assert(boat.boatReceive(SESSION_HELLO,p.last.frame.payload,654,root,mac,8006,true,packet,newSession));
+ assert(hs.receive(P,response(packet,root,P),8006,8006,root,mac));
+ assert(hs.tick(8006,true,false,root));poll(P,p,8006);
+ assert(boat.boatReceive(SESSION_PROOF,p.last.frame.payload,654,root,mac,8007,true,packet,newSession));
+ assert(hs.receive(P,response(packet,root,P),8007,8007,root,mac)&&remote.established());
+ uint8_t nextKey[32]={};assert(remote.frameKey(nextKey)&&memcmp(key,nextKey,32)!=0);
+ assert(control.beginSession(1,8007));seq=0;
+ assert(control.tick(8007,true,false,7,seq,30000,nextKey));poll(P,p,8007);
+ assert(p.last.frame.sequence==1&&radio_frameVerify(p.last.frame,nextKey));
+ assert(!radio_frameVerify(p.last.frame,key));
+ w.health=RadioWatchdog::State::Fault;assert(!runtime.tick(8008));
  assert(retire.calls==1&&w.stops==1&&!owner.worker()&&!owner.claimLegacy());
  runtime.requestStop();assert(retire.calls==1&&w.stops==1&&!runtime.exited());
  w.done=true;assert(runtime.exited()&&!runtime.begin(true,true));

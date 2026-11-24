@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include "dual_phy_worker.h"
 #include "remote_worker_runtime.h"
+#include "remote_exclusive_runtime.h"
 #include "remote_async_tx.h"
 #include "remote_i2c_request_scheduler.h"
 #include "remote_i2c_phy_service.h"
@@ -55,9 +56,9 @@ static RemoteI2cPhyService<decltype(primary),decltype(backup)> owner(dispatcher,
 static TimedPoller<S> timedScheduler(scheduler,clockUs);
 static DualPhyWorker<decltype(timedScheduler)> worker(timedScheduler,clockMs);
 static RemoteWorkerRuntime<decltype(worker),decltype(owner)> runtime(worker,owner);
-static void retireMock(void*){
- asyncTx.invalidateSession();radioOwner.retire();
-}
+static RemoteExclusiveRuntime<decltype(runtime)> exclusive(radioOwner,handoff,runtime);
+static void retireMock(void*){asyncTx.invalidateSession();}
+static bool initializeMock(void*){return dispatcher.begin()&&asyncTx.beginSession(1)&&asyncTx.rearm(true);}
 static PollTiming ownerTiming;
 static uint32_t stopQueuedUs=0,stopAdmissionUs=0,stopLocalUs=0,faultInjectedMs=0,faultObservedMs=0;
 static bool stopLocal=false,faultObserved=false;
@@ -75,11 +76,9 @@ static bool submit(PhyLink link,uint16_t id,bool stop,uint32_t& ticket){
 void setup(){
  Serial.begin(115200);
  Serial.println("R30H-114 mock PHY / owner-task bench; no hardware drivers");
- if(xPortGetCoreID()!=1||!bindRemoteI2cOwner()||!dispatcher.begin()||
-    !handoff.begin()||!radioOwner.claimWorker(true)||!runtime.bindRetirement(&retireMock,nullptr)||!asyncTx.beginSession(1)||
-    !asyncTx.rearm(true)||!submit(PhyLink::Primary,1,false,primaryTicket)||
-    !submit(PhyLink::Backup,2,false,backupTicket)||!runtime.begin(true,true)){
-  if(radioOwner.worker())retireMock(nullptr);
+ if(xPortGetCoreID()!=1||!bindRemoteI2cOwner()||!exclusive.begin(true,&initializeMock,&retireMock,nullptr)||
+    !submit(PhyLink::Primary,1,false,primaryTicket)||!submit(PhyLink::Backup,2,false,backupTicket)){
+  exclusive.requestStop();
   Serial.println("FAIL setup");return;
  }
  started=millis();running=true;
@@ -88,7 +87,7 @@ void loop(){
  if(!running){delay(20);return;}
  const uint32_t now=millis(),elapsed=now-started;
  ownerTiming.begin(micros());
- if(!runtime.tick(now))failed=true;
+ if(!exclusive.tick(now,scheduler.status(P)==S::State::Fault,scheduler.status(B)==S::State::Fault))failed=true;
  ownerTiming.end(micros());
  RemoteAsyncTx::Result c;
  if(asyncTx.take(PhyLink::Primary,millis(),c)){
@@ -109,8 +108,8 @@ void loop(){
  if(elapsed>=1200||failed){
   const bool pass=!failed&&primaryEvidence&&backupEvidence&&stopLocal&&faultObserved&&injected&&
     scheduler.status(P)==S::State::Fault&&scheduler.status(B)!=S::State::Fault&&
-    lora.polls>backupBefore&&runtime.permit();
-  runtime.requestStop();worker.stop();running=false;
+    lora.polls>backupBefore&&exclusive.permit();
+  exclusive.requestStop();worker.stop();running=false;
   const auto& t=timedScheduler.timing();
   const auto pm=dispatcher.metrics(P),bm=dispatcher.metrics(B);
   Serial.printf("core0 callbacks=%lu mean_us=%lu max_us=%lu gap_max_us=%lu\\n",(unsigned long)t.duration.count,(unsigned long)t.duration.mean(),(unsigned long)t.duration.max,(unsigned long)t.gap.max);
