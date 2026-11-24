@@ -218,7 +218,17 @@ void BoatDualRadioPort::update() {
    }
   }
  }
- if(sx1262Ready_){e22_.update();RadioFrame f;while(e22_.receiveFrame(f))receive(LINK_LORA_BACKUP,f);}
+ if(sx1262Ready_){
+  e22_.update();
+  if(e22_.transportFault()){
+   // R30H-116 closeout: local UART fault must revoke stale backup health.
+   sx1262Ready_=false;lastBackupRxValid_=false;
+   pendingBackupMissionFeedbackValid_=false;
+   commandQueue_.discardLink((uint8_t)LINK_LORA_BACKUP,true);
+  }else{
+   RadioFrame f;while(e22_.receiveFrame(f))receive(LINK_LORA_BACKUP,f);
+  }
+ }
  // Correlated feedback outranks periodic status/heartbeat when E22 was busy.
  if(pendingBackupMissionFeedbackValid_){
   const uint32_t retryNow=millis();
