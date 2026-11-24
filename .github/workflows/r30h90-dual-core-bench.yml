@@ -6,6 +6,15 @@ on:
       - 'Boat/platformio.ini'
       - 'Remote/platformio.ini'
       - '**/source/dual_core_bench.cpp'
+      - 'Remote/source/remote_i2c_integrated_bench.cpp'
+      - 'Remote/source/remote_i2c_*.h'
+      - 'Remote/source/*phy*.h'
+      - 'Remote/source/radio_worker.h'
+      - 'Remote/source/radio_watchdog.h'
+      - 'Remote/source/radio_frame_handoff.h'
+      - 'Remote/source/tx_generation_gate.h'
+      - 'Remote/source/bounded_*_service.h'
+      - 'Remote/source/e22_tx_state.h'
       - '**/source/dual_core_diagnostic.h'
       - '.github/workflows/r30h90-dual-core-bench.yml'
 jobs:
@@ -19,6 +28,8 @@ jobs:
             environment: boat_dual_core_bench
           - directory: Remote
             environment: remote_dual_core_bench
+          - directory: Remote
+            environment: remote_i2c_integrated_bench
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
