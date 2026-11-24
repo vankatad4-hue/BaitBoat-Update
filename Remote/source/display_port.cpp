@@ -3,6 +3,7 @@
 // LVGL registration below targets LVGL 9.6.x APIs (not the demo's LVGL 8 port).
 
 #include "display_port.h"
+#include "remote_i2c_owner.h"
 #include "radio_hw_config.h"                         // Public adapter interface.
 #include <Arduino.h>                               // Arduino runtime and millis().
 #include <lvgl.h>                                  // LVGL 9.6 public API.
@@ -89,6 +90,7 @@ static void displayPort_flush(lv_display_t *display, const lv_area_t *area, uint
 // Read one GT911 touch point and report it to LVGL.
 static void displayPort_readTouch(lv_indev_t *input, lv_indev_data_t *data)
 {
+    if(!flytec_rtos::remoteI2cAllowed())return; // LVGL is owner-task only
     (void)input;                                   // The adapter uses the single global GT911 instance.
 
     if (g_touch == nullptr || data == nullptr)     // Guard against an unavailable touch controller.
@@ -160,6 +162,7 @@ static bool displayPort_mountSD()
 // Initialise the Waveshare board, LCD, touch controller and LVGL 9 port.
 bool displayPort_begin()
 {
+    if(!flytec_rtos::remoteI2cAllowed())return false;
     g_display_ready = false;                       // Start in a safe not-ready state.
 
     Serial.println("DISPLAY: Initialising Waveshare board..."); // Announce hardware startup.
@@ -250,6 +253,7 @@ bool displayPort_begin()
 // Service LVGL from the Arduino loop; no background LVGL task is created here.
 void displayPort_loop()
 {
+    if(!flytec_rtos::remoteI2cAllowed())return;
     if (!g_display_ready)                          // Do nothing until display initialisation succeeds.
     {
         return;                                    // Keep the rest of the firmware running safely.
@@ -279,6 +283,7 @@ bool displayPort_sdReady()
 // The current board configuration uses an expander switch, so only on/off is supported.
 bool displayPort_setBacklight(bool enabled)
 {
+    if(!flytec_rtos::remoteI2cAllowed())return false;
     if (g_board == nullptr || g_board->getIO_Expander() == nullptr)
         return false;
     auto *expander = g_board->getIO_Expander()->getBase();
