@@ -39,6 +39,10 @@ class TestGNSSUTCIsolation(unittest.TestCase):
     def test_time_beacon_cannot_preempt_mission(self):
         self.hostile("Boat/source/boat_dual_radio_port.cpp",
                      "!opportunity.activeMission", "true")
+    def test_primary_pending_wrapper_must_report_driver(self):
+        self.hostile("Boat/source/boat_dual_radio_port.cpp",
+                     "bool BoatDualRadioPort::primaryDriverPending() const{return nrf_.txPending();}",
+                     "bool BoatDualRadioPort::primaryDriverPending() const{return false;}")
     def test_remote_rf_audit_remains_unsigned(self):
         self.hostile("Remote/source/radio_hw_config.h",
                      "#define REMOTE_NRF_PIN_AUDIT_SIGNED 0",
