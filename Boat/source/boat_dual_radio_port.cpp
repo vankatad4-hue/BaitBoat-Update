@@ -455,7 +455,7 @@ bool BoatDualRadioPort::queueAsyncApplication(ManagedLink link,const RadioFrame 
  if(!radio_frameSeal(outgoing,key_))return false;
  auto &owner=backup?asyncBackupOwner_:asyncPrimaryOwner_;
  auto &tx=backup?asyncBackupTx_:asyncPrimaryTx_;
- return tx.submit(owner,outgoing,now,priority,age,[&](const RadioFrame &f){return radio_frameVerify(f,key_);});
+ return tx.submit(owner,outgoing,now,priority,age,[&](const RadioFrame &f){return radio_frameVerify(f,key_);},true);
 }
 void BoatDualRadioPort::completeAsyncApplication(ManagedLink link,const flytec_r30h118::Ticket &ticket,flytec_r30h121::TxState state,uint32_t now){
  if(!BOAT_R30H121_PHYSICAL_OWNER||legacyBeginAttempted_)return;
@@ -511,7 +511,7 @@ void BoatDualRadioPort::serviceAsyncOwner(ManagedLink link,uint32_t now,bool lin
  // committed only by completeAsyncApplication, never by queue admission.
  auto ordinary=[&](flytec_r30h123::OwnerLink<RadioFrame>& owner){
   auto &tx=backup?asyncBackupTx_:asyncPrimaryTx_;
-  if(!owner.ordinaryReady()||tx.pending()||!sessionReady())return;
+  if(!owner.feedbackReady()||tx.pending()||!sessionReady())return;
   if(backup&&pendingBackupMissionFeedbackValid_){
    const uint32_t elapsed=uint32_t(now-pendingBackupMissionFeedbackAtMs_);
    if(elapsed>=12000U)pendingBackupMissionFeedbackValid_=false;
