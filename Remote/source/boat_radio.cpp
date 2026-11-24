@@ -1,6 +1,7 @@
 #include "boat_radio.h"
 #include "remote_radio_owner.h"
 #include "remote_async_control.h"
+#include "remote_async_handshake.h"
 #include "radio_payload_codec.h"
 #include "radio_safety_diagnostic_v1.h"
 #include "radio_ack_tracker.h"
@@ -84,6 +85,7 @@ static constexpr uint32_t BACKUP_STOP_STATUS_MAX_AGE_MS=4500U;
 static uint8_t g_authKey[32],g_rootKey[32];
 static bool g_rootReady=false;
 static SessionHandshake g_session;
+static flytec_rtos::RemoteAsyncHandshake g_workerHandshake(g_radioOwner,g_workerTx,g_session);
 static uint32_t g_lastHandshakeTx=0;
 static MissionUpload g_missionUpload;
 static MissionControlClient g_missionControl;
@@ -95,7 +97,11 @@ static uint16_t g_missionId=0;
 static uint32_t g_missionStarted=0;
 static RadioSessionCounter g_boatSequenceGuard,g_boatPrimarySequenceGuard,g_boatBackupSequenceGuard;
 static void resetSession(uint32_t now){
-    if(g_radioOwner.worker())g_workerControl.invalidate(now);
+    if(g_radioOwner.worker()){
+        const bool defer=g_workerControl.backupRecentlyUsed(now);
+        g_workerControl.invalidate(now);
+        g_workerHandshake.reset(now,defer);
+    }
     g_session.reset();radioSession_wipe(g_authKey,32);
     g_gpsUtcClock.reset(); // no stale UTC authority across auth epochs
     g_manualConfirmRequired=true;g_stopMustConfirm=true;g_manualTransitionAt=now;
@@ -454,10 +460,21 @@ static void validateInboundCaptured(ManagedLink link,const RadioFrame &frame,uin
     if(!flytec_rtos::remoteI2cAllowed()||!flytec_rtos::remoteRxFresh(now,capturedAt))return;
     if(!radioLinkFlagMatches(frame.flags,link==LINK_LORA_BACKUP)||frame.sourceId!=BOAT_DEVICE_ID||frame.destinationId!=REMOTE_DEVICE_ID)return;
     if(frame.type>=SESSION_HELLO&&frame.type<=SESSION_CONFIRM){
+        if(g_radioOwner.worker()){
+            if(!g_rootReady)return;
+            const auto phy=link==LINK_NRF_PRIMARY?flytec_rtos::PhyLink::Primary:flytec_rtos::PhyLink::Backup;
+            if(g_workerHandshake.receive(phy,frame,capturedAt,now,g_rootKey,radioPlatformHmac)&&g_session.established()){
+                if(!g_session.frameKey(g_authKey)||!g_workerControl.beginSession(g_sessionEpoch,now)){
+                    resetSession(now);return;
+                }
+                if(g_workerHandshake.backupRecentlyUsed(now))g_workerControl.deferBackup(now);
+                g_ackTracker.reset(g_sessionEpoch);
+            }
+            return;
+        }
         if(!g_rootReady||frame.sequence||frame.commandId||frame.sessionEpoch||!radio_frameVerify(frame,g_rootKey))return;
         if(g_session.remoteReceive((SessionHandshakeMessage)frame.type,frame.payload,g_rootKey,radioPlatformHmac,now,true)&&g_session.established()){
             g_session.frameKey(g_authKey);g_ackTracker.reset(g_sessionEpoch);
-            if(g_radioOwner.worker()&&!g_workerControl.beginSession(g_sessionEpoch,now))resetSession(now);
         }
         return;
     }
@@ -490,21 +507,30 @@ void boatRadio_update() {
     const uint32_t now=millis();
     if(g_radioOwner.worker()){
         // Dormant until an exclusive runtime binds and initializes handoff.
-        // Handshake TX and worker lifecycle startup are intentionally not
-        // routed here yet. Never call prepareRemoteCycle (legacy PHY TX).
-        if(!sessionReady()){resetSession(now);return;}
+        // Never call prepareRemoteCycle (legacy PHY TX).
+        if((g_session.established()&&!sessionReady())||g_session.timeout(now))resetSession(now);
         flytec_rtos::RxFrame rx{};
         for(unsigned i=0;i<RX_FRAME_BUDGET&&g_workerHandoff.primaryRx.take(rx);++i)
             if(rx.link==flytec_rtos::PhyLink::Primary)validateInboundCaptured(LINK_NRF_PRIMARY,rx.frame,rx.receivedMs);
         for(unsigned i=0;i<RX_FRAME_BUDGET&&g_workerHandoff.backupRx.take(rx);++i)
             if(rx.link==flytec_rtos::PhyLink::Backup)validateInboundCaptured(LINK_LORA_BACKUP,rx.frame,rx.receivedMs);
-        if(!sessionReady()){resetSession(millis());return;}
         if(g_workerTx.linkFault(flytec_rtos::PhyLink::Primary)){
             g_nrfReady=false;g_linkManager.setTransportReady(LINK_NRF_PRIMARY,false);
         }
         if(g_workerTx.linkFault(flytec_rtos::PhyLink::Backup)){
             g_loraConfigured=false;g_linkManager.setTransportReady(LINK_LORA_BACKUP,false);
         }
+        if(!g_session.established()){
+            const uint32_t at=millis();
+            if(g_rootReady&&(g_nrfReady||g_loraConfigured)){
+                if(!g_workerHandshake.active()&&!g_workerHandshake.start(radioPlatformNonce(),at)){
+                    resetSession(at);return;
+                }
+                if(!g_workerHandshake.tick(at,g_nrfReady,g_loraConfigured,g_rootKey))resetSession(at);
+            }
+            advanceRemoteApplication(at);return;
+        }
+        if(!sessionReady()){resetSession(millis());return;}
         const uint8_t flags=(uint8_t)(1U|(g_nrfReady?2U:0U)|(g_loraConfigured?4U:0U)|
             (boatState.emergencyStopConfirmed&&boatState.emergencyStop?8U:0U));
         if(!g_workerControl.tick(millis(),g_nrfReady,g_loraConfigured,flags,

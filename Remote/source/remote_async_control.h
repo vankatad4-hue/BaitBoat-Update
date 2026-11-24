@@ -24,6 +24,11 @@ public:
   primaryGate_.reset();backupGate_.reset();backupConfirmed_=false;
   return tx_.invalidateSession();
  }
+ // Conservative transfer of a possibly outstanding backup admission from handshake.
+ void deferBackup(uint32_t now){if(owner_.worker())markBackup(now);}
+ bool backupRecentlyUsed(uint32_t now)const{
+  return owner_.worker()&&(backup_.ticket||(backupSent_&&uint32_t(now-lastBackup_)<BackupGap));
+ }
  bool beginSession(uint8_t epoch,uint32_t now){
   if(!owner_.worker())return false;
   if(!invalidate(now)||!epoch||!tx_.beginSession(epoch))return false;

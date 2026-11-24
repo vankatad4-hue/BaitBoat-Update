@@ -29,6 +29,11 @@ public:
   active_=false;epoch_=0;stopId_=0;clearSlots();
   return advanceStop();
  }
+ // Root-key handshake only: no session command or heartbeat is allowed.
+ bool beginHandshake(){
+  if(!invalidateSession())return false;
+  active_=true;return true;
+ }
  bool beginSession(uint8_t epoch){
   if(!invalidateSession()||!epoch)return false;
   epoch_=epoch;active_=true;return true;
@@ -36,7 +41,7 @@ public:
  // New logical STOP: invalidate old queued/dequeued work before admission.
  // Call once per new intent, not once per retry or per link.
  bool requestStop(uint16_t commandId){
-  if(!owner_.worker()||!active_||!commandId)return false;
+  if(!owner_.worker()||!active_||!epoch_||!commandId)return false;
   stopId_=0;clearSlots();
   if(!advanceStop()){active_=false;return false;}
   stopId_=commandId;return true;
@@ -50,7 +55,7 @@ public:
  }
  // Only independent application authorization can rearm. TX results cannot.
  bool rearm(bool authorized){
-  if(!owner_.worker()||!active_||!authorized||generation_==UINT32_MAX)return false;
+  if(!owner_.worker()||!active_||!epoch_||!authorized||generation_==UINT32_MAX)return false;
   if(!gate_.rearm(generation_+1,true))return false;
   ++generation_;stopId_=0;clearSlots();return true;
  }
@@ -59,10 +64,14 @@ public:
   if(!owner_.worker()||!active_||!validLink(link)||f.sessionEpoch!=epoch_||
      !radioLinkFlagMatches(f.flags,link==PhyLink::Backup))return Submit::Denied;
   if(!ttl||ttl>INT32_MAX||uint32_t(now-created)>=ttl)return Submit::Expired;
+  const bool handshake=(f.type==RADIO_MSG_SESSION_HELLO||f.type==RADIO_MSG_SESSION_PROOF)&&
+   f.sequence==0&&f.commandId==0&&f.sessionEpoch==0;
+  if(!epoch_&&!handshake)return Submit::Denied;
+  if(epoch_&&f.type>=RADIO_MSG_SESSION_HELLO&&f.type<=RADIO_MSG_SESSION_CONFIRM)return Submit::Denied;
   const bool stop=f.type==RADIO_MSG_ACTION&&f.payload[0]==CMD_EMERGENCY_STOP;
   if(stop&&(!stopId_||f.commandId!=stopId_||!gate_.stopped()))return Submit::Denied;
   const bool safeHeartbeat=f.type==RADIO_MSG_HEARTBEAT&&f.commandId==0;
-  const bool critical=stop||safeHeartbeat;
+  const bool critical=stop||safeHeartbeat||handshake;
   if(gate_.stopped()&&!critical)return Submit::Denied;
   if(handoff_.fault(link)||nextTicket_==UINT32_MAX)return Submit::Fault;
   auto& s=slot(link);

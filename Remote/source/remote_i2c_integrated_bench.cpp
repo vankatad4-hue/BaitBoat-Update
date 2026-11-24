@@ -55,6 +55,9 @@ static RemoteI2cPhyService<decltype(primary),decltype(backup)> owner(dispatcher,
 static TimedPoller<S> timedScheduler(scheduler,clockUs);
 static DualPhyWorker<decltype(timedScheduler)> worker(timedScheduler,clockMs);
 static RemoteWorkerRuntime<decltype(worker),decltype(owner)> runtime(worker,owner);
+static void retireMock(void*){
+ asyncTx.invalidateSession();radioOwner.retire();
+}
 static PollTiming ownerTiming;
 static uint32_t stopQueuedUs=0,stopAdmissionUs=0,stopLocalUs=0,faultInjectedMs=0,faultObservedMs=0;
 static bool stopLocal=false,faultObserved=false;
@@ -73,9 +76,10 @@ void setup(){
  Serial.begin(115200);
  Serial.println("R30H-114 mock PHY / owner-task bench; no hardware drivers");
  if(xPortGetCoreID()!=1||!bindRemoteI2cOwner()||!dispatcher.begin()||
-    !handoff.begin()||!radioOwner.claimWorker(true)||!asyncTx.beginSession(1)||
+    !handoff.begin()||!radioOwner.claimWorker(true)||!runtime.bindRetirement(&retireMock,nullptr)||!asyncTx.beginSession(1)||
     !asyncTx.rearm(true)||!submit(PhyLink::Primary,1,false,primaryTicket)||
     !submit(PhyLink::Backup,2,false,backupTicket)||!runtime.begin(true,true)){
+  if(radioOwner.worker())retireMock(nullptr);
   Serial.println("FAIL setup");return;
  }
  started=millis();running=true;
@@ -106,7 +110,7 @@ void loop(){
   const bool pass=!failed&&primaryEvidence&&backupEvidence&&stopLocal&&faultObserved&&injected&&
     scheduler.status(P)==S::State::Fault&&scheduler.status(B)!=S::State::Fault&&
     lora.polls>backupBefore&&runtime.permit();
-  asyncTx.invalidateSession();runtime.requestStop();worker.stop();radioOwner.retire();running=false;
+  runtime.requestStop();worker.stop();running=false;
   const auto& t=timedScheduler.timing();
   const auto pm=dispatcher.metrics(P),bm=dispatcher.metrics(B);
   Serial.printf("core0 callbacks=%lu mean_us=%lu max_us=%lu gap_max_us=%lu\\n",(unsigned long)t.duration.count,(unsigned long)t.duration.mean(),(unsigned long)t.duration.max,(unsigned long)t.gap.max);

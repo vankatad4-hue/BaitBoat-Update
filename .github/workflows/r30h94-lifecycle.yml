@@ -27,6 +27,8 @@ on:
       - 'Remote/source/remote_async_tx.h'
       - 'Remote/tests/r30h124f_async_tx.cpp'
       - 'Remote/source/remote_async_control.h'
+      - 'Remote/source/remote_async_handshake.h'
+      - 'Remote/tests/r30h124h_async_handshake.cpp'
       - 'Remote/tests/r30h124g_async_control.cpp'
       - 'Remote/tests/r30h113_i2c_scheduler.cpp'
       - 'Remote/tests/r30h115_integrated_phy.cpp'
@@ -104,3 +106,6 @@ jobs:
 
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -Itests/r30h20_stubs -IRemote/source Remote/source/radio_protocol.cpp Remote/source/radio_command_codec.cpp Remote/tests/r30h124g_async_control.cpp -lcrypto -o /tmp/remote_async_control
           timeout 10s /tmp/remote_async_control
+
+          g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -Itests/r30h20_stubs -IRemote/source Remote/source/radio_protocol.cpp Remote/source/radio_command_codec.cpp Remote/tests/r30h124h_async_handshake.cpp -lcrypto -o /tmp/remote_async_handshake
+          timeout 10s /tmp/remote_async_handshake

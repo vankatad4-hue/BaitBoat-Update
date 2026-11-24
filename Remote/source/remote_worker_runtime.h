@@ -7,9 +7,15 @@ namespace flytec_rtos {
 template<class Worker,class Service> class RemoteWorkerRuntime {
 public:
  enum class State:uint8_t {Idle,Starting,Running,Retired};
+ using Retirement=void(*)(void*);
  RemoteWorkerRuntime(Worker& w,Service& s):worker_(w),service_(s){}
  RemoteWorkerRuntime(const RemoteWorkerRuntime&)=delete;
  RemoteWorkerRuntime& operator=(const RemoteWorkerRuntime&)=delete;
+ // Optional application revocation callback, registered before launch.
+ bool bindRetirement(Retirement fn,void* context){
+  if(!remoteI2cAllowed()||state_!=State::Idle||!fn||retirement_)return false;
+  retirement_=fn;context_=context;return true;
+ }
  bool begin(bool commissioned,bool legacyAbsent){
   if(state_!=State::Idle||!commissioned||!legacyAbsent||!remoteI2cAllowed())return false;
   state_=State::Starting;
@@ -29,8 +35,14 @@ public:
  bool permit()const{return state_==State::Running&&worker_.permit();}
  State state()const{return state_;}
 private:
- void retire(){state_=State::Retired;worker_.requestStop();}
+ void retire(){
+  if(state_==State::Retired)return;
+  state_=State::Retired;
+  if(retirement_)retirement_(context_); // revoke application before worker stop
+  worker_.requestStop();
+ }
  Worker& worker_;Service& service_;
  State state_=State::Idle;
+ Retirement retirement_=nullptr;void* context_=nullptr;
 };
 }

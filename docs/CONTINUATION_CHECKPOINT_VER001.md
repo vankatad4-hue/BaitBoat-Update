@@ -1,3 +1,13 @@
+## Active continuation — R30H-124H (2026-11-24)
+
+Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged; VS Code + PlatformIO primary. Production worker activation and upload remain locked.
+
+- R30H-124G exact-commit combined status returned no entries; latest lifecycle, Remote/Boat host, primary and experimental PlatformIO builds remain UNVERIFIED.
+- R30H-124H: root-authenticated asynchronous HELLO/PROOF queue, handshake-only mode (zero epoch/sequence/command ID), verified fresh CHALLENGE/CONFIRM, phase generation invalidation, shared control transition with conservative backup cooldown. Worker-mode application now services handshake without legacy direct PHY calls. Root/session keys remain separate. No ordinary/mission TX added.
+- Runtime retirement callback revokes application authority before worker stop and fires once; isolated Remote mock bench binds its retirement callback. Worker exit remains independently observed. Production still claims Legacy only; live exclusive worker startup and actual application fault callback binding remain unimplemented. No automatic fallback.
+- New host regression uses actual HMAC/CRC and SessionHandshake with mock PHY; covers altered HMAC, link/age rejection, dequeued HELLO cancellation, proof/confirm, session key separation, backup pacing and terminal worker retirement. CI invocation added; actual execution and target compilation unverified. 100 ms RX age and radio timing remain provisional.
+- Next R30H-124I: verify exact-commit CI, build and test full exclusive mock application runtime including handshake timeout/rekey and retirement; bind actual application fault lifecycle without enabling physical RF; validate backup cooldown under outstanding/ambiguous driver TX; migrate ordinary/mission traffic only after passing. Hardware gates NOT_RUN/BLOCKED.
+
 ## Active continuation — R30H-124G (2026-11-24)
 
 Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged. VS Code + PlatformIO primary; physical worker activation and upload remain locked.
