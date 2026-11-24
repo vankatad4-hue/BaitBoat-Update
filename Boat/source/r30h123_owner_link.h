@@ -73,6 +73,11 @@ public:
   if(!epoch_)return false;
   const bool ok=app_.rearm(epoch_,authorized);publish();return ok;
  }
+ bool cancelDeferredStop(){
+  const bool ok=app_.cancelStopRetry(epoch_);
+  if(ok){appClass_=TxPriority::None;publish();}
+  return ok;
+ }
  bool stopRetryPending()const{return app_.stopRetryPending();}
  Ticket currentTicket()const{return app_.currentTicket();}
  bool takeApplication(Ticket& ticket,TxState& state){return app_.takeTerminal(ticket,state);}
