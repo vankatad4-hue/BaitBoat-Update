@@ -10,7 +10,8 @@ struct StopAck {
     uint8_t stopState=0;
     uint8_t interlocks=0;
 };
-class StopAckOutbox final {
+template<uint32_t AgeMs=2500U>
+class BasicStopAckOutbox final {
 public:
     static constexpr uint32_t MAX_AGE_MS=2500U;
     static constexpr uint32_t RETRY_GAP_MS=75U;
@@ -38,7 +39,7 @@ public:
     // across a session, primary driver failure or a newer STOP command.
     bool due(uint32_t now,bool sessionReady,bool primaryReady,bool txBusy){
         if(!pending_)return false;
-        if(!sessionReady||!primaryReady||(uint32_t)(now-queuedAt_)>=MAX_AGE_MS){reset();return false;}
+        if(!sessionReady||!primaryReady||(uint32_t)(now-queuedAt_)>=AgeMs){reset();return false;}
         return !txBusy&&!inFlight_&&attempts_<MAX_TX_ATTEMPTS&&
                (!attempts_||(uint32_t)(now-lastTryAt_)>=RETRY_GAP_MS);
     }
@@ -60,4 +61,6 @@ private:
     uint8_t attempts_=0;
     uint32_t queuedAt_=0,lastTryAt_=0;
 };
+using StopAckOutbox=BasicStopAckOutbox<>;
+using BackupStopAckOutbox=BasicStopAckOutbox<12000U>;
 } // namespace boat_r30h18
