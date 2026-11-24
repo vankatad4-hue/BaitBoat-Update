@@ -1,3 +1,6 @@
+# R30H-121 Remote host verification — 2026-11-24
+Run 45447907354 job 138636649982: all 42 workflow steps successful, no failures or skips. Remote host regression verified on this run's revision; not a same-SHA combined acceptance. Boat host, primary PlatformIO builds, source-layout audit and four earlier mock compile targets have recorded successes. Remaining independent source inventory and fresh mock compile evidence. No hardware acceptance or production activation.
+
 # R30H-121 mock compile evidence — 2026-11-24
 Run 45379182298 job 138393416297: all 11 steps success including single mock, dual PHY mock, locked physical worker and full application dormant endpoint compilation. This run predates the latest host regression corrections; current revision mock rebuild remains unverified. Primary targets and Boat host passed in later runs. Remote host and inventory evidence remain outstanding. No hardware execution or production activation.
 
