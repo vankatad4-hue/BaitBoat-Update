@@ -5,6 +5,8 @@ on:
     paths:
       - 'Boat/source/r30h118*'
       - 'Boat/source/r30h120*'
+      - 'Boat/source/r30h121*'
+      - 'Boat/source/boat_dual_radio_port*'
       - 'Boat/source/nrf24_link*'
       - 'Boat/source/e22_uart*'
       - 'Boat/platformio.ini'
@@ -13,7 +15,7 @@ on:
 jobs:
   mock-build:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -28,3 +30,6 @@ jobs:
 
       - name: Compile locked physical worker
         run: pio run -d Boat -e boat_r30h120_physical_compile
+
+      - name: Compile full application with dormant endpoints
+        run: pio run -d Boat -e boat_r30h121_endpoint_compile
