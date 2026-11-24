@@ -1,0 +1,40 @@
+#pragma once
+#include "radio_protocol.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/queue.h>
+#include <atomic>
+#include <type_traits>
+// Dormant R30H-99: raw frames are NOT authenticated commands.
+// One owner per direction; begin/end only while both workers stopped.
+namespace flytec_rtos {
+enum class PhyLink:uint8_t { Primary=1, Backup=2 };
+struct RxFrame { RadioFrame frame; uint32_t receivedMs; PhyLink link; };
+struct TxRequest { RadioFrame frame; uint32_t ticket; uint32_t generation; PhyLink link; };
+struct TxCompletion { uint32_t ticket; uint32_t generation; PhyLink link; bool success; };
+template<class T,unsigned Depth> class FrameQueue {
+ static_assert(Depth>0,"Queue depth required");
+ static_assert(std::is_trivially_copyable<T>::value,"Copyable records required");
+public:
+ FrameQueue()=default;
+ FrameQueue(const FrameQueue&)=delete;
+ FrameQueue& operator=(const FrameQueue&)=delete;
+ bool begin(){if(!q_)q_=xQueueCreate(Depth,sizeof(T));return q_!=nullptr;}
+ ~FrameQueue(){if(q_)vQueueDelete(q_);}
+ bool offer(const T& item){
+  if(q_&&xQueueSend(q_,&item,0)==pdTRUE)return true;
+  overflow_.store(true);return false;
+ }
+ bool take(T& item){return q_&&xQueueReceive(q_,&item,0)==pdTRUE;}
+ bool fault()const{return overflow_.load();}
+private:
+ QueueHandle_t q_=nullptr;
+ std::atomic<bool> overflow_{false};
+};
+struct RadioFrameHandoff {
+ FrameQueue<RxFrame,8> primaryRx,backupRx;
+ FrameQueue<TxRequest,4> primaryTx,backupTx;
+ FrameQueue<TxCompletion,8> completions;
+ bool begin(){return primaryRx.begin()&&backupRx.begin()&&primaryTx.begin()&&backupTx.begin()&&completions.begin();}
+ bool fault()const{return primaryRx.fault()||backupRx.fault()||primaryTx.fault()||backupTx.fault()||completions.fault();}
+};
+}
