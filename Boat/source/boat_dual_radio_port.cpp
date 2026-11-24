@@ -3,6 +3,8 @@
 #include <string.h>
 
 
+// Provisional per-link FIFO dispatch budget; not a measured STOP deadline.
+static constexpr unsigned RX_FRAME_BUDGET=4;
 static constexpr uint8_t REMOTE_ID=0x01,BOAT_ID=0x02;
 
 BoatDualRadioPort::BoatDualRadioPort()
@@ -185,7 +187,7 @@ void BoatDualRadioPort::update() {
    commandQueue_.discardLink((uint8_t)LINK_NRF_PRIMARY,true);
   } else {
    RadioFrame f;
-   while(nrf_.receiveFrame(f))receive(LINK_NRF_PRIMARY,f);
+   for(unsigned i=0;i<RX_FRAME_BUDGET&&nrf_.receiveFrame(f);++i)receive(LINK_NRF_PRIMARY,f);
    // R30H-18: after RX accepts STOP, its correlated ACK claims the first
    // available primary TX slot. Never let heartbeat/status/diagnostics
    // get ahead of an outstanding STOP response.
@@ -226,7 +228,7 @@ void BoatDualRadioPort::update() {
    pendingBackupMissionFeedbackValid_=false;
    commandQueue_.discardLink((uint8_t)LINK_LORA_BACKUP,true);
   }else{
-   RadioFrame f;while(e22_.receiveFrame(f))receive(LINK_LORA_BACKUP,f);
+   RadioFrame f;for(unsigned i=0;i<RX_FRAME_BUDGET&&e22_.receiveFrame(f);++i)receive(LINK_LORA_BACKUP,f);
   }
  }
  // Correlated feedback outranks periodic status/heartbeat when E22 was busy.
