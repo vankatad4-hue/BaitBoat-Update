@@ -39,6 +39,7 @@ bool boatRadio_missionControlUnknown();
 MissionControlResult boatRadio_missionControlResult();
 bool boatRadio_missionLocked();
 bool boatRadio_manualModeConfirmed();
+bool boatRadio_backupStopConfirmed(); // authenticated backup STOP evidence, not movement authorization
 bool boatRadio_stopConfirmationPending();
 bool boatRadio_sendMissionSticks(int16_t left,int16_t right,bool neutral);
 bool boatRadio_sendCommand(const BoatCommand &command);
