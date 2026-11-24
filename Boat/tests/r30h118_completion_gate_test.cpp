@@ -8,6 +8,7 @@
 #include "r30h118_phy_pump.h"
 #include "r30h118_stop_retry.h"
 #include "r30h118_outcome_gate.h"
+#include "r30h120_phy_service.h"
 using namespace flytec_r30h118;
 int main(){
  CompletionGate g; Ticket a,b,c;
@@ -143,4 +144,23 @@ int main(){
  assert(congested.publishHealth({5,true,true,false,false}));
  assert(congested.latestHealth(health)&&health.fault&&!health.ready);
  assert(!congested.latestHealth(health)&&health.fault);
+ Transport<uint32_t> serviceBus;
+ flytec_r30h120::PhyService<uint32_t> service(serviceBus);
+ unsigned serviceCalls=0;
+ auto serviceAdmit=[&](const Transport<uint32_t>::Request &r){++serviceCalls;return r.frame==42;};
+ assert(serviceBus.invalidate(1));
+ assert(serviceBus.submit(42,0,false));
+ service.step(1,100,false,serviceAdmit);assert(serviceCalls==0);
+ service.step(1,100,true,serviceAdmit);assert(serviceCalls==1);
+ assert(serviceBus.poll(admitted)&&admitted);
+ for(unsigned i=0;i<4;++i){
+  assert(serviceBus.invalidate(1));assert(serviceBus.submit(42,2,false));
+  service.step(3,100,true,serviceAdmit);
+ }
+ assert(serviceBus.invalidate(1));assert(serviceBus.submit(42,2,false));
+ service.step(3,100,true,serviceAdmit);assert(service.resultPending());
+ service.step(3,100,false,serviceAdmit);assert(service.resultPending());
+ assert(!serviceBus.poll(admitted));
+ service.step(3,100,false,serviceAdmit);assert(!service.resultPending());
+ assert(serviceCalls==6);
 }
