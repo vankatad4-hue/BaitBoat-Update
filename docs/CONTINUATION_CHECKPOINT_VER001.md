@@ -1,3 +1,6 @@
+# R30H-121E.6F.8 experimental shared radio task — 2026-11-24
+Implemented handshake service 3d666a7, shared admission 1d3806d, domain outcome routing 45e873d, handshake endpoint 8ca8abb, physical adapter binding 449648a/42722ff, task-local shared services and shutdown invalidation 6f88a9a. New regression tests committed but not CI verified. Next: compile-only harness binding, audit service lifetime and terminal backpressure, verify fresh host and target builds. Production legacy owner remains unchanged; no hardware activation, no physical quiescence proof. Boat VER014 / Remote VER028 unchanged.
+
 # R30H-121 Remote host verification — 2026-11-24
 Run 45447907354 job 138636649982: all 42 workflow steps successful, no failures or skips. Remote host regression verified on this run's revision; not a same-SHA combined acceptance. Boat host, primary PlatformIO builds, source-layout audit and four earlier mock compile targets have recorded successes. Remaining independent source inventory and fresh mock compile evidence. No hardware acceptance or production activation.
 
