@@ -1,4 +1,5 @@
 #include "sc16is750_bridge.h"
+#include "remote_i2c_owner.h"
 #include "sc16is750_fifo_budget_r30h.h"
 
 static constexpr uint8_t REG_RHR_THR_DLL=0x00;
@@ -18,12 +19,14 @@ SC16IS750Bridge::SC16IS750Bridge(TwoWire &wire,uint8_t address)
     : wire_(wire),address_(address),peekByte_(-1),rxLevelCache_(0),ready_(false) {}
 
 bool SC16IS750Bridge::writeReg(uint8_t reg,uint8_t value) {
+    if(!flytec_rtos::remoteI2cAllowed())return false;
     wire_.beginTransmission(address_);
     wire_.write(i2cSubAddress(reg));
     wire_.write(value);
     return wire_.endTransmission()==0;
 }
 bool SC16IS750Bridge::readReg(uint8_t reg,uint8_t &value) {
+    if(!flytec_rtos::remoteI2cAllowed())return false;
     wire_.beginTransmission(address_);
     wire_.write(i2cSubAddress(reg));
     if(wire_.endTransmission(false)!=0) return false;
@@ -109,6 +112,7 @@ int SC16IS750Bridge::read() {
     return b;
 }
 size_t SC16IS750Bridge::readFifo(uint8_t *data,size_t length) {
+    if(!flytec_rtos::remoteI2cAllowed())return 0;
     size_t total=0;
     while(total<length) {
         const size_t chunk=(length-total>16)?16:length-total;
@@ -122,6 +126,7 @@ size_t SC16IS750Bridge::readFifo(uint8_t *data,size_t length) {
     return total;
 }
 size_t SC16IS750Bridge::writeFifo(const uint8_t *data,size_t length) {
+    if(!flytec_rtos::remoteI2cAllowed())return 0;
     size_t total=0;
     while(total<length) {
         uint8_t level=0;
