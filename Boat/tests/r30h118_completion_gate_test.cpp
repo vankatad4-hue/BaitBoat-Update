@@ -7,6 +7,7 @@
 #include "r30h118_phy_events.h"
 #include "r30h118_phy_pump.h"
 #include "r30h118_stop_retry.h"
+#include "r30h118_outcome_gate.h"
 using namespace flytec_r30h118;
 int main(){
  CompletionGate g; Ticket a,b,c;
@@ -127,4 +128,10 @@ int main(){
  assert(retryBus.invalidate(2));assert(!retryBus.submit(99,105,false));
  assert(!retryBus.rearm(0));assert(!retryBus.submit(99,105,false));
  assert(retryBus.rearm(2));assert(retryBus.submit(99,105,false));
+ OutcomeGate og;
+ assert(og.expect(eventTicket));assert(!og.expect(eventTicket));
+ assert(!og.accept({7,9,1},7));assert(!og.accept({7,8,2},7));
+ assert(!og.accept(eventTicket,8));assert(og.accept(eventTicket,7));
+ assert(!og.accept(eventTicket,7));assert(og.expect(eventTicket));
+ og.reset();assert(!og.accept(eventTicket,7));
 }
