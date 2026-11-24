@@ -16,6 +16,7 @@ E22UartLink lora(bridge,
 uint16_t seq=0; uint32_t lastTx=0;
 void setup(){
  Serial.begin(115200);
+ if(!flytec_rtos::bindRemoteI2cOwner())return;
  Wire.begin(8,9);
  Serial.println("Remote E22 bench test: no actuators; test frame is unauthenticated.");
  if(!bridge.begin(9600)){Serial.println("SC16IS750 init failed");return;}
@@ -23,6 +24,7 @@ void setup(){
  Serial.println("E22 configured/read back. Output 10dBm, channel 18, 32-byte packets.");
 }
 void loop(){
+ if(!flytec_rtos::remoteI2cAllowed())return;
  lora.update();
  RadioFrame rx;
  while(lora.receiveFrame(rx)){
