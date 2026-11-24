@@ -18,6 +18,7 @@ on:
       - '**/source/dual_phy_worker.h'
       - 'Remote/source/remote_i2c_owner.h'
       - 'Remote/source/remote_i2c_dispatcher.h'
+      - 'Remote/source/remote_i2c_phy_service.h'
       - 'Remote/tests/r30h111_i2c_dispatcher.cpp'
       - 'Remote/tests/stubs/freertos/**'
       - 'Boat/tests/r30h110_i2c_owner.cpp'
