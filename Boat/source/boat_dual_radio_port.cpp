@@ -143,7 +143,7 @@ void BoatDualRadioPort::resetSession(bool preserveMission){
   missionIntent_={INTENT_STOP,-1,0};
   haveAuthenticatedRx_=false;lastAnyAuthenticatedRxMs_=0;
  }
- recoveryHandshake_.reset();handshake_.reset();radioSession_wipe(key_,32);sessionStarted_=false;
+ recoveryHandshake_.reset();primaryHandshakeReply_.reset();backupHandshakeReply_.reset();handshake_.reset();radioSession_wipe(key_,32);sessionStarted_=false;
 #if BOAT_R30H121_ENDPOINT_COMPILE
  if(BOAT_R30H121_PHYSICAL_OWNER){asyncPrimaryTx_.reset();asyncBackupTx_.reset();asyncTelemetry_.reset();asyncPrimaryCycle_.close();asyncBackupCycle_.close();}
 #endif
@@ -204,7 +204,8 @@ void BoatDualRadioPort::prepareApplicationCycle(uint32_t now){
  // Sequence-limit rekey still uses the existing primary handshake.
  if(sessionStarted_&&!sessionReady())resetSession(true);
  if(handshake_.timeout(now))resetSession(linkLossHold_||detachedReturn_);
- recoveryHandshake_.expire(now);
+ if(recoveryHandshake_.expire(now)){primaryHandshakeReply_.reset();backupHandshakeReply_.reset();}
+ primaryHandshakeReply_.expire(now,3500U);backupHandshakeReply_.expire(now,6000U);
  // Primary-only actions and stick leases must never survive primary-link loss.
  if(!primaryFresh(now)){
   stickLease_.reset();
@@ -220,6 +221,7 @@ void BoatDualRadioPort::serviceLegacyRxAndFeedback(){
   if(stopAckWasInFlight&&!primaryDriverPending())
    stopAck_.completed(primaryDriverReady()&&primaryDriverSuccess());
   if(!primaryDriverReady()){
+   primaryHandshakeReply_.reset();
    stopAck_.reset(); // A failed PHY cannot retain a response from a dead session.
    statusOutbox_.reset();
    // R30H-13: revoke primary immediately on its transport watchdog fault.
@@ -261,13 +263,15 @@ void BoatDualRadioPort::serviceLegacyRxAndFeedback(){
        radio_frameSeal(report,key_)&&admitPrimaryLegacy(report))
        statusOutbox_.sent(); // TX started; not an actuator/safety ACK
    }
+   primaryHandshakeReply_.service(millis(),3500U,100U,nrfReady_&&!primaryDriverPending(),
+     stopAck_.pending()||statusOutbox_.pending(),[&](const RadioFrame& f){return admitPrimaryLegacy(f);});
   }
  }
  if(sx1262Ready_){
   e22_.update();
   if(backupDriverFault()){
    // R30H-116 closeout: local UART fault must revoke stale backup health.
-   sx1262Ready_=false;lastBackupRxValid_=false;backupStopAck_.reset();backupStatusOutbox_.reset();
+   sx1262Ready_=false;lastBackupRxValid_=false;backupHandshakeReply_.reset();backupStopAck_.reset();backupStatusOutbox_.reset();
    pendingBackupMissionFeedbackValid_=false;
    commandQueue_.discardLink((uint8_t)LINK_LORA_BACKUP,true);
   }else{
@@ -297,6 +301,8 @@ void BoatDualRadioPort::serviceLegacyRxAndFeedback(){
    backupStatusOutbox_.sent();lastBackupHeartbeatTxMs_=backupStatusNow;
   }
  }
+ backupHandshakeReply_.service(millis(),6000U,250U,sx1262Ready_&&backupDriverReady(),
+   backupStopAck_.pending()||backupStatusOutbox_.pending(),[&](const RadioFrame& f){return admitBackupLegacy(f,millis());});
  // Correlated feedback outranks periodic status/heartbeat when E22 was busy.
  if(pendingBackupMissionFeedbackValid_){
   const uint32_t retryNow=millis();
@@ -714,7 +720,7 @@ void BoatDualRadioPort::receiveCaptured(ManagedLink link,const RadioFrame &f,uin
      newSession=recovered;
    }
    if(newSession){
-     recoveryHandshake_.reset();
+     recoveryHandshake_.reset();primaryHandshakeReply_.reset();backupHandshakeReply_.reset();
      const bool preserveLossClock=haveAuthenticatedRx_&&(linkLossHold_||detachedReturn_||recovered);
      if(recovered&&controller_.canDivertHome()&&!detachedReturn_)linkLossHold_=true;
      ++generation_;releaseIdSeen_=false;
@@ -751,8 +757,8 @@ void BoatDualRadioPort::receiveCaptured(ManagedLink link,const RadioFrame &f,uin
 #endif
     if(link==LINK_LORA_BACKUP){
       ack.flags=RADIO_FLAG_BACKUP_LINK;
-      if(radio_frameSeal(ack,rootKey_)&&sx1262Ready_)admitBackupLegacy(ack,now);
-    }else if(radio_frameSeal(ack,rootKey_)&&nrfReady_)admitPrimaryLegacy(ack);
+      if(radio_frameSeal(ack,rootKey_)&&sx1262Ready_)backupHandshakeReply_.offer(ack,now,true);
+    }else if(radio_frameSeal(ack,rootKey_)&&nrfReady_)primaryHandshakeReply_.offer(ack,now,false);
    return;
  }
  if(!sessionStarted_||f.sessionEpoch!=sessionEpoch_||!radio_frameVerify(f,key_))return;
@@ -961,10 +967,10 @@ bool BoatDualRadioPort::sendFrame(ManagedLink link,const RadioFrame &f) {
   // Strict STOP-only reply priority over heartbeat, status, mission, UTC,
   // optional diagnostic and ordinary command ACK traffic. The STOP outbox
   // itself sends through admitPrimaryLegacy() after the RX poll.
-  if(stopAck_.pending()||statusOutbox_.pending())return false;
+  if(stopAck_.pending()||statusOutbox_.pending()||primaryHandshakeReply_.pending())return false;
   return admitPrimaryLegacy(f);
  }
- if(link==LINK_LORA_BACKUP && sx1262Ready_&&!backupStopAck_.pending()){RadioFrame backup=f;backup.flags=RADIO_FLAG_BACKUP_LINK;if(!radio_frameSeal(backup,key_))return false;return admitBackupLegacy(backup,millis());}
+ if(link==LINK_LORA_BACKUP && sx1262Ready_&&!backupStopAck_.pending()&&!backupHandshakeReply_.pending()){RadioFrame backup=f;backup.flags=RADIO_FLAG_BACKUP_LINK;if(!radio_frameSeal(backup,key_))return false;return admitBackupLegacy(backup,millis());}
  return false;
 }
 bool BoatDualRadioPort::primaryOrdinaryTxReady() const {
@@ -975,7 +981,7 @@ bool BoatDualRadioPort::primaryOrdinaryTxReady() const {
  if(!runtimeOwner_.legacy())return false;
  return boat_r30h21::ordinarySlotFree({
      sessionReady(),nrfReady_,primaryDriverPending(),
-     stopAck_.pending(),statusOutbox_.pending()
+     stopAck_.pending(),statusOutbox_.pending()||primaryHandshakeReply_.pending()
  });
 }
 bool BoatDualRadioPort::sendHeartbeat(ManagedLink link,uint32_t now) {

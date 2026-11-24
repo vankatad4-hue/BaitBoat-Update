@@ -9,7 +9,7 @@ public:
   return established&&!primaryFresh&&!backupFresh&&uint32_t(now-lastRx)>=quietMs;
  }
  void reset(){candidate_.reset();}
- void expire(uint32_t now){if(candidate_.timeout(now))reset();}
+ bool expire(uint32_t now){if(!candidate_.timeout(now))return false;reset();return true;}
  bool receive(bool allowed,SessionHandshakeMessage type,const uint8_t payload[8],
               uint64_t nonce,const uint8_t root[32],SessionHmac mac,uint32_t now,
               SessionHandshake& current,SessionHandshakePacket& reply,bool& replaced){

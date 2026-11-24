@@ -26,6 +26,8 @@ on:
       - 'Remote/source/remote_exclusive_runtime.h'
       - 'Remote/source/remote_authenticated_mock_app.h'
       - 'Boat/source/boat_session_recovery.h'
+      - 'Boat/source/boat_handshake_reply.h'
+      - 'Boat/tests/r30h124l_handshake_reply.cpp'
       - 'Boat/tests/r30h124k_session_recovery.cpp'
       - 'Remote/source/remote_mock_peer.h'
       - 'Remote/tests/r30h124j_authenticated_mock.cpp'
@@ -125,3 +127,6 @@ jobs:
 
           g++ -std=c++17 -Wall -Wextra -Werror -Itests/r30h20_stubs -IBoat/source Boat/tests/r30h124k_session_recovery.cpp -lcrypto -o /tmp/boat_session_recovery
           timeout 10s /tmp/boat_session_recovery
+
+          g++ -std=c++17 -Wall -Wextra -Werror -Itests/r30h20_stubs -IBoat/source Boat/tests/r30h124l_handshake_reply.cpp -o /tmp/boat_handshake_reply
+          timeout 10s /tmp/boat_handshake_reply

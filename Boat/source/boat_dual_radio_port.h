@@ -27,6 +27,7 @@ static_assert(BOAT_R30H9_MARKER_GPIO == -1 && BOAT_R30H9_GPIO_OUTPUT_SIGNED == 0
 #include "mission_stick.h"
 #include "radio_session_platform.h"
 #include "boat_session_recovery.h"
+#include "boat_handshake_reply.h"
 #include "r30h123_runtime_owner.h"
 
 // R30H-121E: compile-only application endpoint seam; never starts a PHY task.
@@ -151,6 +152,7 @@ private:
     uint8_t key_[32],rootKey_[32];
     SessionHandshake handshake_;
     BoatSessionRecovery recoveryHandshake_;
+    BoatHandshakeReply primaryHandshakeReply_,backupHandshakeReply_;
     uint32_t lastSessionRx_=0,generation_=0;
     uint16_t lastReleaseId_=0;
     bool releaseIdSeen_=false;
@@ -209,6 +211,7 @@ private:
       if(!haveAuthenticatedRx_||uint32_t(now-observedAt)<=uint32_t(now-lastAnyAuthenticatedRxMs_))lastAnyAuthenticatedRxMs_=observedAt;
       haveAuthenticatedRx_=true;
       recoveryHandshake_.reset(); // accepted old traffic cancels recovery
+      primaryHandshakeReply_.reset();backupHandshakeReply_.reset();
     }
     bool maybeStartFailsafeReturnHome(uint32_t now);
     bool sendMissionFeedback(const MissionControlFeedback &f,uint32_t now);

@@ -1,3 +1,12 @@
+## Active continuation — R30H-124L (2026-11-24)
+
+Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged; physical worker activation and upload locked.
+
+- Exact R30H-124K commit status lookup returned no entries; current target/CI outcomes UNVERIFIED.
+- Actual Boat legacy receive no longer discards a root CHALLENGE/CONFIRM merely because TX is busy: separate bounded reply per link, 3500/6000 ms local expiry, 100/250 ms attempt spacing, STOP ACK and safety STATUS first. Duplicate pending reply cannot extend deadline; accepted session traffic, new proof, session/PHY fault and candidate timeout clear old slots. Local admission not peer receipt. Async Boat OwnerRx reviewed: HELLO/PROOF root verification independent of current session epoch; async TX lane has separate lifecycle and still needs candidate-cancellation correlation before enabling physical workers.
+- Added host test for busy reply, priority, retry throttle, expiry, duplicate, link identity, rollover and unchanged 10000 ms RTH gate. Test registration only; current execution not verified. Ordinary/mission TX migration deferred.
+- Next R30H-124M: obtain real CI push run IDs or run local regression and both PlatformIO targets; fix compile/test failures; exercise actual backup-only handshake with busy TX across both endpoints; resolve asynchronous root reply cancellation; then migrate ordinary/mission TX.
+
 ## Active continuation — R30H-124K (2026-11-24)
 
 Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged. Production worker activation and upload locked.
