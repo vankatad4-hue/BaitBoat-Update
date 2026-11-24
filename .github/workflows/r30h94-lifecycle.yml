@@ -21,6 +21,7 @@ on:
       - 'Remote/source/remote_i2c_phy_service.h'
       - 'Remote/source/remote_i2c_request_scheduler.h'
       - 'Remote/tests/r30h113_i2c_scheduler.cpp'
+      - 'Remote/tests/r30h115_integrated_phy.cpp'
       - 'Remote/tests/r30h111_i2c_dispatcher.cpp'
       - 'Remote/tests/stubs/freertos/**'
       - 'Boat/tests/r30h110_i2c_owner.cpp'
@@ -83,3 +84,5 @@ jobs:
           timeout 10s /tmp/i2c_dispatcher
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -IRemote/source Remote/tests/r30h113_i2c_scheduler.cpp -o /tmp/i2c_scheduler
           timeout 10s /tmp/i2c_scheduler
+          g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -IRemote/source Remote/tests/r30h115_integrated_phy.cpp -o /tmp/integrated_phy
+          timeout 10s /tmp/integrated_phy
