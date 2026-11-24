@@ -16,4 +16,13 @@ int main(){
  TxCompletion c{req.ticket,req.generation,req.link,true};
  assert(h.completions.offer(c));TxCompletion result{};
  assert(h.completions.take(result)&&result.ticket==42&&result.generation==7&&result.success);
+ // Ordinary traffic cannot consume critical capacity.
+ for(unsigned i=0;i<4;++i){tx.ticket=i;assert(h.primaryTx.offer(tx));}
+ tx.ticket=100;tx.link=PhyLink::Primary;assert(h.primaryCritical.offer(tx));
+ tx.ticket=101;assert(h.primaryCritical.offer(tx));
+ assert(!h.primaryCritical.offer(tx));
+ assert(h.takeTx(PhyLink::Primary,req)&&req.ticket==100);
+ assert(h.takeTx(PhyLink::Primary,req)&&req.ticket==101);
+ for(unsigned i=0;i<4;++i){assert(h.takeTx(PhyLink::Primary,req)&&req.ticket==i);}
+ assert(!h.takeTx(PhyLink::Primary,req));
 }
