@@ -176,7 +176,7 @@ static void centreCalibrationEvent(lv_event_t *event)
     // Capture the centre of all four axes.
     if (joystick_calibrateCentre())
     {
-        setStatus("ЦЕНТРАЛНИТЕ СТОЙНОСТИ СА ЗАПИСАНИ");
+        setStatus("ЗАПИС НА ЦЕНТЪР — 0/32");
     }
     else
     {
@@ -407,9 +407,23 @@ static void refreshScreen(lv_timer_t *timer)
     {
         setStatus("ЗАПИС НА КРАЙНИ — МОТОРИТЕ СА ИЗКЛЮЧЕНИ");
     }
+    else if (data.calibrationMode && data.centreCaptureState == CENTRE_RUNNING)
+    {
+        char progress[96];
+        snprintf(progress,sizeof(progress),"ЗАПИС НА ЦЕНТЪР — %u/32",static_cast<unsigned>(data.centreSamples));
+        setStatus(progress);
+    }
+    else if (data.calibrationMode && data.centreCaptureState == CENTRE_FAILED)
+    {
+        setStatus("ГРЕШКА ПРИ ЗАПИС НА ЦЕНТЪР — ПОВТОРИ");
+    }
+    else if (data.calibrationMode && data.centreCaptureState == CENTRE_COMPLETE && !data.calibrationValid)
+    {
+        setStatus("ЦЕНТЪРЪТ Е ЗАПИСАН — ЗАПИШИ КРАЙНИ");
+    }
     else if (data.calibrationMode)
     {
-        setStatus("CALIBRATION ACTIVE - MOTOR OUTPUT DISABLED");
+        setStatus("КАЛИБРАЦИЯ — МОТОРИТЕ СА БЛОКИРАНИ");
     }
     else if (!boatState.emergencyStopConfirmed ||
              !boatState.emergencyStop)
