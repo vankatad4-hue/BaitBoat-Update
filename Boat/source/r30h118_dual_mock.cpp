@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include "r30h118_phy_adapters.h"
 #include "r30h118_transport.h"
+#include "r30h120_phy_service.h"
 #include "r30h118_stop_retry.h"
 #include "r30h118_outcome_gate.h"
 using namespace flytec_r30h118;
@@ -39,18 +40,12 @@ std::atomic<bool> stop{false},done{false};
 bool launched=false,reported=false,gotP=false,gotB=false,okP=false,okB=false;
 bool healthOK=false;
 uint32_t began=0;
-template<class Admit> void service(Transport<uint32_t>& bus,Transport<uint32_t>::Request& r,bool& held,bool& result,uint32_t now,Admit admit){
- if(held){if(!bus.complete(r,result))return;held=false;}
- if(stop.load(std::memory_order_acquire)||!bus.take(r))return;
- result=bus.allows(r,now,1000U)&&admit(r);
- held=!bus.complete(r,result);
-}
 void task(void*){
- Transport<uint32_t>::Request p{},b{};bool ph=false,bh=false,pr=false,br=false;
+ flytec_r30h120::PhyService<uint32_t> p(primary),b(backup);
  while(!stop.load(std::memory_order_acquire)){
   uint32_t now=millis();na.poll(now);ea.poll(now);
-  service(primary,p,ph,pr,now,[&](const auto& r){return na.admit(r.ticket,r.frame);});
-  service(backup,b,bh,br,now,[&](const auto& r){return ea.admit(r.ticket,r.frame,now);});
+  p.step(now,1000U,!stop.load(std::memory_order_acquire),[&](const auto& r){return na.admit(r.ticket,r.frame);});
+  b.step(now,1000U,!stop.load(std::memory_order_acquire),[&](const auto& r){return ea.admit(r.ticket,r.frame,now);});
   vTaskDelay(1);
  }
  done.store(true,std::memory_order_release);vTaskDelete(nullptr);
