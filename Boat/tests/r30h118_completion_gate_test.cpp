@@ -593,6 +593,17 @@ int main(){
  raceWorker.step(503,100,false,true,policy,raceAppAdmit,raceHsAdmit);
  assert(raceStopCalls==1&&raceHsCalls==0);
  assert(raceApp.poll(handshakeAdmitted)&&handshakeAdmitted);
+ // A stale ordinary priority must leave STOP queued for the next STOP cycle.
+ assert(raceApp.invalidate(1));
+ assert(raceApp.submit(hf,510,true));
+ raceMask.publish(32);
+ raceWorker.step(511,100,false,true,policy,raceAppAdmit,raceHsAdmit);
+ assert(raceStopCalls==1&&raceHsCalls==0);
+ assert(!raceApp.poll(handshakeAdmitted));
+ raceMask.publish(1);
+ raceWorker.step(512,100,false,true,policy,raceAppAdmit,raceHsAdmit);
+ assert(raceStopCalls==2&&raceHsCalls==0);
+ assert(raceApp.poll(handshakeAdmitted)&&handshakeAdmitted);
  // Ordinary admission result saturation must not consume STOP capacity.
  Transport<uint32_t> pressure;
  flytec_r30h120::PhyService<uint32_t> pressureWorker(pressure);
