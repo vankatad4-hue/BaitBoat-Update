@@ -157,7 +157,7 @@ void BoatDualRadioPort::resetSession(bool preserveMission){
 }
 bool BoatDualRadioPort::begin() {
  // One initialization attempt per object; no implicit restart after partial failure.
- if(legacyBeginAttempted_)return false;
+ if(legacyBeginAttempted_||!runtimeOwner_.claimLegacy())return false;
  legacyBeginAttempted_=true;
  resetSession();nrfReady_=false;sx1262Ready_=false;authenticated_=radioKey_get(rootKey_);
  lastNrfHeartbeatTxMs_=lastBackupHeartbeatTxMs_=lastBackupHeartbeatAttemptMs_=0;
@@ -201,7 +201,7 @@ void BoatDualRadioPort::prepareApplicationCycle(uint32_t now){
  if(!missionGate_||!missionGate_()||(!primaryFresh(now)&&!backupFresh(now)))mission_.reset();
 }
 void BoatDualRadioPort::serviceLegacyRxAndFeedback(){
- if(!legacyBeginAttempted_)return;
+ if(!legacyBeginAttempted_||!runtimeOwner_.legacy())return;
  if(nrfReady_){
   const bool stopAckWasInFlight=stopAck_.inFlight();
   nrf_.update();
@@ -346,7 +346,7 @@ void BoatDualRadioPort::advanceApplicationCycle(uint32_t safetyNow){
  maybeStartFailsafeReturnHome(safetyNow);
 }
 void BoatDualRadioPort::serviceLegacyPeriodicTx(uint32_t now){
- if(!legacyBeginAttempted_)return;
+ if(!legacyBeginAttempted_||!runtimeOwner_.legacy())return;
  if(sessionReady()) {
    if(nrfReady_ && (uint32_t)(now-lastNrfHeartbeatTxMs_)>=100U) {
      // A busy TX must not advance the heartbeat schedule. The next update
