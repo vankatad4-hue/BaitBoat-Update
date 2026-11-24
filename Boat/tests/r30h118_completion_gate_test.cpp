@@ -292,4 +292,36 @@ int main(){
  assert(!servicePriority(0x7f,true,[&](TxPriority p){++primaryCalls;assert(p==TxPriority::Stop);return false;}));
  assert(servicePriority(0x04,true,[&](TxPriority p){++backupCalls;assert(p==TxPriority::Handshake);return true;}));
  assert(primaryCalls==1&&backupCalls==1);
+
+ Transport<uint32_t> dualP,dualB;
+ PhyEvents<uint32_t> dualPE,dualBE;
+ flytec_r30h121::DualAppRadio<uint32_t> dualEndpoint(dualP,dualPE,dualB,dualBE);
+ assert(dualEndpoint.primary().reset(1)&&dualEndpoint.backup().reset(1));
+ assert(dualPE.publishHealth({10,true,true,false,false}));
+ assert(dualBE.publishHealth({10,true,true,false,false}));
+ unsigned dpCalls=0,dbCalls=0;
+ auto dpService=[&](AppRadio<uint32_t>& ep,TxPriority p){++dpCalls;assert(p==TxPriority::Telemetry);return ep.submit(11,10,false);};
+ auto dbService=[&](AppRadio<uint32_t>& ep,TxPriority p){++dbCalls;assert(p==TxPriority::Telemetry);return ep.submit(22,10,false);};
+ dualEndpoint.step(10,100,200,32,32,dpService,dbService);
+ assert(dpCalls==1&&dbCalls==1);
+ Transport<uint32_t>::Request dpr{},dbr{};
+ assert(dualP.take(dpr)&&dualB.take(dbr));
+ assert(dualP.complete(dpr,true)&&dualB.complete(dbr,true));
+ assert(dualBE.publishOutcome({dbr.ticket,11,PhyOutcome::LocalComplete}));
+ dualEndpoint.step(11,100,200,0,0,dpService,dbService);
+ assert(dualEndpoint.primary().state()==TxState::Admitted);
+ assert(dualEndpoint.backup().state()==TxState::LocalComplete);
+ assert(dualPE.publishHealth({12,true,false,true,false}));
+ dualEndpoint.step(12,100,200,32,32,dpService,dbService);
+ assert(dpCalls==1&&dbCalls==2);
+ assert(dualEndpoint.primary().preemptStop(90,13,1));
+ assert(!dualEndpoint.primary().preemptStop(91,14,1));
+ assert(dualEndpoint.primary().stopRetryPending());
+ assert(dualP.take(dpr)&&!dualP.allows(dpr,15,100));
+ assert(dualB.take(dbr)&&dualB.complete(dbr,true));
+ assert(dualBE.publishOutcome({dbr.ticket,15,PhyOutcome::LocalComplete}));
+ dualEndpoint.step(15,100,200,32,32,dpService,dbService);
+ assert(!dualEndpoint.primary().stopRetryPending());
+ assert(dualP.take(dpr)&&dpr.stop&&dpr.frame==91&&dpr.queuedAt==14);
+ assert(dpCalls==1&&dbCalls==3);
 }
