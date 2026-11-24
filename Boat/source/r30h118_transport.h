@@ -26,12 +26,12 @@ public:
  // Owner calls only after authenticated application rearm authorization.
  bool rearm(uint8_t epoch){if(!invalidate(epoch))return false;stopLatched_=false;return true;}
  uint32_t activeGeneration()const{return owner_.activeGeneration();}
- bool submit(const Frame &frame,uint32_t now,bool stop){
+ bool submit(const Frame &frame,uint32_t now,bool stop,Ticket *submitted=nullptr){
   if(!stop&&stopLatched_)return false;
   Ticket t;
   if(!owner_.issue(t))return false;
   Request r{t,frame,now,stop};
-  if(stop?stop_.push(r):ordinary_.push(r))return true;
+  if(stop?stop_.push(r):ordinary_.push(r)){if(submitted)*submitted=t;return true;}
   owner_.consume(t);return false;
  }
  // Call invalidate before submitting a new STOP to revoke ordinary tickets.
