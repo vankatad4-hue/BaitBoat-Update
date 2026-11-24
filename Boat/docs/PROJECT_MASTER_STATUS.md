@@ -920,3 +920,5 @@ See [full source cleanup and build evidence](../../docs/SOURCE_CLEANUP_R30H_10_R
 ## R30H-124O — paused 2026-11-24
 
 Dual-core development branch `platformio-unified-r30h20`. Centralized Remote asynchronous completion routing and typed result metadata added to dormant worker path and authenticated mock. K/L/M/N portable regressions passed; full CI, PlatformIO and physical radio acceptance remain unverified. Ordinary/mission producers and production activation are not enabled. Resume R30H-124P from [continuation checkpoint](../../docs/CONTINUATION_CHECKPOINT_VER001.md). Official Boat VER014 / Remote VER028 unchanged.
+
+R30H-124O portable completion-router regression PASS (exact Git blobs, C++17 warnings-as-errors); integration/target verification remains outstanding. Resume R30H-124P with ordinary-command authorization and producer, then mission scheduler. No release or physical activation.
