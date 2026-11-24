@@ -680,8 +680,9 @@ void BoatDualRadioPort::serviceAsyncOwner(ManagedLink link,uint32_t now,bool lin
   f.payload[1]=1;
   if(radio_frameSeal(f,key_))queueAsyncApplication(link,f,now,backup?6000U:250U);
  };
- if(!backup&&(!sessionReady()||!linkTrusted)){
-  asyncTelemetry_.reset();optionalDiagnostics_.discard();
+ if(!sessionReady()||!linkTrusted){
+  if(backup)asyncBackupTx_.cancel(asyncBackupOwner_);
+  else{asyncPrimaryTx_.cancel(asyncPrimaryOwner_);asyncTelemetry_.reset();optionalDiagnostics_.discard();}
  }
  if(backup)asyncBackupCycle_.step(now,12000U,12000U,sessionReady(),linkTrusted,buildAck,buildStatus,verify,result,hsResult,ordinary);
  else asyncPrimaryCycle_.step(now,2500U,2500U,sessionReady(),linkTrusted,buildAck,buildStatus,verify,result,hsResult,ordinary);
