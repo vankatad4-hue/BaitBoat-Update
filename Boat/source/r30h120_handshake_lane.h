@@ -69,4 +69,26 @@ public:
  bool complete(const Request &r,bool admitted){return bus_.complete(r,admitted);}
  bool poll(bool &admitted){return bus_.poll(admitted);}
 };
+
+// Worker-local handshake admission; retain completion on queue saturation.
+// A selected but invalid request is rejected, never sent or replaced by lower priority.
+template<class Frame> class HandshakeService {
+ using Lane=HandshakeLane<Frame>;
+ Lane &lane_;
+ typename Lane::Request request_{};
+ bool held_=false,admitted_=false;
+public:
+ explicit HandshakeService(Lane &lane):lane_(lane){}
+ bool flush(){
+  if(held_&&lane_.complete(request_,admitted_))held_=false;
+  return !held_;
+ }
+ template<class Policy,class Admit> bool step(uint32_t now,uint32_t age,bool enabled,Policy permitted,Admit admit){
+  if(!flush()||!enabled||!lane_.take(request_))return false;
+  admitted_=lane_.allows(request_,now,age,permitted)&&admit(request_);
+  held_=!lane_.complete(request_,admitted_);
+  return admitted_;
+ }
+ bool resultPending()const{return held_;}
+};
 }
