@@ -14,6 +14,7 @@ public:
   if(exhausted_||generation_==UINT32_MAX){exhausted_=true;return false;}
   ++generation_; serial_=0; epoch_=epoch; return epoch!=0;
  }
+ uint32_t activeGeneration() const {return epoch_&&!exhausted_?generation_:0;}
  bool issue(Ticket &out){
   if(exhausted_||!epoch_||pending_||serial_==UINT32_MAX)return false;
   ++serial_; pending_=true; out={generation_,serial_,epoch_};return true;
