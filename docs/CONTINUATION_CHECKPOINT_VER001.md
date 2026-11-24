@@ -1,3 +1,9 @@
+# R30H-120 closeout / R30H-121 continuation — 2026-11-24
+
+Verified workflow results across revisions (not a single final-SHA acceptance): Boat host 45374334768; Remote host 45373455688; inventory 45375176211; three dual-core benches 45373997809; single/dual mock and locked physical compile 45374003092; both primary PlatformIO builds 45375176192. All passed. Shared E22 header drift corrected in 793237b. Physical worker and task wrapper are compile-only; no production activation or physical acceptance. Boat VER014 / Remote VER028 unchanged.
+
+Next R30H-121: audit and migrate application radio ownership through copied queues. Before activation resolve handshake ticket domains, admission versus terminal outcomes, STOP arbitration, startup authorization and shutdown uncertainty. Core 1 retains all application and actuator authority. Remote shared I2C ownership unchanged. No upload.
+
 # R30H-119 verified closeout (2026-11-24)
 
 All six software CI categories passed: inventory run 45370375452 and both mock compilation targets 45370375770 at a8c446d; Remote host 45369497690 at aa4bc79; Boat host 45370931699 and both primary PlatformIO targets 45370931697 at 59a934c. Earlier Boat host failure 45370395465 fixed by renaming conflicting test variable in 59a934c. Boat static RAM 26328 B, flash 379088 B; Remote static RAM 184140 B, flash 1426279 B. No physical execution or upload. Next R30H-120: controlled opt-in Boat worker migration preparation, exclusive PHY ownership, pre-session handshake handling, safe shutdown and independent actuator lock; default production radio ownership unchanged. Boat VER014 / Remote VER028 unchanged.
