@@ -13,6 +13,10 @@ public:
 private:
  Config cfg_;
  Bus &nb_,&eb_; Events &ne_,&ee_;
+ HandshakeLane<RadioFrame>* nh_=nullptr;
+ HandshakeLane<RadioFrame>* eh_=nullptr;
+ SharedPriority *np_=nullptr,*ep_=nullptr;
+ uint8_t boatId_=0,remoteId_=0;
  Lifecycle life_;
  std::atomic<uint32_t> maxUs_{0},stackRaw_{0},cycles_{0};
  std::atomic<bool> exited_{false};
@@ -20,7 +24,13 @@ private:
  void run(){
   {
    PhysicalWorker w(cfg_.ce,cfg_.csn,cfg_.spi,cfg_.channel,cfg_.sck,cfg_.miso,cfg_.mosi,nb_,eb_,ne_,ee_);
-   const bool ok=life_.phase()==Phase::Starting&&w.begin(true,cfg_.primary,cfg_.pins,cfg_.backup);
+   // Dormant local lanes support the original compile-only task constructor.
+   HandshakeLane<RadioFrame> unusedN,unusedE;
+   SharedPriority unusedNP,unusedEP;
+   SharedPhyService<RadioFrame> ns(nb_,nh_?*nh_:unusedN,np_?*np_:unusedNP);
+   SharedPhyService<RadioFrame> es(eb_,eh_?*eh_:unusedE,ep_?*ep_:unusedEP);
+   const bool bound=!nh_||w.bindShared(ns,es,boatId_,remoteId_);
+   const bool ok=bound&&life_.phase()==Phase::Starting&&w.begin(true,cfg_.primary,cfg_.pins,cfg_.backup);
    if(ok&&life_.ready()){
     while(life_.enabled()){
      const uint32_t start=micros();
@@ -42,12 +52,17 @@ public:
  PhysicalTask(const Config &c,Bus &nb,Bus &eb,Events &ne,Events &ee):cfg_(c),nb_(nb),eb_(eb),ne_(ne),ee_(ee){}
  PhysicalTask(const PhysicalTask&)=delete;
  PhysicalTask& operator=(const PhysicalTask&)=delete;
+ // Owner-only, before start. External lanes and masks must outlive task exit.
+ bool bindShared(HandshakeLane<RadioFrame>& nh,HandshakeLane<RadioFrame>& eh,SharedPriority& np,SharedPriority& ep,uint8_t boat,uint8_t remote){
+  if(life_.phase()!=Phase::Idle||nh_||&nh==&eh||&np==&ep||&nb_==&eb_||&ne_==&ee_||!boat||!remote||boat==remote)return false;
+  nh_=&nh;eh_=&eh;np_=&np;ep_=&ep;boatId_=boat;remoteId_=remote;return true;
+ }
  bool start(bool commissioningAuthorized,bool legacyOwnerAbsent){
   if(!commissioningAuthorized||!legacyOwnerAbsent||(!cfg_.primary&&!cfg_.backup)||!life_.start())return false;
   if(xTaskCreatePinnedToCore(entry,"boat_phy",6144,this,1,nullptr,0)!=pdPASS){life_.finish(false);exited_.store(true);return false;}
   return true;
  }
- void stop(){nb_.invalidate(0);eb_.invalidate(0);life_.stop();}
+ void stop(){life_.stop();if(np_)np_->publish(0);if(ep_)ep_->publish(0);nb_.invalidate(0);eb_.invalidate(0);if(nh_)nh_->close();if(eh_)eh_->close();}
  Phase phase()const{return life_.phase();}
  bool exited()const{return exited_.load(std::memory_order_acquire);}
  uint32_t maxUs()const{return maxUs_.load();}
