@@ -47,8 +47,8 @@ void task(void*){
  life.ready();
  while(life.enabled()){
   uint32_t now=millis();na.poll(now);ea.poll(now);
-  p.step(now,1000U,life.enabled(),[&](const auto& r){return na.admit(r.ticket,r.frame);});
-  b.step(now,1000U,life.enabled(),[&](const auto& r){return ea.admit(r.ticket,r.frame,now);});
+  p.step(now,1000U,life.enabled(),[&](const auto& r){return na.admit(r.ticket,r.frame,r.stop);});
+  b.step(now,1000U,life.enabled(),[&](const auto& r){return ea.admit(r.ticket,r.frame,now,r.stop);});
   vTaskDelay(1);
  }
  // Fake drivers only: no physical bus or RF shutdown is claimed.
@@ -75,7 +75,7 @@ void loop(){
  if(haveP)healthOK=healthyFresh(hp,millis(),1000U)&&!pe.stickyFault()&&be.stickyFault();
  if(pe.stickyFault())healthOK=false;
  PhyEvents<uint32_t>::Outcome o{};
- while(pe.takeOutcome(o)){if(!pg.accept(o.ticket,primary.activeGeneration()))continue;gotP=true;okP=o.result==PhyOutcome::LocalComplete&&o.ticket.generation==3;}
+ while(pe.takeOutcome(o)){if(!pg.accept(o.ticket,primary.activeGeneration()))continue;gotP=true;okP=o.stop&&o.result==PhyOutcome::LocalComplete&&o.ticket.generation==3;}
  while(be.takeOutcome(o)){if(!bg.accept(o.ticket,backup.activeGeneration()))continue;gotB=true;okB=o.result==PhyOutcome::Uncertain;}
  const bool expired=uint32_t(millis()-began)>=5000U;
  if(launched&&(life.phase()==Phase::Starting||life.enabled())&&((gotP&&gotB&&healthOK)||expired)){
