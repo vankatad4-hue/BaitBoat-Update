@@ -139,12 +139,16 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
             errors.append(f"{endpoint}: custom upload must fail")
     for source, required in (
         ("Boat/source/nrf24_link.h", "TX_PENDING_TIMEOUT_MS = 120U"),
+        ("Boat/source/boat_dual_radio_port.cpp", "bool BoatDualRadioPort::primaryDriverReady() const{return nrf_.ready();}"),
+        ("Boat/source/boat_dual_radio_port.cpp", "bool BoatDualRadioPort::primaryDriverPending() const{return nrf_.txPending();}"),
+        ("Boat/source/boat_dual_radio_port.cpp", "bool BoatDualRadioPort::primaryDriverSuccess() const{return nrf_.lastTxSuccess();}"),
+        ("Boat/source/boat_dual_radio_port.cpp", "bool BoatDualRadioPort::receivePrimaryLegacy(RadioFrame &f){return nrf_.receiveFrame(f);}"),
         ("Boat/source/boat_dual_radio_port.h", '#include "boat_r30h18_stop_ack_outbox.h"'),
         ("Boat/source/boat_r30h18_stop_ack_outbox.h", "MAX_TX_ATTEMPTS=8U"),
         ("Boat/source/boat_r30h18_stop_ack_outbox.h", "template<uint32_t AgeMs=2500U>"),
         ("Boat/source/boat_dual_radio_port.cpp", "stopAck_.offer((uint16_t)cmd.commandId,sessionEpoch_,result,"),
-        ("Boat/source/boat_dual_radio_port.cpp", "stopAck_.due(ackNow,sessionReady(),nrfReady_,nrf_.txPending())"),
-        ("Boat/source/boat_dual_radio_port.cpp", "stopAck_.completed(nrf_.ready()&&nrf_.lastTxSuccess());"),
+        ("Boat/source/boat_dual_radio_port.cpp", "stopAck_.due(ackNow,sessionReady(),nrfReady_,primaryDriverPending())"),
+        ("Boat/source/boat_dual_radio_port.cpp", "stopAck_.completed(primaryDriverReady()&&primaryDriverSuccess());"),
         ("Boat/source/boat_dual_radio_port.cpp", "if(stopAck_.pending()||statusOutbox_.pending())return false;"),
         ("Boat/source/boat_dual_radio_port.h", '#include "boat_r30h19_status_outbox.h"'),
         ("Boat/source/boat_dual_radio_port.h", '#include "boat_r30h21_primary_tx_budget.h"'),
@@ -225,7 +229,7 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
         ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.maySendPeriodic(g_nrfReady,g_nrf.txPending())"),
         ("Remote/source/boat_radio.cpp", "g_primaryStopRetry.reset();g_stopConfirmation.reset();g_backupStopConfirmation.reset();g_backupStopConfirmed=false;g_missionId=0;"),
         ("Remote/source/sc18is606_nrf_link.cpp", "!regWrite(REG_RX_PW_P1,(uint8_t)RADIO_FRAME_SIZE)"),
-        ("Boat/source/boat_dual_radio_port.cpp", "if(!nrf_.ready())"),
+        ("Boat/source/boat_dual_radio_port.cpp", "if(!primaryDriverReady())"),
         ("Remote/source/boat_radio.cpp", "Sc18is606NrfLink g_nrf("),
         ("Remote/source/boat_radio.cpp", "REMOTE_NRF_BRIDGE_HARDWARE_AUDIT_SIGNED &&"),
         ("Remote/source/radio_hw_config.h", "#define REMOTE_NRF_CE_PIN   (-1)"),
@@ -259,8 +263,8 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
     boat_start=boat_radio.find("void BoatDualRadioPort::update()")
     boat_end=boat_radio.find("bool BoatDualRadioPort::maybeStartFailsafeReturnHome",boat_start)
     boat_sequence=("nrf_.update();",
-                   "for(unsigned i=0;i<RX_FRAME_BUDGET&&nrf_.receiveFrame(f);++i)receive(LINK_NRF_PRIMARY,f);",
-                   "stopAck_.due(ackNow,sessionReady(),nrfReady_,nrf_.txPending())",
+                   "for(unsigned i=0;i<RX_FRAME_BUDGET&&receivePrimaryLegacy(f);++i)receive(LINK_NRF_PRIMARY,f);",
+                   "stopAck_.due(ackNow,sessionReady(),nrfReady_,primaryDriverPending())",
                    "statusOutbox_.due(statusNow,sessionReady(),nrfReady_,",
                    "sendHeartbeat(LINK_NRF_PRIMARY,now)",
                    "optionalDiagnostics_.take(opportunity,optionalNow,optionalPayload)")
