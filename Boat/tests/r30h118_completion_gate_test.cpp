@@ -9,6 +9,7 @@
 #include "r30h118_stop_retry.h"
 #include "r30h118_outcome_gate.h"
 #include "r30h120_phy_service.h"
+#include "r30h120_lifecycle.h"
 using namespace flytec_r30h118;
 int main(){
  CompletionGate g; Ticket a,b,c;
@@ -163,4 +164,16 @@ int main(){
  assert(!serviceBus.poll(admitted));
  service.step(3,100,false,serviceAdmit);assert(!service.resultPending());
  assert(serviceCalls==6);
+ using flytec_r30h120::Lifecycle;
+ using flytec_r30h120::Phase;
+ Lifecycle life;
+ assert(!life.enabled());assert(life.start());assert(!life.start());
+ assert(life.ready()&&life.enabled());life.stop();assert(!life.enabled());
+ assert(life.finish(true)&&life.phase()==Phase::Stopped);assert(!life.start());
+ Lifecycle early;assert(early.start());early.stop();assert(!early.ready());
+ assert(early.finish(true)&&early.phase()==Phase::Stopped);
+ Lifecycle failed;assert(failed.start());assert(failed.finish(false));
+ assert(failed.phase()==Phase::Failed&&!failed.start());
+ Lifecycle unsafe;assert(unsafe.start());assert(unsafe.ready());unsafe.stop();
+ assert(unsafe.finish(false)&&unsafe.phase()==Phase::Failed);
 }
