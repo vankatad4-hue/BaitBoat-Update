@@ -76,6 +76,9 @@ bool radio_decodeHeartbeatPayload(const uint8_t payload[8], RadioDecodedPayload 
 bool radio_decodeAckPayload(const uint8_t payload[8], RadioDecodedPayload &out);
 bool radio_decodeTelemetryPayload(const uint8_t payload[8], RadioDecodedPayload &out);
 
+#endif // FLYTEC_RADIO_PAYLOAD_CODEC_SHARED_TYPES_H
+
+// Boat-only declarations remain visible when Remote's shared types were included first.
 // Portable little-endian payload encoders. On invalid input, zero the output
 // and return false. These encode payloads only, not authenticated RadioFrames.
 bool radio_encodeHeartbeatPayload(uint8_t flags,uint8_t buildMajor,uint8_t out[8]);
@@ -87,4 +90,3 @@ bool radio_encodeLongitudePayload(uint8_t sample,int32_t longitudeE7,uint8_t out
 bool radio_encodeNavigationPayload(uint16_t headingCentidegrees,uint16_t speedCmPerSecond,uint8_t navigationStatus,uint8_t waypointIndex,uint8_t sample,uint8_t out[8]);
 bool radio_encodeSonarSummaryPayload(uint16_t depthCm,uint16_t rangeCm,uint8_t health,uint8_t alarmFlags,uint8_t sample,uint8_t out[8]);
 
-#endif // FLYTEC_RADIO_PAYLOAD_CODEC_SHARED_TYPES_H
