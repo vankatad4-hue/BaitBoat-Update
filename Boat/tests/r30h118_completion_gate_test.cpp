@@ -459,4 +459,20 @@ int main(){
  primaryPriority.publish(0);
  assert(!primaryPriority.service(false,true,priorityApp,priorityHs));
  assert(backupPriority.snapshot()==4);
+ // Worker handshake service: disabled, stale and valid requests.
+ HandshakeLane<HandshakeFrame> workerLane;
+ flytec_r30h120::HandshakeService<HandshakeFrame> hsWorker(workerLane);
+ unsigned hsAdmissions=0;
+ auto hsAdmit=[&](const HandshakeLane<HandshakeFrame>::Request &req){
+  ++hsAdmissions;assert(req.ticket.domain==TicketDomain::Handshake);return true;
+ };
+ assert(workerLane.begin());
+ assert(workerLane.submit(hf,100,policy));
+ assert(!hsWorker.step(101,10,false,policy,hsAdmit));
+ assert(!hsWorker.step(110,10,true,policy,hsAdmit));
+ assert(workerLane.poll(handshakeAdmitted)&&!handshakeAdmitted&&hsAdmissions==0);
+ assert(workerLane.submit(hf,111,policy));
+ assert(hsWorker.step(112,10,true,policy,hsAdmit));
+ assert(workerLane.poll(handshakeAdmitted)&&handshakeAdmitted&&hsAdmissions==1);
+ assert(!hsWorker.resultPending());
 }
