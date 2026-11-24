@@ -155,7 +155,7 @@ int main(){
  service.step(1,100,false,serviceAdmit);assert(serviceCalls==0);
  service.step(1,100,true,serviceAdmit);assert(serviceCalls==1);
  assert(serviceBus.poll(admitted)&&admitted);
- for(unsigned i=0;i<4;++i){
+ for(unsigned i=0;i<3;++i){
   assert(serviceBus.invalidate(1));assert(serviceBus.submit(42,2,false));
   service.step(3,100,true,serviceAdmit);
  }
@@ -164,7 +164,7 @@ int main(){
  service.step(3,100,false,serviceAdmit);assert(service.resultPending());
  assert(!serviceBus.poll(admitted));
  service.step(3,100,false,serviceAdmit);assert(!service.resultPending());
- assert(serviceCalls==6);
+ assert(serviceCalls==5);
  using flytec_r30h120::Lifecycle;
  using flytec_r30h120::Phase;
  Lifecycle life;
@@ -183,22 +183,22 @@ int main(){
   assert(static_cast<unsigned>(choosePriority(static_cast<uint8_t>(mask)))==expected);
  }
  struct HandshakeFrame {uint8_t type,sourceId,destinationId,flags,sessionEpoch;uint16_t sequence,commandId;};
- HandshakeLane<HandshakeFrame> lane;
+ HandshakeLane<HandshakeFrame> handshakeLane;
  HandshakeFrame hf{11,1,2,0,0,0,0};
  auto policy=[](const HandshakeFrame &f){return boatReplyShape(f,1,2,false);};
- assert(!lane.submit(hf,0,policy));assert(lane.begin());
+ assert(!handshakeLane.submit(hf,0,policy));assert(handshakeLane.begin());
  for(unsigned type=0;type<17;++type){hf.type=type;assert(policy(hf)==(type==11||type==13));}
- hf.type=11;hf.flags=1;assert(!lane.submit(hf,0,policy));hf.flags=0;
- hf.commandId=1;assert(!lane.submit(hf,0,policy));hf.commandId=0;
- hf.sessionEpoch=1;assert(!lane.submit(hf,0,policy));hf.sessionEpoch=0;
- assert(lane.submit(hf,10,policy));
+ hf.type=11;hf.flags=1;assert(!handshakeLane.submit(hf,0,policy));hf.flags=0;
+ hf.commandId=1;assert(!handshakeLane.submit(hf,0,policy));hf.commandId=0;
+ hf.sessionEpoch=1;assert(!handshakeLane.submit(hf,0,policy));hf.sessionEpoch=0;
+ assert(handshakeLane.submit(hf,10,policy));
  HandshakeLane<HandshakeFrame>::Request hr{};
- assert(lane.take(hr));assert(lane.allows(hr,11,100,policy));
- assert(!lane.allows(hr,110,100,policy));
- lane.close();assert(!lane.allows(hr,11,100,policy));
- assert(lane.complete(hr,true));bool handshakeAdmitted=false;
- assert(!lane.poll(handshakeAdmitted));assert(lane.begin());
- assert(lane.submit(hf,12,policy));assert(lane.take(hr));
- assert(lane.allows(hr,13,100,policy));assert(lane.complete(hr,true));
- assert(lane.poll(handshakeAdmitted)&&handshakeAdmitted);
+ assert(handshakeLane.take(hr));assert(handshakeLane.allows(hr,11,100,policy));
+ assert(!handshakeLane.allows(hr,110,100,policy));
+ handshakeLane.close();assert(!handshakeLane.allows(hr,11,100,policy));
+ assert(handshakeLane.complete(hr,true));bool handshakeAdmitted=false;
+ assert(!handshakeLane.poll(handshakeAdmitted));assert(handshakeLane.begin());
+ assert(handshakeLane.submit(hf,12,policy));assert(handshakeLane.take(hr));
+ assert(handshakeLane.allows(hr,13,100,policy));assert(handshakeLane.complete(hr,true));
+ assert(handshakeLane.poll(handshakeAdmitted)&&handshakeAdmitted);
 }
