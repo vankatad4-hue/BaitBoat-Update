@@ -32,15 +32,19 @@ public:
  void step(uint32_t now,uint32_t age,bool busy,bool enabled,Policy policy,AppAdmit appAdmit,HsAdmit hsAdmit){
   const bool appClear=app_.flush();
   const bool hsClear=handshake_.flush();
-  if(!appClear||!hsClear)return;
+  // A held handshake admission result must not block the independent STOP lane.
+  if(!appClear)return;
+  if(!hsClear&&choosePriority(priority_.snapshot())!=TxPriority::Stop)return;
   priority_.service(busy,enabled,[&](TxPriority selected){
+   if(!hsClear&&selected!=TxPriority::Stop)return false;
    app_.step(now,age,true,[&](const typename flytec_r30h118::Transport<Frame>::Request &r){
     // A stale advisory STOP mask must never admit an ordinary request.
     return (selected==TxPriority::Stop)==r.stop&&
      choosePriority(priority_.snapshot())==selected&&appAdmit(r);
    });
    return true;
-  },[&](){return handshake_.step(now,age,true,policy,[&](const typename HandshakeLane<Frame>::Request &r){
+  },[&](){if(!hsClear)return false;
+  return handshake_.step(now,age,true,policy,[&](const typename HandshakeLane<Frame>::Request &r){
    return choosePriority(priority_.snapshot())==TxPriority::Handshake&&hsAdmit(r);
   });});
  }
