@@ -43,6 +43,16 @@ public:
   if(app_.stopRetryPending()||!app_.submit(f,now,false,age))return false;
   appClass_=p;publish();return true;
  }
+ // Boat-originated, authenticated feedback only. Never use this path for
+ // a Remote command. Numeric types are the fixed radio protocol wire ABI.
+ template<class Verify> bool submitFeedback(const Frame& f,uint32_t now,TxPriority p,uint32_t age,Verify verify){
+  const bool shape=(f.type==1U&&p==TxPriority::Heartbeat)||
+    ((f.type==5U||f.type==9U||f.type==15U)&&p==TxPriority::Mission)||
+    (f.type==3U&&(p==TxPriority::Telemetry||p==TxPriority::Diagnostic));
+  if(!shape||!epoch_||f.sessionEpoch!=epoch_||!f.sequence||!age||!verify(f)||!app_.feedbackReady())return false;
+  if(!app_.submit(f,now,false,age,true))return false;
+  appClass_=p;publish();return true;
+ }
  // STOP-class reply may preempt queued ordinary work; never revokes active RF.
  // A false return can mean retained retry, not successful admission.
  template<class Verify> bool submitStop(const Frame& f,uint32_t now,uint32_t age,Verify verify){
@@ -55,7 +65,7 @@ public:
  // latched. Unlike a STOP ACK, it never preempts other queued work.
  template<class Verify> bool submitStatus(const Frame& f,uint32_t now,uint32_t age,bool stopped,Verify verify){
   if(!epoch_||f.sessionEpoch!=epoch_||!f.sequence||!age||!verify(f)||app_.stopRetryPending()||app_.terminalPending())return false;
-  if(!app_.submit(f,now,stopped,age))return false;
+  if(!app_.submit(f,now,stopped,age,true))return false;
   appClass_=stopped?TxPriority::Stop:TxPriority::Safety;publish();return true;
  }
  bool revokeStatus(const Ticket& t){
@@ -79,6 +89,7 @@ public:
   return ok;
  }
  bool ordinaryReady()const{return epoch_&&app_.ordinaryReady();}
+ bool feedbackReady()const{return epoch_&&app_.feedbackReady();}
  bool stopRetryPending()const{return app_.stopRetryPending();}
  Ticket currentTicket()const{return app_.currentTicket();}
  bool takeApplication(Ticket& ticket,TxState& state){return app_.takeTerminal(ticket,state);}
