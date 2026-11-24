@@ -33,6 +33,9 @@ bool BoatDualRadioPort::missionReleaseComplete(uint16_t transaction,uint16_t tok
  return controller_.releaseComplete(transaction,token,success&&safe,safe);
 }
 bool BoatDualRadioPort::sendHardwareTelemetry(const RadioDecodedPayload &status){
+ return sendHardwareTelemetry(status,millis());
+}
+bool BoatDualRadioPort::sendHardwareTelemetry(const RadioDecodedPayload &status,uint32_t sampledAt){
  const uint32_t now=millis();
  if(sessionReady()&&backupFresh(now)&&status.kind==RADIO_PAYLOAD_STATUS){
   if(status.stopState==1U)backupStatusOutbox_.offer(status,now);
@@ -54,6 +57,12 @@ bool BoatDualRadioPort::sendHardwareTelemetry(const RadioDecodedPayload &status)
   if(!radio_encodeTelemetryPayload(status,payload))return false;
   return optionalDiagnostics_.offer(payload,now);
  }
+#if BOAT_R30H121_ENDPOINT_COMPILE
+ if(BOAT_R30H121_PHYSICAL_OWNER){
+  uint8_t payload[8]{};
+  return uint32_t(now-sampledAt)<flytec_r30h123::TelemetrySlots::MAX_AGE_MS&&radio_encodeTelemetryPayload(status,payload)&&asyncTelemetry_.offer(payload,sampledAt);
+ }
+#endif
  if(!primaryOrdinaryTxReady())return false; // Never burn a sequence on busy TX.
  RadioFrame f;radio_frameInit(f,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,++txSequence_,0,now,sessionEpoch_);
  return radio_encodeTelemetryPayload(status,f.payload)&&radio_frameSeal(f,key_)&&sendFrame(LINK_NRF_PRIMARY,f);
@@ -131,7 +140,7 @@ void BoatDualRadioPort::resetSession(bool preserveMission){
  }
  handshake_.reset();radioSession_wipe(key_,32);sessionStarted_=false;
 #if BOAT_R30H121_ENDPOINT_COMPILE
- if(BOAT_R30H121_PHYSICAL_OWNER){asyncPrimaryTx_.reset();asyncBackupTx_.reset();asyncPrimaryCycle_.close();asyncBackupCycle_.close();}
+ if(BOAT_R30H121_PHYSICAL_OWNER){asyncPrimaryTx_.reset();asyncBackupTx_.reset();asyncTelemetry_.reset();asyncPrimaryCycle_.close();asyncBackupCycle_.close();}
 #endif
  primarySeqGuard_.resetAfterHandshake();backupSeqGuard_.resetAfterHandshake();crossRadioSeqGuard_.resetAfterHandshake();
  lastNrfRxValid_=lastBackupRxValid_=false;commandQueue_.clear();mission_.reset();dedupe_.clear();txSequence_=0;
@@ -480,7 +489,7 @@ void BoatDualRadioPort::completeAsyncApplication(ManagedLink link,const flytec_r
   });
 }
 bool BoatDualRadioPort::resetAsyncSession(uint8_t epoch){
- asyncPrimaryTx_.reset();asyncBackupTx_.reset();
+ asyncPrimaryTx_.reset();asyncBackupTx_.reset();asyncTelemetry_.reset();
  const bool p=asyncPrimaryCycle_.resetSession(epoch);
  const bool b=asyncBackupCycle_.resetSession(epoch);
  return p&&b;
@@ -527,7 +536,17 @@ void BoatDualRadioPort::serviceAsyncOwner(ManagedLink link,uint32_t now,bool lin
    }
   }
   const uint32_t last=backup?lastBackupHeartbeatTxMs_:lastNrfHeartbeatTxMs_;
-  if(uint32_t(now-last)<(backup?3000U:100U))return;
+  if(uint32_t(now-last)<(backup?3000U:100U)){
+   if(backup||!primaryFresh(now))return;
+   uint8_t payload[8]{};uint32_t remaining=0;
+   if(asyncTelemetry_.take(now,payload,remaining)){
+    RadioFrame f{};
+    radio_frameInit(f,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,++txSequence_,0,now,sessionEpoch_);
+    memcpy(f.payload,payload,8);
+    if(radio_frameSeal(f,key_))queueAsyncApplication(link,f,now,remaining);
+   }
+   return;
+  }
   if(backup){
    if(uint32_t(now-lastBackupHeartbeatAttemptMs_)<250U)return;
    lastBackupHeartbeatAttemptMs_=now;
