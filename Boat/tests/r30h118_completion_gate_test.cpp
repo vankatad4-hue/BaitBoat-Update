@@ -418,4 +418,24 @@ int main(){
  assert(authLane.submitAuthenticated(hf,102,policy,acceptAuth,&confirmTicket));
  assert(authLane.take(hr)&&sameTicket(hr.ticket,confirmTicket));
  assert(authLane.complete(hr,true)&&authLane.poll(handshakeAdmitted)&&handshakeAdmitted);
+
+ // Exhaustive shared-PHY selection, including failed admission.
+ for(unsigned mask=0;mask<256;++mask){
+  for(unsigned busy=0;busy<2;++busy)for(unsigned enabled=0;enabled<2;++enabled)
+   for(unsigned accept=0;accept<2;++accept){
+    unsigned appCalls=0,hsCalls=0;
+    const auto selected=choosePriority(static_cast<uint8_t>(mask));
+    const bool eligible=enabled&&!busy&&selected!=TxPriority::None;
+    const bool result=serviceSharedPhy(static_cast<uint8_t>(mask),busy,enabled,
+     [&](TxPriority p){++appCalls;assert(p==selected&&p!=TxPriority::Handshake);return accept!=0;},
+     [&](){++hsCalls;assert(selected==TxPriority::Handshake);return accept!=0;});
+    assert(result==(eligible&&accept));
+    assert(appCalls==(eligible&&selected!=TxPriority::Handshake?1U:0U));
+    assert(hsCalls==(eligible&&selected==TxPriority::Handshake?1U:0U));
+   }
+ }
+ unsigned sharedPrimaryCalls=0,sharedBackupCalls=0;
+ assert(!serviceSharedPhy(0x05,true,true,[&](TxPriority){++sharedPrimaryCalls;return true;},[&](){++sharedPrimaryCalls;return true;}));
+ assert(serviceSharedPhy(0x05,false,true,[&](TxPriority p){++sharedBackupCalls;assert(p==TxPriority::Stop);return true;},[&](){++sharedBackupCalls;return false;}));
+ assert(sharedPrimaryCalls==0&&sharedBackupCalls==1);
 }
