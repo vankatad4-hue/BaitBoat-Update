@@ -68,6 +68,8 @@ static uint32_t g_backupStopStartedMs=0;
 static constexpr uint32_t BACKUP_STOP_RETRY_LIFETIME_MS=15000U;
 static flytec_r30h15::PrimaryStopRetry<BoatCommand> g_primaryStopRetry;
 static flytec_r30h17::StopConfirmationGate g_stopConfirmation;
+static flytec_r30h17::StopConfirmationGate g_backupStopConfirmation;
+static bool g_backupStopConfirmed=false;
 static uint8_t g_authKey[32],g_rootKey[32];
 static bool g_rootReady=false;
 static SessionHandshake g_session;
@@ -85,7 +87,7 @@ static void resetSession(uint32_t now){
     g_session.reset();radioSession_wipe(g_authKey,32);
     g_gpsUtcClock.reset(); // no stale UTC authority across auth epochs
     g_manualConfirmRequired=true;g_stopMustConfirm=true;g_manualTransitionAt=now;
-    g_txSequence=0;g_stopPending=false;g_primaryStopRetry.reset();g_stopConfirmation.reset();g_missionId=0;g_missionUpload.fail();g_missionControl.reset();g_lastStickTx=now-50U;
+    g_txSequence=0;g_stopPending=false;g_primaryStopRetry.reset();g_stopConfirmation.reset();g_backupStopConfirmation.reset();g_backupStopConfirmed=false;g_missionId=0;g_missionUpload.fail();g_missionControl.reset();g_lastStickTx=now-50U;
     g_boatSequenceGuard.resetAfterHandshake();g_boatPrimarySequenceGuard.resetAfterHandshake();g_boatBackupSequenceGuard.resetAfterHandshake();
     g_ackTracker.reset(0);telemetryInit();
     boatState.emergencyStop=true;boatState.emergencyStopConfirmed=false;boatState.actuatorSafetyReady=false;
@@ -228,6 +230,7 @@ bool boatRadio_sendCommand(const BoatCommand &command) {
     if(command.type==CMD_EMERGENCY_STOP){
         g_missionControl.reset();g_stopMustConfirm=true;g_manualConfirmRequired=true;
         g_manualTransitionAt=millis();g_stopConfirmation.request(command.commandId);
+        g_backupStopConfirmation.request(command.commandId);g_backupStopConfirmed=false;
     }
     if(command.type==CMD_EMERGENCY_STOP && (g_missionUpload.state()==UPLOAD_ACTIVE||g_missionUpload.state()==UPLOAD_PREPARED))g_missionUpload.fail();
     if(!g_begun) return false;
@@ -299,6 +302,7 @@ bool boatRadio_missionControlPending(){return g_missionControl.pending();}
 bool boatRadio_missionControlUnknown(){return g_missionControl.unknown();}
 MissionControlResult boatRadio_missionControlResult(){return g_missionControl.result();}
 bool boatRadio_missionLocked(){return g_missionUpload.state()==UPLOAD_ACTIVE||g_missionUpload.state()==UPLOAD_PREPARED||g_missionControl.locked();}
+bool boatRadio_backupStopConfirmed(){return g_backupStopConfirmed&&sessionReady()&&g_linkManager.backupHealthy(millis());}
 bool boatRadio_stopConfirmationPending(){return g_stopMustConfirm;}
 bool boatRadio_manualModeConfirmed(){return !g_manualConfirmRequired&&!g_stopMustConfirm&&!boatRadio_missionLocked()&&telemetry.statusValid&&telemetry.statusPrimary&&millis()-telemetry.statusReceivedAtMs<1000U&&telemetry.reportedMode==MODE_MANUAL;}
 bool boatRadio_missionControl(MissionControlOp op){
@@ -363,6 +367,7 @@ static bool dispatchValidatedPayload(ManagedLink link,const RadioFrame &frame,ui
                 // next sequenced primary status to this logical request ID.
                 const bool accepted=decoded.ackResult==RADIO_ACK_ACCEPTED||
                                     decoded.ackResult==RADIO_ACK_EXECUTED;
+                if(link==LINK_LORA_BACKUP)g_backupStopConfirmation.acceptedAck(decoded.commandId,accepted);
                 g_stopConfirmation.acceptedAck(decoded.commandId,accepted);
             }
             return true;
@@ -378,6 +383,10 @@ static bool dispatchValidatedPayload(ManagedLink link,const RadioFrame &frame,ui
             }
             if(!radio_decodeTelemetryPayload(frame.payload,decoded)) return false;
             if(!telemetryApplyRadioPayload(decoded,link==LINK_NRF_PRIMARY,now))return false;
+            if(link==LINK_LORA_BACKUP&&decoded.kind==RADIO_PAYLOAD_STATUS){
+                g_backupStopConfirmed=g_backupStopConfirmation.armed()&&g_backupStopConfirmation.allowsStopStatus(true,decoded.stopState==1);
+                if(g_backupStopConfirmed)g_stopPending=false; // does not clear primary movement interlock
+            }
             if(link==LINK_NRF_PRIMARY&&decoded.kind==RADIO_PAYLOAD_STATUS){
                 if(g_stopConfirmation.allowsStopStatus(true,decoded.stopState==1)){
                     g_stopMustConfirm=false;
@@ -457,7 +466,7 @@ void boatRadio_update() {
         g_lora.update();
         if(g_lora.transportFault()){
             // Revoke stale backup health; do not clear the STOP confirmation gate.
-            g_loraConfigured=false;g_stopPending=false;
+            g_loraConfigured=false;g_stopPending=false;g_backupStopConfirmed=false;g_backupStopConfirmation.reset();
             g_linkManager.setTransportReady(LINK_LORA_BACKUP,false);
             g_linkManager.reportFailure(LINK_LORA_BACKUP);
         }else{
