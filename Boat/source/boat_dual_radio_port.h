@@ -35,6 +35,7 @@ static_assert(BOAT_R30H9_MARKER_GPIO == -1 && BOAT_R30H9_GPIO_OUTPUT_SIGNED == 0
 #include "r30h123_owner_cycle.h"
 #include "r30h123_owner_rx.h"
 #include "r30h123_ordinary_tx.h"
+#include "r30h123_telemetry_slots.h"
 #endif
 
 // Link values match the Remote manager and queue records.
@@ -78,6 +79,7 @@ public:
     // For subtype 8 true means one bounded best-effort slot was offered,
     // NOT delivered, ACKed or permitted to change actuator state.
     bool sendHardwareTelemetry(const RadioDecodedPayload &status);
+    bool sendHardwareTelemetry(const RadioDecodedPayload &status,uint32_t sampledAt);
     // Diagnostic UTC observation only: no link lease, ACK, navigation or
     // actuator authorization. Sent best effort on primary nRF only.
     void offerGnssUtc(const flytec_utc::Sample &utc){utcSource_=utc;}
@@ -116,6 +118,7 @@ private:
     flytec_r30h123::OwnerRx<RadioFrame> asyncPrimaryRx_{asyncRadio_.primary(),0x01,0x02,false};
     flytec_r30h123::OwnerRx<RadioFrame> asyncBackupRx_{asyncRadio_.backup(),0x01,0x02,true};
     flytec_r30h123::OrdinaryTx<RadioFrame> asyncPrimaryTx_,asyncBackupTx_;
+    flytec_r30h123::TelemetrySlots asyncTelemetry_;
     void completeAsyncApplication(ManagedLink link,const flytec_r30h118::Ticket &ticket,flytec_r30h121::TxState state,uint32_t now);
     unsigned drainAsyncRx(ManagedLink link,uint32_t now);
     void serviceAsyncOwner(ManagedLink link,uint32_t now,bool linkTrusted);
