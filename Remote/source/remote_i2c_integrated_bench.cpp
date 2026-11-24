@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include "dual_phy_worker.h"
 #include "remote_worker_runtime.h"
+#include "remote_async_tx.h"
 #include "remote_i2c_request_scheduler.h"
 #include "remote_i2c_phy_service.h"
 #include "nrf_phy_adapter.h"
@@ -44,6 +45,8 @@ static D dispatcher(clockUs);
 static S scheduler(dispatcher);
 static RadioFrameHandoff handoff;
 static TxGenerationGate gate;
+static RemoteRadioOwner radioOwner;
+static RemoteAsyncTx asyncTx(radioOwner,handoff,gate);
 static MockNrf nrf;
 static MockE22 lora;
 static NrfPhyAdapter<MockNrf> primary(nrf);
@@ -57,16 +60,22 @@ static uint32_t stopQueuedUs=0,stopAdmissionUs=0,stopLocalUs=0,faultInjectedMs=0
 static bool stopLocal=false,faultObserved=false;
 static bool running=false, injected=false, primaryEvidence=false, backupEvidence=false, failed=false;
 static uint32_t started=0,backupBefore=0;
-static bool submit(PhyLink link,uint32_t ticket){
- TxRequest r{};r.ticket=ticket;r.generation=1;r.link=link;
- return link==PhyLink::Primary?handoff.primaryTx.offer(r):handoff.backupTx.offer(r);
+static uint32_t primaryTicket=0,backupTicket=0,stopTicket=0;
+static bool submit(PhyLink link,uint16_t id,bool stop,uint32_t& ticket){
+ // Mock frames only: the live application must provide sealed frames.
+ RadioFrame f{};f.type=RADIO_MSG_ACTION;f.commandId=id;f.sessionEpoch=1;
+ f.flags=link==PhyLink::Backup?RADIO_FLAG_BACKUP_LINK:0;
+ f.payload[0]=stop?CMD_EMERGENCY_STOP:CMD_SET_MODE;
+ const uint32_t now=millis();
+ return asyncTx.submit(link,f,now,stop?700U:400U,now,ticket)==RemoteAsyncTx::Submit::Queued;
 }
 void setup(){
  Serial.begin(115200);
  Serial.println("R30H-114 mock PHY / owner-task bench; no hardware drivers");
  if(xPortGetCoreID()!=1||!bindRemoteI2cOwner()||!dispatcher.begin()||
-    !handoff.begin()||!gate.transition(1)||!submit(PhyLink::Primary,1)||
-    !submit(PhyLink::Backup,2)||!runtime.begin(true,true)){
+    !handoff.begin()||!radioOwner.claimWorker(true)||!asyncTx.beginSession(1)||
+    !asyncTx.rearm(true)||!submit(PhyLink::Primary,1,false,primaryTicket)||
+    !submit(PhyLink::Backup,2,false,backupTicket)||!runtime.begin(true,true)){
   Serial.println("FAIL setup");return;
  }
  started=millis();running=true;
@@ -77,28 +86,27 @@ void loop(){
  ownerTiming.begin(micros());
  if(!runtime.tick(now))failed=true;
  ownerTiming.end(micros());
- TxCompletion c;
- if(handoff.takeCompletion(PhyLink::Primary,c)){
-  primaryEvidence=c.ticket==1&&c.success&&c.evidence==TxEvidence::NrfAck;
+ RemoteAsyncTx::Result c;
+ if(asyncTx.take(PhyLink::Primary,millis(),c)){
+  primaryEvidence=c.ticket==primaryTicket&&c.commandId==1&&!c.stop&&c.outcome==RemoteAsyncTx::Outcome::NrfAck;
   if(!primaryEvidence)failed=true;
  }
- if(handoff.takeCompletion(PhyLink::Backup,c)){
-  if(c.ticket==2&&!c.success&&c.evidence==TxEvidence::LocalReady)backupEvidence=true;
-  else if(c.ticket==3&&c.generation==2&&!c.success&&c.evidence==TxEvidence::LocalReady){
+ if(asyncTx.take(PhyLink::Backup,millis(),c)){
+  if(c.ticket==backupTicket&&c.commandId==2&&!c.stop&&c.outcome==RemoteAsyncTx::Outcome::LocalReady)backupEvidence=true;
+  else if(c.ticket==stopTicket&&c.commandId==3&&c.stop&&c.outcome==RemoteAsyncTx::Outcome::LocalReady){
    stopLocal=true;stopAdmissionUs=lora.lastAdmissionUs-stopQueuedUs;stopLocalUs=micros()-stopQueuedUs;
   }else failed=true;
  }
  if(!injected&&elapsed>=500){
   injected=true;backupBefore=lora.polls;nrf.active=false;faultInjectedMs=now;
-  TxRequest stop{};stop.ticket=3;stop.generation=2;stop.link=PhyLink::Backup;
-  stopQueuedUs=micros();if(!gate.latchStop(2)||!handoff.backupCritical.offer(stop))failed=true;
+  stopQueuedUs=micros();if(!asyncTx.requestStop(3)||!submit(PhyLink::Backup,3,true,stopTicket))failed=true;
  }
  if(injected&&!faultObserved&&scheduler.status(P)==S::State::Fault){faultObserved=true;faultObservedMs=now;}
  if(elapsed>=1200||failed){
   const bool pass=!failed&&primaryEvidence&&backupEvidence&&stopLocal&&faultObserved&&injected&&
     scheduler.status(P)==S::State::Fault&&scheduler.status(B)!=S::State::Fault&&
     lora.polls>backupBefore&&runtime.permit();
-  runtime.requestStop();worker.stop();running=false;
+  asyncTx.invalidateSession();runtime.requestStop();worker.stop();radioOwner.retire();running=false;
   const auto& t=timedScheduler.timing();
   const auto pm=dispatcher.metrics(P),bm=dispatcher.metrics(B);
   Serial.printf("core0 callbacks=%lu mean_us=%lu max_us=%lu gap_max_us=%lu\\n",(unsigned long)t.duration.count,(unsigned long)t.duration.mean(),(unsigned long)t.duration.max,(unsigned long)t.gap.max);

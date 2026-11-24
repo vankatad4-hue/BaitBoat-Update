@@ -1,3 +1,13 @@
+## Active continuation — R30H-124F (2026-11-24)
+
+Branch `platformio-unified-r30h20`. Official Boat VER014 / Remote VER028 unchanged; VS Code + PlatformIO primary. Physical worker activation and upload remain locked.
+
+- R30H-124E: exclusive Remote owner selection and local RX age gate; regression head [429daf5](https://github.com/vankatad4-hue/BaitBoat-Update/commit/429daf51160fce429b3d5630274155dfa39293c9). The 100 ms RX freshness limit remains provisional.
+- R30H-124F: [4625cde](https://github.com/vankatad4-hue/BaitBoat-Update/commit/4625cde9f54522e8deaf292977f013039aeb2a49) adds RemoteAsyncTx, one tracked request per link, stable STOP command-ID correlation, unique tickets, local generation invalidation even if the 8-bit wire epoch repeats, and caller-supplied original timestamp/lifetime. Both mirrored PHY adapters now forward poll time to the shared bounded admission service, which rejects expired queued/dequeued work. A zero lifetime is retained only for existing legacy mock callers. Queue admission, nRF local ACK and E22 local-ready remain distinct from authenticated Boat STOP ACK plus fresh stopped STATUS.
+- Isolated mock bench now uses the new Remote seam; its 400/700 ms deadlines are mock-only, not commissioned real-radio limits. No production send callers, real authentication/reset hooks, STOP retry accounting or application ACK/STATUS gate have been migrated. A PHY TX already admitted cannot be revoked, and a sampled poll time is not a hard real-time deadline during blocking driver execution.
+- Added hostile host regression and lifecycle CI invocation. Latest R30H-124E/F CI results are unverified (combined commit status returned no entries; push-run list not exposed by connector). Do not claim target compile, host regression PASS, physical RF/STOP or hardware acceptance.
+- Next R30H-124G: verify exact-commit lifecycle, Remote/Boat PlatformIO and mock bench builds; migrate application-side sealed STOP/heartbeat submissions and completion accounting under exclusive worker ownership, explicitly invalidate at session reset/rekey and on worker fault, preserve ACK + STATUS confirmation. Validate real admission time sampling and backup pacing before physical activation. No automatic fallback/restart; all hardware gates NOT_RUN/BLOCKED.
+
 ## Active continuation — R30H-124D (2026-11-24)
 
 Branch `platformio-unified-r30h20`. Official Boat VER014 / Remote VER028 unchanged. VS Code + PlatformIO primary. Production physical worker activation and upload remain locked.

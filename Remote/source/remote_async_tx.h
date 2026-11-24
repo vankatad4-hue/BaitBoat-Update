@@ -30,7 +30,7 @@ public:
   return advanceStop();
  }
  bool beginSession(uint8_t epoch){
-  if(!epoch||!invalidateSession())return false;
+  if(!invalidateSession()||!epoch)return false;
   epoch_=epoch;active_=true;return true;
  }
  // New logical STOP: invalidate old queued/dequeued work before admission.
@@ -78,6 +78,7 @@ public:
    if(!s.used||c.ticket!=s.request.ticket||c.generation!=generation_||
       c.generation!=s.request.generation||c.link!=link)continue;
    const auto outcome=expired(s,now)?Outcome::Expired:
+    handoff_.fault(link)?Outcome::Failed:
     link==PhyLink::Primary&&c.success&&c.evidence==TxEvidence::NrfAck?Outcome::NrfAck:
     link==PhyLink::Backup&&!c.success&&c.evidence==TxEvidence::LocalReady?Outcome::LocalReady:Outcome::Failed;
    finish(s,out,outcome);return true;
