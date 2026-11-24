@@ -71,6 +71,8 @@ struct JoystickCalibration
 // DATA SHARED WITH THE DISPLAY
 // --------------------------------------------------
 
+enum CentreCaptureState : uint8_t { CENTRE_IDLE, CENTRE_RUNNING, CENTRE_COMPLETE, CENTRE_FAILED };
+
 struct JoystickSnapshot
 {
     JoystickRaw raw;
@@ -83,6 +85,8 @@ struct JoystickSnapshot
     bool neutral;
     bool calibrationMode;
     bool endpointCapture;
+    CentreCaptureState centreCaptureState;
+    uint8_t centreSamples;
 };
 
 // --------------------------------------------------
@@ -121,7 +125,7 @@ bool joystick_calibrationEnter();
 // Leave calibration mode.
 bool joystick_calibrationExit();
 
-// Capture the centre position of all four axes.
+// Request cooperative centre capture; true means started, not completed.
 bool joystick_calibrateCentre();
 
 // Start recording the minimum and maximum endpoint positions.
