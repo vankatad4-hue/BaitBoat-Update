@@ -151,7 +151,7 @@ void Sc18is606NrfLink::update(){
     uint8_t fifo=0;
     if(!regRead(REG_FIFO_STATUS,fifo)){trip();return;}
     // At most two RF frames per pass; don't starve buttons/joysticks/LVGL.
-    for(unsigned n=0;n<2U && (fifo&0x01U)==0U;n++){
+    for(unsigned n=0;n<2U && rxCountQueued_<4U && (fifo&0x01U)==0U;n++){
         if(!queueRx()||!regRead(REG_FIFO_STATUS,fifo)){trip();return;}
     }
     if((status&STAT_RX_DR)!=0U && !regWrite(REG_STATUS,STAT_RX_DR))trip();
