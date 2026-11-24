@@ -224,7 +224,7 @@ int main(){
  assert(domainOutcome.accept(appTicket,appTicket.generation));
  assert(appDomain.complete(ar,true)&&appDomain.poll(admitted)&&admitted);
  assert(hsDomain.complete(hreq,true)&&hsDomain.poll(admitted)&&admitted);
- assert(hsDomain.invalidate(0));assert(hsDomain.invalidate(1));
+ assert(!hsDomain.invalidate(0));assert(hsDomain.activeGeneration()==0);assert(hsDomain.invalidate(1));
  assert(hsDomain.submit(3,12,false));assert(!hsDomain.allows(hreq,13,100));
  assert(hsDomain.complete(hreq,true));assert(!hsDomain.poll(admitted));
  assert(hsDomain.take(hreq)&&hsDomain.allows(hreq,13,100));
