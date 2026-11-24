@@ -90,7 +90,10 @@ static void displayPort_flush(lv_display_t *display, const lv_area_t *area, uint
 // Read one GT911 touch point and report it to LVGL.
 static void displayPort_readTouch(lv_indev_t *input, lv_indev_data_t *data)
 {
-    if(!flytec_rtos::remoteI2cAllowed())return; // LVGL is owner-task only
+    if(!flytec_rtos::remoteI2cAllowed()){
+        if(data!=nullptr)data->state=LV_INDEV_STATE_RELEASED;
+        return; // LVGL is owner-task only
+    }
     (void)input;                                   // The adapter uses the single global GT911 instance.
 
     if (g_touch == nullptr || data == nullptr)     // Guard against an unavailable touch controller.
