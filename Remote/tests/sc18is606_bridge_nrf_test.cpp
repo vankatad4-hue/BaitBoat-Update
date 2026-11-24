@@ -319,5 +319,28 @@ int main(){
         Sc18is606Port bridge(fake,ce,0x28);
         assert(bridge.begin());
     }
+    { // R30H-117G: real bridge driver, full software FIFO, retained hardware frame.
+        FakeBridge fake; FakeMcpCe io(fake); Mcp23017CePort ce(io);
+        Sc18is606NrfLink radio(fake,ce,0x28,76);
+        assert(radio.begin(true));
+        RadioFrame frame{};
+        frame.magic[0]=RADIO_FRAME_MAGIC0; frame.magic[1]=RADIO_FRAME_MAGIC1;
+        frame.type=RADIO_MSG_HEARTBEAT;
+        for(unsigned i=0;i<5;++i){
+            frame.payload[0]=(uint8_t)i;
+            frame.crc16=radio_crc16((const uint8_t*)&frame,offsetof(RadioFrame,crc16));
+            fake.inject(frame); radio.update();
+        }
+        assert(radio.rxCount()==4);
+        assert(fake.rxPending);
+        assert(radio.rxFullPollCount()>=2);
+        RadioFrame out{};
+        assert(radio.receiveFrame(out)&&out.payload[0]==0);
+        radio.update();
+        assert(!fake.rxPending && radio.rxCount()==5);
+        for(unsigned i=1;i<5;++i)
+            assert(radio.receiveFrame(out)&&out.payload[0]==i);
+        assert(!radio.receiveFrame(out));
+    }
     return 0;
 }
