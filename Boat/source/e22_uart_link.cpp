@@ -62,7 +62,7 @@ void E22UartLink::update(){
     // Bound UART work per tick: a busy backup link must not starve the
     // independent watchdog service, motor lease or primary nRF poll.
     uint8_t processed=0;
-    while(processed<32U && uart_.available()){
+    while(processed<32U && rxQueueCount_<4U && uart_.available()){
         const int value=uart_.read();if(value<0)break;
         parserByte((uint8_t)value);++processed;
     }
