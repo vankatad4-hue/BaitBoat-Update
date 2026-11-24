@@ -26,6 +26,7 @@ public:
            BuildAck buildAck,BuildStatus buildStatus,Verify verify,
            AppResult appResult,HsResult hsResult,Ordinary ordinary){
   // Revoke queued feedback before processing/admitting more work.
+  ack_.reconcile(now,sessionReady,linkReady);
   status_.reconcile(now,sessionReady,linkReady,ackBox_.pending()||ack_.pending());
   owner_.poll(now,appTimeout,hsTimeout);
   ack_.syncDeferred();
