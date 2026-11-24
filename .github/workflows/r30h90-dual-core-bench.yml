@@ -1,0 +1,28 @@
+name: R30H-90 standalone dual-core bench compile
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Boat/platformio.ini'
+      - 'Remote/platformio.ini'
+      - '**/source/dual_core_bench.cpp'
+      - '**/source/dual_core_diagnostic.h'
+      - '.github/workflows/r30h90-dual-core-bench.yml'
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - directory: Boat
+            environment: boat_dual_core_bench
+          - directory: Remote
+            environment: remote_dual_core_bench
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install platformio
+      - run: pio run -d ${{ matrix.directory }} -e ${{ matrix.environment }}
