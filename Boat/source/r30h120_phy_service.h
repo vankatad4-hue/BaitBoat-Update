@@ -36,10 +36,13 @@ public:
   priority_.service(busy,enabled,[&](TxPriority selected){
    app_.step(now,age,true,[&](const typename flytec_r30h118::Transport<Frame>::Request &r){
     // A stale advisory STOP mask must never admit an ordinary request.
-    return (selected==TxPriority::Stop)==r.stop&&appAdmit(r);
+    return (selected==TxPriority::Stop)==r.stop&&
+     choosePriority(priority_.snapshot())==selected&&appAdmit(r);
    });
    return true;
-  },[&](){return handshake_.step(now,age,true,policy,hsAdmit);});
+  },[&](){return handshake_.step(now,age,true,policy,[&](const typename HandshakeLane<Frame>::Request &r){
+   return choosePriority(priority_.snapshot())==TxPriority::Handshake&&hsAdmit(r);
+  });});
  }
 };
 }
