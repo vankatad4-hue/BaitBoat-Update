@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include <Stream.h>
 #include "radio_protocol.h"
+#include "e22_tx_state.h"
 
 typedef void (*E22SetModeFn)(bool m0,bool m1,void *context);
 typedef bool (*E22AuxReadyFn)(void *context);
@@ -13,8 +14,13 @@ public:
     bool configureEU868TestProfile(); // blocking setup-only readback/config
     void update();                    // non-blocking RX/TX-state poll
     bool sendFrame(const RadioFrame &frame,uint32_t nowMs);
-    bool receiveFrame(RadioFrame &frame);
-    bool ready() const { return configured_ && auxReadyNow_; }
+    enum class Admission:uint8_t { Accepted, Busy, DutyLimited, Invalid, Unavailable, Uncertain };
+    Admission trySendFrame(const RadioFrame &frame,uint32_t nowMs); // no implicit poll; Stream write may block
+    bool receiveFrame(RadioFrame &frame); // pure software dequeue
+    bool txPending()const{return txState_.pending();}
+    flytec_rtos::E22TxState::Outcome txOutcome()const{return txState_.outcome();}
+    bool transportFault()const{return txState_.fault();}
+    bool ready() const { return configured_ && auxReadyNow_ && !txState_.pending() && !txState_.fault(); }
     uint32_t estimatedAirtimeMs() const { return EST_AIRTIME_MS; }
     uint32_t txCount() const { return txCount_; }
     uint32_t rxCount() const { return rxCount_; }
@@ -30,8 +36,7 @@ private:
     void *context_;
     bool configured_;
     bool auxReadyNow_;
-    bool txPending_;
-    uint32_t txStartedMs_;
+    flytec_rtos::E22TxState txState_;
     uint8_t rxBuffer_[RADIO_FRAME_SIZE];
     uint8_t rxIndex_;
     RadioFrame rxQueue_[4];
