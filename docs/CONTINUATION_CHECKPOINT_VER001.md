@@ -1,3 +1,6 @@
+# R30H-121 mock compile evidence — 2026-11-24
+Run 45379182298 job 138393416297: all 11 steps success including single mock, dual PHY mock, locked physical worker and full application dormant endpoint compilation. This run predates the latest host regression corrections; current revision mock rebuild remains unverified. Primary targets and Boat host passed in later runs. Remote host and inventory evidence remain outstanding. No hardware execution or production activation.
+
 # R30H-121E.6F.2 primary target verification — 2026-11-24
 Run 45448244676: Boat job 138637859503 and Remote job 138637859914 both success, R30H-13 source audit PASS_SOURCE_ONLY on both. Boat static RAM 26336/327680, flash 379132/3145728; Remote RAM 184140/327680, flash 1426279/3145728. No flash. Boat host run 45448518125 also passed on later validator revision. Remaining current Remote host, inventory and mock/physical/endpoint compile verification before R30H-121E.6F.3. No production activation or physical acceptance.
 
