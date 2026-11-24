@@ -4,6 +4,9 @@ on:
     branches: [platformio-unified-r30h20]
     paths:
       - 'Boat/source/r30h118*'
+      - 'Boat/source/r30h120*'
+      - 'Boat/source/nrf24_link*'
+      - 'Boat/source/e22_uart*'
       - 'Boat/platformio.ini'
       - '.github/workflows/r30h118-mock-build.yml'
   workflow_dispatch:
@@ -22,3 +25,6 @@ jobs:
 
       - name: Compile dual PHY mock only
         run: pio run -d Boat -e boat_r30h118_dual_mock
+
+      - name: Compile locked physical worker
+        run: pio run -d Boat -e boat_r30h120_physical_compile
