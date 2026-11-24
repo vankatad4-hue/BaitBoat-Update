@@ -1009,6 +1009,27 @@ int main(){
  assert(stoppedOwner.takeApplication(auditDone,auditState)&&auditState==TxState::LocalComplete);
  assert(!stoppedOwner.ordinaryReady()&&stoppedOwner.feedbackReady());
  assert(!stoppedOwner.rearm(false));
+ // A short-lived feedback request must not monopolize the endpoint until
+ // the general 2500 ms timeout. Old worker results cannot affect a new ticket.
+ assert(stoppedOwner.submitFeedback(ownerOrdinary,6100,TxPriority::Heartbeat,20,acceptAuth));
+ assert(stoppedBus.takeOrdinary(ownerReq));
+ const auto expiredFeedback=ownerReq;
+ stoppedOwner.poll(6119,2500,2500);
+ assert(!stoppedOwner.feedbackReady());
+ stoppedOwner.poll(6120,2500,2500);
+ assert(stoppedOwner.takeApplication(auditDone,auditState)&&auditState==TxState::Uncertain);
+ assert(!stoppedBus.allows(expiredFeedback,6120,2500));
+ assert(!stoppedOwner.ordinaryReady()&&stoppedOwner.feedbackReady());
+ assert(stoppedOwner.submitFeedback(ownerOrdinary,6121,TxPriority::Heartbeat,100,acceptAuth));
+ assert(stoppedBus.complete(expiredFeedback,true));
+ assert(stoppedEvents.publishOutcome({expiredFeedback.ticket,6122,PhyOutcome::LocalComplete}));
+ stoppedOwner.poll(6122,2500,2500);
+ assert(!stoppedOwner.takeApplication(auditDone,auditState));
+ assert(stoppedBus.takeOrdinary(ownerReq)&&stoppedBus.complete(ownerReq,true));
+ assert(stoppedEvents.publishOutcome({ownerReq.ticket,6123,PhyOutcome::LocalComplete}));
+ stoppedOwner.poll(6123,2500,2500);
+ assert(stoppedOwner.takeApplication(auditDone,auditState)&&auditState==TxState::LocalComplete);
+ assert(!stoppedOwner.ordinaryReady()&&stoppedOwner.feedbackReady());
  stoppedOwner.close();
  // Latest telemetry replacement, coordinate pairing and unsigned clock wrap.
  flytec_r30h123::TelemetrySlots telemetrySlots;
