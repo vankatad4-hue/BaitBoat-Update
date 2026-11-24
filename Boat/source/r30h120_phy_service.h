@@ -20,6 +20,12 @@ public:
   admitted_=bus_.allows(request_,now,maxAge)&&admit(request_);
   held_=!bus_.complete(request_,admitted_);
  }
+ // Shared arbitration must never dequeue STOP through the ordinary lane.
+ template<class Admit> void stepOrdinary(uint32_t now,uint32_t age,bool enabled,Admit admit){
+  if(!flush()||!enabled||!bus_.takeOrdinary(request_))return;
+  admitted_=bus_.allows(request_,now,age)&&admit(request_);
+  held_=!bus_.complete(request_,admitted_);
+ }
  template<class Admit> void stepStop(uint32_t now,uint32_t age,Admit admit){
   if(!flushStop()||!bus_.takeStop(stopRequest_))return;
   stopAdmitted_=bus_.allows(stopRequest_,now,age)&&admit(stopRequest_);
@@ -48,7 +54,7 @@ public:
   priority_.service(busy,enabled,[&](TxPriority selected){
    if(selected==TxPriority::Stop){app_.stepStop(now,age,[&](const typename flytec_r30h118::Transport<Frame>::Request &r){return appAdmit(r);});return true;}
    if(!appClear||!hsClear)return false;
-   app_.step(now,age,true,[&](const typename flytec_r30h118::Transport<Frame>::Request &r){
+   app_.stepOrdinary(now,age,true,[&](const typename flytec_r30h118::Transport<Frame>::Request &r){
     // A stale advisory STOP mask must never admit an ordinary request.
     return (selected==TxPriority::Stop)==r.stop&&
      choosePriority(priority_.snapshot())==selected&&appAdmit(r);
