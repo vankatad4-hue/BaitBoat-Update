@@ -8,3 +8,6 @@ static_assert(!std::is_copy_constructible<flytec_rtos::RadioWorker>::value,"Sing
 #include "nrf_phy_adapter.h"
 #include "nrf24_link.h"
 template class flytec_rtos::NrfPhyAdapter<NRF24Link>;
+#include "e22_phy_adapter.h"
+#include "e22_uart_board_port.h"
+template class flytec_rtos::E22PhyAdapter<E22UartBoardPort>;
