@@ -43,7 +43,7 @@ static E22UartLink g_lora(g_uartBridge,
     [](bool m0,bool m1,void*){ g_uartBridge.setE22Mode(m0,m1); },
     [](void*){ return g_uartBridge.e22AuxReady(); },
     [](bool released,void*){ g_uartBridge.setE22Reset(released); },
-    nullptr);
+    nullptr, [](void*)->size_t { return static_cast<size_t>(g_uartBridge.availableForWrite()); });
 // R30H-11: isolated I2C->SPI radio bridge, no ESP direct CE/CSN or TF SPI bus.
 // Guarded against initialization until actual SC18IS606-EVB + nRF are measured.
 static Sc18is606WireIo g_nrfBridgeIo(Wire);
