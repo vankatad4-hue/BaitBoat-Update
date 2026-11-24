@@ -17,3 +17,5 @@ using DiagnosticDualPoll=flytec_rtos::DualPhyPoll<flytec_rtos::NrfPhyAdapter<Sc1
 template class flytec_rtos::DualPhyPoll<flytec_rtos::NrfPhyAdapter<Sc18is606NrfLink>,flytec_rtos::E22PhyAdapter<E22UartLink>>;
 template class flytec_rtos::DualPhyWorker<DiagnosticDualPoll>;
 #include "remote_i2c_dispatcher.h"
+#include "remote_i2c_phy_service.h"
+template class flytec_rtos::RemoteI2cPhyService<flytec_rtos::NrfPhyAdapter<Sc18is606NrfLink>,flytec_rtos::E22PhyAdapter<E22UartLink>>;
