@@ -35,6 +35,10 @@ public:
     bool inFlight()const{return inFlight_;}
     uint8_t attempts()const{return attempts_;}
     StopAck ticket()const{return ticket_;}
+    uint32_t remainingAge(uint32_t now)const{
+        const uint32_t elapsed=uint32_t(now-queuedAt_);
+        return pending_&&elapsed<AgeMs?AgeMs-elapsed:0;
+    }
     // Expire even when the SPI transport cannot accept a frame. Never replay
     // across a session, primary driver failure or a newer STOP command.
     bool due(uint32_t now,bool sessionReady,bool primaryReady,bool txBusy){
