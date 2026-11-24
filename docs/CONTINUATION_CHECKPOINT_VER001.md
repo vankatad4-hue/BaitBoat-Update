@@ -1,3 +1,6 @@
+# R30H-121E.6F.27 — consolidated verification checkpoint
+Experimental Boat STOP admission and terminal isolation, deadline transfer, preemption retention, shared task binding and regression additions through be9ab1b are committed but fresh CI is unverified. Verified identical Boat/Remote blobs for radio_protocol.h/.cpp, e22_uart_link.h and e22_tx_state.h. This is a partial shared-file audit, not a full Remote audit. Next: fresh Boat/Remote host CI and PlatformIO primary and experimental targets; correct failures before further feature changes. No production activation or hardware acceptance. Official Boat VER014 / Remote VER028 unchanged.
+
 # R30H-121E.6F.8 experimental shared radio task — 2026-11-24
 Implemented handshake service 3d666a7, shared admission 1d3806d, domain outcome routing 45e873d, handshake endpoint 8ca8abb, physical adapter binding 449648a/42722ff, task-local shared services and shutdown invalidation 6f88a9a. New regression tests committed but not CI verified. Next: compile-only harness binding, audit service lifetime and terminal backpressure, verify fresh host and target builds. Production legacy owner remains unchanged; no hardware activation, no physical quiescence proof. Boat VER014 / Remote VER028 unchanged.
 
