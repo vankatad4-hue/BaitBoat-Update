@@ -21,6 +21,7 @@ public:
   if(ok)guard_.publish(owner_.activeGeneration());
   return ok;
  }
+ uint32_t activeGeneration()const{return owner_.activeGeneration();}
  bool submit(const Frame &frame,uint32_t now,bool stop){
   Ticket t;
   if(!owner_.issue(t))return false;
