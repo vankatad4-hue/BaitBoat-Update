@@ -1,3 +1,7 @@
+## R30H-117T — target builds verified (2026-11-24)
+
+Verified GitHub Actions job conclusions: Boat host #45364084984 PASS; Remote host #45364431935 PASS; package #45364530453 PASS; inventory #45364431928 FAIL on three obsolete source invariants, reconciled in ad1f689; standalone inventory retest not verified. Both primary no-flash PlatformIO targets #45365334704 PASS (Boat job 138345471511, Remote job 138345471490). Host and compile evidence is not physical acceptance. Next: confirm standalone inventory retest, complete backup STOP pacing/session audit and R30H-118 ownership migration contract before any production worker enablement. Upload locks retained, Boat VER014 / Remote VER028 unchanged.
+
 ## R30H-117T — verification hold (2026-11-24)
 
 R30H-117K–S committed E22 explicit polling, persistent backup STOP retries, independent Boat ACK/status outboxes, Remote backup evidence/UI, freshness and NVS failure fixes. Latest source 7ea7675. PR workflow lookup returned no runs; push CI and target builds remain UNVERIFIED. Do not enable workers or upload firmware. Next: inspect branch Actions runs, verify both PlatformIO targets and host suites, audit ACK/status ordering, E22 pacing and backup-only telemetry producer, correct failures before migration. Official Boat VER014 / Remote VER028 unchanged.
