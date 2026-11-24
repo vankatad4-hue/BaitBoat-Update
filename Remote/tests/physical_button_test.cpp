@@ -1,3 +1,4 @@
+#include "remote_i2c_owner.h"
 #include "boat_state.h"
 #include "physical_button_scanner.h"
 #include "release_button_guard.h"
@@ -12,6 +13,7 @@ bool boatCommands_releaseHookRight(){released=3;return true;}
 static void event(uint8_t id,bool pressed){if(!pressed)return;if(id==15)++uiOk;else if(id==0)++stops;else ++actions;}
 static void sample(uint32_t time){physicalButtons_update(time);physicalButtons_update(time+26);}
 int main(){
+ assert(flytec_rtos::bindRemoteI2cOwner());
  initialiseBoatState();boatState.radioConnected=true;boatState.radioActiveLink=RADIO_UI_NRF_PRIMARY;boatState.emergencyStopConfirmed=true;boatState.emergencyStop=false;boatState.actuatorSafetyReady=true;
  physicalButtons_setCallback(event);assert(physicalButtons_begin());
  Wire.c=239;sample(100);Wire.c=255;sample(200);assert(uiOk==1&&released==-1);
