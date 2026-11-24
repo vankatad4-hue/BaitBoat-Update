@@ -23,7 +23,18 @@ template<class Frame,class Outbox> class StopAckService {
  }
 public:
  StopAckService(OwnerLink<Frame>& owner,Outbox& box,AckLink link):owner_(owner),box_(box),link_(link),correlation_(link){}
- void reset(){deferred_=tracking_=false;correlation_.reset();box_.reset();}
+ void reconcile(uint32_t now,bool sessionReady,bool linkReady){
+  box_.due(now,sessionReady,linkReady,true);
+  if(!pending()||sameSlot())return;
+  if(deferred_)owner_.cancelDeferredStop();
+  if(tracking_)owner_.revokeStatus(expected_);
+  deferred_=tracking_=false;correlation_.reset();
+ }
+ void reset(){
+  if(deferred_)owner_.cancelDeferredStop();
+  if(tracking_)owner_.revokeStatus(expected_);
+  deferred_=tracking_=false;correlation_.reset();box_.reset();
+ }
  bool pending()const{return deferred_||tracking_;}
  // False does not mean an ACK was lost: the outbox may still retain it.
  template<class Build,class Verify> bool step(uint32_t now,bool sessionReady,bool linkReady,Build build,Verify verify){
