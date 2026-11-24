@@ -44,16 +44,16 @@ public:
   if(nrfInitialized_)na_.poll(now);
   if(e22Initialized_)ea_.poll(now);
   if(sharedNrf_&&sharedE22_){
-   auto primaryAdmit=[&](const Bus::Request &r){return na_.admit(r.ticket,r.frame);};
-   auto backupAdmit=[&](const Bus::Request &r){return ea_.admit(r.ticket,r.frame,now);};
+   auto primaryAdmit=[&](const Bus::Request &r){return na_.admit(r.ticket,r.frame,r.stop);};
+   auto backupAdmit=[&](const Bus::Request &r){return ea_.admit(r.ticket,r.frame,now,r.stop);};
    sharedNrf_->step(now,age,nrfInitialized_&&nrf_.txPending(),enabled&&nrfInitialized_&&nrf_.ready(),
     [&](const RadioFrame &f){return boatReplyShape(f,boatId_,remoteId_,false);},primaryAdmit,primaryAdmit);
    sharedE22_->step(now,age,e22Initialized_&&e22_.txPending(),enabled&&e22Initialized_&&e22_.ready(),
     [&](const RadioFrame &f){return boatReplyShape(f,boatId_,remoteId_,true);},backupAdmit,backupAdmit);
    return;
   }
-  ns_.step(now,age,enabled&&nrfInitialized_,[&](const Bus::Request &r){return na_.admit(r.ticket,r.frame);});
-  es_.step(now,age,enabled&&e22Initialized_,[&](const Bus::Request &r){return ea_.admit(r.ticket,r.frame,now);});
+  ns_.step(now,age,enabled&&nrfInitialized_,[&](const Bus::Request &r){return na_.admit(r.ticket,r.frame,r.stop);});
+  es_.step(now,age,enabled&&e22Initialized_,[&](const Bus::Request &r){return ea_.admit(r.ticket,r.frame,now,r.stop);});
  }
  // Software closure only. Caller invalidates tickets before shutdown.
  // No claim of RF quiescence or completed application ACK.
