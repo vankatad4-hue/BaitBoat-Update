@@ -258,7 +258,7 @@ jobs:
       - name: Run portable ADS1115 atomic-input test before Remote build
         if: matrix.endpoint == 'Remote'
         run: |
-          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/adc_stubs -IRemote/source \
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/adc_stubs -IRemote/tests/stubs -IRemote/source \
             Remote/source/joystick_adc.cpp Remote/tests/joystick_adc_atomic_test.cpp \
             -o /tmp/remote_adc
           /tmp/remote_adc
