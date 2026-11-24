@@ -11,7 +11,7 @@ template<class Frame> class AppRadio {
  Bus &bus_;
  Events &events_;
  Ticket ticket_{};
- uint32_t submittedAt_=0;
+ uint32_t submittedAt_=0,submittedAge_=0;
  Frame stopFrame_{};
  uint32_t stopAt_=0;
  uint32_t stopRetryAge_=100;
@@ -48,7 +48,7 @@ public:
   Ticket next{};
   if(!bus_.submit(frame,now,stop,&next,requestAge,outboundFeedback))return false;
   if(stop)preserveSuperseded();
-  ticket_=next;terminalTaken_=false;submittedAt_=now;admissionSeen_=admitted_=outcomeSeen_=false;state_=TxState::Queued;return true;
+  ticket_=next;terminalTaken_=false;submittedAt_=now;submittedAge_=requestAge;admissionSeen_=admitted_=outcomeSeen_=false;state_=TxState::Queued;return true;
  }
  // Revoke exactly the current queued/in-flight snapshot without clearing
  // the transport STOP latch. Physical TX already underway cannot be revoked.
@@ -57,9 +57,12 @@ public:
   bus_.invalidate(epoch);state_=TxState::Uncertain;return true;
  }
  // Timeout revokes queued work; an already active PHY call cannot be revoked.
- bool expire(uint32_t now,uint32_t timeout){
-  if((state_!=TxState::Queued&&state_!=TxState::Admitted)|| (timeout&&uint32_t(now-submittedAt_)<timeout))return false;
-  bus_.invalidate(0);state_=TxState::Uncertain;return true;
+ bool expire(uint32_t now,uint32_t timeout,uint8_t retainedEpoch=0){
+  const uint32_t limit=submittedAge_&&submittedAge_<timeout?submittedAge_:timeout;
+  if((state_!=TxState::Queued&&state_!=TxState::Admitted)||(limit&&uint32_t(now-submittedAt_)<limit))return false;
+  // An authenticated owner may retain its epoch in a NEW generation. The
+  // old ticket cannot be admitted, and the STOP latch remains unchanged.
+  bus_.invalidate(retainedEpoch);state_=TxState::Uncertain;return true;
  }
  bool preemptStop(const Frame &frame,uint32_t now,uint8_t epoch,uint32_t retryAge=100){
   preserveSuperseded();bus_.latchStop();stopRetry_=false;if(!bus_.invalidate(epoch)){state_=TxState::Uncertain;return false;}
