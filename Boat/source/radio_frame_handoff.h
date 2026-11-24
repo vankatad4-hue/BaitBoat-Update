@@ -33,8 +33,15 @@ private:
 struct RadioFrameHandoff {
  FrameQueue<RxFrame,8> primaryRx,backupRx;
  FrameQueue<TxRequest,4> primaryTx,backupTx;
+ // Critical classification is supplied only by the authenticated application.
+ FrameQueue<TxRequest,2> primaryCritical,backupCritical;
  FrameQueue<TxCompletion,8> completions;
- bool begin(){return primaryRx.begin()&&backupRx.begin()&&primaryTx.begin()&&backupTx.begin()&&completions.begin();}
- bool fault()const{return primaryRx.fault()||backupRx.fault()||primaryTx.fault()||backupTx.fault()||completions.fault();}
+ bool takeTx(PhyLink link,TxRequest& out){
+  if(link==PhyLink::Primary)return primaryCritical.take(out)||primaryTx.take(out);
+  if(link==PhyLink::Backup)return backupCritical.take(out)||backupTx.take(out);
+  return false;
+ }
+ bool begin(){return primaryRx.begin()&&backupRx.begin()&&primaryTx.begin()&&backupTx.begin()&&primaryCritical.begin()&&backupCritical.begin()&&completions.begin();}
+ bool fault()const{return primaryRx.fault()||backupRx.fault()||primaryTx.fault()||backupTx.fault()||primaryCritical.fault()||backupCritical.fault()||completions.fault();}
 };
 }
