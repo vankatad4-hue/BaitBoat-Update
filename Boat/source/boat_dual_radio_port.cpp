@@ -509,7 +509,7 @@ bool BoatDualRadioPort::queueAsyncHandshake(ManagedLink link,const RadioFrame &f
  return owner.submitHandshake(frame,now,shape,[&](const RadioFrame &f){return radio_frameVerify(f,rootKey_);});
 }
 bool BoatDualRadioPort::queueAsyncApplication(ManagedLink link,const RadioFrame &frame,uint32_t now,uint32_t age){
- if(!BOAT_R30H121_PHYSICAL_OWNER||legacyBeginAttempted_||!authenticated_||!sessionReady()||!age)return false;
+ if(!BOAT_R30H121_PHYSICAL_OWNER||!runtimeOwner_.worker()||legacyBeginAttempted_||!authenticated_||!sessionReady()||!age)return false;
  if(link!=LINK_NRF_PRIMARY&&link!=LINK_LORA_BACKUP)return false;
  const bool backup=link==LINK_LORA_BACKUP;
  if(backup?!sx1262Ready_:!nrfReady_)return false;
@@ -614,8 +614,7 @@ void BoatDualRadioPort::serviceAsyncOwner(ManagedLink link,uint32_t now,bool lin
   if(backup&&pendingBackupMissionFeedbackValid_){
    const uint32_t elapsed=uint32_t(now-pendingBackupMissionFeedbackAtMs_);
    if(elapsed>=12000U)pendingBackupMissionFeedbackValid_=false;
-   else if(backupFresh(now)){
-    if(lastBackupMissionFeedbackAttemptMs_&&uint32_t(now-lastBackupMissionFeedbackAttemptMs_)<250U)return;
+   else if(backupFresh(now)&&(!lastBackupMissionFeedbackAttemptMs_||uint32_t(now-lastBackupMissionFeedbackAttemptMs_)>=250U)){
     lastBackupMissionFeedbackAttemptMs_=now;
     const auto feedback=pendingBackupMissionFeedback_;
     RadioFrame f{};
@@ -717,6 +716,7 @@ void BoatDualRadioPort::receiveCaptured(ManagedLink link,const RadioFrame &f,uin
      backupStopAck_.reset();backupStatusOutbox_.reset();
      stopAck_.reset(); // new authenticated session invalidates prior ACK ID
      statusOutbox_.reset(); // no pre-handshake stopped status
+     pendingBackupMissionFeedbackValid_=false;lastBackupMissionFeedbackAttemptMs_=0;
      havePrimaryHeartbeatSent_=false;
 #if BOAT_R30H_LOCAL_TRACE_ENABLED
      havePrimaryTraceSample_=false;
