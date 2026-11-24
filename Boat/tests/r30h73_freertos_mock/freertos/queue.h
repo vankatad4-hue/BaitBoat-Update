@@ -29,3 +29,10 @@ inline BaseType_t xQueueReceive(QueueHandle_t q,void* value,unsigned) {
 inline BaseType_t xQueueReset(QueueHandle_t q) {
  std::lock_guard<std::mutex> g(q->lock);q->entries.clear();return pdTRUE;
 }
+
+inline BaseType_t xQueuePeek(QueueHandle_t q,void* value,unsigned) {
+ std::lock_guard<std::mutex> g(q->lock);
+ if(q->entries.empty())return pdFALSE;
+ std::memcpy(value,q->entries.front().data(),q->width);
+ return pdTRUE;
+}
