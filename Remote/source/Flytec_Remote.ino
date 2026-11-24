@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "core0_probe.h"
+#include "remote_i2c_owner.h"
 #include <lvgl.h>
 
 #include "joystick.h"
@@ -72,6 +73,7 @@ void setup()
 {
     // R30H-63: core-affinity observation only; no concurrent application task.
     Serial.begin(115200);
+    if(!flytec_rtos::bindRemoteI2cOwner()){Serial.println("I2C owner bind failed");return;}
     Serial.printf("R30H-63 Remote setup core=%d CPUs=%d\\n", xPortGetCoreID(), portNUM_PROCESSORS);
     if (FLYTEC_ENABLE_CORE0_PROBE && !flytec_core_probe::start()) Serial.println("R30H-65 Core0 probe start FAILED");
 
@@ -133,6 +135,7 @@ void setup()
 
 void loop()
 {
+    if(!flytec_rtos::remoteI2cAllowed())return;
     static bool r30h63CoreReported = false;
     if (!r30h63CoreReported) {
         r30h63CoreReported = true;
