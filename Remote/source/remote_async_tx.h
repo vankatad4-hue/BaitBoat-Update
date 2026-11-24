@@ -41,6 +41,13 @@ public:
   if(!advanceStop()){active_=false;return false;}
   stopId_=commandId;return true;
  }
+ // Confirmation cancels unadmitted retries but never authorizes movement.
+ bool cancelStop(uint16_t commandId){
+  if(!owner_.worker()||!active_||!stopId_||commandId!=stopId_)return false;
+  stopId_=0;clearSlots();
+  if(!advanceStop()){active_=false;return false;}
+  return true;
+ }
  // Only independent application authorization can rearm. TX results cannot.
  bool rearm(bool authorized){
   if(!owner_.worker()||!active_||!authorized||generation_==UINT32_MAX)return false;
@@ -94,7 +101,7 @@ private:
  Slot& slot(PhyLink l){return l==PhyLink::Primary?primary_:backup_;}
  void clearSlots(){primary_=Slot{};backup_=Slot{};}
  bool advanceStop(){
-  if(generation_==UINT32_MAX)return false;
+  if(generation_==UINT32_MAX){gate_.latchStop(generation_);return false;}
   if(!gate_.latchStop(generation_+1))return false;
   ++generation_;return true;
  }
