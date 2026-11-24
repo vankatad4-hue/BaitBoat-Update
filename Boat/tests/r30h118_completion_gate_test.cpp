@@ -4,6 +4,7 @@
 #include "r30h118_worker_guard.h"
 #include "r30h118_transport.h"
 #include "r30h118_worker.h"
+#include "r30h118_phy_events.h"
 using namespace flytec_r30h118;
 int main(){
  CompletionGate g; Ticket a,b,c;
@@ -78,4 +79,19 @@ int main(){
  assert(worker.exited()&&calls==1);
  worker.step(102,100,admit);
  assert(calls==1);
+ PhyEvents<uint32_t> primaryEvents,backupEvents;
+ PhyEvents<uint32_t>::Rx rx{};
+ for(uint32_t i=0;i<4;++i)assert(primaryEvents.publishRx({i,100+i}));
+ assert(!primaryEvents.publishRx({4,104}));
+ assert(backupEvents.publishRx({99,200}));
+ for(uint32_t i=0;i<4;++i){assert(primaryEvents.takeRx(rx));assert(rx.frame==i&&rx.capturedAt==100+i);}
+ assert(!primaryEvents.takeRx(rx));
+ assert(backupEvents.takeRx(rx)&&rx.frame==99);
+ PhyEvents<uint32_t>::Health health{};
+ assert(primaryEvents.publishHealth({10,true,false,true,false}));
+ assert(primaryEvents.takeHealth(health)&&health.fault&&!health.ready);
+ PhyEvents<uint32_t>::Outcome outcome{};
+ Ticket eventTicket{7,8,1};
+ assert(primaryEvents.publishOutcome({eventTicket,20,PhyOutcome::Uncertain}));
+ assert(primaryEvents.takeOutcome(outcome)&&sameTicket(outcome.ticket,eventTicket)&&outcome.result==PhyOutcome::Uncertain);
 }
