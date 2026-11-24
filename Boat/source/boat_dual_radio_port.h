@@ -32,7 +32,7 @@ static_assert(BOAT_R30H9_MARKER_GPIO == -1 && BOAT_R30H9_GPIO_OUTPUT_SIGNED == 0
 #define BOAT_R30H121_ENDPOINT_COMPILE 0
 #endif
 #if BOAT_R30H121_ENDPOINT_COMPILE
-#include "r30h121_app_radio.h"
+#include "r30h123_owner_link.h"
 #endif
 
 // Link values match the Remote manager and queue records.
@@ -107,6 +107,10 @@ private:
     flytec_r30h118::Transport<RadioFrame> asyncPrimaryBus_,asyncBackupBus_;
     flytec_r30h118::PhyEvents<RadioFrame> asyncPrimaryEvents_,asyncBackupEvents_;
     flytec_r30h121::DualAppRadio<RadioFrame> asyncRadio_{asyncPrimaryBus_,asyncPrimaryEvents_,asyncBackupBus_,asyncBackupEvents_};
+    flytec_r30h120::HandshakeLane<RadioFrame> asyncPrimaryHandshake_,asyncBackupHandshake_;
+    flytec_r30h120::SharedPriority asyncPrimaryPriority_,asyncBackupPriority_;
+    flytec_r30h123::OwnerLink<RadioFrame> asyncPrimaryOwner_{asyncRadio_.primary(),asyncPrimaryHandshake_,asyncPrimaryEvents_,asyncPrimaryPriority_};
+    flytec_r30h123::OwnerLink<RadioFrame> asyncBackupOwner_{asyncRadio_.backup(),asyncBackupHandshake_,asyncBackupEvents_,asyncBackupPriority_};
 #endif
     bool legacyBeginAttempted_=false;
     NRF24Link nrf_;
