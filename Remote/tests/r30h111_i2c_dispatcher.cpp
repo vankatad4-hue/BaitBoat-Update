@@ -1,4 +1,4 @@
-#include "remote_i2c_dispatcher.h"
+#include "remote_i2c_phy_service.h"
 #include <cassert>
 #include <thread>
 using D=flytec_rtos::RemoteI2cDispatcher;
@@ -7,6 +7,12 @@ constexpr auto B=D::Operation::PollBackup;
 static bool execute(void* ctx,D::Operation op){
  ++*static_cast<unsigned*>(ctx);return op==P;
 }
+struct FakePhy{
+ unsigned calls=0;uint32_t last=0;
+ bool tick(flytec_rtos::RadioFrameHandoff&,flytec_rtos::TxGenerationGate&,uint32_t now){
+  assert(flytec_rtos::remoteI2cAllowed());++calls;last=now;return true;
+ }
+};
 int main(){
  D d;unsigned calls=0;assert(!d.begin());assert(flytec_rtos::bindRemoteI2cOwner());assert(d.begin());
  assert(!d.submit({0,0,P}));
@@ -37,4 +43,13 @@ int main(){
  assert(e.submit({5,300,B}));assert(!e.service(301,execute,&calls));
  assert(e.fault(B)&&!e.fault(P));assert(e.submit({6,300,P}));
  assert(e.service(301,execute,&calls));assert(e.take(P,r)&&r.ticket==6);
+ D f;assert(f.begin());FakePhy p,b;flytec_rtos::RadioFrameHandoff h;
+ assert(h.begin());flytec_rtos::TxGenerationGate g;assert(g.transition(1));
+ flytec_rtos::RemoteI2cPhyService<FakePhy,FakePhy> svc(f,p,b,h,g);
+ std::thread worker([&]{assert(f.submit({12,400,P}));assert(f.submit({13,400,B}));assert(!svc.service(400));});
+ worker.join();assert(p.calls==0&&b.calls==0);
+ assert(svc.service(401)&&p.calls==1&&b.calls==0);
+ assert(svc.service(402)&&b.calls==1&&b.last==402);
+ assert(f.take(P,r)&&r.ticket==12&&r.outcome==D::Outcome::Completed);
+ assert(f.take(B,r)&&r.ticket==13&&r.outcome==D::Outcome::Completed);
 }
