@@ -1,7 +1,7 @@
 #include "../source/boat_r30h18_stop_ack_outbox.h"
 #include "../source/r30h121_app_radio.h"
 #include "../source/r30h123_stop_ack_service.h"
-#include "../source/r30h123_status_service.h"
+#include "../source/r30h123_owner_cycle.h"
 #include "r30h118_completion_gate.h"
 #include <cassert>
 #include "r30h118_radio_handoff.h"
@@ -846,4 +846,61 @@ int main(){
  statusPSvc.reconcile(1402,true,true,true);
  assert(!statusPBus.allows(ownerReq,1402,100));
  assert(statusPBox.pending()&&!statusPSvc.pending());
+ // Unified owner cycle: ACK before STATUS, independent backup, and
+ // cancellation before deferred admission when trust or freshness is lost.
+ boat_r30h19::StatusOutbox cyclePBox,cycleBBox;
+ flytec_r30h123::StatusService<HandshakeFrame> cyclePSvc(ackPOwner,cyclePBox),cycleBSvc(ackBOwner,cycleBBox);
+ flytec_r30h123::OwnerCycle<HandshakeFrame,decltype(ackPBox)> cycleP(ackPOwner,ackPSvc,cyclePSvc,ackPBox,cyclePBox);
+ flytec_r30h123::OwnerCycle<HandshakeFrame,decltype(ackBBox)> cycleB(ackBOwner,ackBSvc,cycleBSvc,ackBBox,cycleBBox);
+ assert(cycleP.resetSession(7)&&cycleB.resetSession(7));
+ unsigned cycleOrdinary=0,cycleOther=0,cycleHandshake=0;
+ auto cycleAppResult=[&](const Ticket&,TxState){++cycleOther;};
+ auto cycleHsResult=[&](const Ticket&,HandshakeTx){++cycleHandshake;};
+ auto cycleOrd=[&](flytec_r30h123::OwnerLink<HandshakeFrame>&){++cycleOrdinary;};
+ auto tickP=[&](uint32_t now,bool session,bool trust){
+  cycleP.step(now,100,100,session,trust,buildAck,buildStatus,acceptAuth,cycleAppResult,cycleHsResult,cycleOrd);
+ };
+ auto tickB=[&](uint32_t now){
+  cycleB.step(now,100,100,true,true,buildAck,buildStatus,acceptAuth,cycleAppResult,cycleHsResult,cycleOrd);
+ };
+ assert(ackPBox.offer(31,7,1,1,0,1500));
+ assert(cyclePBox.offer(stoppedFeedback,1500)&&cycleBBox.offer(stoppedFeedback,1500));
+ tickP(1501,true,true);tickB(1501);
+ assert(cycleOrdinary==0&&ackPBox.inFlight()&&cyclePBox.pending());
+ assert(ackPBus.takeStop(ownerReq)&&ownerReq.frame.commandId==31);
+ assert(ackPBus.complete(ownerReq,true));
+ assert(ackPEvents.publishOutcome({ownerReq.ticket,1502,PhyOutcome::LocalComplete,true}));
+ tickP(1502,true,true);
+ assert(!ackPBox.pending()&&cyclePSvc.pending());
+ assert(ackPBus.takeStop(ownerReq)&&ownerReq.frame.commandId==1);
+ assert(ackPBus.complete(ownerReq,true));
+ assert(ackPEvents.publishOutcome({ownerReq.ticket,1503,PhyOutcome::LocalComplete,true}));
+ tickP(1503,true,true);
+ assert(!cyclePBox.pending()&&cycleOrdinary==1);
+ assert(ackBBus.takeStop(ownerReq)&&ownerReq.frame.commandId==1);
+ assert(ackBBus.complete(ownerReq,true));
+ assert(ackBEvents.publishOutcome({ownerReq.ticket,1503,PhyOutcome::LocalComplete,true}));
+ tickB(1503);
+ assert(!cycleBBox.pending()&&cycleOrdinary==2);
+ // A full STOP queue forces reservation, then link trust cancels it.
+ assert(ackPOwner.submitStop(ownerOrdinary,1600,100,acceptAuth));
+ assert(ackPBox.offer(32,7,0,0,0,1600));
+ tickP(1601,true,true);
+ assert(ackPSvc.pending()&&ackPOwner.stopRetryPending());
+ tickP(1602,true,false);
+ assert(!ackPSvc.pending()&&!ackPBox.pending()&&!ackPOwner.stopRetryPending());
+ assert(ackPBus.takeStop(ownerReq)&&!ackPBus.allows(ownerReq,1602,100));
+ assert(!ackPBus.takeStop(ownerReq));
+ assert(!ackPOwner.submitApplication(ownerOrdinary,1603,TxPriority::Telemetry,100,acceptAuth));
+ // Deadline expires even if the reserved queue never drains.
+ assert(ackPOwner.submitStop(ownerOrdinary,1700,100,acceptAuth));
+ assert(ackPBox.offer(33,7,0,0,0,1700));
+ tickP(1701,true,true);
+ assert(ackPOwner.stopRetryPending());
+ tickP(4200,true,true);
+ assert(!ackPSvc.pending()&&!ackPBox.pending()&&!ackPOwner.stopRetryPending());
+ assert(ackPBus.takeStop(ownerReq)&&!ackPBus.allows(ownerReq,4200,100));
+ assert(!ackPBus.takeStop(ownerReq));
+ cycleP.close();cycleB.close();
+ assert(ackPMask.snapshot()==0&&ackBMask.snapshot()==0&&cycleHandshake==0);
 }
