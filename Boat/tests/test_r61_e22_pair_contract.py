@@ -31,6 +31,17 @@ class E22PairContract(unittest.TestCase):
                 self.assertEqual(config_array(remote, name), expected)
                 self.assertEqual(config_array(boat, name), expected)
 
+    def test_rx_capacity_guard_and_diagnostic(self):
+        # Source contract only; executable Stream mock coverage remains required.
+        for endpoint in ("Boat", "Remote"):
+            with self.subTest(endpoint=endpoint):
+                source = read(endpoint + "/source/e22_uart_link.cpp")
+                self.assertIn("while(processed<32U && rxQueueCount_<4U && uart_.available())", source)
+                self.assertIn("if(rxQueueCount_==4U && rxFullPollCount_!=UINT32_MAX)", source)
+                self.assertIn("++rxFullPollCount_", source)
+                header = read(endpoint + "/source/e22_uart_link.h")
+                self.assertIn("rxFullPollCount() const", header)
+
     def test_equal_application_wire_contract(self):
         for name in ("radio_protocol.h", "radio_protocol.cpp"):
             with self.subTest(name=name):
