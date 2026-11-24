@@ -24,7 +24,7 @@ public:
   if(!started_)return RadioWatchdog::State::Fault;
   return watchdog_.update(clock_(),worker_.heartbeat(),worker_.running(),worker_.wrongCore());
  }
- bool permit()const{return started_&&watchdog_.permit();}
+ bool permit()const{return started_&&worker_.running()&&!worker_.wrongCore()&&watchdog_.permit();}
  // Blocking join, only after bounded callback execution has been established.
  // Never call from an emergency actuator shutdown path.
  void stop(){worker_.stop();}
