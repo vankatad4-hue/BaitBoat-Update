@@ -45,5 +45,5 @@ jobs:
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IBoat/tests/r30h94_mock -IBoat/tests/r30h73_freertos_mock -IBoat/source Boat/tests/r30h101_tx_service.cpp -o /tmp/tx_service
           timeout 10s /tmp/tx_service
           cmp Boat/source/tx_generation_gate.h Remote/source/tx_generation_gate.h
-          g++ -std=c++17 -Wall -Wextra -Werror -IBoat/source Boat/tests/r30h103_generation.cpp -o /tmp/generation
-          /tmp/generation
+          g++ -std=c++17 -pthread -Wall -Wextra -Werror -IBoat/source Boat/tests/r30h103_generation.cpp -o /tmp/generation
+          timeout 10s /tmp/generation
