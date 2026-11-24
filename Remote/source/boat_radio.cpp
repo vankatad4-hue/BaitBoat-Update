@@ -440,9 +440,19 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame){
     g_linkManager.reportValidRx(link,true,now);
 }
 
+static void prepareRemoteCycle(uint32_t now);
+static void serviceRemoteLegacyRx();
+static void serviceRemoteLegacyTx(uint32_t now);
+static void advanceRemoteApplication(uint32_t now);
 void boatRadio_update() {
     if(!g_begun) return;
     const uint32_t now=millis();
+    prepareRemoteCycle(now);
+    serviceRemoteLegacyRx();
+    serviceRemoteLegacyTx(now);
+    advanceRemoteApplication(now);
+}
+static void prepareRemoteCycle(uint32_t now){
     // Link inactivity is supervised by DualRadioManager; do not wipe the
     // authenticated session merely because both RF paths were quiet. This
     // allows the backup E22 path to restore the same session after an outage.
@@ -453,6 +463,8 @@ void boatRadio_update() {
         g_lastHandshakeTx=now;g_session.startRemote(radioPlatformNonce(),now);
         SessionHandshakePacket packet{};if(g_session.remotePacket(packet))sendHandshake(packet,now);
     }
+}
+static void serviceRemoteLegacyRx(){
     // R30H-15: release TX completions before heartbeat can claim the slot.
     // No RF on default-locked builds: g_nrfReady remains false until signoff.
     if(g_nrfReady) {
@@ -478,6 +490,8 @@ void boatRadio_update() {
             for(unsigned i=0;i<RX_FRAME_BUDGET&&g_lora.receiveFrame(frame);++i) validateInboundFrame(LINK_LORA_BACKUP,frame);
         }
     }
+}
+static void serviceRemoteLegacyTx(uint32_t now){
     if(g_stopPending&&(!sessionReady()||!g_loraConfigured||
        (uint32_t)(millis()-g_backupStopStartedMs)>=BACKUP_STOP_RETRY_LIFETIME_MS))
         g_stopPending=false; // expiry never clears the confirmation interlock
@@ -541,6 +555,8 @@ void boatRadio_update() {
             }
         }
     }
+}
+static void advanceRemoteApplication(uint32_t now){
     g_ackTracker.update(now);
     g_linkManager.tick(millis());
     // Update ESP32 CLOCK_REALTIME only after two consistent authenticated
