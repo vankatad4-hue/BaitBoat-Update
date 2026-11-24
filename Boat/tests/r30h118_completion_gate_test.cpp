@@ -1,5 +1,6 @@
 #include "../source/boat_r30h18_stop_ack_outbox.h"
 #include "../source/r30h121_app_radio.h"
+#include "../source/r30h123_owner_link.h"
 #include "r30h118_completion_gate.h"
 #include <cassert>
 #include "r30h118_radio_handoff.h"
@@ -695,4 +696,44 @@ int main(){
  assert(isolatedEvents.takeHandshakeOutcome(isolatedResult));
  isolatedPump.flushOutcome();
  assert(isolatedPump.canAdmit());
+ // Owner coordinator keeps root-key CONFIRM separate from application epoch.
+ Transport<HandshakeFrame> ownerBus;
+ PhyEvents<HandshakeFrame> ownerEvents;
+ AppRadio<HandshakeFrame> ownerApp(ownerBus,ownerEvents);
+ HandshakeLane<HandshakeFrame> ownerHs;
+ SharedPriority ownerMask;
+ flytec_r30h123::OwnerLink<HandshakeFrame> ownerLink(ownerApp,ownerHs,ownerEvents,ownerMask);
+ assert(ownerLink.beginHandshake());
+ HandshakeFrame ownerConfirm{13,1,2,0,0,0,0};
+ assert(!ownerLink.submitHandshake(ownerConfirm,700,policy,rejectAuth));
+ assert(ownerMask.snapshot()==0);
+ assert(ownerLink.submitHandshake(ownerConfirm,700,policy,acceptAuth));
+ assert(ownerMask.snapshot()==4);
+ assert(ownerLink.setSession(7));
+ assert(ownerMask.snapshot()==4);
+ HandshakeFrame ownerOrdinary{1,1,2,0,7,1,0};
+ assert(!ownerLink.submitApplication(ownerOrdinary,701,TxPriority::Telemetry,100,rejectAuth));
+ assert(ownerLink.submitApplication(ownerOrdinary,701,TxPriority::Telemetry,100,acceptAuth));
+ assert(ownerMask.snapshot()==36);
+ assert(ownerLink.submitStop(ownerOrdinary,702,100,acceptAuth));
+ assert(ownerMask.snapshot()==5);
+ Transport<HandshakeFrame>::Request ownerReq{};
+ assert(ownerBus.takeStop(ownerReq)&&ownerReq.stop);
+ assert(ownerBus.complete(ownerReq,true));
+ assert(ownerEvents.publishOutcome({ownerReq.ticket,703,PhyOutcome::LocalComplete,true}));
+ ownerLink.poll(703,100,100);
+ assert(ownerMask.snapshot()==4);
+ assert(!ownerLink.rearm(true));
+ assert(ownerLink.takeApplication(auditDone,auditState)&&auditState==TxState::LocalComplete);
+ assert(ownerLink.rearm(true));
+ assert(ownerHs.take(ownerReq));
+ assert(ownerHs.complete(ownerReq,true));
+ assert(ownerEvents.publishOutcome({ownerReq.ticket,704,PhyOutcome::LocalComplete}));
+ ownerLink.poll(704,100,100);
+ assert(ownerMask.snapshot()==0);
+ HandshakeTx ownerHsState=HandshakeTx::Idle;
+ assert(ownerLink.takeHandshake(auditDone,ownerHsState)&&ownerHsState==HandshakeTx::LocalComplete);
+ ownerLink.close();
+ assert(!ownerLink.submitApplication(ownerOrdinary,705,TxPriority::Telemetry,100,acceptAuth));
+ assert(ownerMask.snapshot()==0);
 }
