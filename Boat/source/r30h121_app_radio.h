@@ -91,19 +91,22 @@ public:
 
 // Owner-side STOP ACK correlation. One instance per link; reset on session
 // change or outbox replacement. LocalComplete is not Remote confirmation.
+enum class AckLink:uint8_t { Primary, Backup };
 class StopAckCorrelation {
+ const AckLink link_;
  Ticket expected_{};
  uint16_t command_=0;
  uint8_t epoch_=0;
  bool pending_=false;
 public:
+ explicit StopAckCorrelation(AckLink link):link_(link){}
  void reset(){pending_=false;}
  bool track(const Ticket &t,uint16_t command,uint8_t epoch){
   if(pending_||!command||!epoch||!t.generation||!t.serial||t.epoch!=epoch||t.domain!=TicketDomain::Application)return false;
   expected_=t;command_=command;epoch_=epoch;pending_=true;return true;
  }
- template<class Outbox> bool complete(Outbox &box,const Ticket &t,TxState state){
-  if(!pending_||!sameTicket(t,expected_))return false;
+ template<class Outbox> bool complete(Outbox &box,AckLink source,const Ticket &t,TxState state){
+  if(source!=link_||!pending_||!sameTicket(t,expected_))return false;
   if(state!=TxState::LocalComplete&&state!=TxState::Failed&&state!=TxState::Uncertain&&state!=TxState::Rejected)return false;
   pending_=false;
   const auto ack=box.ticket();
