@@ -2,6 +2,7 @@
 #include "../source/r30h121_app_radio.h"
 #include "../source/r30h123_stop_ack_service.h"
 #include "../source/r30h123_owner_cycle.h"
+#include "../source/r30h123_owner_rx.h"
 #include "r30h118_completion_gate.h"
 #include <cassert>
 #include "r30h118_radio_handoff.h"
@@ -903,4 +904,38 @@ int main(){
  assert(!ackPBus.takeStop(ownerReq));
  cycleP.close();cycleB.close();
  assert(ackPMask.snapshot()==0&&ackBMask.snapshot()==0&&cycleHandshake==0);
+ // Owner RX validates local capture age, direction, epoch and authentication.
+ Transport<HandshakeFrame> rxOwnerBus;
+ PhyEvents<HandshakeFrame> rxOwnerEvents;
+ AppRadio<HandshakeFrame> rxOwnerApp(rxOwnerBus,rxOwnerEvents);
+ flytec_r30h123::OwnerRx<HandshakeFrame> ownerRx(rxOwnerApp,1,2,false);
+ uint8_t rxEpoch=7;
+ unsigned rxDelivered=0,rxRootChecks=0,rxSessionChecks=0;
+ auto epochNow=[&](){return rxEpoch;};
+ auto rootCheck=[&](const HandshakeFrame&){++rxRootChecks;return true;};
+ auto sessionCheck=[&](const HandshakeFrame& f){++rxSessionChecks;return f.commandId!=99;};
+ auto rxDispatch=[&](const HandshakeFrame& f,uint32_t capturedAt){
+  ++rxDelivered;
+  if(f.type==12){assert(capturedAt==1001);rxEpoch=8;}
+  else assert(f.sessionEpoch==rxEpoch);
+ };
+ HandshakeFrame rxProof{12,1,2,0,0,0,0};
+ HandshakeFrame rxOld{1,1,2,0,7,1,0};
+ HandshakeFrame rxNew{1,1,2,0,8,1,0};
+ assert(rxOwnerEvents.publishRx({rxOld,900}));
+ assert(rxOwnerEvents.publishRx({rxProof,1001}));
+ assert(rxOwnerEvents.publishRx({rxOld,1002}));
+ assert(rxOwnerEvents.publishRx({rxNew,1003}));
+ assert(ownerRx.drain(1010,50,epochNow,rootCheck,sessionCheck,rxDispatch)==2);
+ assert(rxDelivered==2&&rxRootChecks==1&&rxSessionChecks==1);
+ auto rxWrong=rxNew;rxWrong.flags=1;
+ auto rxForged=rxNew;rxForged.commandId=99;
+ auto rxReply=rxProof;rxReply.type=13;
+ assert(rxOwnerEvents.publishRx({rxWrong,1010}));
+ assert(rxOwnerEvents.publishRx({rxForged,1010}));
+ assert(rxOwnerEvents.publishRx({rxReply,1010}));
+ assert(rxOwnerEvents.publishRx({rxNew,UINT32_MAX-2}));
+ assert(ownerRx.drain(1011,50,epochNow,rootCheck,sessionCheck,rxDispatch)==0);
+ assert(rxOwnerEvents.publishRx({rxNew,UINT32_MAX-2}));
+ assert(ownerRx.drain(1,50,epochNow,rootCheck,sessionCheck,rxDispatch)==1);
 }
