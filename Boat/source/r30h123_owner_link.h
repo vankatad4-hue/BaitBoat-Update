@@ -12,12 +12,12 @@ template<class Frame> class OwnerLink {
  SharedPriority& priority_;
  TxPriority appClass_=TxPriority::None;
  uint8_t epoch_=0;
- static uint8_t bit(TxPriority p){return p==TxPriority::None?0:static_cast<uint8_t>(1U<<static_cast<unsigned>(p));}
+ static uint8_t priorityBit(TxPriority p){return p==TxPriority::None?0:static_cast<uint8_t>(1U<<static_cast<unsigned>(p));}
  void publish(){
   const bool appPending=app_.state()==TxState::Queued||app_.state()==TxState::Admitted;
-  uint8_t mask=appPending?bit(appClass_):0;
-  if(app_.stopRetryPending())mask|=bit(TxPriority::Stop);
-  if(handshake_.state()==HandshakeTx::Pending)mask|=bit(TxPriority::Handshake);
+  uint8_t mask=appPending?priorityBit(appClass_):0;
+  if(app_.stopRetryPending())mask|=priorityBit(TxPriority::Stop);
+  if(handshake_.state()==HandshakeTx::Pending)mask|=priorityBit(TxPriority::Handshake);
   priority_.publish(mask);
  }
 public:
@@ -47,7 +47,7 @@ public:
  // A false return can mean retained retry, not successful admission.
  template<class Verify> bool submitStop(const Frame& f,uint32_t now,uint32_t age,Verify verify){
   if(!epoch_||f.sessionEpoch!=epoch_||!f.sequence||!age||!verify(f))return false;
-  priority_.publish(bit(TxPriority::Stop));
+  priority_.publish(priorityBit(TxPriority::Stop));
   appClass_=TxPriority::Stop;
   const bool ok=app_.preemptStop(f,now,epoch_,age);publish();return ok;
  }
