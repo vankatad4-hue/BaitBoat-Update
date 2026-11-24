@@ -11,6 +11,8 @@ on:
       - '**/source/bounded_tx_service.h'
       - '**/source/bounded_rx_service.h'
       - '**/source/tx_generation_gate.h'
+      - '**/source/nrf_phy_adapter.h'
+      - 'Boat/tests/r30h106_nrf_adapter.cpp'
       - 'Boat/tests/r30h103_generation.cpp'
       - 'Boat/tests/r30h101_tx_service.cpp'
       - 'Boat/tests/r30h98_i2c_guard.cpp'
@@ -47,3 +49,6 @@ jobs:
           cmp Boat/source/tx_generation_gate.h Remote/source/tx_generation_gate.h
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IBoat/source Boat/tests/r30h103_generation.cpp -o /tmp/generation
           timeout 10s /tmp/generation
+          cmp Boat/source/nrf_phy_adapter.h Remote/source/nrf_phy_adapter.h
+          g++ -std=c++17 -pthread -Wall -Wextra -Werror -IBoat/tests/r30h94_mock -IBoat/tests/r30h73_freertos_mock -IBoat/source Boat/tests/r30h106_nrf_adapter.cpp -o /tmp/nrf_adapter
+          timeout 10s /tmp/nrf_adapter
