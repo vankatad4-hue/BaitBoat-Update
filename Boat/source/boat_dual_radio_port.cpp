@@ -455,7 +455,13 @@ bool BoatDualRadioPort::queueAsyncApplication(ManagedLink link,const RadioFrame 
   case RADIO_MSG_MISSION_ACK:
   case RADIO_MSG_MISSION_FEEDBACK:priority=TxPriority::Mission;break;
   case RADIO_MSG_TELEMETRY:
+   if(frame.payload[0]==flytec_time::SUBTYPE){
+    uint64_t utc=0;
+    if(backup||!flytec_time::decode(frame.payload,utc))return false;
+    priority=TxPriority::Diagnostic;break;
+   }
    if(!radio_decodeTelemetryPayload(frame.payload,decoded)||decoded.kind==RADIO_PAYLOAD_STATUS)return false;
+   if(backup&&decoded.kind==RADIO_PAYLOAD_SAFETY_DIAGNOSTIC)return false;
    priority=decoded.kind==RADIO_PAYLOAD_SAFETY_DIAGNOSTIC?TxPriority::Diagnostic:TxPriority::Telemetry;break;
   default:return false;
  }
@@ -473,7 +479,14 @@ void BoatDualRadioPort::completeAsyncApplication(ManagedLink link,const flytec_r
  auto &tx=backup?asyncBackupTx_:asyncPrimaryTx_;
  tx.complete(ticket,state,now,sessionStarted_?sessionEpoch_:uint8_t(0),
   [&](const RadioFrame &frame,flytec_r30h121::TxState result,uint32_t queuedAt){
+   if(!backup&&frame.type==RADIO_MSG_TELEMETRY&&frame.payload[0]==8U){
+    if(result==flytec_r30h121::TxState::LocalComplete)optionalDiagnostics_.sent(queuedAt);
+    else optionalDiagnostics_.rejectedTx();
+   }
    if(result!=flytec_r30h121::TxState::LocalComplete)return;
+   if(!backup&&frame.type==RADIO_MSG_TELEMETRY&&frame.payload[0]==flytec_time::SUBTYPE){
+    lastUtcTxMs_=queuedAt;utcEverSent_=true;
+   }
    // Use the original queue time, never extend freshness by delayed polling.
    if(frame.type==RADIO_MSG_HEARTBEAT){
     if(backup)lastBackupHeartbeatTxMs_=queuedAt;
@@ -544,7 +557,41 @@ void BoatDualRadioPort::serviceAsyncOwner(ManagedLink link,uint32_t now,bool lin
     radio_frameInit(f,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,++txSequence_,0,now,sessionEpoch_);
     memcpy(f.payload,payload,8);
     if(radio_frameSeal(f,key_))queueAsyncApplication(link,f,now,remaining);
+    return;
    }
+   // Lowest priority: primary-only optional data in the existing heartbeat gap.
+   boat_r30g::Opportunity opportunity{};
+   opportunity.authenticatedSession=sessionReady();opportunity.primaryFresh=primaryFresh(now);
+   opportunity.txPending=!owner.feedbackReady();
+   opportunity.commandQueued=commandQueue_.size()!=0||stopAck_.pending()||statusOutbox_.pending();
+   opportunity.activeMission=controller_.status().transaction!=0;
+   opportunity.failsafeOrLinkLoss=linkLossHold_||detachedReturn_||failsafeRthActive_;
+   opportunity.recentCommand=lastControlRxValid_&&uint32_t(now-lastControlRxMs_)<boat_r30g::MIN_IDLE_AFTER_COMMAND_MS;
+   opportunity.haveHeartbeat=havePrimaryHeartbeatSent_;opportunity.lastHeartbeatAtMs=lastNrfHeartbeatTxMs_;
+   const uint32_t gap=uint32_t(now-lastNrfHeartbeatTxMs_);
+   if(optionalDiagnostics_.take(opportunity,now,payload,&remaining)){
+    const uint32_t window=boat_r30g::HEARTBEAT_GAP_END_MS+1U-gap;
+    if(remaining>window)remaining=window;
+    RadioFrame f{};
+    radio_frameInit(f,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,++txSequence_,0,now,sessionEpoch_);
+    memcpy(f.payload,payload,8);
+    if(!radio_frameSeal(f,key_)||!queueAsyncApplication(link,f,now,remaining))optionalDiagnostics_.rejectedTx();
+    return;
+   }
+   if(!opportunity.authenticatedSession||!opportunity.primaryFresh||opportunity.txPending||
+      opportunity.commandQueued||opportunity.activeMission||opportunity.failsafeOrLinkLoss||
+      opportunity.recentCommand||!opportunity.haveHeartbeat||
+      gap<boat_r30g::HEARTBEAT_GAP_BEGIN_MS||gap>boat_r30g::HEARTBEAT_GAP_END_MS||
+      (utcEverSent_&&uint32_t(now-lastUtcTxMs_)<5000U))return;
+   uint64_t utc=0;
+   if(!flytec_utc::extrapolate(utcSource_,now,utc))return;
+   remaining=flytec_time::SOURCE_MAX_AGE_MS+1U-uint32_t(now-utcSource_.localMs);
+   const uint32_t window=boat_r30g::HEARTBEAT_GAP_END_MS+1U-gap;
+   if(remaining>window)remaining=window;
+   RadioFrame beacon{};
+   radio_frameInit(beacon,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,++txSequence_,0,now,sessionEpoch_);
+   if(flytec_time::encode(utc,beacon.payload)&&radio_frameSeal(beacon,key_))
+    queueAsyncApplication(link,beacon,now,remaining);
    return;
   }
   if(backup){
@@ -557,6 +604,9 @@ void BoatDualRadioPort::serviceAsyncOwner(ManagedLink link,uint32_t now,bool lin
   f.payload[1]=1;
   if(radio_frameSeal(f,key_))queueAsyncApplication(link,f,now,backup?6000U:250U);
  };
+ if(!backup&&(!sessionReady()||!linkTrusted)){
+  asyncTelemetry_.reset();optionalDiagnostics_.discard();
+ }
  if(backup)asyncBackupCycle_.step(now,12000U,12000U,sessionReady(),linkTrusted,buildAck,buildStatus,verify,result,hsResult,ordinary);
  else asyncPrimaryCycle_.step(now,2500U,2500U,sessionReady(),linkTrusted,buildAck,buildStatus,verify,result,hsResult,ordinary);
 }
