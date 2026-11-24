@@ -324,4 +324,17 @@ int main(){
  assert(!dualEndpoint.primary().stopRetryPending());
  assert(dualP.take(dpr)&&dpr.stop&&dpr.frame==91&&dpr.queuedAt==14);
  assert(dpCalls==1&&dbCalls==3);
+
+ PhyEvents<uint32_t>::Rx freshRx{};
+ assert(asyncEvents.publishRx({1,10}));
+ assert(asyncEvents.publishRx({2,20}));
+ assert(asyncEvents.publishRx({3,99}));
+ assert(endpoint.receiveFresh(freshRx,100,10)&&freshRx.frame==3);
+ assert(!endpoint.receiveFresh(freshRx,100,10));
+ assert(asyncEvents.publishRx({4,UINT32_MAX-2}));
+ assert(endpoint.receiveFresh(freshRx,1,10)&&freshRx.frame==4);
+ assert(asyncEvents.publishRx({5,10}));
+ assert(!endpoint.receiveFresh(freshRx,20,10));
+ assert(asyncEvents.publishRx({6,20}));
+ assert(!endpoint.receiveFresh(freshRx,20,0));
 }
