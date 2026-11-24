@@ -11,6 +11,7 @@ on:
       - 'Remote/source/*phy*.h'
       - 'Remote/source/radio_worker.h'
       - 'Remote/source/radio_watchdog.h'
+      - 'Remote/source/radio_latency_stats.h'
       - 'Remote/source/radio_frame_handoff.h'
       - 'Remote/source/tx_generation_gate.h'
       - 'Remote/source/bounded_*_service.h'
