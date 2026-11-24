@@ -37,8 +37,9 @@ def verify(source):
     for t in ("flytec_utc::extrapolate(utcSource_,utcNow,ms)",
               "flytec_time::encode(ms,beacon.payload)","sendFrame(LINK_NRF_PRIMARY,beacon)",
               "!opportunity.activeMission","!opportunity.failsafeOrLinkLoss",
-              "!opportunity.recentCommand","!nrf_.txPending()",
-              "!diagnosticOccupiesSlot"):
+              "!opportunity.recentCommand","!primaryDriverPending()",
+              "!diagnosticOccupiesSlot",
+              "bool BoatDualRadioPort::primaryDriverPending() const{return nrf_.txPending();}"):
         require("Boat/source/boat_dual_radio_port.cpp",t)
     if "sendFrame(LINK_LORA_BACKUP,beacon)" in boat:
         errors.append("UTC telemetry must never use provisional E22 airtime")
