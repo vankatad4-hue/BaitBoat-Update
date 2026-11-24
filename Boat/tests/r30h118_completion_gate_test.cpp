@@ -499,4 +499,21 @@ int main(){
  sharedMask.publish(1);
  sharedWorker.step(205,100,false,true,policy,sharedAppAdmit,sharedHsAdmit);
  assert(sharedAppAdmissions==1&&sharedAppBus.poll(handshakeAdmitted)&&!handshakeAdmitted);
+ // Domain-specific outcomes with identical numeric ticket identifiers.
+ PhyEvents<uint32_t> domainEvents;
+ Ticket appOutcomeTicket{1,1,1,TicketDomain::Application};
+ Ticket hsOutcomeTicket{1,1,1,TicketDomain::Handshake};
+ for(unsigned i=0;i<4;++i)assert(domainEvents.publishOutcome({appOutcomeTicket,i,PhyOutcome::LocalComplete}));
+ assert(!domainEvents.publishOutcome({appOutcomeTicket,4,PhyOutcome::Failed}));
+ for(unsigned i=0;i<4;++i)assert(domainEvents.publishOutcome({hsOutcomeTicket,i,PhyOutcome::Uncertain}));
+ assert(!domainEvents.publishOutcome({hsOutcomeTicket,4,PhyOutcome::Failed}));
+ PhyEvents<uint32_t>::Outcome routed{};
+ for(unsigned i=0;i<4;++i){
+  assert(domainEvents.takeOutcome(routed)&&sameTicket(routed.ticket,appOutcomeTicket)&&routed.observedAt==i);
+ }
+ assert(!domainEvents.takeOutcome(routed));
+ for(unsigned i=0;i<4;++i){
+  assert(domainEvents.takeHandshakeOutcome(routed)&&sameTicket(routed.ticket,hsOutcomeTicket)&&routed.observedAt==i);
+ }
+ assert(!domainEvents.takeHandshakeOutcome(routed));
 }
