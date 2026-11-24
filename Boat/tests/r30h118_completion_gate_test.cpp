@@ -1,3 +1,4 @@
+#include "../source/r30h121_app_radio.h"
 #include "r30h118_completion_gate.h"
 #include <cassert>
 #include "r30h118_radio_handoff.h"
@@ -227,4 +228,35 @@ int main(){
  assert(hsDomain.complete(hreq,true));assert(!hsDomain.poll(admitted));
  assert(hsDomain.take(hreq)&&hsDomain.allows(hreq,13,100));
  assert(hsDomain.complete(hreq,true)&&hsDomain.poll(admitted)&&admitted);
+
+ using flytec_r30h121::AppRadio;
+ using flytec_r30h121::TxState;
+ Transport<uint32_t> asyncBus;
+ PhyEvents<uint32_t> asyncEvents;
+ AppRadio<uint32_t> endpoint(asyncBus,asyncEvents);
+ assert(endpoint.reset(1));
+ assert(asyncEvents.publishHealth({10,true,true,false,false}));
+ endpoint.poll();assert(endpoint.healthy(11,10));assert(!endpoint.healthy(20,10));
+ assert(endpoint.submit(42,10,false));assert(endpoint.state()==TxState::Queued);
+ assert(!endpoint.submit(43,11,false));
+ Transport<uint32_t>::Request asyncReq{};
+ assert(asyncBus.take(asyncReq));
+ assert(asyncEvents.publishOutcome({asyncReq.ticket,12,PhyOutcome::LocalComplete}));
+ endpoint.poll();assert(endpoint.state()==TxState::Queued);
+ assert(asyncBus.complete(asyncReq,true));endpoint.poll();
+ assert(endpoint.state()==TxState::LocalComplete);
+ assert(endpoint.submit(43,20,false));assert(asyncBus.take(asyncReq));
+ assert(asyncBus.complete(asyncReq,true));endpoint.poll();assert(endpoint.state()==TxState::Admitted);
+ assert(!endpoint.expire(29,10));assert(endpoint.expire(30,10));
+ assert(endpoint.state()==TxState::Uncertain&&!asyncBus.allows(asyncReq,30,100));
+ assert(endpoint.reset(2));assert(endpoint.submit(44,31,false));
+ assert(endpoint.preemptStop(99,32,2));
+ assert(asyncBus.take(asyncReq)&&asyncReq.stop&&asyncReq.frame==99);
+ assert(asyncBus.complete(asyncReq,true));
+ assert(asyncEvents.publishOutcome({asyncReq.ticket,33,PhyOutcome::LocalComplete}));
+ endpoint.poll();assert(endpoint.state()==TxState::LocalComplete);
+ assert(!endpoint.submit(45,34,false));
+ assert(asyncBus.take(asyncReq)&&!asyncBus.allows(asyncReq,34,100));
+ assert(asyncEvents.publishHealth({34,true,false,true,false}));
+ endpoint.poll();assert(!endpoint.healthy(34,100));
 }
