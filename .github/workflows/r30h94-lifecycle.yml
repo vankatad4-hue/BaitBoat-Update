@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - '**/source/dual_core_diagnostic.h'
+      - '**/source/radio_worker.h'
+      - 'Boat/tests/r30h95_radio_worker.cpp'
       - 'Boat/tests/r30h94*'
       - 'Boat/tests/r30h94_mock/**'
       - '.github/workflows/r30h94-lifecycle.yml'
@@ -16,3 +18,6 @@ jobs:
           cmp Boat/source/dual_core_diagnostic.h Remote/source/dual_core_diagnostic.h
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IBoat/tests/r30h94_mock -IBoat/source Boat/tests/r30h94_lifecycle.cpp -o /tmp/lifecycle
           timeout 30s /tmp/lifecycle
+          cmp Boat/source/radio_worker.h Remote/source/radio_worker.h
+          g++ -std=c++17 -pthread -Wall -Wextra -Werror -IBoat/tests/r30h94_mock -IBoat/source Boat/tests/r30h95_radio_worker.cpp -o /tmp/radio_worker
+          timeout 30s /tmp/radio_worker
