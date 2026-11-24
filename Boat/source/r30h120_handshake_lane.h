@@ -1,6 +1,7 @@
 #pragma once
 #include "r30h118_transport.h"
 #include <atomic>
+#include "r30h118_phy_events.h"
 namespace flytec_r30h120 {
 // Owner-side priority selection: no lower class may bypass pending safety.
 // A busy PHY call already underway cannot be preempted.
@@ -90,5 +91,44 @@ public:
   return admitted_;
  }
  bool resultPending()const{return held_;}
+};
+
+// Owner-local consumer, one outstanding handshake per PHY. Local completion
+// is not peer authentication or proof of session establishment.
+enum class HandshakeTx:uint8_t {Idle,Pending,LocalComplete,Failed,Uncertain};
+template<class Frame> class HandshakeEndpoint {
+ using Events=flytec_r30h118::PhyEvents<Frame>;
+ using Ticket=flytec_r30h118::Ticket;
+ HandshakeLane<Frame>& lane_; Events& events_;
+ Ticket ticket_{}; uint32_t started_=0;
+ bool admission_=false,outcome_=false;
+ flytec_r30h118::PhyOutcome result_=flytec_r30h118::PhyOutcome::Uncertain;
+ HandshakeTx state_=HandshakeTx::Idle;
+public:
+ HandshakeEndpoint(HandshakeLane<Frame>& lane,Events& events):lane_(lane),events_(events){}
+ bool begin(){if(state_==HandshakeTx::Pending)return false;state_=HandshakeTx::Idle;ticket_={};return lane_.begin();}
+ void close(){lane_.close();if(state_==HandshakeTx::Pending)state_=HandshakeTx::Uncertain;}
+ template<class Policy,class Verify> bool submit(const Frame& f,uint32_t now,Policy policy,Verify verify){
+  if(state_!=HandshakeTx::Idle)return false;
+  if(!lane_.submitAuthenticated(f,now,policy,verify,&ticket_))return false;
+  started_=now;admission_=outcome_=false;state_=HandshakeTx::Pending;return true;
+ }
+ void poll(uint32_t now,uint32_t timeout){
+  bool admitted=false;
+  for(unsigned i=0;i<3;++i)if(lane_.poll(admitted)&&state_==HandshakeTx::Pending){
+   if(!admitted)state_=HandshakeTx::Uncertain;else admission_=true;
+  }
+  typename Events::Outcome event{};
+  for(unsigned i=0;i<4&&events_.takeHandshakeOutcome(event);++i)
+   if(state_==HandshakeTx::Pending&&flytec_r30h118::sameTicket(ticket_,event.ticket)){outcome_=true;result_=event.result;}
+  if(state_!=HandshakeTx::Pending)return;
+  if(ticket_.generation!=lane_.activeGeneration()||!timeout||uint32_t(now-started_)>=timeout){close();return;}
+  if(admission_&&outcome_)state_=result_==flytec_r30h118::PhyOutcome::LocalComplete?HandshakeTx::LocalComplete:result_==flytec_r30h118::PhyOutcome::Failed?HandshakeTx::Failed:HandshakeTx::Uncertain;
+ }
+ HandshakeTx state()const{return state_;}
+ bool takeTerminal(Ticket& ticket,HandshakeTx& state){
+  if(state_==HandshakeTx::Idle||state_==HandshakeTx::Pending)return false;
+  ticket=ticket_;state=state_;state_=HandshakeTx::Idle;return true;
+ }
 };
 }
