@@ -2,6 +2,7 @@
 #include "remote_pin_assignments_r30h32.h"
 #include "release_button_guard.h"
 #include <Wire.h>
+#include "remote_i2c_owner.h"
 static constexpr uint8_t BTN_EXP=remote_pins::BUTTONS_MCP, RADIO_IO=remote_pins::RADIO_IO_MCP;
 static constexpr uint8_t IODIRA=0x00, IODIRB=0x01, GPPUA=0x0C, GPPUB=0x0D, GPIOA=0x12, GPIOB=0x13, OK_BIT=remote_pins::OK_GPA;
 static constexpr uint32_t DEBOUNCE_MS=25;
@@ -11,8 +12,8 @@ static uint32_t debounceAt[16]={};
 static bool confirmStable=true, confirmCandidate=true, ready=false;
 static uint32_t confirmAt=0;
 static bool inputFault=false,releaseBlocked=false,okOwned=false;
-static bool wr(uint8_t a,uint8_t r,uint8_t v){Wire.beginTransmission(a);Wire.write(r);Wire.write(v);return Wire.endTransmission()==0;}
-static bool rd(uint8_t a,uint8_t r,uint8_t &v){Wire.beginTransmission(a);Wire.write(r);if(Wire.endTransmission(false)!=0)return false;if(Wire.requestFrom((int)a,1)!=1)return false;v=(uint8_t)Wire.read();return true;}
+static bool wr(uint8_t a,uint8_t r,uint8_t v){if(!flytec_rtos::remoteI2cAllowed())return false;Wire.beginTransmission(a);Wire.write(r);Wire.write(v);return Wire.endTransmission()==0;}
+static bool rd(uint8_t a,uint8_t r,uint8_t &v){if(!flytec_rtos::remoteI2cAllowed())return false;Wire.beginTransmission(a);Wire.write(r);if(Wire.endTransmission(false)!=0)return false;if(Wire.requestFrom((int)a,1)!=1)return false;v=(uint8_t)Wire.read();return true;}
 void physicalButtons_setCallback(PhysicalButtonCallback f){cb=f;}
 bool physicalButtons_begin(){
  ready=false;inputFault=false;releaseBlocked=false;okOwned=false;releaseGuard_cancel();
