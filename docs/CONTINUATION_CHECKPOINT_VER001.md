@@ -1,3 +1,6 @@
+# R30H-121E.6F.2 primary target verification — 2026-11-24
+Run 45448244676: Boat job 138637859503 and Remote job 138637859914 both success, R30H-13 source audit PASS_SOURCE_ONLY on both. Boat static RAM 26336/327680, flash 379132/3145728; Remote RAM 184140/327680, flash 1426279/3145728. No flash. Boat host run 45448518125 also passed on later validator revision. Remaining current Remote host, inventory and mock/physical/endpoint compile verification before R30H-121E.6F.3. No production activation or physical acceptance.
+
 # R30H-121E.6F.2 Boat host verification — 2026-11-24
 Boat host CI run 45448518125, job 138638835246: success, 95 successful workflow steps, no failures. Corrections: epoch-zero gate regression 7aab3fb; UTC isolation wrapper audit c248870 and negative test 3ad631e; PlatformIO source audit b05b38a; R30G wrapper audit f49ee30. Previous failing runs 45447377198, 45447636171, 45447907274 (target preflight), 45448244710. Current host pass does not establish target build success. Obtain current Boat/Remote PlatformIO, Remote host and mock/endpoint compile results; fix failures before R30H-121E.6F.3 physical worker integration. No upload or production activation. Boat VER014 / Remote VER028 unchanged.
 
