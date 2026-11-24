@@ -68,7 +68,7 @@ class TestSourceLayout(unittest.TestCase):
 
     def test_boat_stop_ack_priority_before_heartbeat(self):
         src=(ROOT/"Boat/source/boat_dual_radio_port.cpp").read_text(encoding="utf-8")
-        a="stopAck_.due(ackNow,sessionReady(),nrfReady_,nrf_.txPending())"
+        a="stopAck_.due(ackNow,sessionReady(),nrfReady_,primaryDriverPending())"
         b="sendHeartbeat(LINK_NRF_PRIMARY,now)"
         self.assertIn(a,src)
         self.assertIn(b,src)
