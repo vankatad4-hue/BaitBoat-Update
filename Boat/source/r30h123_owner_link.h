@@ -51,6 +51,18 @@ public:
   appClass_=TxPriority::Stop;
   const bool ok=app_.preemptStop(f,now,epoch_,age);publish();return ok;
  }
+ // STOP feedback may use the reserved lane even while ordinary TX is
+ // latched. Unlike a STOP ACK, it never preempts other queued work.
+ template<class Verify> bool submitStatus(const Frame& f,uint32_t now,uint32_t age,bool stopped,Verify verify){
+  if(!epoch_||f.sessionEpoch!=epoch_||!f.sequence||!age||!verify(f)||app_.stopRetryPending()||app_.terminalPending())return false;
+  if(!app_.submit(f,now,stopped,age))return false;
+  appClass_=stopped?TxPriority::Stop:TxPriority::Safety;publish();return true;
+ }
+ bool revokeStatus(const Ticket& t){
+  const bool ok=app_.revokeCurrent(t,epoch_);
+  if(ok){appClass_=TxPriority::None;publish();}
+  return ok;
+ }
  void poll(uint32_t now,uint32_t appTimeout,uint32_t handshakeTimeout){
   app_.poll();app_.expire(now,appTimeout);handshake_.poll(now,handshakeTimeout);
   if(app_.stopRetryPending())app_.serviceStop(now);
