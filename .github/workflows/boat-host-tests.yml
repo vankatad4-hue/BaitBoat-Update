@@ -64,6 +64,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: R30H-118D stale inter-core completion gate
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IBoat/source Boat/tests/r30h118_completion_gate_test.cpp -o /tmp/r30h118_gate
+          /tmp/r30h118_gate
       - name: R30H-118C backup STOP ACK expiry and rollover
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IBoat/source Boat/tests/r30h118_backup_ack_test.cpp -o /tmp/r30h118_backup_ack
