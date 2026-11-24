@@ -54,7 +54,7 @@ void NRF24Link::update() {
  // Drain in a single scheduled poll and never re-enter hardware from
  // receiveFrame(), which is now a pure software-queue operation.
  if(txPending_)return;
- for(unsigned i=0;i<3U && radio_.available();++i){
+ for(unsigned i=0;i<3U && rxQueueCount_<4U && radio_.available();++i){
    RadioFrame f{};
    radio_.read(&f,sizeof(f));
    if(f.magic[0]!=RADIO_FRAME_MAGIC0||f.magic[1]!=RADIO_FRAME_MAGIC1||
