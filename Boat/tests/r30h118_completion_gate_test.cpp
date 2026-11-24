@@ -628,4 +628,22 @@ int main(){
  assert(timing.stopRetryPending());
  assert(!timing.serviceStop(151)&&!timing.stopRetryPending());
  assert(timingBus.activeGeneration()==0);
+ // Explicit request deadline overrides the default, including rollover.
+ Transport<uint32_t> deadlineBus;
+ Transport<uint32_t>::Request deadlineReq{};
+ assert(deadlineBus.invalidate(1));
+ assert(deadlineBus.submit(1,UINT32_MAX-10,true,nullptr,50));
+ assert(deadlineBus.takeStop(deadlineReq)&&deadlineReq.maxAge==50);
+ assert(deadlineBus.allows(deadlineReq,38,10));
+ assert(!deadlineBus.allows(deadlineReq,39,100));
+ assert(deadlineBus.complete(deadlineReq,true));
+ bool deadlineAdmitted=false;
+ assert(deadlineBus.poll(deadlineAdmitted)&&deadlineAdmitted);
+ assert(deadlineBus.submit(2,100,false));
+ assert(deadlineBus.takeOrdinary(deadlineReq)&&deadlineReq.maxAge==0);
+ assert(deadlineBus.allows(deadlineReq,109,10));
+ assert(!deadlineBus.allows(deadlineReq,110,10));
+ assert(!deadlineBus.allows(deadlineReq,100,0));
+ deadlineBus.invalidate(0);
+ assert(!deadlineBus.allows(deadlineReq,101,100));
 }
