@@ -156,6 +156,13 @@ private:
     bool sendMissionFeedback(const MissionControlFeedback &f,uint32_t now);
     bool primaryOrdinaryTxReady() const;
     // Legacy synchronous admission boundary; not RF delivery or application ACK.
+    bool primaryDriverReady();
+    bool primaryDriverPending();
+    bool primaryDriverSuccess();
+    bool backupDriverReady();
+    bool backupDriverFault();
+    bool receivePrimaryLegacy(RadioFrame &f);
+    bool receiveBackupLegacy(RadioFrame &f);
     bool admitPrimaryLegacy(const RadioFrame &frame);
     bool admitBackupLegacy(const RadioFrame &frame,uint32_t now);
     void abortMission();
