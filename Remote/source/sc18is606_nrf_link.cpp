@@ -154,6 +154,7 @@ void Sc18is606NrfLink::update(){
     for(unsigned n=0;n<2U && rxCountQueued_<4U && (fifo&0x01U)==0U;n++){
         if(!queueRx()||!regRead(REG_FIFO_STATUS,fifo)){trip();return;}
     }
+    if(rxCountQueued_==4U && rxFullPollCount_!=UINT32_MAX) ++rxFullPollCount_;
     if((status&STAT_RX_DR)!=0U && !regWrite(REG_STATUS,STAT_RX_DR))trip();
 }
 bool Sc18is606NrfLink::receiveFrame(RadioFrame&frame){
