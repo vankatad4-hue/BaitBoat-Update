@@ -26,6 +26,7 @@ static_assert(BOAT_R30H9_MARKER_GPIO == -1 && BOAT_R30H9_GPIO_OUTPUT_SIGNED == 0
 #include "mission_controller.h"
 #include "mission_stick.h"
 #include "radio_session_platform.h"
+#include "r30h123_runtime_owner.h"
 
 // R30H-121E: compile-only application endpoint seam; never starts a PHY task.
 #ifndef BOAT_R30H121_ENDPOINT_COMPILE
@@ -127,6 +128,7 @@ private:
     bool queueAsyncHandshake(ManagedLink link,const RadioFrame &frame,uint32_t now);
     bool queueAsyncApplication(ManagedLink link,const RadioFrame &frame,uint32_t now,uint32_t age);
 #endif
+    flytec_r30h123::RuntimeOwner runtimeOwner_;
     bool legacyBeginAttempted_=false;
     NRF24Link nrf_;
     HardwareSerial e22Serial_{1};
