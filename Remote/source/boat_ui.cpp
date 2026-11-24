@@ -865,7 +865,7 @@ void updateBoatScreen(const BoatState &state)
     else snprintf(inputText,sizeof(inputText),"СТИКОВЕ L %d,%d  R %d,%d  %s",input.values.leftX,input.values.leftY,input.values.rightX,input.values.rightY,input.neutral?"НЕУТРАЛНИ":"АКТИВНИ");
     if (inputStatusLabel) lv_label_set_text(inputStatusLabel,inputText);
     char safetyText[128];
-    const char *stopText = state.emergencyStop ? (state.emergencyStopConfirmed ? "ПОТВЪРДИ" : "ЗАКЛЮЧЕН?") : (state.emergencyStopConfirmed ? "ИЗЧИСТЕН" : "UNKNOWN");
+    const char *stopText = boatRadio_backupStopConfirmed() && !state.emergencyStopConfirmed ? "LoRa STOP" : state.emergencyStop ? (state.emergencyStopConfirmed ? "ПОТВЪРДИ" : "ЗАКЛЮЧЕН?") : (state.emergencyStopConfirmed ? "ИЗЧИСТЕН" : "UNKNOWN");
     const bool batteryMid=percentFresh&&telemetry.batteryPercent<=50&&!state.lowBattery;
     const char *healthText = batteryMid ? "СРЕДНА БАТ. — ЗАРЕДИ" :
         (state.failsafeActive ? "АВАР. РЕЖИМ" : (state.actuatorSafetyReady ? "ГОТОВО" : "БЛОКИРАНО"));
@@ -935,7 +935,7 @@ static lv_timer_t *releaseStatusTimer=nullptr;
 static void updateReleaseStatus(lv_timer_t *){
  if(!releaseStatusText)return;
  char s[300];snprintf(s,sizeof(s),"STOP: %s\nРАДИО: %s\nБЛОКИРОВКА: %s\nПОТВЪРЖДЕНИЕ: %u",
- boatState.emergencyStopConfirmed?(boatState.emergencyStop?"АКТИВЕН":"ОСВОБОДЕН"):"НЕПОТВЪРДЕН",
+ boatState.emergencyStopConfirmed?(boatState.emergencyStop?"АКТИВЕН":"ОСВОБОДЕН"):(boatRadio_backupStopConfirmed()?"ПОТВЪРДЕН (LoRa)":"НЕПОТВЪРДЕН"),
  boatState.radioConnected?"СВЪРЗАНО":"НЯМА",
  boatState.actuatorSafetyReady?"ГОТОВО":"БЛОКИРАНО",(unsigned)releaseGuard_state());
  lv_label_set_text(releaseStatusText,s);
