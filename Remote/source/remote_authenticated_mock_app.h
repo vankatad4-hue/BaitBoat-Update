@@ -42,7 +42,7 @@ public:
   consume(PhyLink::Primary,now);consume(PhyLink::Backup,now);
   if(!initialized_)return false;
   if(!session_.established()){
-   if(!handshake_.active()&&!handshake_.start(nonce,now))return false;
+   if(!handshake_.active()&&!handshake_.start(nonce,now,SessionHandshake::windowFor(!backupFault_)))return false;
    return handshake_.tick(now,!primaryFault_,!backupFault_,root_);
   }
   ack_.update(now);

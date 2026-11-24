@@ -10,12 +10,15 @@ inline void sessionNonceWrite(uint64_t n,uint8_t out[8]){for(unsigned i=0;i<8;++
 inline uint64_t sessionNonceRead(const uint8_t in[8]){uint64_t n=0;for(unsigned i=0;i<8;++i)n|=(uint64_t)in[i]<<(8*i);return n;}
 class SessionHandshake{
 public:
- void reset(){radioSession_wipe(&keys_,sizeof(keys_));transcript_={};phase_=HS_IDLE;started_=0;}
- bool startRemote(uint64_t nonce,uint32_t now){
-  if(!nonce||phase_!=HS_IDLE)return false;
-  transcript_={nonce,0,1,2};started_=now;phase_=HS_WAIT_CHALLENGE;return true;
+ static constexpr uint32_t PrimaryWindowMs=8000U,BackupWindowMs=20000U;
+ static constexpr uint32_t windowFor(bool backupConfigured){return backupConfigured?BackupWindowMs:PrimaryWindowMs;}
+ uint32_t windowMs()const{return window_;}
+ void reset(){radioSession_wipe(&keys_,sizeof(keys_));transcript_={};phase_=HS_IDLE;started_=0;window_=PrimaryWindowMs;}
+ bool startRemote(uint64_t nonce,uint32_t now,uint32_t window=PrimaryWindowMs){
+  if(!nonce||phase_!=HS_IDLE||!validWindow(window))return false;
+  transcript_={nonce,0,1,2};started_=now;window_=window;phase_=HS_WAIT_CHALLENGE;return true;
  }
- bool timeout(uint32_t now)const{return phase_!=HS_IDLE&&phase_!=HS_ESTABLISHED&&now-started_>=8000U;}
+ bool timeout(uint32_t now)const{return phase_!=HS_IDLE&&phase_!=HS_ESTABLISHED&&uint32_t(now-started_)>=window_;}
  bool remotePacket(SessionHandshakePacket &out)const{
   if(phase_==HS_WAIT_CHALLENGE){out.type=SESSION_HELLO;sessionNonceWrite(transcript_.remoteNonce,out.payload);return true;}
   if(phase_==HS_WAIT_CONFIRM){out.type=SESSION_PROOF;memcpy(out.payload,keys_.remoteProof,8);return true;}
@@ -34,7 +37,7 @@ public:
   return false;
  }
  bool boatReceive(SessionHandshakeMessage type,const uint8_t payload[8],uint64_t freshNonce,const uint8_t root[32],
-                  SessionHmac hmac,uint32_t now,bool valid,SessionHandshakePacket &out,bool &newSession){
+                  SessionHmac hmac,uint32_t now,bool valid,SessionHandshakePacket &out,bool &newSession,uint32_t window=PrimaryWindowMs){
   newSession=false;if(!valid||!payload)return false;
   if(timeout(now))reset();
   if(type==SESSION_HELLO){
@@ -42,9 +45,10 @@ public:
    if(!remote||phase_==HS_ESTABLISHED)return false;
    if(phase_==HS_WAIT_PROOF&&remote!=transcript_.remoteNonce)return false;
    if(phase_==HS_IDLE){
+    if(!validWindow(window))return false;
     transcript_={remote,freshNonce,1,2};
     if(!radioSession_derive(root,transcript_,hmac,keys_)){reset();return false;}
-    started_=now;phase_=HS_WAIT_PROOF;
+    started_=now;window_=window;phase_=HS_WAIT_PROOF;
    }
    if(phase_!=HS_WAIT_PROOF)return false;
    out.type=SESSION_CHALLENGE;sessionNonceWrite(transcript_.boatNonce,out.payload);return true;
@@ -62,5 +66,6 @@ public:
   memcpy(out,keys_.frameKey,32);return true;
  }
 private:
- RadioSessionTranscript transcript_{};RadioSessionKeys keys_{};SessionHandshakePhase phase_=HS_IDLE;uint32_t started_=0;
+ static bool validWindow(uint32_t n){return n==PrimaryWindowMs||n==BackupWindowMs;}
+ RadioSessionTranscript transcript_{};RadioSessionKeys keys_{};SessionHandshakePhase phase_=HS_IDLE;uint32_t started_=0,window_=PrimaryWindowMs;
 };

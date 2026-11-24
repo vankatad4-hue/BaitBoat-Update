@@ -717,8 +717,9 @@ void BoatDualRadioPort::receiveCaptured(ManagedLink link,const RadioFrame &f,uin
    const bool recoveryAllowed=BoatSessionRecovery::eligible(sessionStarted_,primaryFresh(now),backupFresh(now),lastSessionRx_,now);
    const auto type=(SessionHandshakeMessage)f.type;
    const uint64_t nonce=radioPlatformNonce();
-   if(!handshake_.boatReceive(type,f.payload,nonce,rootKey_,radioPlatformHmac,now,true,reply,newSession)){
-     if(!recoveryHandshake_.receive(recoveryAllowed,type,f.payload,nonce,rootKey_,radioPlatformHmac,now,handshake_,reply,recovered))return;
+    const uint32_t window=SessionHandshake::windowFor(sx1262Ready_);
+   if(!handshake_.boatReceive(type,f.payload,nonce,rootKey_,radioPlatformHmac,now,true,reply,newSession,window)){
+     if(!recoveryHandshake_.receive(recoveryAllowed,type,f.payload,nonce,rootKey_,radioPlatformHmac,now,handshake_,reply,recovered,window))return;
      newSession=recovered;
    }
    if(newSession){

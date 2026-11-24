@@ -12,12 +12,12 @@ public:
  bool expire(uint32_t now){if(!candidate_.timeout(now))return false;reset();return true;}
  bool receive(bool allowed,SessionHandshakeMessage type,const uint8_t payload[8],
               uint64_t nonce,const uint8_t root[32],SessionHmac mac,uint32_t now,
-              SessionHandshake& current,SessionHandshakePacket& reply,bool& replaced){
+              SessionHandshake& current,SessionHandshakePacket& reply,bool& replaced,uint32_t window=SessionHandshake::PrimaryWindowMs){
   replaced=false;
   if(!allowed||!current.established()){reset();return false;}
   if(type!=SESSION_HELLO&&type!=SESSION_PROOF)return false;
   bool fresh=false;
-  if(!candidate_.boatReceive(type,payload,nonce,root,mac,now,true,reply,fresh))return false;
+  if(!candidate_.boatReceive(type,payload,nonce,root,mac,now,true,reply,fresh,window))return false;
   if(fresh){current.reset();current=candidate_;candidate_.reset();replaced=true;}
   return true;
  }

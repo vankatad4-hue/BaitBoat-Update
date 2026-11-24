@@ -32,6 +32,9 @@ on:
       - 'Boat/source/r30h120_handshake_lane.h'
       - 'Boat/source/r30h123_owner_link.h'
       - 'Boat/tests/r30h124m_handshake_cancel.cpp'
+      - 'Boat/tests/r30h124n_backup_handshake.cpp'
+      - 'Boat/source/radio_handshake.h'
+      - 'Remote/source/radio_handshake.h'
       - 'Boat/tests/r30h124l_handshake_reply.cpp'
       - 'Boat/tests/r30h124k_session_recovery.cpp'
       - 'Remote/source/remote_mock_peer.h'
@@ -138,3 +141,6 @@ jobs:
 
           g++ -std=c++17 -Wall -Wextra -Werror -IBoat/source Boat/tests/r30h124m_handshake_cancel.cpp -o /tmp/boat_handshake_cancel
           timeout 10s /tmp/boat_handshake_cancel
+
+          g++ -std=c++17 -Wall -Wextra -Werror -Itests/r30h20_stubs -IBoat/source Boat/tests/r30h124n_backup_handshake.cpp -lcrypto -o /tmp/backup_handshake
+          timeout 10s /tmp/backup_handshake

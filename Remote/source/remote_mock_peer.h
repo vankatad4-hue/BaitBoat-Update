@@ -14,7 +14,7 @@ public:
   if(f.type==RADIO_MSG_SESSION_HELLO||f.type==RADIO_MSG_SESSION_PROOF){
    if(f.commandId||f.sequence||f.sessionEpoch||!radio_frameVerify(f,root_))return false;
    SessionHandshakePacket p{};bool fresh=false;
-   if(!session_.boatReceive((SessionHandshakeMessage)f.type,f.payload,456,root_,mac_,now,true,p,fresh))return false;
+   if(!session_.boatReceive((SessionHandshakeMessage)f.type,f.payload,456,root_,mac_,now,true,p,fresh,SessionHandshake::BackupWindowMs))return false;
    if(fresh){session_.frameKey(key_);sequence_=0;rx_.resetAfterHandshake();}
    radio_frameInit(response,(RadioMessageType)p.type,2,1,0,0,now,0);
    memcpy(response.payload,p.payload,8);response.flags=flags;return radio_frameSeal(response,root_);

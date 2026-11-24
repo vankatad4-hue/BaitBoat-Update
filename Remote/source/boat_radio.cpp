@@ -535,7 +535,7 @@ void boatRadio_update() {
         if(!g_session.established()){
             const uint32_t at=millis();
             if(g_rootReady&&(g_nrfReady||g_loraConfigured)){
-                if(!g_workerHandshake.active()&&!g_workerHandshake.start(radioPlatformNonce(),at)){
+                if(!g_workerHandshake.active()&&!g_workerHandshake.start(radioPlatformNonce(),at,SessionHandshake::windowFor(g_loraConfigured))){
                     resetSession(at);return;
                 }
                 if(!g_workerHandshake.tick(at,g_nrfReady,g_loraConfigured,g_rootKey))resetSession(at);
@@ -565,7 +565,7 @@ static void prepareRemoteCycle(uint32_t now){
     if(g_session.established()&&!sessionReady())resetSession(now);
     if(g_session.timeout(now))resetSession(now);
     if(g_rootReady&&(g_nrfReady||g_loraConfigured)&&!g_session.established()&&now-g_lastHandshakeTx>=500U){
-        g_lastHandshakeTx=now;g_session.startRemote(radioPlatformNonce(),now);
+        g_lastHandshakeTx=now;g_session.startRemote(radioPlatformNonce(),now,SessionHandshake::windowFor(g_loraConfigured));
         SessionHandshakePacket packet{};if(g_session.remotePacket(packet))sendHandshake(packet,now);
     }
 }

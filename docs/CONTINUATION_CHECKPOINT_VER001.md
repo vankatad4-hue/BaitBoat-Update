@@ -1,3 +1,12 @@
+## Active continuation — R30H-124N (2026-11-24)
+
+Branch `platformio-unified-r30h20`; Boat VER014 / Remote VER028 unchanged; physical workers and upload locked.
+
+- R30H-124M exact-source regression locally PASS: nine files checked against Git blob SHA-1; g++ C++17 -Wall -Wextra -Werror, exit 0 under 10 s timeout. CI status empty; checkout DNS and PlatformIO blockers remain.
+- Shared fixed 8 s primary-only / provisional 20 s backup-capable transcript window, selected at creation. Firmware call sites and Remote async queue/RX deadlines follow selected window including Boat recovery. No change to 10 s RTH or 3 s backup pacing. Inactive handshake cancellation idempotent. New busy-reply and recovery timing test registered, pending execution.
+- Ordinary/mission TX migration contract saved in docs/R30H124N_REMOTE_TX_MIGRATION.md. Implementation pending.
+- Next R30H-124O: verify regressions and full CI/targets; implement centralized typed Remote completion router and independently authorized ordinary traffic, then mission scheduler. Physical RF pacing/service gaps remain unverified.
+
 ## Active continuation — R30H-124M (2026-11-24)
 
 Branch `platformio-unified-r30h20`; Boat VER014 / Remote VER028 unchanged; physical activation and upload locked.

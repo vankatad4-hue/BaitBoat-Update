@@ -16,9 +16,9 @@ public:
   active_=false;primaryTicket_=backupTicket_=0;session_.reset();
   return tx_.invalidateSession();
  }
- bool start(uint64_t nonce,uint32_t now){
+ bool start(uint64_t nonce,uint32_t now,uint32_t window=SessionHandshake::PrimaryWindowMs){
   if(!owner_.worker()||active_||session_.established()||!nonce)return false;
-  if(!tx_.beginHandshake()||!session_.startRemote(nonce,now))return false;
+  if(!tx_.beginHandshake()||!session_.startRemote(nonce,now,window))return false;
   active_=true;started_=now;primarySent_=false;return true;
  }
  bool active()const{return owner_.worker()&&active_;}
@@ -48,7 +48,7 @@ public:
  bool receive(PhyLink link,const RadioFrame& f,uint32_t captured,uint32_t now,
               const uint8_t root[32],SessionHmac hmac){
   if(!owner_.worker()||!active_||!root||!remoteRxFresh(now,captured)||
-     uint32_t(captured-started_)>=8000U||
+     uint32_t(captured-started_)>=session_.windowMs()||
      (link!=PhyLink::Primary&&link!=PhyLink::Backup)||
      !radioLinkFlagMatches(f.flags,link==PhyLink::Backup)||
      f.sourceId!=2||f.destinationId!=1||f.sequence||f.commandId||f.sessionEpoch||
@@ -79,7 +79,7 @@ private:
   memcpy(f.payload,packet.payload,8);
   f.flags=link==PhyLink::Backup?RADIO_FLAG_BACKUP_LINK:0;
   if(!radio_frameSeal(f,root))return false;
-  const auto result=tx_.submit(link,f,started_,8000U,now,ticket);
+  const auto result=tx_.submit(link,f,started_,session_.windowMs(),now,ticket);
   if(result==RemoteAsyncTx::Submit::Busy)return true;
   if(result==RemoteAsyncTx::Submit::Fault&&tx_.linkFault(link))return true;
   if(result!=RemoteAsyncTx::Submit::Queued)return false;

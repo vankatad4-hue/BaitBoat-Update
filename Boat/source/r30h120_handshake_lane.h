@@ -111,7 +111,7 @@ public:
  void close(){lane_.close();if(state_==HandshakeTx::Pending)state_=HandshakeTx::Uncertain;}
  // Explicit transcript cancellation: retire the ticket, discard any local
  // result and let the worker drain stale immutable entries by generation.
- void cancel(){lane_.close();ticket_={};state_=HandshakeTx::Idle;admission_=outcome_=false;}
+ void cancel(){if(lane_.activeGeneration())lane_.close();ticket_={};state_=HandshakeTx::Idle;admission_=outcome_=false;}
  bool needsService()const{return state_==HandshakeTx::Pending||lane_.queued();}
  template<class Policy,class Verify> bool submit(const Frame& f,uint32_t now,Policy policy,Verify verify){
   if(state_!=HandshakeTx::Idle)return false;
