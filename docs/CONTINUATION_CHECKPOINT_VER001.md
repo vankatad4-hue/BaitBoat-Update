@@ -1,3 +1,13 @@
+## Active continuation — R30H-124D (2026-11-24)
+
+Branch `platformio-unified-r30h20`. Official Boat VER014 / Remote VER028 unchanged. VS Code + PlatformIO primary. Production physical worker activation and upload remain locked.
+
+- R30H-124A: shared protocol decoder bodies and wire types identical; Boat-only encoder declarations moved outside shared types include guard (9345135). Boat host #45473784291 PASS. Shared worker nonblocking stop and exit observation.
+- R30H-124B: synchronized Boat/Remote radio_worker.h and dual_phy_worker.h (d191cb3,83eb580); shared lifecycle #45474066950 PASS. Remote Core 1 request-only runtime coordinator (603eda0), mock integrated bench (0297143); Remote host #45474150823, inventory #45474150746 and packaging #45474150749 PASS. Bench compile #45474150619 pending at last observation.
+- R30H-124C: runtime authorization/fault/retirement regression (38ad08d), CI trigger and test (eeb5087). Shared lifecycle #45474471665 PASS; Remote host #45474448976 PASS.
+- R30H-124D: Remote boatRadio_update split into prepareRemoteCycle, serviceRemoteLegacyRx, serviceRemoteLegacyTx, advanceRemoteApplication (ed3eec7); same production ordering. New build results not yet verified. Remote worker runtime still mock-only; real adapter ownership not transferred.
+- Next R30H-124E: verify latest primary and bench compiles; establish an exclusive Remote ownership selection and owner-task fence, introduce timestamp-aware authenticated RX and explicit TX admission/completion seam without moving shared Wire off Core 1. Audit STOP ordering through the actual call graph, not just textual order. Boat simulated full runtime still pending. No automatic restart or legacy fallback on worker failure. All hardware gates NOT_RUN/BLOCKED.
+
 ## Active continuation — R30H-123Z (2026-11-24)
 
 Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 remain frozen; VS Code + PlatformIO primary. No upload/flashing or physical activation. Software STOP and conditional RTH remain required.
