@@ -41,10 +41,10 @@ public:
   return healthSeen_&&!events_.stickyFault()&&health_.configured&&health_.ready&&!health_.fault&&age&&uint32_t(now-health_.observedAt)<age;
  }
  bool terminalPending()const{return !terminalTaken_&&ticket_.serial&&state_!=TxState::Idle&&state_!=TxState::Queued&&state_!=TxState::Admitted;}
- bool submit(const Frame &frame,uint32_t now,bool stop){
+ bool submit(const Frame &frame,uint32_t now,bool stop,uint32_t requestAge=0){
   if(state_==TxState::Queued||state_==TxState::Admitted||(!stop&&terminalPending()))return false;
   Ticket next{};
-  if(!bus_.submit(frame,now,stop,&next))return false;
+  if(!bus_.submit(frame,now,stop,&next,requestAge))return false;
   if(stop)preserveSuperseded();
   ticket_=next;terminalTaken_=false;submittedAt_=now;admissionSeen_=admitted_=outcomeSeen_=false;state_=TxState::Queued;return true;
  }
@@ -62,7 +62,7 @@ public:
  bool serviceStop(uint32_t now,uint32_t maxAge){
   if(!stopRetry_)return false;
   if(!maxAge||uint32_t(now-stopAt_)>=maxAge){stopRetry_=false;bus_.invalidate(0);return false;}
-  if(!submit(stopFrame_,stopAt_,true))return false;
+  if(!submit(stopFrame_,stopAt_,true,stopRetryAge_))return false;
   stopRetry_=false;return true;
  }
  bool serviceStop(uint32_t now){return serviceStop(now,stopRetryAge_);}
