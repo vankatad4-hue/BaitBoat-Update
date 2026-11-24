@@ -32,7 +32,7 @@ public:
    if(!events_.publishRx(rx_)){rxHeld_=true;return;}
   }
  }
- void flushOutcome(){for(unsigned j=0;j<3;++j)if(const unsigned i=(j==0?1:j==1?0:2);true)if(held_[i]&&events_.publishOutcome(outcomes_[i]))held_[i]=false;}
+ void flushOutcome(){const unsigned order[3]={1,0,2};for(unsigned j=0;j<3;++j){const unsigned i=order[j];if(held_[i]&&events_.publishOutcome(outcomes_[i]))held_[i]=false;}}
  bool publishHealth(const typename Events::Health &h){return events_.publishHealth(h);}
 };
 template<class Health> bool healthyFresh(const Health &h,uint32_t now,uint32_t maxAge){
