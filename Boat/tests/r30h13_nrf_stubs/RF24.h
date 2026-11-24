@@ -7,7 +7,7 @@
 constexpr int RF24_250KBPS=250,RF24_PA_LOW=1,RF24_CRC_16=16;
 struct FakeRadioBehavior{
     bool beginOk=true,txStarted=true,ack=false,maxRt=false;
-    unsigned flushes=0,starts=0,listen=0,availableCalls=0,readCalls=0,statusCalls=0;
+    unsigned powerDowns=0,rxFlushes=0,flushes=0,starts=0,listen=0,availableCalls=0,readCalls=0,statusCalls=0;
     uint8_t channel=0,retryDelay=0,retryCount=0,writePipe[5]{},readPipe[5]{};
     int dataRate=-1,paLevel=-1,crcLength=-1,readPipeIndex=-1;
     size_t payloadSize=0;
@@ -51,5 +51,7 @@ public:
         fakeRadio.rxHead=(fakeRadio.rxHead+1U)%3U;
         --fakeRadio.rxCount;++fakeRadio.readCalls;
     }
+    void powerDown(){++fakeRadio.powerDowns;}
+    void flush_rx(){++fakeRadio.rxFlushes;fakeRadio.rxHead=fakeRadio.rxTail=fakeRadio.rxCount=0;}
     void flush_tx(){++fakeRadio.flushes;}
 };
