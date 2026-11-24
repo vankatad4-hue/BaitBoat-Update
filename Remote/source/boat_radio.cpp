@@ -259,7 +259,7 @@ bool boatRadio_sendCommand(const BoatCommand &command) {
     if(queued && command.type!=CMD_MANUAL_MOTORS) {
         const uint16_t id=(uint16_t)(command.commandId&0xFFFFU);
         const uint8_t mode=(uint8_t)command.mode;
-        const uint16_t timeout=(command.type>=CMD_RELEASE_HOPPER_LEFT && command.type<=CMD_RELEASE_HOOK_RIGHT)?3500U:2500U;
+        const uint16_t timeout=command.type==CMD_EMERGENCY_STOP?15000U:(command.type>=CMD_RELEASE_HOPPER_LEFT && command.type<=CMD_RELEASE_HOOK_RIGHT)?3500U:2500U;
         if(id!=0) g_ackTracker.begin(id,(uint8_t)command.type,mode,now,timeout);
     }
     return queued;
