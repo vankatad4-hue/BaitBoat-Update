@@ -47,6 +47,12 @@ enum ManagedLink : uint8_t { LINK_NONE=0, LINK_NRF_PRIMARY=1, LINK_LORA_BACKUP=2
 #define BOAT_NRF_CSN_PIN (-1)
 #endif
 
+// No production worker selection until async consumers and shutdown are verified.
+#ifndef BOAT_R30H121_PHYSICAL_OWNER
+#define BOAT_R30H121_PHYSICAL_OWNER 0
+#endif
+static_assert(BOAT_R30H121_PHYSICAL_OWNER == 0, "Physical ownership migration not commissioned");
+
 class BoatDualRadioPort {
 public:
     BoatDualRadioPort();
@@ -102,6 +108,7 @@ private:
     flytec_r30h118::PhyEvents<RadioFrame> asyncPrimaryEvents_,asyncBackupEvents_;
     flytec_r30h121::DualAppRadio<RadioFrame> asyncRadio_{asyncPrimaryBus_,asyncPrimaryEvents_,asyncBackupBus_,asyncBackupEvents_};
 #endif
+    bool legacyBeginAttempted_=false;
     NRF24Link nrf_;
     HardwareSerial e22Serial_{1};
     E22UartBoardPort e22_;
@@ -156,11 +163,11 @@ private:
     bool sendMissionFeedback(const MissionControlFeedback &f,uint32_t now);
     bool primaryOrdinaryTxReady() const;
     // Legacy synchronous admission boundary; not RF delivery or application ACK.
-    bool primaryDriverReady();
-    bool primaryDriverPending();
-    bool primaryDriverSuccess();
-    bool backupDriverReady();
-    bool backupDriverFault();
+    bool primaryDriverReady() const;
+    bool primaryDriverPending() const;
+    bool primaryDriverSuccess() const;
+    bool backupDriverReady() const;
+    bool backupDriverFault() const;
     bool receivePrimaryLegacy(RadioFrame &f);
     bool receiveBackupLegacy(RadioFrame &f);
     bool admitPrimaryLegacy(const RadioFrame &frame);
