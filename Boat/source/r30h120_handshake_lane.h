@@ -18,7 +18,7 @@ template<class Frame> bool boatReplyShape(const Frame &f,uint8_t boat,uint8_t re
 // Worker must arbitrate this lane with STOP priority and exclusive driver ownership.
 template<class Frame> class HandshakeLane {
  using Bus=flytec_r30h118::Transport<Frame>;
- Bus bus_;
+ Bus bus_{flytec_r30h118::TicketDomain::Handshake};
 public:
  using Request=typename Bus::Request;
  bool begin(){return bus_.invalidate(1);}
