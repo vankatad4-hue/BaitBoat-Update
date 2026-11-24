@@ -43,6 +43,11 @@ int main(){
  assert(!link.receiveFrame(out));
  link.update();
  assert(link.receiveFrame(out));
+#ifdef FLYTEC_TEST_BOAT_SHUTDOWN
+ link.shutdownLocal();
+ assert(!link.configured()&&!link.txPending()&&link.transportFault());
+ assert(!link.sendFrame(f,now));assert(!link.receiveFrame(out));
+#endif
  // Separate instance for uncertain write, independent of pending TX state.
  FakeStream faultUart;
  E22UartLink faultLink(faultUart,[](bool,bool,void*){},[](void*){return true;},nullptr,nullptr);
