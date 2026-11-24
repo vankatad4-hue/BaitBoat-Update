@@ -14,6 +14,7 @@ template<class Frame> class AppRadio {
  uint32_t submittedAt_=0;
  Frame stopFrame_{};
  uint32_t stopAt_=0;
+ uint32_t stopRetryAge_=100;
  bool stopRetry_=false;
  typename Events::Health health_{};
  bool healthSeen_=false, admissionSeen_=false, admitted_=false, outcomeSeen_=false;
@@ -52,10 +53,10 @@ public:
   if((state_!=TxState::Queued&&state_!=TxState::Admitted)|| (timeout&&uint32_t(now-submittedAt_)<timeout))return false;
   bus_.invalidate(0);state_=TxState::Uncertain;return true;
  }
- bool preemptStop(const Frame &frame,uint32_t now,uint8_t epoch){
+ bool preemptStop(const Frame &frame,uint32_t now,uint8_t epoch,uint32_t retryAge=100){
   preserveSuperseded();bus_.latchStop();stopRetry_=false;if(!bus_.invalidate(epoch)){state_=TxState::Uncertain;return false;}
-  state_=TxState::Uncertain;stopFrame_=frame;stopAt_=now;stopRetry_=true;
-  return serviceStop(now,100);
+  state_=TxState::Uncertain;stopFrame_=frame;stopAt_=now;stopRetryAge_=retryAge;stopRetry_=true;
+  return serviceStop(now,stopRetryAge_);
  }
  // Owner retains a saturated STOP request with its original timestamp.
  bool serviceStop(uint32_t now,uint32_t maxAge){
@@ -64,6 +65,7 @@ public:
   if(!submit(stopFrame_,stopAt_,true))return false;
   stopRetry_=false;return true;
  }
+ bool serviceStop(uint32_t now){return serviceStop(now,stopRetryAge_);}
  bool stopRetryPending()const{return stopRetry_;}
  bool rearm(uint8_t epoch,bool authorized){
   if(!authorized||stopRetry_||terminalPending()||state_==TxState::Queued||state_==TxState::Admitted)return false;
@@ -137,7 +139,7 @@ public:
  AppRadio<Frame>& primary(){return primary_;}
  AppRadio<Frame>& backup(){return backup_;}
  template<class Service> static bool serviceLink(AppRadio<Frame>& ep,uint32_t now,uint32_t age,uint8_t mask,Service service){
-  if(ep.stopRetryPending()){ep.serviceStop(now,age);return false;}
+  if(ep.stopRetryPending()){ep.serviceStop(now);return false;}
   if(ep.terminalPending()||ep.state()==TxState::Queued||ep.state()==TxState::Admitted)return false;
   return flytec_r30h120::servicePriority(mask,ep.healthy(now,age),[&](flytec_r30h120::TxPriority p){return service(ep,p);});
  }
