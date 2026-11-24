@@ -61,6 +61,8 @@ public:
   if(!epoch_)return false;
   const bool ok=app_.rearm(epoch_,authorized);publish();return ok;
  }
+ bool stopRetryPending()const{return app_.stopRetryPending();}
+ Ticket currentTicket()const{return app_.currentTicket();}
  bool takeApplication(Ticket& ticket,TxState& state){return app_.takeTerminal(ticket,state);}
  bool takeSuperseded(Ticket& ticket,TxState& state){return app_.takeSuperseded(ticket,state);}
  bool takeHandshake(Ticket& ticket,HandshakeTx& state){return handshake_.takeTerminal(ticket,state);}
