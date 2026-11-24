@@ -1,6 +1,6 @@
 #include "../source/boat_r30h18_stop_ack_outbox.h"
 #include "../source/r30h121_app_radio.h"
-#include "../source/r30h123_owner_link.h"
+#include "../source/r30h123_stop_ack_service.h"
 #include "r30h118_completion_gate.h"
 #include <cassert>
 #include "r30h118_radio_handoff.h"
@@ -752,4 +752,50 @@ int main(){
  ownerLink.close();
  assert(!ownerLink.submitApplication(ownerOrdinary,705,TxPriority::Telemetry,100,acceptAuth));
  assert(ownerMask.snapshot()==0);
+ // Independent owner STOP ACK services: deferred admission and promotion.
+ Transport<HandshakeFrame> ackPBus,ackBBus;
+ PhyEvents<HandshakeFrame> ackPEvents,ackBEvents;
+ AppRadio<HandshakeFrame> ackPApp(ackPBus,ackPEvents),ackBApp(ackBBus,ackBEvents);
+ HandshakeLane<HandshakeFrame> ackPHs,ackBHs;
+ SharedPriority ackPMask,ackBMask;
+ flytec_r30h123::OwnerLink<HandshakeFrame> ackPOwner(ackPApp,ackPHs,ackPEvents,ackPMask),ackBOwner(ackBApp,ackBHs,ackBEvents,ackBMask);
+ boat_r30h18::StopAckOutbox ackPBox;
+ boat_r30h18::BackupStopAckOutbox ackBBox;
+ flytec_r30h123::StopAckService<HandshakeFrame,decltype(ackPBox)> ackPSvc(ackPOwner,ackPBox,AckLink::Primary);
+ flytec_r30h123::StopAckService<HandshakeFrame,decltype(ackBBox)> ackBSvc(ackBOwner,ackBBox,AckLink::Backup);
+ auto buildAck=[](const boat_r30h18::StopAck& ack,HandshakeFrame& f){
+  f={1,1,2,0,ack.epoch,1,ack.commandId};return true;
+ };
+ assert(ackPOwner.setSession(7)&&ackBOwner.setSession(7));
+ assert(ackPOwner.submitStop(ownerOrdinary,800,100,acceptAuth));
+ assert(ackPBox.offer(21,7,0,0,0,800)&&ackBBox.offer(22,7,0,0,0,800));
+ assert(ackPSvc.step(810,true,true,buildAck,acceptAuth));
+ assert(ackPSvc.pending()&&ackPOwner.stopRetryPending()&&ackPBox.attempts()==1);
+ assert(ackBSvc.step(810,true,true,buildAck,acceptAuth));
+ assert(ackBBus.takeStop(ownerReq)&&ownerReq.frame.commandId==22&&ownerReq.maxAge==11990);
+ assert(ackBBus.complete(ownerReq,true));
+ assert(ackBEvents.publishOutcome({ownerReq.ticket,811,PhyOutcome::LocalComplete,true}));
+ ackBOwner.poll(811,100,100);
+ assert(ackBOwner.takeApplication(auditDone,auditState)&&ackBSvc.complete(auditDone,auditState));
+ assert(!ackBBox.pending()&&ackPBox.pending());
+ assert(ackPBox.offer(21,7,1,1,3,812));
+ assert(ackPBus.takeStop(ownerReq)&&!ackPBus.allows(ownerReq,812,100));
+ ackPOwner.poll(812,100,100);
+ ackPSvc.syncDeferred();
+ assert(ackPBus.takeStop(ownerReq)&&ownerReq.frame.commandId==21&&ownerReq.queuedAt==810&&ownerReq.maxAge==2490);
+ assert(ackPBus.complete(ownerReq,true));
+ assert(ackPEvents.publishOutcome({ownerReq.ticket,813,PhyOutcome::LocalComplete,true}));
+ ackPOwner.poll(813,100,100);
+ assert(ackPOwner.takeApplication(auditDone,auditState)&&ackPSvc.complete(auditDone,auditState));
+ assert(ackPBox.pending()&&!ackPBox.inFlight()&&ackPBox.ticket().result==1);
+ assert(!ackPSvc.step(884,true,true,buildAck,acceptAuth));
+ assert(ackPSvc.step(885,true,true,buildAck,acceptAuth));
+ assert(ackPBus.takeStop(ownerReq)&&ownerReq.maxAge==2415);
+ assert(ackPBus.complete(ownerReq,true));
+ assert(ackPEvents.publishOutcome({ownerReq.ticket,886,PhyOutcome::LocalComplete,true}));
+ ackPOwner.poll(886,100,100);
+ assert(ackPOwner.takeApplication(auditDone,auditState)&&ackPSvc.complete(auditDone,auditState));
+ assert(!ackPBox.pending());
+ ackPSvc.reset();ackPOwner.close();
+ assert(!ackPSvc.pending()&&!ackPBox.pending());
 }
