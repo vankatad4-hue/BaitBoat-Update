@@ -72,6 +72,10 @@ public:
   stopRetry_=false;return true;
  }
  bool serviceStop(uint32_t now){return serviceStop(now,stopRetryAge_);}
+ bool cancelStopRetry(uint8_t epoch){
+  if(!stopRetry_)return false;
+  stopRetry_=false;bus_.invalidate(epoch);state_=TxState::Uncertain;return true;
+ }
  bool stopRetryPending()const{return stopRetry_;}
  bool rearm(uint8_t epoch,bool authorized){
   if(!authorized||stopRetry_||terminalPending()||state_==TxState::Queued||state_==TxState::Admitted)return false;
