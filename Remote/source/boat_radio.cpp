@@ -1,4 +1,5 @@
 #include "boat_radio.h"
+#include "remote_radio_owner.h"
 #include "radio_payload_codec.h"
 #include "radio_safety_diagnostic_v1.h"
 #include "radio_ack_tracker.h"
@@ -56,6 +57,7 @@ static Sc18is606NrfLink g_nrf(g_nrfBridgeIo,g_nrfCe,
 static bool g_loraConfigured=false;
 static bool g_nrfReady=false;
 static bool g_begun=false;
+static flytec_rtos::RemoteRadioOwner g_radioOwner;
 static constexpr uint8_t REMOTE_DEVICE_ID=0x01;
 static constexpr uint8_t BOAT_DEVICE_ID=0x02;
 static uint8_t g_sessionEpoch=1;
@@ -188,6 +190,7 @@ static bool radioSendTransport(ManagedLink link,const BoatCommand &command){
 }
 
 bool boatRadio_begin() {
+    if(!g_radioOwner.claimLegacy())return false;
 #if REMOTE_R30H3_STOP_TRACE_ENABLED
     g_stopTrace.reset();
 #endif
@@ -226,6 +229,7 @@ bool boatRadio_begin() {
 }
 
 bool boatRadio_sendCommand(const BoatCommand &command) {
+    if(!g_radioOwner.legacy())return false;
 #if REMOTE_R30H3_STOP_TRACE_ENABLED
     if(command.type==CMD_EMERGENCY_STOP)
         g_stopTrace.record(remote_r30h3::STOP_BUTTON_REQUEST,millis(),
@@ -289,6 +293,7 @@ static bool sendMissionPreparation(const uint8_t payload[8]){
     return radio_frameSeal(frame,g_authKey)&&g_nrf.sendFrame(frame);
 }
 bool boatRadio_prepareMission(MissionPlan plan){
+    if(!g_radioOwner.legacy())return false;
     if(!missionPreparationSafe()||boatRadio_missionLocked())return false;
     if(++g_missionId==0)++g_missionId;
     plan.transaction=g_missionId;
@@ -310,6 +315,7 @@ bool boatRadio_backupStopConfirmed(){return g_backupStopConfirmed&&sessionReady(
 bool boatRadio_stopConfirmationPending(){return g_stopMustConfirm;}
 bool boatRadio_manualModeConfirmed(){return !g_manualConfirmRequired&&!g_stopMustConfirm&&!boatRadio_missionLocked()&&telemetry.statusValid&&telemetry.statusPrimary&&millis()-telemetry.statusReceivedAtMs<1000U&&telemetry.reportedMode==MODE_MANUAL;}
 bool boatRadio_missionControl(MissionControlOp op){
+    if(!g_radioOwner.legacy())return false;
  if(!missionPrimaryReady()||!g_missionControl.transaction())return false;
  if(op!=MCTRL_CANCEL){
   if(g_stopMustConfirm||!boatRadio_missionFeedbackFresh()||!boatState.emergencyStopConfirmed||boatState.emergencyStop||boatState.failsafeActive||!boatState.actuatorSafetyReady)return false;
@@ -321,6 +327,7 @@ bool boatRadio_missionControl(MissionControlOp op){
  return queued;
 }
 bool boatRadio_sendMissionSticks(int16_t left,int16_t right,bool neutral){
+    if(!g_radioOwner.legacy())return false;
  if(!boatRadio_missionFeedbackFresh()||!g_missionControl.transaction())return false;
  const auto phase=g_missionControl.phase();
  if(phase!=MC_PREPARED&&phase!=MC_PAUSED&&phase!=MC_OVERRIDE_NEUTRAL&&phase!=MC_OVERRIDE_ACTIVE)return false;
@@ -334,6 +341,7 @@ bool boatRadio_sendMissionSticks(int16_t left,int16_t right,bool neutral){
  g_lastStickTx=now;return g_nrf.sendFrame(frame);
 }
 void boatRadio_cancelMissionPreparation(){
+    if(!g_radioOwner.legacy())return;
     if(g_missionControl.transaction()){boatRadio_missionControl(MCTRL_CANCEL);return;}
     if(g_missionUpload.state()!=UPLOAD_ACTIVE&&g_missionUpload.state()!=UPLOAD_PREPARED)return;
     uint8_t payload[8];
@@ -413,8 +421,9 @@ static bool payloadBytesZero(const uint8_t *p,uint8_t start,uint8_t end) {
     for(uint8_t i=start;i<=end;i++)if(p[i]!=0)return false;
     return true;
 }
-static void validateInboundFrame(ManagedLink link,const RadioFrame &frame){
+static void validateInboundCaptured(ManagedLink link,const RadioFrame &frame,uint32_t capturedAt){
     const uint32_t now=millis();
+    if(!flytec_rtos::remoteI2cAllowed()||!flytec_rtos::remoteRxFresh(now,capturedAt))return;
     if(!radioLinkFlagMatches(frame.flags,link==LINK_LORA_BACKUP)||frame.sourceId!=BOAT_DEVICE_ID||frame.destinationId!=REMOTE_DEVICE_ID)return;
     if(frame.type>=SESSION_HELLO&&frame.type<=SESSION_CONFIRM){
         if(!g_rootReady||frame.sequence||frame.commandId||frame.sessionEpoch||!radio_frameVerify(frame,g_rootKey))return;
@@ -430,14 +439,17 @@ static void validateInboundFrame(ManagedLink link,const RadioFrame &frame){
     if(!guard.accept(frame.sequence))return;
     const bool cross=g_boatSequenceGuard.accept(frame.sequence);
     if(!cross&&frame.type!=RADIO_MSG_HEARTBEAT)return;
-    if(!dispatchValidatedPayload(link,frame,now))return;
+    if(!dispatchValidatedPayload(link,frame,capturedAt))return;
     // R30F authenticated diagnostic is informational. A diagnostic-only
     // packet may NEVER extend authenticated-control link freshness, which
     // would otherwise indirectly authorize manual sticks or STOP clearing.
     if(frame.type==RADIO_MSG_TELEMETRY &&
        (frame.payload[0]==radio_r30f::SUBTYPE ||
         frame.payload[0]==flytec_time::SUBTYPE))return;
-    g_linkManager.reportValidRx(link,true,now);
+    g_linkManager.reportValidRx(link,true,capturedAt);
+}
+static void validateInboundFrame(ManagedLink link,const RadioFrame &frame){
+    validateInboundCaptured(link,frame,millis());
 }
 
 static void prepareRemoteCycle(uint32_t now);
@@ -445,7 +457,7 @@ static void serviceRemoteLegacyRx();
 static void serviceRemoteLegacyTx(uint32_t now);
 static void advanceRemoteApplication(uint32_t now);
 void boatRadio_update() {
-    if(!g_begun) return;
+    if(!g_radioOwner.legacy()||!g_begun) return;
     const uint32_t now=millis();
     prepareRemoteCycle(now);
     serviceRemoteLegacyRx();
@@ -597,9 +609,9 @@ bool boatRadio_backupConnected(){return g_linkManager.backupHealthy(millis());}
 bool boatRadio_getCommandAck(uint16_t commandId,RadioCommandAckRecord &record){return g_ackTracker.get(commandId,record);}
 uint8_t boatRadio_pendingCommandAcks(){return g_ackTracker.pendingCount();}
 void boatRadio_setTransport(RadioSendFn transport){(void)transport;} // fixed in this adapter
-void boatRadio_setReady(ManagedLink link,bool ready){g_linkManager.setTransportReady(link,ready);}
+void boatRadio_setReady(ManagedLink link,bool ready){if(!g_radioOwner.legacy())return;g_linkManager.setTransportReady(link,ready);}
 void boatRadio_reportValidPacket(ManagedLink link,bool authenticated,uint32_t receivedAtMs){(void)link;(void)authenticated;(void)receivedAtMs;} // only verified dispatch updates health
-void boatRadio_reportFailure(ManagedLink link){g_linkManager.reportFailure(link);}
+void boatRadio_reportFailure(ManagedLink link){if(!g_radioOwner.legacy())return;g_linkManager.reportFailure(link);}
 
 bool boatRadio_takeR30H3StopTrace(remote_r30h3::Record &out){
 #if REMOTE_R30H3_STOP_TRACE_ENABLED
