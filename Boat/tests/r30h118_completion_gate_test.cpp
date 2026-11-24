@@ -475,4 +475,28 @@ int main(){
  assert(hsWorker.step(112,10,true,policy,hsAdmit));
  assert(workerLane.poll(handshakeAdmitted)&&handshakeAdmitted&&hsAdmissions==1);
  assert(!hsWorker.resultPending());
+ // Shared admission: STOP before handshake, no admission while busy.
+ Transport<HandshakeFrame> sharedAppBus;
+ HandshakeLane<HandshakeFrame> sharedHsLane;
+ SharedPriority sharedMask;
+ flytec_r30h120::SharedPhyService<HandshakeFrame> sharedWorker(sharedAppBus,sharedHsLane,sharedMask);
+ assert(sharedAppBus.invalidate(1)&&sharedHsLane.begin());
+ assert(sharedAppBus.submit(hf,200,true)&&sharedHsLane.submit(hf,200,policy));
+ unsigned sharedAppAdmissions=0,sharedHsAdmissions=0;
+ auto sharedAppAdmit=[&](const Transport<HandshakeFrame>::Request &req){++sharedAppAdmissions;assert(req.stop);return true;};
+ auto sharedHsAdmit=[&](const HandshakeLane<HandshakeFrame>::Request &req){++sharedHsAdmissions;assert(req.ticket.domain==TicketDomain::Handshake);return true;};
+ sharedMask.publish(5);
+ sharedWorker.step(201,100,true,true,policy,sharedAppAdmit,sharedHsAdmit);
+ sharedWorker.step(201,100,false,false,policy,sharedAppAdmit,sharedHsAdmit);
+ assert(sharedAppAdmissions==0&&sharedHsAdmissions==0);
+ sharedWorker.step(202,100,false,true,policy,sharedAppAdmit,sharedHsAdmit);
+ assert(sharedAppAdmissions==1&&sharedHsAdmissions==0);
+ assert(sharedAppBus.poll(handshakeAdmitted)&&handshakeAdmitted);
+ sharedMask.publish(4);
+ sharedWorker.step(203,100,false,true,policy,sharedAppAdmit,sharedHsAdmit);
+ assert(sharedHsAdmissions==1&&sharedHsLane.poll(handshakeAdmitted)&&handshakeAdmitted);
+ assert(sharedAppBus.submit(hf,204,false));
+ sharedMask.publish(1);
+ sharedWorker.step(205,100,false,true,policy,sharedAppAdmit,sharedHsAdmit);
+ assert(sharedAppAdmissions==1&&sharedAppBus.poll(handshakeAdmitted)&&!handshakeAdmitted);
 }
