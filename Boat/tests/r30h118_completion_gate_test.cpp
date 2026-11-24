@@ -337,4 +337,31 @@ int main(){
  assert(!endpoint.receiveFresh(freshRx,20,10));
  assert(asyncEvents.publishRx({6,20}));
  assert(!endpoint.receiveFresh(freshRx,20,0));
+
+ Transport<uint32_t> terminalBus;
+ PhyEvents<uint32_t> terminalEvents;
+ AppRadio<uint32_t> terminalEndpoint(terminalBus,terminalEvents);
+ Ticket terminalTicket{};TxState terminalState=TxState::Idle;
+ assert(terminalEndpoint.reset(1));
+ assert(!terminalEndpoint.takeTerminal(terminalTicket,terminalState));
+ assert(terminalEndpoint.submit(70,10,false));
+ assert(!terminalEndpoint.takeTerminal(terminalTicket,terminalState));
+ assert(terminalBus.take(asyncReq)&&terminalBus.complete(asyncReq,true));
+ terminalEndpoint.poll();
+ assert(!terminalEndpoint.takeTerminal(terminalTicket,terminalState));
+ assert(terminalEvents.publishOutcome({asyncReq.ticket,11,PhyOutcome::Failed}));
+ terminalEndpoint.poll();
+ assert(terminalEndpoint.takeTerminal(terminalTicket,terminalState));
+ assert(sameTicket(terminalTicket,asyncReq.ticket)&&terminalState==TxState::Failed);
+ assert(!terminalEndpoint.takeTerminal(terminalTicket,terminalState));
+ assert(terminalEndpoint.submit(71,12,false));
+ assert(terminalBus.take(asyncReq));
+ assert(terminalEndpoint.expire(22,10));
+ assert(terminalEndpoint.takeTerminal(terminalTicket,terminalState));
+ assert(sameTicket(terminalTicket,asyncReq.ticket)&&terminalState==TxState::Uncertain);
+ assert(terminalEvents.publishOutcome({asyncReq.ticket,23,PhyOutcome::LocalComplete}));
+ terminalEndpoint.poll();
+ assert(!terminalEndpoint.takeTerminal(terminalTicket,terminalState));
+ assert(terminalEndpoint.reset(2));
+ assert(!terminalEndpoint.takeTerminal(terminalTicket,terminalState));
 }
