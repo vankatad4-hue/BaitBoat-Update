@@ -1,9 +1,16 @@
 #include "bounded_tx_service.h"
+#include "bounded_rx_service.h"
 #include <cassert>
 using namespace flytec_rtos;
 struct Fake{unsigned calls=0;uint32_t last=0;bool busy=true;};
 static bool start(void* p,const TxRequest& r){auto& f=*static_cast<Fake*>(p);++f.calls;f.last=r.ticket;return !f.busy;}
+static bool receive(void* p,RadioFrame& f){f.sequence=++*static_cast<unsigned*>(p);return true;}
 int main(){
+ {RadioFrameHandoff h;assert(h.begin());BoundedRxService rx;unsigned n=0;
+  for(int i=0;i<4;++i)assert(rx.tick(h,PhyLink::Primary,123,receive,&n));
+  assert(n==8);assert(!rx.tick(h,PhyLink::Primary,124,receive,&n)&&n==9&&h.fault());
+  RxFrame f{};assert(h.primaryRx.take(f)&&f.frame.sequence==1&&f.receivedMs==123);
+ }
  RadioFrameHandoff h;assert(h.begin());BoundedTxService s;Fake f;
  TxRequest r{};r.link=PhyLink::Primary;r.generation=1;r.ticket=1;
  assert(h.primaryCritical.offer(r));
