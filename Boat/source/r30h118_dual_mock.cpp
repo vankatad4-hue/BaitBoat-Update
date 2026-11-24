@@ -69,8 +69,8 @@ void loop(){
  if(launched&&!stop.load()&&primaryStop.pending())primaryStop.service(primary,millis(),1000U);
  PhyEvents<uint32_t>::Health h{};while(pe.takeHealth(h)){}while(be.takeHealth(h)){}
  PhyEvents<uint32_t>::Outcome o{};
- while(pe.takeOutcome(o)){gotP=true;okP=o.result==PhyOutcome::LocalComplete&&o.ticket.generation==3;}
- while(be.takeOutcome(o)){gotB=true;okB=o.result==PhyOutcome::Uncertain;}
+ while(pe.takeOutcome(o)){if(o.ticket.generation!=primary.activeGeneration())continue;gotP=true;okP=o.result==PhyOutcome::LocalComplete&&o.ticket.generation==3;}
+ while(be.takeOutcome(o)){if(o.ticket.generation!=backup.activeGeneration())continue;gotB=true;okB=o.result==PhyOutcome::Uncertain;}
  if(launched&&!stop.load()&&((gotP&&gotB)||uint32_t(millis()-began)>=5000U)){
   primaryStop.reset();primary.invalidate(0);backup.invalidate(0);stop.store(true,std::memory_order_release);
  }
