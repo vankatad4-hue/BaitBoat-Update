@@ -16,6 +16,8 @@ on:
       - '**/source/e22_phy_adapter.h'
       - '**/source/dual_phy_poll.h'
       - '**/source/dual_phy_worker.h'
+      - 'Remote/source/remote_i2c_owner.h'
+      - 'Boat/tests/r30h110_i2c_owner.cpp'
       - 'Boat/tests/r30h109_dual_phy.cpp'
       - 'Boat/tests/r30h108_e22_adapter.cpp'
       - 'Boat/tests/r30h107_e22_state.cpp'
@@ -69,3 +71,5 @@ jobs:
           cmp Boat/source/dual_phy_worker.h Remote/source/dual_phy_worker.h
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IBoat/tests/r30h94_mock -IBoat/tests/r30h73_freertos_mock -IBoat/source Boat/tests/r30h109_dual_phy.cpp -o /tmp/dual_phy
           timeout 10s /tmp/dual_phy
+          g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/source Boat/tests/r30h110_i2c_owner.cpp -o /tmp/i2c_owner
+          timeout 10s /tmp/i2c_owner
