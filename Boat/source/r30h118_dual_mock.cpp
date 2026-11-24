@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include "r30h118_phy_adapters.h"
 #include "r30h118_transport.h"
+#include "r30h118_stop_retry.h"
 using namespace flytec_r30h118;
 namespace {
 struct Nrf {
@@ -27,6 +28,7 @@ struct E22 {
  void update(){if(txPending())state=O::Uncertain;}
 };
 Transport<uint32_t> primary,backup;
+StopRetry<uint32_t> primaryStop;
 PhyEvents<uint32_t> pe,be;
 Nrf n; E22 e;
 NrfAdapter<uint32_t,Nrf> na(n,pe);
@@ -54,19 +56,23 @@ void task(void*){
 void setup(){
  Serial.begin(115200);began=millis();
  primary.invalidate(1);backup.invalidate(1);
- primary.submit(1,began,false);primary.invalidate(1);primary.submit(2,began,true);
+ primary.submit(1,began,false);
+ primaryStop.arm(primary,1,2,began);primaryStop.service(primary,began,1000U);
+ primaryStop.arm(primary,1,4,began); // saturate reserved slot with obsolete STOP
+ primaryStop.service(primary,began,1000U);
  backup.submit(3,began,false);
  launched=xTaskCreatePinnedToCore(task,"dualMock",4096,nullptr,1,nullptr,0)==pdPASS;
  if(!launched)Serial.println("DUAL MOCK START FAIL");
 }
 void loop(){
  bool admitted=false;primary.poll(admitted);backup.poll(admitted);
+ if(launched&&!stop.load()&&primaryStop.pending())primaryStop.service(primary,millis(),1000U);
  PhyEvents<uint32_t>::Health h{};while(pe.takeHealth(h)){}while(be.takeHealth(h)){}
  PhyEvents<uint32_t>::Outcome o{};
- while(pe.takeOutcome(o)){gotP=true;okP=o.result==PhyOutcome::LocalComplete&&o.ticket.generation==2;}
+ while(pe.takeOutcome(o)){gotP=true;okP=o.result==PhyOutcome::LocalComplete&&o.ticket.generation==3;}
  while(be.takeOutcome(o)){gotB=true;okB=o.result==PhyOutcome::Uncertain;}
  if(launched&&!stop.load()&&((gotP&&gotB)||uint32_t(millis()-began)>=5000U)){
-  primary.invalidate(0);backup.invalidate(0);stop.store(true,std::memory_order_release);
+  primaryStop.reset();primary.invalidate(0);backup.invalidate(0);stop.store(true,std::memory_order_release);
  }
  if(done.load(std::memory_order_acquire)&&!reported){reported=true;Serial.println(gotP&&gotB&&okP&&okB?"DUAL MOCK PASS":"DUAL MOCK FAIL");}
  delay(1);
