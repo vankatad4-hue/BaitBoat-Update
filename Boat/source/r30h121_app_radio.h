@@ -72,6 +72,12 @@ public:
    if(outcomeSeen_)state_=outcome_==PhyOutcome::LocalComplete?TxState::LocalComplete:outcome_==PhyOutcome::Failed?TxState::Failed:TxState::Uncertain;
   }
  }
+ // Bounded owner-side RX filtering. Capture age is not authentication.
+ bool receiveFresh(typename Events::Rx &rx,uint32_t now,uint32_t maxAge){
+  for(unsigned i=0;i<4&&events_.takeRx(rx);++i)
+   if(maxAge&&uint32_t(now-rx.capturedAt)<maxAge)return true;
+  return false;
+ }
  bool receive(typename Events::Rx &rx){return events_.takeRx(rx);}
  TxState state()const{return state_;}
 };
