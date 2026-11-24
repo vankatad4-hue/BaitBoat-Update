@@ -19,7 +19,7 @@ int main(){
  assert(g.consume(b)); assert(!g.consume(b));
  assert(g.issue(c)); assert(!g.consume(b));
  assert(g.invalidate(2)); assert(!g.consume(c));
- assert(g.issue(a)); assert(g.invalidate(0));
+ assert(g.issue(a)); assert(!g.invalidate(0));
  assert(!g.consume(a)); assert(!g.issue(b));
  assert(g.invalidate(1)); assert(g.issue(b));
  assert(!g.consume(a)); assert(g.consume(b));
