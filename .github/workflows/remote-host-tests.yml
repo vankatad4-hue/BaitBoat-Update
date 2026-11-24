@@ -46,6 +46,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: R30H-117 cooperative centre sampler regression
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Remote/tests/r30h117_centre_sampler_test.cpp -o /tmp/r30h117_centre
+          /tmp/r30h117_centre
       - name: R30H-61 bounded mailbox FIFO and overflow host test
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror Remote/tests/transport_mailbox_test.cpp -o /tmp/remote_transport_mailbox_test
