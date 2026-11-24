@@ -113,9 +113,9 @@ int main(){
  assert(pumpEvents.takeOutcome(outcome));pump.flushOutcome();assert(pump.canAdmit());
  for(unsigned i=0;i<4;++i)assert(pumpEvents.takeOutcome(outcome));
  assert(outcome.result==PhyOutcome::Uncertain&&sameTicket(outcome.ticket,eventTicket));
- PhyEvents<uint32_t>::Health fresh{0xfffffffeU,true,true,false,false};
- assert(healthyFresh(fresh,1,10));assert(!healthyFresh(fresh,8,10));
- fresh.fault=true;assert(!healthyFresh(fresh,1,10));
+ PhyEvents<uint32_t>::Health freshHealth{0xfffffffeU,true,true,false,false};
+ assert(healthyFresh(freshHealth,1,10));assert(!healthyFresh(freshHealth,8,10));
+ freshHealth.fault=true;assert(!healthyFresh(freshHealth,1,10));
  Transport<uint32_t> retryBus;
  StopRetry<uint32_t> retry;
  assert(retry.arm(retryBus,1,10,0));assert(retry.service(retryBus,0,100));
