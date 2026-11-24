@@ -1,3 +1,12 @@
+## Active continuation — R30H-124O (2026-11-24, pause for tomorrow)
+
+Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged. Physical workers and upload locked; production remains Legacy-only.
+
+- R30H-124N code b0bed66 and evidence e977e9e: portable K/L/M/N PASS; complete GitHub CI and PlatformIO target builds UNVERIFIED (status empty, DNS checkout unavailable, PlatformIO unavailable).
+- R30H-124O: typed TX terminal metadata (message kind, wire type, epoch, sequence, logical ID, original time/lifetime), centralized bounded owner-side completion routing integrated into dormant Remote worker application and authenticated mock. STOP/heartbeat and handshake consume only their matching ticket and phase, ordinary/mission results fail closed until their consumers exist. Legacy standalone tests retain self-drain option. Prevent repeated heartbeat sequence consumption while link slot busy.
+- Added portable routing regression and extended actual asynchronous TX metadata regression; test evidence pending. No ordinary-command authorization, manual steering/release TX, or mission TX enabled. No physical activation.
+- Resume R30H-124P: verify O routing and F/G/H/J integration regressions; implement primary-only independently authorized ordinary-command producer and correlated completion handling; keep STOP/heartbeat priority and original command deadline. Then migrate mission transactions and actual production ownership. Verify all target builds and hardware timing before activation.
+
 ## Active continuation — R30H-124N (2026-11-24)
 
 Branch `platformio-unified-r30h20`; Boat VER014 / Remote VER028 unchanged; physical workers and upload locked.

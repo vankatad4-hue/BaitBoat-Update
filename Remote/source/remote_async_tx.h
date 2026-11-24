@@ -9,6 +9,8 @@
 namespace flytec_rtos {
 class RemoteAsyncTx {
 public:
+ using Link=PhyLink;
+ enum class Kind:uint8_t {Unsupported,Handshake,Stop,Heartbeat,Ordinary,Mission};
  enum class Submit:uint8_t {Queued,Busy,Denied,Expired,Fault};
  enum class Outcome:uint8_t {Failed,NrfAck,LocalReady,Expired};
  struct Result {
@@ -17,6 +19,10 @@ public:
   PhyLink link=PhyLink::Primary;
   Outcome outcome=Outcome::Failed;
   bool stop=false;
+  Kind kind=Kind::Unsupported;
+  uint8_t messageType=0,epoch=0;
+  uint16_t sequence=0;
+  uint32_t createdMs=0,lifetimeMs=0;
  };
  RemoteAsyncTx(RemoteRadioOwner& o,RadioFrameHandoff& h,TxGenerationGate& g)
  :owner_(o),handoff_(h),gate_(g){}
@@ -84,6 +90,7 @@ public:
   if(!queued)return Submit::Fault;
   s.used=true;s.request=r;s.stop=stop;ticket=r.ticket;return Submit::Queued;
  }
+ bool pending(PhyLink link)const{return owner_.worker()&&validLink(link)&&(link==PhyLink::Primary?primary_.used:backup_.used);}
  bool linkFault(PhyLink link)const{return !owner_.worker()||!validLink(link)||handoff_.fault(link);}
  // Bounded drain. A late, duplicate, wrong-link or previous-generation
  // completion cannot retire the current request or become STOP evidence.
@@ -118,10 +125,22 @@ private:
  static bool expired(const Slot& s,uint32_t now){
   return uint32_t(now-s.request.createdMs)>=s.request.lifetimeMs;
  }
+ static Kind classify(const RadioFrame& f,bool stop){
+  if(stop)return Kind::Stop;
+  switch(f.type){
+   case RADIO_MSG_SESSION_HELLO:case RADIO_MSG_SESSION_PROOF:return Kind::Handshake;
+   case RADIO_MSG_HEARTBEAT:return Kind::Heartbeat;
+   case RADIO_MSG_ACTION:case RADIO_MSG_CONTROL:return Kind::Ordinary;
+   case RADIO_MSG_MISSION_PREPARE:case RADIO_MSG_MISSION_CONTROL:case RADIO_MSG_MISSION_STICKS:return Kind::Mission;
+   default:return Kind::Unsupported;
+  }
+ }
  static void finish(Slot& s,Result& out,Outcome outcome){
   out.ticket=s.request.ticket;out.generation=s.request.generation;
   out.commandId=s.request.frame.commandId;out.link=s.request.link;
-  out.outcome=outcome;out.stop=s.stop;s=Slot{};
+  out.outcome=outcome;out.stop=s.stop;out.kind=classify(s.request.frame,s.stop);
+  out.messageType=s.request.frame.type;out.epoch=s.request.frame.sessionEpoch;
+  out.sequence=s.request.frame.sequence;out.createdMs=s.request.createdMs;out.lifetimeMs=s.request.lifetimeMs;s=Slot{};
  }
  RemoteRadioOwner& owner_;RadioFrameHandoff& handoff_;TxGenerationGate& gate_;
  Slot primary_,backup_;

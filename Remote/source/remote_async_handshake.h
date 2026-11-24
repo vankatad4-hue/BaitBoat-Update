@@ -25,12 +25,19 @@ public:
  bool backupRecentlyUsed(uint32_t now)const{
   return owner_.worker()&&(backupTicket_||(backupSent_&&uint32_t(now-lastBackup_)<3000U));
  }
- bool tick(uint32_t now,bool primaryReady,bool backupReady,const uint8_t root[32]){
+ bool observeCompletion(const RemoteAsyncTx::Result& c,uint32_t now){
+  if(!owner_.worker()||!active_||c.kind!=RemoteAsyncTx::Kind::Handshake||c.epoch||
+     (c.link!=PhyLink::Primary&&c.link!=PhyLink::Backup))return false;
+  auto& ticket=c.link==PhyLink::Primary?primaryTicket_:backupTicket_;
+  if(!ticket||ticket!=c.ticket)return false;
+  ticket=0;if(c.link==PhyLink::Backup)markBackup(now);
+  return true;
+ }
+ bool tick(uint32_t now,bool primaryReady,bool backupReady,const uint8_t root[32],bool externallyRouted=false){
   if(!owner_.worker()||!active_||!root||session_.timeout(now))return false;
   uint8_t nonzero=0;for(unsigned i=0;i<32;++i)nonzero|=root[i];
   if(!nonzero)return false;
-  drain(PhyLink::Primary,primaryTicket_,now);
-  drain(PhyLink::Backup,backupTicket_,now);
+  if(!externallyRouted&&(!drain(PhyLink::Primary,now)||!drain(PhyLink::Backup,now)))return false;
   SessionHandshakePacket packet{};
   if(!session_.remotePacket(packet))return false;
   if(primaryReady&&!tx_.linkFault(PhyLink::Primary)&&!primaryTicket_&&
@@ -69,10 +76,9 @@ public:
  }
 private:
  void markBackup(uint32_t now){backupSent_=true;lastBackup_=now;}
- void drain(PhyLink l,uint32_t& ticket,uint32_t now){
+ bool drain(PhyLink l,uint32_t now){
   RemoteAsyncTx::Result c;
-  if(!tx_.take(l,now,c)||!ticket||ticket!=c.ticket)return;
-  ticket=0;if(l==PhyLink::Backup)markBackup(now);
+  return !tx_.take(l,now,c)||observeCompletion(c,now);
  }
  bool offer(PhyLink link,const SessionHandshakePacket& packet,const uint8_t root[32],uint32_t now,uint32_t& ticket){
   RadioFrame f;radio_frameInit(f,(RadioMessageType)packet.type,1,2,0,0,now,0);

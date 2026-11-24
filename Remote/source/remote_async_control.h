@@ -72,19 +72,32 @@ public:
  bool backupConfirmed()const{return owner_.worker()&&active_&&backupConfirmed_;}
  bool confirmed()const{return owner_.worker()&&active_&&confirmed_;}
  unsigned primaryReservations()const{return owner_.worker()?attempts_:0;}
+ // Routed local completion only; never a peer ACK. Called on owner task.
+ bool observeCompletion(const RemoteAsyncTx::Result& result,uint32_t now){
+  if(!owner_.worker()||!active_||result.epoch!=epoch_||
+     (result.link!=PhyLink::Primary&&result.link!=PhyLink::Backup))return false;
+  auto& p=result.link==PhyLink::Primary?primary_:backup_;
+  if(!p.ticket||p.ticket!=result.ticket||
+     result.kind!=(p.stop?RemoteAsyncTx::Kind::Stop:RemoteAsyncTx::Kind::Heartbeat))return false;
+  p=Pending{};
+  if(result.link==PhyLink::Primary)lastPrimary_=now;else markBackup(now);
+  return true;
+ }
  // Completion first, then STOP before heartbeat. No direct PHY calls.
  // Sequence is shared with the application's other authenticated senders.
  bool tick(uint32_t now,bool primaryReady,bool backupReady,uint8_t heartbeatFlags,
-           uint16_t& sequence,uint16_t rekeyAt,const uint8_t key[32]){
+           uint16_t& sequence,uint16_t rekeyAt,const uint8_t key[32],bool externallyRouted=false){
   if(!owner_.worker()||!active_||!key)return false;
-  drain(PhyLink::Primary,primary_,now);drain(PhyLink::Backup,backup_,now);
+  // Standalone legacy host harnesses retain self-drain. Integrated owners
+  // must route centrally and pass externallyRouted=true.
+  if(!externallyRouted&&(!drain(PhyLink::Primary,now)||!drain(PhyLink::Backup,now)))return false;
   if(rekeyAt<2||sequence>=uint16_t(rekeyAt-1)){invalidate(now);return false;}
   primaryReady=primaryReady&&!tx_.linkFault(PhyLink::Primary);
   backupReady=backupReady&&!tx_.linkFault(PhyLink::Backup);
   if(tx_.linkFault(PhyLink::Primary)&&tx_.linkFault(PhyLink::Backup)){invalidate(now);return false;}
   const bool primaryStop=stopId_&&!confirmed_&&uint32_t(now-started_)<PrimaryLifetime&&attempts_<PrimaryBudget;
   const bool backupStop=stopId_&&!confirmed_&&!backupConfirmed_&&uint32_t(now-started_)<BackupLifetime;
-  if(primaryReady&&!primary_.ticket){
+  if(primaryReady&&!primary_.ticket&&!tx_.pending(PhyLink::Primary)){
    if(primaryStop){
     if(!primaryAttempted_||uint32_t(now-lastPrimary_)>=PrimaryGap){
      if(!offer(PhyLink::Primary,true,now,heartbeatFlags,sequence,rekeyAt,key))return false;
@@ -93,7 +106,7 @@ public:
     if(!offer(PhyLink::Primary,false,now,heartbeatFlags,sequence,rekeyAt,key))return false;
    }
   }
-  if(backupReady&&!backup_.ticket&&(!backupSent_||uint32_t(now-lastBackup_)>=BackupGap)){
+  if(backupReady&&!backup_.ticket&&!tx_.pending(PhyLink::Backup)&&(!backupSent_||uint32_t(now-lastBackup_)>=BackupGap)){
    if(!offer(PhyLink::Backup,backupStop,now,heartbeatFlags,sequence,rekeyAt,key))return false;
   }
   return true;
@@ -102,13 +115,9 @@ private:
  struct Pending{uint32_t ticket=0;bool stop=false;};
  static bool after(uint32_t a,uint32_t b){const uint32_t d=a-b;return d!=0&&d<0x80000000U;}
  void markBackup(uint32_t now){backupSent_=true;lastBackup_=now;}
- void drain(PhyLink link,Pending& p,uint32_t now){
+ bool drain(PhyLink link,uint32_t now){
   RemoteAsyncTx::Result result;
-  if(!tx_.take(link,now,result))return;
-  if(!p.ticket||p.ticket!=result.ticket)return;
-  // Terminal local evidence is never fed to the authenticated STOP gate.
-  p=Pending{};
-  if(link==PhyLink::Primary)lastPrimary_=now;else markBackup(now);
+  return !tx_.take(link,now,result)||observeCompletion(result,now);
  }
  bool offer(PhyLink link,bool stop,uint32_t now,uint8_t flags,
             uint16_t& sequence,uint16_t rekeyAt,const uint8_t key[32]){

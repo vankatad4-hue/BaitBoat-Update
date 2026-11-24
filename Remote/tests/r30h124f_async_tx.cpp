@@ -34,6 +34,7 @@ int main(){
  assert(!tx.take(p,3,out));
  assert(h.offerCompletion(p,TxCompletion{stopTicket,d.last.generation,p,true,TxEvidence::NrfAck}));
  assert(tx.take(p,4,out)&&out.stop&&out.commandId==9&&out.outcome==A::Outcome::NrfAck);
+ assert(out.kind==A::Kind::Stop&&out.messageType==RADIO_MSG_ACTION&&out.epoch==1&&out.createdMs==2&&out.lifetimeMs==100);
  assert(gate.stopped()&&!tx.take(p,4,out));
  assert(service.tick(h,b,gate,&Driver::start,&d,4));
  assert(h.offerCompletion(b,TxCompletion{d.last.ticket,d.last.generation,b,false,TxEvidence::LocalReady}));
@@ -45,6 +46,7 @@ int main(){
  assert(service.tick(h,p,gate,&Driver::start,&d,1));
  d.ready=true;assert(service.tick(h,p,gate,&Driver::start,&d,5));
  assert(d.starts==before&&tx.take(p,5,out)&&out.outcome==A::Outcome::Expired);
+ assert(out.kind==A::Kind::Ordinary&&out.commandId==2&&out.createdMs==start&&out.lifetimeMs==10);
  assert(tx.submit(p,frame(p,3,false),5,10,15,t)==A::Submit::Expired);
  assert(tx.submit(p,frame(p,3,false),5,100,5,t)==A::Submit::Queued);
  assert(service.tick(h,p,gate,&Driver::start,&d,6));const auto prior=d.last;

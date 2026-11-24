@@ -887,3 +887,7 @@ See [full source cleanup and build evidence](../../docs/SOURCE_CLEANUP_R30H_10_R
 - Remote LVGL 9.6 sonar DEMO point coordinates repaired (float-to-integer), duplicate SD status corrected with 4-case host test. Retired Heltec SX1262 and unused older configuration files archived. Boat uses selected nRF24/E22 UART and INA231 BUS-only; sonar still deferred.
 - **Safety/physical acceptance remains OPEN**: no real radio STOP/RTH/PPS accuracy or independent STOP/current-zero acceptance, no motor/solenoid power approval. Remote GPIO6 (SD dummy CS/nRF CE) and GPIO15 (RS485/nRF CSN) remain electrically conflicted and unsigned. Keep Boat VER014 / Remote VER028 and reference Arduino build; passing PIO is a viable parallel compilation path, not firmware promotion.
 
+
+## R30H-124O — paused 2026-11-24
+
+Dual-core development branch `platformio-unified-r30h20`. Centralized Remote asynchronous completion routing and typed result metadata added to dormant worker path and authenticated mock. K/L/M/N portable regressions passed; full CI, PlatformIO and physical radio acceptance remain unverified. Ordinary/mission producers and production activation are not enabled. Resume R30H-124P from [continuation checkpoint](../../docs/CONTINUATION_CHECKPOINT_VER001.md). Official Boat VER014 / Remote VER028 unchanged.

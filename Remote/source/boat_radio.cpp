@@ -2,6 +2,7 @@
 #include "remote_radio_owner.h"
 #include "remote_async_control.h"
 #include "remote_async_handshake.h"
+#include "remote_tx_router.h"
 #include "radio_payload_codec.h"
 #include "radio_safety_diagnostic_v1.h"
 #include "radio_ack_tracker.h"
@@ -532,13 +533,18 @@ void boatRadio_update() {
         boatRadio_workerFault(g_workerTx.linkFault(flytec_rtos::PhyLink::Primary),
                              g_workerTx.linkFault(flytec_rtos::PhyLink::Backup));
         if(!g_radioOwner.worker())return;
+        const auto noOrdinary=[](const flytec_rtos::RemoteAsyncTx::Result&,uint32_t){return false;};
+        if(!flytec_rtos::routeRemoteTx(g_workerTx,millis(),
+            [&](const flytec_rtos::RemoteAsyncTx::Result& c,uint32_t at){return g_workerHandshake.observeCompletion(c,at);},
+            [&](const flytec_rtos::RemoteAsyncTx::Result& c,uint32_t at){return g_workerControl.observeCompletion(c,at);},
+            noOrdinary,noOrdinary)){resetSession(millis());return;}
         if(!g_session.established()){
             const uint32_t at=millis();
             if(g_rootReady&&(g_nrfReady||g_loraConfigured)){
                 if(!g_workerHandshake.active()&&!g_workerHandshake.start(radioPlatformNonce(),at,SessionHandshake::windowFor(g_loraConfigured))){
                     resetSession(at);return;
                 }
-                if(!g_workerHandshake.tick(at,g_nrfReady,g_loraConfigured,g_rootKey))resetSession(at);
+                if(!g_workerHandshake.tick(at,g_nrfReady,g_loraConfigured,g_rootKey,true))resetSession(at);
             }
             advanceRemoteApplication(at);return;
         }
@@ -546,7 +552,7 @@ void boatRadio_update() {
         const uint8_t flags=(uint8_t)(1U|(g_nrfReady?2U:0U)|(g_loraConfigured?4U:0U)|
             (boatState.emergencyStopConfirmed&&boatState.emergencyStop?8U:0U));
         if(!g_workerControl.tick(millis(),g_nrfReady,g_loraConfigured,flags,
-                                 g_txSequence,RadioSessionCounter::REKEY_AT,g_authKey)){
+                                 g_txSequence,RadioSessionCounter::REKEY_AT,g_authKey,true)){
             resetSession(millis());return;
         }
         advanceRemoteApplication(millis());return;

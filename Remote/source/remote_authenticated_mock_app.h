@@ -1,5 +1,6 @@
 #pragma once
 #include "remote_async_handshake.h"
+#include "remote_tx_router.h"
 #include "remote_async_control.h"
 #include "radio_ack_tracker.h"
 // R30H-124J: authenticated application composition for isolated mock runtime.
@@ -41,13 +42,18 @@ public:
   }
   consume(PhyLink::Primary,now);consume(PhyLink::Backup,now);
   if(!initialized_)return false;
+  const auto noOrdinary=[](const RemoteAsyncTx::Result&,uint32_t){return false;};
+  if(!routeRemoteTx(tx_,now,
+      [&](const RemoteAsyncTx::Result& c,uint32_t at){return handshake_.observeCompletion(c,at);},
+      [&](const RemoteAsyncTx::Result& c,uint32_t at){return control_.observeCompletion(c,at);},
+      noOrdinary,noOrdinary))return reset(now);
   if(!session_.established()){
    if(!handshake_.active()&&!handshake_.start(nonce,now,SessionHandshake::windowFor(!backupFault_)))return false;
-   return handshake_.tick(now,!primaryFault_,!backupFault_,root_);
+   return handshake_.tick(now,!primaryFault_,!backupFault_,root_,true);
   }
   ack_.update(now);
   const uint8_t flags=uint8_t(1U|(!primaryFault_?2U:0U)|(!backupFault_?4U:0U)|(control_.confirmed()?8U:0U));
-  if(!control_.tick(now,!primaryFault_,!backupFault_,flags,sequence_,RadioSessionCounter::REKEY_AT,key_))
+  if(!control_.tick(now,!primaryFault_,!backupFault_,flags,sequence_,RadioSessionCounter::REKEY_AT,key_,true))
    return reset(now);
   return true;
  }

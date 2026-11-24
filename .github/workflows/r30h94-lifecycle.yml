@@ -42,6 +42,8 @@ on:
       - 'Remote/tests/r30h124i_exclusive_runtime.cpp'
       - 'Remote/tests/r30h124_runtime.cpp'
       - 'Remote/source/remote_async_tx.h'
+      - 'Remote/source/remote_tx_router.h'
+      - 'Remote/tests/r30h124o_tx_router.cpp'
       - 'Remote/tests/r30h124f_async_tx.cpp'
       - 'Remote/source/remote_async_control.h'
       - 'Remote/source/remote_async_handshake.h'
@@ -144,3 +146,6 @@ jobs:
 
           g++ -std=c++17 -Wall -Wextra -Werror -Itests/r30h20_stubs -IBoat/source Boat/tests/r30h124n_backup_handshake.cpp -lcrypto -o /tmp/backup_handshake
           timeout 10s /tmp/backup_handshake
+
+          g++ -std=c++17 -Wall -Wextra -Werror -IRemote/source Remote/tests/r30h124o_tx_router.cpp -o /tmp/remote_tx_router
+          timeout 10s /tmp/remote_tx_router
