@@ -79,16 +79,21 @@ static bool fullCalibrationValid(const JoystickCalibration &v)
 {
     return axisSetValid(v.leftX)&&axisSetValid(v.leftY)&&axisSetValid(v.rightX)&&axisSetValid(v.rightY)&&v.deadZone>=10&&v.deadZone<=120;
 }
-static void saveCalibrationNvs()
+static bool saveCalibrationNvs()
 {
-    joystickPrefs.begin("flytec-joy",false);
-    joystickPrefs.putInt("lxmin",calibration.leftX.minimum); joystickPrefs.putInt("lxctr",calibration.leftX.centre); joystickPrefs.putInt("lxmax",calibration.leftX.maximum);
-    joystickPrefs.putInt("lymin",calibration.leftY.minimum); joystickPrefs.putInt("lyctr",calibration.leftY.centre); joystickPrefs.putInt("lymax",calibration.leftY.maximum);
-    joystickPrefs.putInt("rxmin",calibration.rightX.minimum); joystickPrefs.putInt("rxctr",calibration.rightX.centre); joystickPrefs.putInt("rxmax",calibration.rightX.maximum);
-    joystickPrefs.putInt("rymin",calibration.rightY.minimum); joystickPrefs.putInt("ryctr",calibration.rightY.centre); joystickPrefs.putInt("rymax",calibration.rightY.maximum);
-    joystickPrefs.putInt("dead",calibration.deadZone);
-    joystickPrefs.putUChar("layout",(uint8_t)selectedLayout); joystickPrefs.putUChar("override",(uint8_t)selectedOverride);
+    if (!joystickPrefs.begin("flytec-joy",false)) return false;
+    bool ok = joystickPrefs.putBool("valid",false) != 0;
+    if (!ok) { joystickPrefs.end(); return false; }
+    ok = (joystickPrefs.putInt("lxmin",calibration.leftX.minimum) != 0) && ok; ok = (joystickPrefs.putInt("lxctr",calibration.leftX.centre) != 0) && ok; ok = (joystickPrefs.putInt("lxmax",calibration.leftX.maximum) != 0) && ok;
+    ok = (joystickPrefs.putInt("lymin",calibration.leftY.minimum) != 0) && ok; ok = (joystickPrefs.putInt("lyctr",calibration.leftY.centre) != 0) && ok; ok = (joystickPrefs.putInt("lymax",calibration.leftY.maximum) != 0) && ok;
+    ok = (joystickPrefs.putInt("rxmin",calibration.rightX.minimum) != 0) && ok; ok = (joystickPrefs.putInt("rxctr",calibration.rightX.centre) != 0) && ok; ok = (joystickPrefs.putInt("rxmax",calibration.rightX.maximum) != 0) && ok;
+    ok = (joystickPrefs.putInt("rymin",calibration.rightY.minimum) != 0) && ok; ok = (joystickPrefs.putInt("ryctr",calibration.rightY.centre) != 0) && ok; ok = (joystickPrefs.putInt("rymax",calibration.rightY.maximum) != 0) && ok;
+    ok = (joystickPrefs.putInt("dead",calibration.deadZone) != 0) && ok;
+    ok = (joystickPrefs.putUChar("layout",(uint8_t)selectedLayout) != 0) && ok; ok = (joystickPrefs.putUChar("override",(uint8_t)selectedOverride) != 0) && ok;
+    if (ok && calibrationValid) ok = joystickPrefs.putBool("valid",true) != 0;
     joystickPrefs.end();
+    if (!ok) { calibrationValid=false; snapshot.calibrationValid=false; }
+    return ok;
 }
 static void loadCalibrationNvs()
 {
@@ -607,11 +612,11 @@ bool joystick_endEndpointCapture()
     calibrationValid = true;
     snapshot.calibration = calibration;
     snapshot.calibrationValid = true;
-    joystickPrefs.begin("flytec-joy",false);
-    joystickPrefs.putBool("valid",true);
-    joystickPrefs.end();
-    saveCalibrationNvs();
-
+    if (!saveCalibrationNvs()) {
+        calibrationValid=false;
+        snapshot.calibrationValid=false;
+        return false;
+    }
     return true;
 }
 
