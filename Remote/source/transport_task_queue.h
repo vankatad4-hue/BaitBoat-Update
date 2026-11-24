@@ -53,7 +53,13 @@ public:
   const uint32_t newEpoch = latchAndAdvance();
   if (stopWriter_.test_and_set(std::memory_order_acquire)) return false;
   if (!ready()) { stopWriter_.clear(std::memory_order_release); return false; }
-  if (!stopLatched()) { stopWriter_.clear(std::memory_order_release); return false; }
+  // Reject a delayed writer whose generation was superseded before it
+  // acquired the writer flag. A newer STOP still holds the latch.
+  const uint32_t observed = state_.load(std::memory_order_acquire);
+  if ((observed & 1U) == 0U || (observed >> 1) != newEpoch) {
+   stopWriter_.clear(std::memory_order_release);
+   return false;
+  }
   Entry e{cmd, newEpoch};
   const bool admitted = xQueueOverwrite(stop_, &e) == pdTRUE;
   if (xSemaphoreTake(mutex_, 0) == pdTRUE) {
