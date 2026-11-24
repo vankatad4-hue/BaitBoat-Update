@@ -110,7 +110,7 @@ jobs:
           python3 Boat/tools/verify_r30h10_gpio_map.py
       - name: ADS1115 full-frame, invalid config and I2C fault regression
         run: |
-          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/adc_stubs -IRemote/source \
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IRemote/tests/adc_stubs -IRemote/tests/stubs -IRemote/source \
             Remote/source/joystick_adc.cpp Remote/tests/joystick_adc_atomic_test.cpp \
             -o /tmp/remote_joystick_adc
           /tmp/remote_joystick_adc
