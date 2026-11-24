@@ -112,14 +112,16 @@ class StopAckCorrelation {
  const AckLink link_;
  Ticket expected_{};
  uint16_t command_=0;
- uint8_t epoch_=0;
+ uint8_t epoch_=0,result_=0,stopState_=0,interlocks_=0;
  bool pending_=false;
 public:
  explicit StopAckCorrelation(AckLink link):link_(link){}
  void reset(){pending_=false;}
- bool track(const Ticket &t,uint16_t command,uint8_t epoch){
-  if(pending_||!command||!epoch||!t.generation||!t.serial||t.epoch!=epoch||t.domain!=TicketDomain::Application)return false;
-  expected_=t;command_=command;epoch_=epoch;pending_=true;return true;
+ // Snapshot the exact acknowledgement handed to the asynchronous worker.
+ template<class Outbox> bool track(const Ticket &t,const Outbox &box){
+  const auto ack=box.ticket();
+  if(pending_||!box.pending()||!box.inFlight()||!ack.commandId||!ack.epoch||!t.generation||!t.serial||t.epoch!=ack.epoch||t.domain!=TicketDomain::Application)return false;
+  expected_=t;command_=ack.commandId;epoch_=ack.epoch;result_=ack.result;stopState_=ack.stopState;interlocks_=ack.interlocks;pending_=true;return true;
  }
  template<class Outbox> bool complete(Outbox &box,AckLink source,const Ticket &t,TxState state){
   if(source!=link_||!pending_||!sameTicket(t,expected_))return false;
@@ -127,7 +129,9 @@ public:
   pending_=false;
   const auto ack=box.ticket();
   if(!box.pending()||!box.inFlight()||ack.commandId!=command_||ack.epoch!=epoch_)return false;
-  box.completed(state==TxState::LocalComplete);return true;
+  // An older ACCEPTED completion cannot erase a promoted EXECUTED ACK.
+  const bool unchanged=ack.result==result_&&ack.stopState==stopState_&&ack.interlocks==interlocks_;
+  box.completed(state==TxState::LocalComplete&&unchanged);return true;
  }
 };
 // Owner-side coordinator: distinct queues and health for each physical link.
