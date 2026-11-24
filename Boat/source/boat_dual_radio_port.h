@@ -27,6 +27,14 @@ static_assert(BOAT_R30H9_MARKER_GPIO == -1 && BOAT_R30H9_GPIO_OUTPUT_SIGNED == 0
 #include "mission_stick.h"
 #include "radio_session_platform.h"
 
+// R30H-121E: compile-only application endpoint seam; never starts a PHY task.
+#ifndef BOAT_R30H121_ENDPOINT_COMPILE
+#define BOAT_R30H121_ENDPOINT_COMPILE 0
+#endif
+#if BOAT_R30H121_ENDPOINT_COMPILE
+#include "r30h121_app_radio.h"
+#endif
+
 // Link values match the Remote manager and queue records.
 enum ManagedLink : uint8_t { LINK_NONE=0, LINK_NRF_PRIMARY=1, LINK_LORA_BACKUP=2 };
 
@@ -89,6 +97,11 @@ public:
     BoatFailsafeDecision evaluateFailsafe(uint32_t now,bool missionActive,bool gnssOK,
                                            bool headingOK,bool batteryOK,bool geofenceOK) const;
 private:
+#if BOAT_R30H121_ENDPOINT_COMPILE
+    flytec_r30h118::Transport<RadioFrame> asyncPrimaryBus_,asyncBackupBus_;
+    flytec_r30h118::PhyEvents<RadioFrame> asyncPrimaryEvents_,asyncBackupEvents_;
+    flytec_r30h121::DualAppRadio<RadioFrame> asyncRadio_{asyncPrimaryBus_,asyncPrimaryEvents_,asyncBackupBus_,asyncBackupEvents_};
+#endif
     NRF24Link nrf_;
     HardwareSerial e22Serial_{1};
     E22UartBoardPort e22_;
