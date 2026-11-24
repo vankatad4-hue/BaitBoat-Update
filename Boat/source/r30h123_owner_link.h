@@ -78,6 +78,7 @@ public:
   if(ok){appClass_=TxPriority::None;publish();}
   return ok;
  }
+ bool ordinaryReady()const{return epoch_&&app_.ordinaryReady();}
  bool stopRetryPending()const{return app_.stopRetryPending();}
  Ticket currentTicket()const{return app_.currentTicket();}
  bool takeApplication(Ticket& ticket,TxState& state){return app_.takeTerminal(ticket,state);}
