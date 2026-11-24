@@ -32,7 +32,7 @@ void BoatApplicationPort::finishManual(bool success){
 }
 void BoatApplicationPort::publishData(uint32_t now){
  const auto b=boatHardware_telemetry(sample_,now,++sampleSequence_,255,radio_.missionPhase());
- for(uint8_t i=0;i<b.count;++i)radio_.sendHardwareTelemetry(b.payload[i]);
+ for(uint8_t i=0;i<b.count;++i)radio_.sendHardwareTelemetry(b.payload[i],now);
 }
 void BoatApplicationPort::fault(){
  // In a fault path a same-tick pre-STOP sensor sample CANNOT confirm a
