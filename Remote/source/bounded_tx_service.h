@@ -8,7 +8,7 @@ class BoundedTxService {
 public:
  using Start=bool(*)(void*,const TxRequest&);
  bool tick(RadioFrameHandoff& h,PhyLink link,TxGenerationGate& gate,Start start,void* ctx){
-  if(h.fault()||!start)return false;
+  if(h.fault(link)||!start)return false;
   if(link!=PhyLink::Primary&&link!=PhyLink::Backup)return false;
   auto& slots=link==PhyLink::Primary?primary_:backup_;
   auto& critical=link==PhyLink::Primary?h.primaryCritical:h.backupCritical;
@@ -23,7 +23,7 @@ public:
   const auto result=r.link==link?gate.tryAdmit(r.generation,&invoke,&a,slots.critical.pending):TxGenerationGate::Result::Stale;
   if(result==TxGenerationGate::Result::Stale||result==TxGenerationGate::Result::Inhibited){
    const TxCompletion c{r.ticket,r.generation,r.link,false};
-   s.pending=false;return h.completions.offer(c);
+   s.pending=false;return h.offerCompletion(link,c);
   }
   if(result==TxGenerationGate::Result::Accepted)s.pending=false;
   return true;
