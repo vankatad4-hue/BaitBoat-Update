@@ -3,9 +3,10 @@
 Branch `platformio-unified-r30h20`; Boat VER014 / Remote VER028 unchanged; physical workers and upload locked.
 
 - R30H-124M exact-source regression locally PASS: nine files checked against Git blob SHA-1; g++ C++17 -Wall -Wextra -Werror, exit 0 under 10 s timeout. CI status empty; checkout DNS and PlatformIO blockers remain.
-- Shared fixed 8 s primary-only / provisional 20 s backup-capable transcript window, selected at creation. Firmware call sites and Remote async queue/RX deadlines follow selected window including Boat recovery. No change to 10 s RTH or 3 s backup pacing. Inactive handshake cancellation idempotent. New busy-reply and recovery timing test registered, pending execution.
+- Shared fixed 8 s primary-only / provisional 20 s backup-capable transcript window, selected at creation. Firmware call sites and Remote async queue/RX deadlines follow selected window including Boat recovery. No change to 10 s RTH or 3 s backup pacing. Inactive handshake cancellation idempotent. New busy-reply and recovery timing test registered.
+- LOCAL PORTABLE PASS on code commit b0bed66: R30H-124K, L, M and N compiled with g++ -std=c++17 -Wall -Wextra -Werror, existing OpenSSL-backed HMAC stub, all exit 0 under 10 s timeout. Changed test/header files matched Git blob SHA-1; shared handshake header mirrors identical. N simulates delayed backup recovery 19 s from Remote start, rejects old proof, preserves 10 s RTH eligibility, tests primary timeout and unsigned millis wrap. This is state-machine/outbox simulation with assumed validated envelopes, not full scheduler/PHY/RF or target evidence. Both target builds and complete CI remain UNVERIFIED.
 - Ordinary/mission TX migration contract saved in docs/R30H124N_REMOTE_TX_MIGRATION.md. Implementation pending.
-- Next R30H-124O: verify regressions and full CI/targets; implement centralized typed Remote completion router and independently authorized ordinary traffic, then mission scheduler. Physical RF pacing/service gaps remain unverified.
+- Next R30H-124O: verify outstanding full CI/targets; implement centralized typed Remote completion router and independently authorized ordinary traffic, then mission scheduler. Physical RF pacing/service gaps remain unverified.
 
 ## Active continuation — R30H-124M (2026-11-24)
 
