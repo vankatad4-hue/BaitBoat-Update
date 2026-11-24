@@ -11,6 +11,12 @@ template<class Frame> class OrdinaryTx {
 public:
  bool pending()const{return pending_;}
  void reset(){pending_=false;}
+ // Owner revokes an exact pending snapshot when transport trust is lost.
+ // A PHY call already in progress is not interruptible by this operation.
+ bool cancel(OwnerLink<Frame>& owner){
+  if(!pending_)return false;
+  owner.revokeStatus(ticket_);pending_=false;return true;
+ }
  template<class Verify> bool submit(OwnerLink<Frame>& owner,const Frame& frame,uint32_t now,TxPriority priority,uint32_t age,Verify verify,bool outboundFeedback=false){
   if(pending_||!age)return false;
   const bool queued=outboundFeedback?owner.submitFeedback(frame,now,priority,age,verify):owner.submitApplication(frame,now,priority,age,verify);
