@@ -32,6 +32,8 @@ static_assert(REMOTE_R30H9_MARKER_GPIO == -1 && REMOTE_R30H9_GPIO_OUTPUT_SIGNED 
 #include <esp_system.h>
 #include <string.h>
 
+// Provisional per-link FIFO dispatch budget; not a measured STOP deadline.
+static constexpr unsigned RX_FRAME_BUDGET=4;
 static DualRadioManager g_linkManager;
 static flytec_time::Discipline g_gpsUtcClock;
 #if REMOTE_R30H3_STOP_TRACE_ENABLED
@@ -443,7 +445,7 @@ void boatRadio_update() {
             g_linkManager.setTransportReady(LINK_NRF_PRIMARY,false);
         }
         RadioFrame frame;
-        while(g_nrf.receiveFrame(frame)) validateInboundFrame(LINK_NRF_PRIMARY,frame);
+        for(unsigned i=0;g_nrfReady&&i<RX_FRAME_BUDGET&&g_nrf.receiveFrame(frame);++i) validateInboundFrame(LINK_NRF_PRIMARY,frame);
     }
     if(g_primaryStopRetry.pending()){
         if(!sessionReady()||!g_nrfReady||g_primaryStopRetry.expired(millis())){
@@ -514,7 +516,7 @@ void boatRadio_update() {
             g_linkManager.reportFailure(LINK_LORA_BACKUP);
         }else{
             RadioFrame frame;
-            while(g_lora.receiveFrame(frame)) validateInboundFrame(LINK_LORA_BACKUP,frame);
+            for(unsigned i=0;i<RX_FRAME_BUDGET&&g_lora.receiveFrame(frame);++i) validateInboundFrame(LINK_LORA_BACKUP,frame);
         }
     }
     g_ackTracker.update(now);
