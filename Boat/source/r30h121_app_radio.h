@@ -48,6 +48,12 @@ public:
   if(stop)preserveSuperseded();
   ticket_=next;terminalTaken_=false;submittedAt_=now;admissionSeen_=admitted_=outcomeSeen_=false;state_=TxState::Queued;return true;
  }
+ // Revoke exactly the current queued/in-flight snapshot without clearing
+ // the transport STOP latch. Physical TX already underway cannot be revoked.
+ bool revokeCurrent(const Ticket& t,uint8_t epoch){
+  if(!sameTicket(ticket_,t)||(state_!=TxState::Queued&&state_!=TxState::Admitted))return false;
+  bus_.invalidate(epoch);state_=TxState::Uncertain;return true;
+ }
  // Timeout revokes queued work; an already active PHY call cannot be revoked.
  bool expire(uint32_t now,uint32_t timeout){
   if((state_!=TxState::Queued&&state_!=TxState::Admitted)|| (timeout&&uint32_t(now-submittedAt_)<timeout))return false;
