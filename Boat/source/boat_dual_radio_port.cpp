@@ -144,6 +144,9 @@ void BoatDualRadioPort::resetSession(bool preserveMission){
  radioWatchdog_.reset();
 }
 bool BoatDualRadioPort::begin() {
+ // One initialization attempt per object; no implicit restart after partial failure.
+ if(legacyBeginAttempted_)return false;
+ legacyBeginAttempted_=true;
  resetSession();nrfReady_=false;sx1262Ready_=false;authenticated_=radioKey_get(rootKey_);
  lastNrfHeartbeatTxMs_=lastBackupHeartbeatTxMs_=lastBackupHeartbeatAttemptMs_=0;
 // The external E22 UART and nRF SPI use separate peripherals.
@@ -668,10 +671,10 @@ bool BoatDualRadioPort::admitPrimaryLegacy(const RadioFrame &frame){return nrf_.
 bool BoatDualRadioPort::admitBackupLegacy(const RadioFrame &frame,uint32_t now){return e22_.sendFrame(frame,now);}
 
 // Legacy owner-only RX and health boundary.
-bool BoatDualRadioPort::primaryDriverReady(){return nrf_.ready();}
-bool BoatDualRadioPort::primaryDriverPending(){return nrf_.txPending();}
-bool BoatDualRadioPort::primaryDriverSuccess(){return nrf_.lastTxSuccess();}
-bool BoatDualRadioPort::backupDriverReady(){return e22_.ready();}
-bool BoatDualRadioPort::backupDriverFault(){return e22_.transportFault();}
+bool BoatDualRadioPort::primaryDriverReady() const{return nrf_.ready();}
+bool BoatDualRadioPort::primaryDriverPending() const{return nrf_.txPending();}
+bool BoatDualRadioPort::primaryDriverSuccess() const{return nrf_.lastTxSuccess();}
+bool BoatDualRadioPort::backupDriverReady() const{return e22_.ready();}
+bool BoatDualRadioPort::backupDriverFault() const{return e22_.transportFault();}
 bool BoatDualRadioPort::receivePrimaryLegacy(RadioFrame &f){return nrf_.receiveFrame(f);}
 bool BoatDualRadioPort::receiveBackupLegacy(RadioFrame &f){return e22_.receiveFrame(f);}
