@@ -7,7 +7,7 @@ class BoundedRxService {
 public:
  using Receive=bool(*)(void*,RadioFrame&);
  bool tick(RadioFrameHandoff& h,PhyLink link,uint32_t now,Receive receive,void* ctx){
-  if(h.fault()||!receive)return false;
+  if(h.fault(link)||!receive)return false;
   if(link!=PhyLink::Primary&&link!=PhyLink::Backup)return false;
   auto& q=link==PhyLink::Primary?h.primaryRx:h.backupRx;
   for(unsigned i=0;i<2;++i){
