@@ -1,6 +1,11 @@
 #pragma once
 #include "r30h118_transport.h"
 namespace flytec_r30h120 {
+// Wire message IDs from radio_protocol.h: CHALLENGE=11, CONFIRM=13.
+// Authentication callback is owner-local; the worker checks immutable shape only.
+template<class Frame> bool boatReplyShape(const Frame &f,uint8_t boat,uint8_t remote,bool backup){
+ return (f.type==11U||f.type==13U)&&f.sourceId==boat&&f.destinationId==remote&&f.flags==(backup?1U:0U)&&f.sessionEpoch==0&&f.sequence==0&&f.commandId==0;
+}
 // Separate lane per PHY. Internal ticket epoch 1 is NOT a wire session epoch.
 // Owner must verify root-key authentication and protocol direction before submit.
 // Worker must arbitrate this lane with STOP priority and exclusive driver ownership.
