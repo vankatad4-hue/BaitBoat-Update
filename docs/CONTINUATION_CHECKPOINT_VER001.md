@@ -1,3 +1,7 @@
+# R30H-119 verification hold (2026-11-24)
+
+R30H-118S–Z committed: Remote deferred STOP timestamp correction; Boat prototype STOP saturation retry, latched ordinary-traffic interlock, explicit rearm, exact per-link outcome tickets, sticky fault propagation, dual mock health acceptance and regression updates. Latest source/test commit ec24cfc5a034ba2e2e5be667989ff7d8ae6b64e8. Host and target CI results remain unverified. No production radio migration or upload authorized by this checkpoint. Next: obtain current Boat/Remote host, source inventory, PlatformIO and mock workflow run IDs; fix failures before migration. Official Boat VER014 / Remote VER028 unchanged.
+
 # R30H-118R continuation (2026-11-24)
 
 Branch: platformio-unified-r30h20. R30H-118B–E: backup STOP ACK lifetime 12s, completion generation and handoff. F–I: bounded SPSC, admission guard, priority transport and cooperative worker. J–K: isolated Core 0 mock target. L–P: PHY ownership contract, copied RX/health/outcomes, pump and driver adapters with host regressions. Q–R: dual-radio mock target and compile-only CI for both mock environments. Latest CI not verified; production ownership unchanged; no upload. Official Boat VER014 / Remote VER028 unchanged. Next R30H-118S: audit and correct STOP retry saturation, stale outcome correlation, and health backpressure; verify host and target CI before physical migration. See docs/R30H118_PHY_OWNERSHIP.md. Prior checkpoint retained below.
