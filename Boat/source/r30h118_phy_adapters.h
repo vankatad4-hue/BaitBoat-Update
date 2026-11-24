@@ -6,10 +6,10 @@ template<class Frame,class Driver> class NrfAdapter {
  Driver &driver_; PhyPump<Frame> pump_; bool active_=false;
 public:
  NrfAdapter(Driver &d,PhyEvents<Frame>& e):driver_(d),pump_(e){}
- bool admit(const Ticket &t,const Frame &f){
-  if(!pump_.canAdmit()||!driver_.ready()||driver_.txPending()||!t.generation||!t.serial||!t.epoch)return false;
+ bool admit(const Ticket &t,const Frame &f,bool stop=false){
+  if(!pump_.canAdmit(t,stop)||!driver_.ready()||driver_.txPending()||!t.generation||!t.serial||!t.epoch)return false;
   if(!driver_.sendFrame(f))return false;
-  active_=pump_.track(t);return active_;
+  active_=pump_.track(t,stop);return active_;
  }
  void poll(uint32_t now){
   driver_.update();
@@ -25,13 +25,13 @@ template<class Frame,class Driver> class E22Adapter {
  Driver &driver_; PhyPump<Frame> pump_; bool active_=false;
 public:
  E22Adapter(Driver &d,PhyEvents<Frame>& e):driver_(d),pump_(e){}
- bool admit(const Ticket &t,const Frame &f,uint32_t now){
-  if(!pump_.canAdmit()||!driver_.ready()||!t.generation||!t.serial||!t.epoch)return false;
+ bool admit(const Ticket &t,const Frame &f,uint32_t now,bool stop=false){
+  if(!pump_.canAdmit(t,stop)||!driver_.ready()||!t.generation||!t.serial||!t.epoch)return false;
   using A=typename Driver::Admission;
   const auto result=driver_.trySendFrame(f,now);
-  if(result==A::Uncertain){pump_.track(t);pump_.terminal(PhyOutcome::Uncertain,now);return false;}
+  if(result==A::Uncertain){pump_.track(t,stop);pump_.terminal(PhyOutcome::Uncertain,now);return false;}
   if(result!=A::Accepted)return false;
-  active_=pump_.track(t);return active_;
+  active_=pump_.track(t,stop);return active_;
  }
  void poll(uint32_t now){
   driver_.update();
