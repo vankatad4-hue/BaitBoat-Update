@@ -438,4 +438,25 @@ int main(){
  assert(!serviceSharedPhy(0x05,true,true,[&](TxPriority){++sharedPrimaryCalls;return true;},[&](){++sharedPrimaryCalls;return true;}));
  assert(serviceSharedPhy(0x05,false,true,[&](TxPriority p){++sharedBackupCalls;assert(p==TxPriority::Stop);return true;},[&](){++sharedBackupCalls;return false;}));
  assert(sharedPrimaryCalls==0&&sharedBackupCalls==1);
+
+ // Atomic publication is independent per PHY; reserved bit is ignored.
+ SharedPriority primaryPriority,backupPriority;
+ assert(primaryPriority.snapshot()==0&&backupPriority.snapshot()==0);
+ for(unsigned mask=0;mask<256;++mask){
+  primaryPriority.publish(static_cast<uint8_t>(mask));
+  assert(primaryPriority.snapshot()==(mask&127U));
+  assert(backupPriority.snapshot()==0);
+ }
+ primaryPriority.publish(5);backupPriority.publish(4);
+ unsigned priorityAppCalls=0,priorityHsCalls=0;
+ auto priorityApp=[&](TxPriority p){++priorityAppCalls;assert(p==TxPriority::Stop);return true;};
+ auto priorityHs=[&](){++priorityHsCalls;return true;};
+ assert(!primaryPriority.service(true,true,priorityApp,priorityHs));
+ assert(!primaryPriority.service(false,false,priorityApp,priorityHs));
+ assert(primaryPriority.service(false,true,priorityApp,priorityHs));
+ assert(backupPriority.service(false,true,priorityApp,priorityHs));
+ assert(priorityAppCalls==1&&priorityHsCalls==1);
+ primaryPriority.publish(0);
+ assert(!primaryPriority.service(false,true,priorityApp,priorityHs));
+ assert(backupPriority.snapshot()==4);
 }
