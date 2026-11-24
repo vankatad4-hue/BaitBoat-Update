@@ -126,8 +126,8 @@ public:
    if (observed != 1U) { xSemaphoreGive(mutex_); return false; }
   }
   Entry pending{};
-  if (xQueueReceive(stop_, &pending, 0) == pdTRUE) {
-   xQueueOverwrite(stop_, &pending);
+  // Non-destructive inspection: never overwrite a concurrently arriving STOP.
+  if (xQueuePeek(stop_, &pending, 0) == pdTRUE) {
    xSemaphoreGive(mutex_);
    return false;
   }
