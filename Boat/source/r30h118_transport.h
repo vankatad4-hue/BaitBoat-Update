@@ -25,6 +25,7 @@ public:
   return ok;
  }
  void latchStop(){stopLatched_=true;}
+ bool ordinaryEnabled()const{return !stopLatched_&&owner_.activeGeneration()!=0;}
  // Owner calls only after authenticated application rearm authorization.
  bool rearm(uint8_t epoch){if(!invalidate(epoch))return false;stopLatched_=false;return true;}
  uint32_t activeGeneration()const{return owner_.activeGeneration();}
