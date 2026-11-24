@@ -4,6 +4,7 @@
 #include "../source/r30h123_owner_cycle.h"
 #include "../source/r30h123_owner_rx.h"
 #include "../source/r30h123_ordinary_tx.h"
+#include "../source/r30h123_telemetry_slots.h"
 #include "r30h118_completion_gate.h"
 #include <cassert>
 #include "r30h118_radio_handoff.h"
@@ -1009,4 +1010,33 @@ int main(){
  assert(!stoppedOwner.ordinaryReady()&&stoppedOwner.feedbackReady());
  assert(!stoppedOwner.rearm(false));
  stoppedOwner.close();
+ // Latest telemetry replacement, coordinate pairing and unsigned clock wrap.
+ flytec_r30h123::TelemetrySlots telemetrySlots;
+ uint8_t telemetryOut[8]{},batterySlot[8]={2,1},latSlot[8]={3,9},lonSlot[8]={4,9};
+ uint32_t remaining=0;
+ assert(telemetrySlots.offer(batterySlot,7000));
+ batterySlot[1]=2;assert(telemetrySlots.offer(batterySlot,7010));
+ assert(telemetrySlots.take(7011,telemetryOut,remaining)&&telemetryOut[1]==2&&remaining==249);
+ assert(!telemetrySlots.take(7012,telemetryOut,remaining));
+ assert(telemetrySlots.offer(latSlot,7020));
+ assert(!telemetrySlots.take(7021,telemetryOut,remaining));
+ assert(telemetrySlots.offer(lonSlot,7022));
+ assert(!telemetrySlots.take(7023,telemetryOut,remaining)); // mismatched snapshot
+ assert(telemetrySlots.offer(latSlot,7022));
+ assert(telemetrySlots.take(7024,telemetryOut,remaining)&&telemetryOut[0]==3);
+ assert(telemetrySlots.take(7025,telemetryOut,remaining)&&telemetryOut[0]==4&&remaining==247);
+ assert(telemetrySlots.offer(latSlot,7030)&&telemetrySlots.offer(lonSlot,7030));
+ assert(telemetrySlots.take(7031,telemetryOut,remaining));
+ latSlot[1]=10;lonSlot[1]=10;
+ assert(telemetrySlots.offer(latSlot,7032));
+ assert(!telemetrySlots.take(7033,telemetryOut,remaining));
+ assert(telemetrySlots.offer(lonSlot,7032));
+ assert(telemetrySlots.take(7034,telemetryOut,remaining)&&telemetryOut[1]==10);
+ assert(telemetrySlots.take(7035,telemetryOut,remaining)&&telemetryOut[1]==10);
+ assert(telemetrySlots.offer(batterySlot,UINT32_MAX-4));
+ assert(telemetrySlots.take(5,telemetryOut,remaining)&&remaining==240);
+ assert(telemetrySlots.offer(batterySlot,8000));
+ assert(!telemetrySlots.take(8250,telemetryOut,remaining));
+ batterySlot[0]=1;assert(!telemetrySlots.offer(batterySlot,8251));
+ telemetrySlots.reset();assert(!telemetrySlots.take(8251,telemetryOut,remaining));
 }
