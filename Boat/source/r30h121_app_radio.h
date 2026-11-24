@@ -40,6 +40,7 @@ public:
  bool healthy(uint32_t now,uint32_t age)const{
   return healthSeen_&&!events_.stickyFault()&&health_.configured&&health_.ready&&!health_.fault&&age&&uint32_t(now-health_.observedAt)<age;
  }
+ bool ordinaryReady()const{return bus_.ordinaryEnabled()&&!stopRetry_&&!terminalPending()&&state_!=TxState::Queued&&state_!=TxState::Admitted;}
  bool terminalPending()const{return !terminalTaken_&&ticket_.serial&&state_!=TxState::Idle&&state_!=TxState::Queued&&state_!=TxState::Admitted;}
  bool submit(const Frame &frame,uint32_t now,bool stop,uint32_t requestAge=0){
   if(state_==TxState::Queued||state_==TxState::Admitted||(!stop&&terminalPending()))return false;
