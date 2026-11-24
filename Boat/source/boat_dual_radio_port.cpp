@@ -507,8 +507,37 @@ void BoatDualRadioPort::serviceAsyncOwner(ManagedLink link,uint32_t now,bool lin
  };
  // Local handshake transmission completion cannot establish a session.
  auto hsResult=[](const flytec_r30h118::Ticket &,flytec_r30h120::HandshakeTx){};
- // Ordinary producers remain disconnected until their scheduling is migrated.
- auto ordinary=[](flytec_r30h123::OwnerLink<RadioFrame>&){};
+ // One ordinary producer per free owner cycle. A heartbeat timestamp is
+ // committed only by completeAsyncApplication, never by queue admission.
+ auto ordinary=[&](flytec_r30h123::OwnerLink<RadioFrame>& owner){
+  auto &tx=backup?asyncBackupTx_:asyncPrimaryTx_;
+  if(!owner.ordinaryReady()||tx.pending()||!sessionReady())return;
+  if(backup&&pendingBackupMissionFeedbackValid_){
+   const uint32_t elapsed=uint32_t(now-pendingBackupMissionFeedbackAtMs_);
+   if(elapsed>=12000U)pendingBackupMissionFeedbackValid_=false;
+   else if(backupFresh(now)){
+    if(lastBackupMissionFeedbackAttemptMs_&&uint32_t(now-lastBackupMissionFeedbackAttemptMs_)<250U)return;
+    lastBackupMissionFeedbackAttemptMs_=now;
+    const auto feedback=pendingBackupMissionFeedback_;
+    RadioFrame f{};
+    radio_frameInit(f,RADIO_MSG_MISSION_FEEDBACK,BOAT_ID,REMOTE_ID,++txSequence_,feedback.transaction,now,sessionEpoch_);
+    if(missionFeedbackEncode(feedback,f.payload)&&radio_frameSeal(f,key_))
+     queueAsyncApplication(link,f,now,12000U-elapsed);
+    return;
+   }
+  }
+  const uint32_t last=backup?lastBackupHeartbeatTxMs_:lastNrfHeartbeatTxMs_;
+  if(uint32_t(now-last)<(backup?3000U:100U))return;
+  if(backup){
+   if(uint32_t(now-lastBackupHeartbeatAttemptMs_)<250U)return;
+   lastBackupHeartbeatAttemptMs_=now;
+  }
+  RadioFrame f{};
+  radio_frameInit(f,RADIO_MSG_HEARTBEAT,BOAT_ID,REMOTE_ID,++txSequence_,0,now,sessionEpoch_);
+  f.payload[0]=uint8_t(1U|(nrfReady_?2U:0U)|(sx1262Ready_?4U:0U));
+  f.payload[1]=1;
+  if(radio_frameSeal(f,key_))queueAsyncApplication(link,f,now,backup?6000U:250U);
+ };
  if(backup)asyncBackupCycle_.step(now,12000U,12000U,sessionReady(),linkTrusted,buildAck,buildStatus,verify,result,hsResult,ordinary);
  else asyncPrimaryCycle_.step(now,2500U,2500U,sessionReady(),linkTrusted,buildAck,buildStatus,verify,result,hsResult,ordinary);
 }
