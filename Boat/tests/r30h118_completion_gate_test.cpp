@@ -646,4 +646,31 @@ int main(){
  assert(!deadlineBus.allows(deadlineReq,100,0));
  deadlineBus.invalidate(0);
  assert(!deadlineBus.allows(deadlineReq,101,100));
+ // Physical terminal backpressure must remain isolated by traffic class.
+ PhyEvents<uint32_t> isolatedEvents;
+ PhyPump<uint32_t> isolatedPump(isolatedEvents);
+ Ticket ordinaryPhy{1,1,1,TicketDomain::Application};
+ Ticket stopPhy{1,2,1,TicketDomain::Application};
+ Ticket handshakePhy{1,1,1,TicketDomain::Handshake};
+ for(unsigned i=0;i<4;++i){
+  assert(isolatedEvents.publishOutcome({ordinaryPhy,i,PhyOutcome::LocalComplete}));
+  assert(isolatedEvents.publishOutcome({handshakePhy,i,PhyOutcome::LocalComplete}));
+ }
+ assert(isolatedPump.track(ordinaryPhy));
+ assert(isolatedPump.terminal(PhyOutcome::Failed,10));
+ isolatedPump.flushOutcome();
+ assert(!isolatedPump.canAdmit(ordinaryPhy));
+ assert(isolatedPump.track(handshakePhy));
+ assert(!isolatedPump.canAdmit(stopPhy,true));
+ assert(isolatedPump.terminal(PhyOutcome::Uncertain,11));
+ isolatedPump.flushOutcome();
+ assert(isolatedPump.track(stopPhy,true));
+ assert(isolatedPump.terminal(PhyOutcome::LocalComplete,12));
+ isolatedPump.flushOutcome();
+ PhyEvents<uint32_t>::Outcome isolatedResult{};
+ assert(isolatedEvents.takeOutcome(isolatedResult)&&isolatedResult.stop&&sameTicket(isolatedResult.ticket,stopPhy));
+ assert(isolatedEvents.takeOutcome(isolatedResult)&&!isolatedResult.stop);
+ assert(isolatedEvents.takeHandshakeOutcome(isolatedResult));
+ isolatedPump.flushOutcome();
+ assert(isolatedPump.canAdmit());
 }
