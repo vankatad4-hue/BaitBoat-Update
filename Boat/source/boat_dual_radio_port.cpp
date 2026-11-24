@@ -451,7 +451,30 @@ bool BoatDualRadioPort::queueAsyncApplication(ManagedLink link,const RadioFrame 
  outgoing.flags=backup?RADIO_FLAG_BACKUP_LINK:0;
  if(!radio_frameSeal(outgoing,key_))return false;
  auto &owner=backup?asyncBackupOwner_:asyncPrimaryOwner_;
- return owner.submitApplication(outgoing,now,priority,age,[&](const RadioFrame &f){return radio_frameVerify(f,key_);});
+ auto &tx=backup?asyncBackupTx_:asyncPrimaryTx_;
+ return tx.submit(owner,outgoing,now,priority,age,[&](const RadioFrame &f){return radio_frameVerify(f,key_);});
+}
+void BoatDualRadioPort::completeAsyncApplication(ManagedLink link,const flytec_r30h118::Ticket &ticket,flytec_r30h121::TxState state,uint32_t now){
+ if(!BOAT_R30H121_PHYSICAL_OWNER||legacyBeginAttempted_)return;
+ if(link!=LINK_NRF_PRIMARY&&link!=LINK_LORA_BACKUP)return;
+ const bool backup=link==LINK_LORA_BACKUP;
+ auto &tx=backup?asyncBackupTx_:asyncPrimaryTx_;
+ tx.complete(ticket,state,now,sessionStarted_?sessionEpoch_:uint8_t(0),
+  [&](const RadioFrame &frame,flytec_r30h121::TxState result,uint32_t queuedAt){
+   if(result!=flytec_r30h121::TxState::LocalComplete)return;
+   // Use the original queue time, never extend freshness by delayed polling.
+   if(frame.type==RADIO_MSG_HEARTBEAT){
+    if(backup)lastBackupHeartbeatTxMs_=queuedAt;
+    else{lastNrfHeartbeatTxMs_=queuedAt;havePrimaryHeartbeatSent_=true;}
+   }
+   if(backup&&frame.type==RADIO_MSG_MISSION_FEEDBACK&&pendingBackupMissionFeedbackValid_){
+    uint8_t expected[8]{};
+    if(uint32_t(now-pendingBackupMissionFeedbackAtMs_)<=12000U&&
+       uint32_t(queuedAt-pendingBackupMissionFeedbackAtMs_)<=12000U&&
+       missionFeedbackEncode(pendingBackupMissionFeedback_,expected)&&
+       memcmp(expected,frame.payload,8)==0)pendingBackupMissionFeedbackValid_=false;
+   }
+  });
 }
 unsigned BoatDualRadioPort::drainAsyncRx(ManagedLink link,uint32_t now){
  // Deliberately unreachable until the legacy transmit boundary is migrated.
