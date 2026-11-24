@@ -507,8 +507,15 @@ void boatRadio_update() {
     }
     if(g_loraConfigured) {
         g_lora.update();
-        RadioFrame frame;
-        while(g_lora.receiveFrame(frame)) validateInboundFrame(LINK_LORA_BACKUP,frame);
+        if(g_lora.transportFault()){
+            // Revoke stale backup health; do not clear the STOP confirmation gate.
+            g_loraConfigured=false;g_stopPending=false;
+            g_linkManager.setTransportReady(LINK_LORA_BACKUP,false);
+            g_linkManager.reportFailure(LINK_LORA_BACKUP);
+        }else{
+            RadioFrame frame;
+            while(g_lora.receiveFrame(frame)) validateInboundFrame(LINK_LORA_BACKUP,frame);
+        }
     }
     g_ackTracker.update(now);
     g_linkManager.tick(millis());
