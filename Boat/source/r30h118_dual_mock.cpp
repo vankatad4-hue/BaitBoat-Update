@@ -3,6 +3,7 @@
 #include "r30h118_phy_adapters.h"
 #include "r30h118_transport.h"
 #include "r30h118_stop_retry.h"
+#include "r30h118_outcome_gate.h"
 using namespace flytec_r30h118;
 namespace {
 struct Nrf {
@@ -29,6 +30,7 @@ struct E22 {
 };
 Transport<uint32_t> primary,backup;
 StopRetry<uint32_t> primaryStop;
+OutcomeGate pg,bg;
 PhyEvents<uint32_t> pe,be;
 Nrf n; E22 e;
 NrfAdapter<uint32_t,Nrf> na(n,pe);
@@ -60,17 +62,17 @@ void setup(){
  primaryStop.arm(primary,1,2,began);primaryStop.service(primary,began,1000U);
  primaryStop.arm(primary,1,4,began); // saturate reserved slot with obsolete STOP
  primaryStop.service(primary,began,1000U);
- backup.submit(3,began,false);
+ Ticket bt{};if(backup.submit(3,began,false,&bt))bg.expect(bt);
  launched=xTaskCreatePinnedToCore(task,"dualMock",4096,nullptr,1,nullptr,0)==pdPASS;
  if(!launched)Serial.println("DUAL MOCK START FAIL");
 }
 void loop(){
  bool admitted=false;primary.poll(admitted);backup.poll(admitted);
- if(launched&&!stop.load()&&primaryStop.pending())primaryStop.service(primary,millis(),1000U);
+ if(launched&&!stop.load()&&primaryStop.pending()){Ticket pt{};if(primaryStop.service(primary,millis(),1000U,&pt))pg.expect(pt);}
  PhyEvents<uint32_t>::Health h{};while(pe.takeHealth(h)){}while(be.takeHealth(h)){}
  PhyEvents<uint32_t>::Outcome o{};
- while(pe.takeOutcome(o)){if(o.ticket.generation!=primary.activeGeneration())continue;gotP=true;okP=o.result==PhyOutcome::LocalComplete&&o.ticket.generation==3;}
- while(be.takeOutcome(o)){if(o.ticket.generation!=backup.activeGeneration())continue;gotB=true;okB=o.result==PhyOutcome::Uncertain;}
+ while(pe.takeOutcome(o)){if(!pg.accept(o.ticket,primary.activeGeneration()))continue;gotP=true;okP=o.result==PhyOutcome::LocalComplete&&o.ticket.generation==3;}
+ while(be.takeOutcome(o)){if(!bg.accept(o.ticket,backup.activeGeneration()))continue;gotB=true;okB=o.result==PhyOutcome::Uncertain;}
  if(launched&&!stop.load()&&((gotP&&gotB)||uint32_t(millis()-began)>=5000U)){
   primaryStop.reset();primary.invalidate(0);backup.invalidate(0);stop.store(true,std::memory_order_release);
  }
