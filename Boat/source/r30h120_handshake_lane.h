@@ -8,6 +8,13 @@ inline TxPriority choosePriority(uint8_t pending){
  for(uint8_t i=0;i<7;++i)if(pending&(1U<<i))return static_cast<TxPriority>(i);
  return TxPriority::None;
 }
+// Owner-side arbitration only. Pending STOP blocks every lower class even
+// when STOP cannot currently be admitted. Each PHY has its own arbiter.
+template<class Service> bool servicePriority(uint8_t pending,bool phyAvailable,Service service){
+ const TxPriority selected=choosePriority(pending);
+ if(!phyAvailable||selected==TxPriority::None)return false;
+ return service(selected); // never fall through on failed admission
+}
 // Wire message IDs from radio_protocol.h: CHALLENGE=11, CONFIRM=13.
 // Authentication callback is owner-local; the worker checks immutable shape only.
 template<class Frame> bool boatReplyShape(const Frame &f,uint8_t boat,uint8_t remote,bool backup){
