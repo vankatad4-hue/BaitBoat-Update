@@ -1,4 +1,5 @@
 #include "remote_worker_runtime.h"
+#include "remote_radio_owner.h"
 #include <cassert>
 #include <thread>
 using namespace flytec_rtos;
@@ -17,6 +18,21 @@ struct Service {
 };
 int main(){
  assert(bindRemoteI2cOwner());
+ RemoteRadioOwner legacy,worker;
+ assert(!worker.claimWorker(false));
+ std::thread unauthorized([&]{assert(!legacy.claimLegacy()&&!worker.claimWorker(true));});
+ unauthorized.join();
+ assert(legacy.claimLegacy()&&legacy.legacy());
+ assert(!legacy.claimWorker(true)&&!legacy.claimLegacy());
+ assert(worker.claimWorker(true)&&worker.worker()&&!worker.legacy());
+ std::thread foreignOwner([&]{assert(!legacy.legacy()&&!worker.worker());worker.retire();});
+ foreignOwner.join();
+ assert(worker.worker());
+ worker.retire();legacy.retire();
+ assert(!worker.claimLegacy()&&!legacy.claimWorker(true));
+ assert(remoteRxFresh(1000,1000)&&remoteRxFresh(1099,1000));
+ assert(!remoteRxFresh(1100,1000)&&!remoteRxFresh(1000,1001));
+ assert(remoteRxFresh(5,UINT32_MAX-4)&&!remoteRxFresh(95,UINT32_MAX-4));
  Worker w;Service s;
  using Runtime=RemoteWorkerRuntime<Worker,Service>;
  Runtime r(w,s);
