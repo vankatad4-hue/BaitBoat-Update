@@ -1,3 +1,7 @@
+# R30H-119 verified closeout (2026-11-24)
+
+All six software CI categories passed: inventory run 45370375452 and both mock compilation targets 45370375770 at a8c446d; Remote host 45369497690 at aa4bc79; Boat host 45370931699 and both primary PlatformIO targets 45370931697 at 59a934c. Earlier Boat host failure 45370395465 fixed by renaming conflicting test variable in 59a934c. Boat static RAM 26328 B, flash 379088 B; Remote static RAM 184140 B, flash 1426279 B. No physical execution or upload. Next R30H-120: controlled opt-in Boat worker migration preparation, exclusive PHY ownership, pre-session handshake handling, safe shutdown and independent actuator lock; default production radio ownership unchanged. Boat VER014 / Remote VER028 unchanged.
+
 # R30H-119 verification hold (2026-11-24)
 
 R30H-118S–Z committed: Remote deferred STOP timestamp correction; Boat prototype STOP saturation retry, latched ordinary-traffic interlock, explicit rearm, exact per-link outcome tickets, sticky fault propagation, dual mock health acceptance and regression updates. Latest source/test commit ec24cfc5a034ba2e2e5be667989ff7d8ae6b64e8. Host and target CI results remain unverified. No production radio migration or upload authorized by this checkpoint. Next: obtain current Boat/Remote host, source inventory, PlatformIO and mock workflow run IDs; fix failures before migration. Official Boat VER014 / Remote VER028 unchanged.
