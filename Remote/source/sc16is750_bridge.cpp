@@ -78,6 +78,10 @@ bool SC16IS750Bridge::e22AuxReady() {
     uint8_t state=0;
     return readGpio(state) && ((state&0x04)!=0);
 }
+int SC16IS750Bridge::availableForWrite() {
+    uint8_t level=0;
+    return ready_&&readReg(REG_TXLVL,level)?r30h_sc16::freeTxSlots(level):0;
+}
 int SC16IS750Bridge::available() {
     if(!ready_) return 0;
     uint8_t level=0;
