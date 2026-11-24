@@ -33,6 +33,7 @@ static_assert(BOAT_R30H9_MARKER_GPIO == -1 && BOAT_R30H9_GPIO_OUTPUT_SIGNED == 0
 #endif
 #if BOAT_R30H121_ENDPOINT_COMPILE
 #include "r30h123_owner_cycle.h"
+#include "r30h123_owner_rx.h"
 #endif
 
 // Link values match the Remote manager and queue records.
@@ -111,6 +112,9 @@ private:
     flytec_r30h120::SharedPriority asyncPrimaryPriority_,asyncBackupPriority_;
     flytec_r30h123::OwnerLink<RadioFrame> asyncPrimaryOwner_{asyncRadio_.primary(),asyncPrimaryHandshake_,asyncPrimaryEvents_,asyncPrimaryPriority_};
     flytec_r30h123::OwnerLink<RadioFrame> asyncBackupOwner_{asyncRadio_.backup(),asyncBackupHandshake_,asyncBackupEvents_,asyncBackupPriority_};
+    flytec_r30h123::OwnerRx<RadioFrame> asyncPrimaryRx_{asyncRadio_.primary(),0x01,0x02,false};
+    flytec_r30h123::OwnerRx<RadioFrame> asyncBackupRx_{asyncRadio_.backup(),0x01,0x02,true};
+    unsigned drainAsyncRx(ManagedLink link,uint32_t now);
 #endif
     bool legacyBeginAttempted_=false;
     NRF24Link nrf_;
@@ -172,7 +176,11 @@ private:
     uint32_t lastUtcTxMs_=0;
     bool utcEverSent_=false;
     bool missionInputs(ExecInputs &in,uint32_t now)const;
-    void noteAuthenticatedRx(uint32_t now){lastAnyAuthenticatedRxMs_=now;haveAuthenticatedRx_=true;}
+    void noteAuthenticatedRx(uint32_t observedAt){
+      const uint32_t now=millis();
+      if(!haveAuthenticatedRx_||uint32_t(now-observedAt)<=uint32_t(now-lastAnyAuthenticatedRxMs_))lastAnyAuthenticatedRxMs_=observedAt;
+      haveAuthenticatedRx_=true;
+    }
     bool maybeStartFailsafeReturnHome(uint32_t now);
     bool sendMissionFeedback(const MissionControlFeedback &f,uint32_t now);
     bool primaryOrdinaryTxReady() const;
@@ -198,6 +206,7 @@ private:
     void resetSession(bool preserveMission=false);
     bool sessionReady() const {return sessionStarted_&&txSequence_<RadioSessionCounter::REKEY_AT-1;}
     void receive(ManagedLink link,const RadioFrame &frame);
+    void receiveCaptured(ManagedLink link,const RadioFrame &frame,uint32_t capturedAt);
     bool enqueue(const BoatCommand &cmd,ManagedLink link,bool duplicate);
     bool commandPending(uint8_t epoch,uint16_t commandId) const;
     bool sendCommandAck(ManagedLink link,const BoatCommand &cmd,uint8_t result,uint8_t stopState,uint8_t interlockFlags,uint32_t now);
