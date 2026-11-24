@@ -32,7 +32,7 @@ static_assert(BOAT_R30H9_MARKER_GPIO == -1 && BOAT_R30H9_GPIO_OUTPUT_SIGNED == 0
 #define BOAT_R30H121_ENDPOINT_COMPILE 0
 #endif
 #if BOAT_R30H121_ENDPOINT_COMPILE
-#include "r30h123_owner_link.h"
+#include "r30h123_stop_ack_service.h"
 #endif
 
 // Link values match the Remote manager and queue records.
@@ -128,6 +128,10 @@ private:
     BoatCommandQueue commandQueue_;
     boat_r30h18::BackupStopAckOutbox backupStopAck_; // independent E22 response slot
     boat_r30h18::StopAckOutbox stopAck_; // STOP-only priority ACK, never a physical STOP witness
+#if BOAT_R30H121_ENDPOINT_COMPILE
+    flytec_r30h123::StopAckService<RadioFrame,boat_r30h18::StopAckOutbox> asyncPrimaryAck_{asyncPrimaryOwner_,stopAck_,flytec_r30h121::AckLink::Primary};
+    flytec_r30h123::StopAckService<RadioFrame,boat_r30h18::BackupStopAckOutbox> asyncBackupAck_{asyncBackupOwner_,backupStopAck_,flytec_r30h121::AckLink::Backup};
+#endif
     boat_r30h19::StatusOutbox backupStatusOutbox_;
     boat_r30h19::StatusOutbox statusOutbox_; // Latest real status, never synthesized
     MissionAssembler mission_;
