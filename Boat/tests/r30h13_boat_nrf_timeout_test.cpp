@@ -128,5 +128,26 @@ int main(){
         RadioFrame out{};
         assert(boat.receiveFrame(out)&&out.commandId==88U);
     }
+    { // R30H-117H: preserve hardware FIFO when software FIFO is full.
+        fakeRadio={};fakeNow=800;
+        NRF24Link boat(10,9,&spi);
+        assert(boat.begin(false));
+        for(unsigned i=0;i<5;++i){
+            RadioFrame f=validFrame(); f.commandId=i+1;
+            assert(fakeRadio.inject(&f,sizeof(f)));
+            boat.update();
+        }
+        assert(boat.rxCount()==4U);
+        assert(fakeRadio.rxCount==1U);
+        assert(boat.rxFullPollCount()>=2U);
+        RadioFrame out{};
+        assert(boat.receiveFrame(out)&&out.commandId==1U);
+        boat.update();
+        assert(fakeRadio.rxCount==0U);
+        assert(boat.rxCount()==5U);
+        for(unsigned i=2;i<=5;++i)
+            assert(boat.receiveFrame(out)&&out.commandId==i);
+        assert(!boat.receiveFrame(out));
+    }
     return 0;
 }
