@@ -70,6 +70,8 @@ static flytec_r30h15::PrimaryStopRetry<BoatCommand> g_primaryStopRetry;
 static flytec_r30h17::StopConfirmationGate g_stopConfirmation;
 static flytec_r30h17::StopConfirmationGate g_backupStopConfirmation;
 static bool g_backupStopConfirmed=false;
+static uint32_t g_backupStopStatusAt=0;
+static constexpr uint32_t BACKUP_STOP_STATUS_MAX_AGE_MS=4500U;
 static uint8_t g_authKey[32],g_rootKey[32];
 static bool g_rootReady=false;
 static SessionHandshake g_session;
@@ -302,7 +304,7 @@ bool boatRadio_missionControlPending(){return g_missionControl.pending();}
 bool boatRadio_missionControlUnknown(){return g_missionControl.unknown();}
 MissionControlResult boatRadio_missionControlResult(){return g_missionControl.result();}
 bool boatRadio_missionLocked(){return g_missionUpload.state()==UPLOAD_ACTIVE||g_missionUpload.state()==UPLOAD_PREPARED||g_missionControl.locked();}
-bool boatRadio_backupStopConfirmed(){return g_backupStopConfirmed&&sessionReady()&&g_linkManager.backupHealthy(millis());}
+bool boatRadio_backupStopConfirmed(){return g_backupStopConfirmed&&sessionReady()&&g_loraConfigured&&g_linkManager.backupHealthy(millis())&&(uint32_t)(millis()-g_backupStopStatusAt)<=BACKUP_STOP_STATUS_MAX_AGE_MS;}
 bool boatRadio_stopConfirmationPending(){return g_stopMustConfirm;}
 bool boatRadio_manualModeConfirmed(){return !g_manualConfirmRequired&&!g_stopMustConfirm&&!boatRadio_missionLocked()&&telemetry.statusValid&&telemetry.statusPrimary&&millis()-telemetry.statusReceivedAtMs<1000U&&telemetry.reportedMode==MODE_MANUAL;}
 bool boatRadio_missionControl(MissionControlOp op){
@@ -385,7 +387,7 @@ static bool dispatchValidatedPayload(ManagedLink link,const RadioFrame &frame,ui
             if(!telemetryApplyRadioPayload(decoded,link==LINK_NRF_PRIMARY,now))return false;
             if(link==LINK_LORA_BACKUP&&decoded.kind==RADIO_PAYLOAD_STATUS){
                 g_backupStopConfirmed=g_backupStopConfirmation.armed()&&g_backupStopConfirmation.allowsStopStatus(true,decoded.stopState==1);
-                if(g_backupStopConfirmed)g_stopPending=false; // does not clear primary movement interlock
+                if(g_backupStopConfirmed){g_backupStopStatusAt=now;g_stopPending=false;} // does not clear primary movement interlock
             }
             if(link==LINK_NRF_PRIMARY&&decoded.kind==RADIO_PAYLOAD_STATUS){
                 if(g_stopConfirmation.allowsStopStatus(true,decoded.stopState==1)){
