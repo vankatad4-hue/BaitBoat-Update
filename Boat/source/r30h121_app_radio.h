@@ -1,6 +1,7 @@
 #pragma once
 #include "r30h118_transport.h"
 #include "r30h118_phy_events.h"
+#include "r30h120_handshake_lane.h"
 namespace flytec_r30h121 {
 using namespace flytec_r30h118;
 enum class TxState:uint8_t { Idle, Queued, Admitted, Rejected, LocalComplete, Failed, Uncertain };
@@ -73,5 +74,26 @@ public:
  }
  bool receive(typename Events::Rx &rx){return events_.takeRx(rx);}
  TxState state()const{return state_;}
+};
+
+// Owner-side coordinator: distinct queues and health for each physical link.
+// External callbacks own frame construction, authentication and handshake routing.
+template<class Frame> class DualAppRadio {
+ AppRadio<Frame> primary_,backup_;
+public:
+ DualAppRadio(Transport<Frame>& p,PhyEvents<Frame>& pe,Transport<Frame>& b,PhyEvents<Frame>& be):primary_(p,pe),backup_(b,be){}
+ AppRadio<Frame>& primary(){return primary_;}
+ AppRadio<Frame>& backup(){return backup_;}
+ template<class Service> static bool serviceLink(AppRadio<Frame>& ep,uint32_t now,uint32_t age,uint8_t mask,Service service){
+  if(ep.stopRetryPending()){ep.serviceStop(now,age);return false;}
+  if(ep.state()==TxState::Queued||ep.state()==TxState::Admitted)return false;
+  return flytec_r30h120::servicePriority(mask,ep.healthy(now,age),[&](flytec_r30h120::TxPriority p){return service(ep,p);});
+ }
+ template<class P,class B> void step(uint32_t now,uint32_t healthAge,uint32_t txTimeout,uint8_t pm,uint8_t bm,P ps,B bs){
+  primary_.poll();backup_.poll();
+  primary_.expire(now,txTimeout);backup_.expire(now,txTimeout);
+  serviceLink(primary_,now,healthAge,pm,ps);
+  serviceLink(backup_,now,healthAge,bm,bs);
+ }
 };
 }
