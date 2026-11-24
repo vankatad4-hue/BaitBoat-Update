@@ -1,3 +1,4 @@
+#include "../source/boat_r30h18_stop_ack_outbox.h"
 #include "../source/r30h121_app_radio.h"
 #include "r30h118_completion_gate.h"
 #include <cassert>
@@ -364,4 +365,28 @@ int main(){
  assert(!terminalEndpoint.takeTerminal(terminalTicket,terminalState));
  assert(terminalEndpoint.reset(2));
  assert(!terminalEndpoint.takeTerminal(terminalTicket,terminalState));
+
+ using flytec_r30h121::AckLink;
+ using flytec_r30h121::StopAckCorrelation;
+ boat_r30h18::StopAckOutbox ackBox;
+ StopAckCorrelation corr(AckLink::Primary);
+ Transport<uint32_t> ackBus;
+ Ticket ackTicket{};
+ assert(ackBus.invalidate(1)&&ackBus.submit(1,10,true,&ackTicket));
+ assert(ackBox.offer(10,1,1,0,0,10));
+ ackBox.admitted(10);
+ assert(corr.track(ackTicket,10,1));
+ assert(!corr.complete(ackBox,AckLink::Backup,ackTicket,TxState::LocalComplete));
+ assert(ackBox.inFlight());
+ assert(corr.complete(ackBox,AckLink::Primary,ackTicket,TxState::Uncertain));
+ assert(ackBox.pending()&&!ackBox.inFlight());
+ assert(!corr.complete(ackBox,AckLink::Primary,ackTicket,TxState::LocalComplete));
+ ackBox.admitted(90);
+ assert(corr.track(ackTicket,10,1));
+ assert(ackBox.offer(11,1,1,0,0,91));
+ ackBox.admitted(91);
+ assert(!corr.complete(ackBox,AckLink::Primary,ackTicket,TxState::LocalComplete));
+ assert(ackBox.pending()&&ackBox.inFlight()&&ackBox.ticket().commandId==11);
+ corr.reset();
+ assert(!corr.complete(ackBox,AckLink::Primary,ackTicket,TxState::LocalComplete));
 }
