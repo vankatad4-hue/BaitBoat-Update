@@ -5,8 +5,8 @@ static const uint8_t E22_WRITE_CMD[12]={0xC0,0x00,0x09,0x00,0x00,0x00,0x67,0xC3,
 static const uint8_t E22_WRITE_ACK[12]={0xC1,0x00,0x09,0x00,0x00,0x00,0x67,0xC3,0x12,0x00,0x00,0x00};
 static const uint8_t E22_READ_CMD[3]={0xC1,0x00,0x09};
 
-E22UartLink::E22UartLink(Stream &uart,E22SetModeFn mode,E22AuxReadyFn aux,E22ResetFn reset,void *ctx)
- : uart_(uart),modeFn_(mode),auxFn_(aux),resetFn_(reset),context_(ctx),configured_(false),
+E22UartLink::E22UartLink(Stream &uart,E22SetModeFn mode,E22AuxReadyFn aux,E22ResetFn reset,void *ctx,E22TxCapacityFn capacityFn)
+ : uart_(uart),modeFn_(mode),auxFn_(aux),resetFn_(reset),context_(ctx),capacityFn_(capacityFn),configured_(false),
    auxReadyNow_(false),rxIndex_(0),rxHead_(0),rxTail_(0),rxQueueCount_(0),
    txCount_(0),rxCount_(0),rejectedDutyCount_(0) {
     memset(rxBuffer_,0,sizeof(rxBuffer_)); memset(rxQueue_,0,sizeof(rxQueue_)); clearBuckets();
@@ -87,6 +87,7 @@ E22UartLink::Admission E22UartLink::trySendFrame(const RadioFrame &frame,uint32_
     if(!auxReadyNow_ || txState_.pending())return Admission::Busy;
     if(!dutyAllows(now)){++rejectedDutyCount_;return Admission::DutyLimited;}
     if(frame.magic[0]!=RADIO_FRAME_MAGIC0 || frame.magic[1]!=RADIO_FRAME_MAGIC1)return Admission::Invalid;
+    if(capacityFn_ && capacityFn_(context_)<sizeof(frame))return Admission::Busy;
     const size_t n=uart_.write((const uint8_t*)&frame,sizeof(frame));
     // Even a reported zero write can be ambiguous on a failed bridge transaction.
     recordAirtime(now,EST_AIRTIME_MS);
