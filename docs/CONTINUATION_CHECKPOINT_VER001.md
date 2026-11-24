@@ -1,3 +1,6 @@
+# R30H-121E.6F.2 Boat host verification — 2026-11-24
+Boat host CI run 45448518125, job 138638835246: success, 95 successful workflow steps, no failures. Corrections: epoch-zero gate regression 7aab3fb; UTC isolation wrapper audit c248870 and negative test 3ad631e; PlatformIO source audit b05b38a; R30G wrapper audit f49ee30. Previous failing runs 45447377198, 45447636171, 45447907274 (target preflight), 45448244710. Current host pass does not establish target build success. Obtain current Boat/Remote PlatformIO, Remote host and mock/endpoint compile results; fix failures before R30H-121E.6F.3 physical worker integration. No upload or production activation. Boat VER014 / Remote VER028 unchanged.
+
 # R30H-121E.6F.1 continuation — 2026-11-24
 
 Branch: platformio-unified-r30h20. VS Code + PlatformIO. Official Boat VER014 / Remote VER028 unchanged. No upload or production Core 0 activation.
