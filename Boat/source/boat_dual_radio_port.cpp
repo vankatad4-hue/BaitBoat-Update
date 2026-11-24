@@ -180,6 +180,12 @@ bool BoatDualRadioPort::begin() {
 void BoatDualRadioPort::update() {
  const uint32_t now=millis();
  prepareApplicationCycle(now);
+#if BOAT_R30H121_ENDPOINT_COMPILE
+ if(runtimeOwner_.worker()){
+  serviceAsyncRuntime(now);
+  return;
+ }
+#endif
  serviceLegacyRxAndFeedback();
  advanceApplicationCycle(millis());
  serviceLegacyPeriodicTx(now);
@@ -437,8 +443,58 @@ void BoatDualRadioPort::receive(ManagedLink link,const RadioFrame &f) {
  receiveCaptured(link,f,millis());
 }
 #if BOAT_R30H121_ENDPOINT_COMPILE
+bool BoatDualRadioPort::beginAsyncRuntime(bool commissioned){
+ // The compile-only profile cannot start hardware, even with caller consent.
+ if(!BOAT_R30H121_PHYSICAL_OWNER||!commissioned||legacyBeginAttempted_||
+    !runtimeOwner_.claimWorker(commissioned))return false;
+ resetSession();nrfReady_=sx1262Ready_=false;
+ authenticated_=radioKey_get(rootKey_);
+ lastNrfHeartbeatTxMs_=lastBackupHeartbeatTxMs_=lastBackupHeartbeatAttemptMs_=0;
+ if(!authenticated_||!asyncTask_.bindShared(asyncPrimaryHandshake_,asyncBackupHandshake_,
+    asyncPrimaryPriority_,asyncBackupPriority_,BOAT_ID,REMOTE_ID)||
+    !asyncTask_.start(commissioned,true)){
+  stopAsyncRuntime();return false;
+ }
+ return true;
+}
+void BoatDualRadioPort::stopAsyncRuntime(){
+ if(!runtimeOwner_.worker())return;
+ asyncTask_.stop();
+ runtimeOwner_.retire();
+ nrfReady_=sx1262Ready_=false;lastNrfRxValid_=lastBackupRxValid_=false;
+ resetSession(linkLossHold_||detachedReturn_);
+ // Object and queues remain allocated. Task exit does not prove RF silence.
+}
+void BoatDualRadioPort::serviceAsyncRuntime(uint32_t now){
+ using flytec_r30h120::Phase;
+ const auto phase=asyncTask_.phase();
+ if(phase==Phase::Failed||phase==Phase::Stopped||phase==Phase::Stopping){
+  stopAsyncRuntime();advanceApplicationCycle(millis());return;
+ }
+ if(phase!=Phase::Running){advanceApplicationCycle(millis());return;}
+ // Poll worker health before authenticated dispatch. Busy TX is not a
+ // transport failure. Only authenticated RX can refresh the link lease.
+ asyncRadio_.primary().pollHealth();asyncRadio_.backup().pollHealth();
+ const bool p=asyncRadio_.primary().available(now,250U);
+ const bool b=asyncRadio_.backup().available(now,250U);
+ if(nrfReady_&&!p){
+  lastNrfRxValid_=false;stickLease_.reset();mission_.reset();
+  controller_.cancelOverrideForLinkLoss();
+  commandQueue_.discardLink((uint8_t)LINK_NRF_PRIMARY,true);
+ }
+ if(sx1262Ready_&&!b){
+  lastBackupRxValid_=false;pendingBackupMissionFeedbackValid_=false;
+  commandQueue_.discardLink((uint8_t)LINK_LORA_BACKUP,true);
+ }
+ nrfReady_=p;sx1262Ready_=b;
+ if(p)drainAsyncRx(LINK_NRF_PRIMARY,now);
+ if(b)drainAsyncRx(LINK_LORA_BACKUP,now);
+ advanceApplicationCycle(millis());
+ serviceAsyncOwner(LINK_NRF_PRIMARY,millis(),p);
+ serviceAsyncOwner(LINK_LORA_BACKUP,millis(),b);
+}
 bool BoatDualRadioPort::queueAsyncHandshake(ManagedLink link,const RadioFrame &frame,uint32_t now){
- if(!BOAT_R30H121_PHYSICAL_OWNER||legacyBeginAttempted_||!authenticated_)return false;
+ if(!BOAT_R30H121_PHYSICAL_OWNER||!runtimeOwner_.worker()||legacyBeginAttempted_||!authenticated_)return false;
  if(link!=LINK_NRF_PRIMARY&&link!=LINK_LORA_BACKUP)return false;
  const bool backup=link==LINK_LORA_BACKUP;
  auto &owner=backup?asyncBackupOwner_:asyncPrimaryOwner_;
@@ -873,6 +929,7 @@ void BoatDualRadioPort::markActionExecuted(uint8_t sender,uint8_t epoch,uint16_t
  dedupe_.markExecuted(sender,epoch,commandId);
 }
 bool BoatDualRadioPort::sendFrame(ManagedLink link,const RadioFrame &f) {
+ if(!runtimeOwner_.legacy())return false; // no legacy PHY access in worker mode
  if(!sessionStarted_||!radio_frameVerify(f,key_)||!f.sequence||f.sequence>=RadioSessionCounter::REKEY_AT)return false;
  if(link==LINK_NRF_PRIMARY && nrfReady_){
   // Strict STOP-only reply priority over heartbeat, status, mission, UTC,
@@ -885,6 +942,7 @@ bool BoatDualRadioPort::sendFrame(ManagedLink link,const RadioFrame &f) {
  return false;
 }
 bool BoatDualRadioPort::primaryOrdinaryTxReady() const {
+ if(!runtimeOwner_.legacy())return false;
  return boat_r30h21::ordinarySlotFree({
      sessionReady(),nrfReady_,primaryDriverPending(),
      stopAck_.pending(),statusOutbox_.pending()
