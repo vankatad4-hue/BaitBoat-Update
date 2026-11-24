@@ -11,3 +11,7 @@ template class flytec_rtos::NrfPhyAdapter<NRF24Link>;
 #include "e22_phy_adapter.h"
 #include "e22_uart_board_port.h"
 template class flytec_rtos::E22PhyAdapter<E22UartBoardPort>;
+#include "dual_phy_worker.h"
+using DiagnosticDualPoll=flytec_rtos::DualPhyPoll<flytec_rtos::NrfPhyAdapter<NRF24Link>,flytec_rtos::E22PhyAdapter<E22UartBoardPort>>;
+template class flytec_rtos::DualPhyPoll<flytec_rtos::NrfPhyAdapter<NRF24Link>,flytec_rtos::E22PhyAdapter<E22UartBoardPort>>;
+template class flytec_rtos::DualPhyWorker<DiagnosticDualPoll>;
