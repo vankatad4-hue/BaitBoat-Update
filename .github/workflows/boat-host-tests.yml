@@ -13,6 +13,8 @@ on:
       - 'tests/r30h22_**'
       - 'tests/r30h20_stubs/**'
       - 'tools/**'
+      - 'tests/r30h117*'
+      - 'tests/r30h117_stubs/**'
       - 'Boat/docs/BOAT_R25_POWER_LEVEL_EVIDENCE.csv'
       - 'Boat/docs/BOAT_R27_INA231_ACCEPTANCE.csv'
       - 'Boat/docs/BOAT_R27_INA231_HARNESS_OVERRIDE.csv'
@@ -39,6 +41,8 @@ on:
       - 'tests/r30h22_**'
       - 'tests/r30h20_stubs/**'
       - 'tools/**'
+      - 'tests/r30h117*'
+      - 'tests/r30h117_stubs/**'
       - 'Boat/docs/BOAT_R25_POWER_LEVEL_EVIDENCE.csv'
       - 'Boat/docs/BOAT_R27_INA231_ACCEPTANCE.csv'
       - 'Boat/docs/BOAT_R27_INA231_HARNESS_OVERRIDE.csv'
@@ -60,6 +64,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: R30H-117I E22 production UART driver regression
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -Itests/r30h117_stubs -IBoat/source Boat/source/e22_uart_link.cpp tests/r30h117_e22_test.cpp -o /tmp/r30h117_e22
+          /tmp/r30h117_e22
       - name: R30H-65 opt-in core-0 probe isolation contract
         run: python3 -m unittest discover -s Boat/tests -p test_r30h65_core0_probe.py -v
       - name: R30H-63 target core affinity instrumentation contract
