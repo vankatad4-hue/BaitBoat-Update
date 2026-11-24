@@ -65,6 +65,13 @@ class TestTransportTaskQueue(unittest.TestCase):
         self.assertIn("xQueueReset(ordinary_)", clear_body)
         self.assertNotIn("xQueueReset(stop_)", clear_body)
 
+    def test_rearm_does_not_remove_or_restore_pending_stop(self):
+        source = BOAT.read_text()
+        rearm = source.split("bool clearStopLatchAfterAuthorization()", 1)[1].split("void clear()", 1)[0]
+        self.assertIn("xQueuePeek(stop_, &pending, 0)", rearm)
+        self.assertNotIn("xQueueReceive(stop_", rearm)
+        self.assertNotIn("xQueueOverwrite(stop_", rearm)
+
     def test_nonblocking_stop_and_fail_closed_generation(self):
         source = BOAT.read_text()
         stop = source.split("bool offerStop(", 1)[1].split("bool receive(", 1)[0]
