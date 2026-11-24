@@ -5,7 +5,7 @@ int main(){
  RadioFrameHandoff h;assert(h.begin());
  RxFrame r{};r.link=PhyLink::Primary;
  for(unsigned i=0;i<8;++i){r.frame.sequence=i;assert(h.primaryRx.offer(r));}
- assert(!h.primaryRx.offer(r)&&h.fault());
+ assert(!h.primaryRx.offer(r)&&h.fault(PhyLink::Primary)&&!h.fault(PhyLink::Backup));
  r.link=PhyLink::Backup;r.frame.sequence=99;assert(h.backupRx.offer(r));
  RxFrame out{};assert(h.backupRx.take(out)&&out.frame.sequence==99);
  for(unsigned i=0;i<8;++i){assert(h.primaryRx.take(out)&&out.frame.sequence==i);}
@@ -14,8 +14,8 @@ int main(){
  assert(h.backupTx.offer(tx));TxRequest req{};assert(h.backupTx.take(req));
  assert(req.ticket==42&&req.generation==7);
  TxCompletion c{req.ticket,req.generation,req.link,true};
- assert(h.completions.offer(c));TxCompletion result{};
- assert(h.completions.take(result)&&result.ticket==42&&result.generation==7&&result.success);
+ assert(h.offerCompletion(PhyLink::Backup,c));TxCompletion result{};
+ assert(h.takeCompletion(PhyLink::Backup,result)&&result.ticket==42&&result.generation==7&&result.success);
  // Ordinary traffic cannot consume critical capacity.
  for(unsigned i=0;i<4;++i){tx.ticket=i;assert(h.primaryTx.offer(tx));}
  tx.ticket=100;tx.link=PhyLink::Primary;assert(h.primaryCritical.offer(tx));
