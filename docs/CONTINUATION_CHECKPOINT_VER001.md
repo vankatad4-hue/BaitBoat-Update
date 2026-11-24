@@ -1,3 +1,14 @@
+## Active continuation — R30H-123Z (2026-11-24)
+
+Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 remain frozen; VS Code + PlatformIO primary. No upload/flashing or physical activation. Software STOP and conditional RTH remain required.
+
+- W: split application preparation, legacy RX/feedback, common safety/mission tick, and legacy periodic TX. One-way exclusive runtime ownership contract; regression at 2f822da host PASS (#45472676502).
+- X: retained compile-only PhysicalTask and health propagation, busy-versus-fault distinction, fail-closed retirement. Host PASS at 987f552 (#45472929981). Full experimental target PASS at earlier 914201e (#45472833732), not coverage of later runtime wiring.
+- Y: ordinary mission/command ACK routing; session-scoped backup reply retention, retry cooldown heartbeat opportunity, worker-only fences. At 8dc16dc: host #45473213610, inventory #45473212900, ZIP #45473213041 PASS. Primary target #45473212895 cancelled on newer revision; experimental #45473212964 still running when checked.
+- Z: exact ordinary TX cancellation on transport trust loss (f2e4c2d, c9cecf9), regression (3fa92fd). Latest CI not yet verified. Cancellation revokes unadmitted work, not RF already underway.
+- Remaining gates: BOAT_R30H121_PHYSICAL_OWNER=0, physical config unsigned and both links disabled in experimental runtime. Production legacy owner unchanged; beginAsyncRuntime not selected by production begin. Need full current primary/experimental CI, test worker lifecycle with simulated end-to-end application loop, optional scheduler deadlines and backup airtime/pacing, confirm no stale ordinary/handshake work on trust loss, verify physical shutdown separately. Remote physical worker migration is separate. No physical test results.
+- Next R30H-124A: consolidate CI closeout before further changes; focus on simulated end-to-end runtime execution and Remote dual-core integration. Hardware acceptance remains NOT_RUN/BLOCKED.
+
 ## Active continuation — R30H-123V (2026-11-24)
 
 Branch `platformio-unified-r30h20`; Boat VER014 / Remote VER028 unchanged. Physical worker activation remains hard locked (`BOAT_R30H121_PHYSICAL_OWNER=0`). No flashing or hardware acceptance.
