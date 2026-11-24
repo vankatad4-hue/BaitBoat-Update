@@ -13,6 +13,7 @@ private:
  SpscQueue<Health,5> health_;
  std::atomic<bool> stickyFault_{false};
  SpscQueue<Outcome,5> outcomes_;
+ SpscQueue<Outcome,5> handshakeOutcomes_;
 public:
  // Worker publishes; application consumes. Separate instance per physical link.
  // False means full: caller retains critical events and retries; no overwrite.
@@ -23,7 +24,13 @@ public:
  }
  // Fault survives a full queue. Reset only by reconstructing after worker join.
  bool stickyFault()const{return stickyFault_.load(std::memory_order_acquire);}
- bool publishOutcome(const Outcome &v){return outcomes_.push(v);}
+ bool publishOutcome(const Outcome &v){
+  switch(v.ticket.domain){
+   case TicketDomain::Application:return outcomes_.push(v);
+   case TicketDomain::Handshake:return handshakeOutcomes_.push(v);
+   default:return false;
+  }
+ }
  bool takeRx(Rx &v){return rx_.pop(v);}
  bool takeHealth(Health &v){
   if(!health_.pop(v))return false;
@@ -37,6 +44,7 @@ public:
   return found;
  }
  bool takeOutcome(Outcome &v){return outcomes_.pop(v);}
+ bool takeHandshakeOutcome(Outcome &v){return handshakeOutcomes_.pop(v);}
 };
 inline bool sameTicket(const Ticket &a,const Ticket &b){
  return a.domain==b.domain&&a.generation==b.generation&&a.serial==b.serial&&a.epoch==b.epoch;
