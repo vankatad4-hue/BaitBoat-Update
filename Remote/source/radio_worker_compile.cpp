@@ -6,3 +6,6 @@ static_assert(!std::is_copy_constructible<flytec_rtos::RadioWorker>::value,"Sing
 #include "bounded_rx_service.h"
 #include "tx_generation_gate.h"
 #include "i2c_bus_guard.h"
+#include "nrf_phy_adapter.h"
+#include "sc18is606_nrf_link.h"
+template class flytec_rtos::NrfPhyAdapter<Sc18is606NrfLink>;
