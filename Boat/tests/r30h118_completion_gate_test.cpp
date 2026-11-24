@@ -201,4 +201,30 @@ int main(){
  assert(handshakeLane.submit(hf,12,policy));assert(handshakeLane.take(hr));
  assert(handshakeLane.allows(hr,13,100,policy));assert(handshakeLane.complete(hr,true));
  assert(handshakeLane.poll(handshakeAdmitted)&&handshakeAdmitted);
+
+ // Identical numeric tickets must never cross domains.
+ Transport<uint32_t> appDomain, hsDomain(TicketDomain::Handshake);
+ assert(appDomain.invalidate(1)&&hsDomain.invalidate(1));
+ Ticket appTicket{},hsTicket{};
+ assert(appDomain.submit(1,10,false,&appTicket));
+ assert(hsDomain.submit(2,10,false,&hsTicket));
+ assert(appTicket.generation==hsTicket.generation&&appTicket.serial==hsTicket.serial&&appTicket.epoch==hsTicket.epoch);
+ assert(!sameTicket(appTicket,hsTicket));
+ Transport<uint32_t>::Request ar{},hreq{};
+ assert(appDomain.take(ar)&&hsDomain.take(hreq));
+ assert(appDomain.allows(ar,11,100)&&hsDomain.allows(hreq,11,100));
+ assert(!appDomain.allows(hreq,11,100)&&!hsDomain.allows(ar,11,100));
+ assert(appDomain.complete(hreq,true));assert(!appDomain.poll(admitted));
+ assert(hsDomain.complete(ar,true));assert(!hsDomain.poll(admitted));
+ OutcomeGate domainOutcome;
+ assert(domainOutcome.expect(appTicket));
+ assert(!domainOutcome.accept(hsTicket,appTicket.generation));
+ assert(domainOutcome.accept(appTicket,appTicket.generation));
+ assert(appDomain.complete(ar,true)&&appDomain.poll(admitted)&&admitted);
+ assert(hsDomain.complete(hreq,true)&&hsDomain.poll(admitted)&&admitted);
+ assert(hsDomain.invalidate(0));assert(hsDomain.invalidate(1));
+ assert(hsDomain.submit(3,12,false));assert(!hsDomain.allows(hreq,13,100));
+ assert(hsDomain.complete(hreq,true));assert(!hsDomain.poll(admitted));
+ assert(hsDomain.take(hreq)&&hsDomain.allows(hreq,13,100));
+ assert(hsDomain.complete(hreq,true)&&hsDomain.poll(admitted)&&admitted);
 }
