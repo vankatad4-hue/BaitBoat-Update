@@ -1,5 +1,6 @@
 #include "boat_radio.h"
 #include "remote_radio_owner.h"
+#include "remote_async_control.h"
 #include "radio_payload_codec.h"
 #include "radio_safety_diagnostic_v1.h"
 #include "radio_ack_tracker.h"
@@ -58,6 +59,12 @@ static bool g_loraConfigured=false;
 static bool g_nrfReady=false;
 static bool g_begun=false;
 static flytec_rtos::RemoteRadioOwner g_radioOwner;
+// R30H-124G: application-side seam only. No production begin path claims
+// Worker, initializes these queues, or attaches physical PHY services.
+static flytec_rtos::RadioFrameHandoff g_workerHandoff;
+static flytec_rtos::TxGenerationGate g_workerGate;
+static flytec_rtos::RemoteAsyncTx g_workerTx(g_radioOwner,g_workerHandoff,g_workerGate);
+static flytec_rtos::RemoteAsyncControl g_workerControl(g_radioOwner,g_workerTx);
 static constexpr uint8_t REMOTE_DEVICE_ID=0x01;
 static constexpr uint8_t BOAT_DEVICE_ID=0x02;
 static uint8_t g_sessionEpoch=1;
@@ -88,6 +95,7 @@ static uint16_t g_missionId=0;
 static uint32_t g_missionStarted=0;
 static RadioSessionCounter g_boatSequenceGuard,g_boatPrimarySequenceGuard,g_boatBackupSequenceGuard;
 static void resetSession(uint32_t now){
+    if(g_radioOwner.worker())g_workerControl.invalidate(now);
     g_session.reset();radioSession_wipe(g_authKey,32);
     g_gpsUtcClock.reset(); // no stale UTC authority across auth epochs
     g_manualConfirmRequired=true;g_stopMustConfirm=true;g_manualTransitionAt=now;
@@ -229,7 +237,7 @@ bool boatRadio_begin() {
 }
 
 bool boatRadio_sendCommand(const BoatCommand &command) {
-    if(!g_radioOwner.legacy())return false;
+    if(!g_radioOwner.legacy()&&!g_radioOwner.worker())return false;
 #if REMOTE_R30H3_STOP_TRACE_ENABLED
     if(command.type==CMD_EMERGENCY_STOP)
         g_stopTrace.record(remote_r30h3::STOP_BUTTON_REQUEST,millis(),
@@ -242,6 +250,18 @@ bool boatRadio_sendCommand(const BoatCommand &command) {
     }
     if(command.type==CMD_EMERGENCY_STOP && (g_missionUpload.state()==UPLOAD_ACTIVE||g_missionUpload.state()==UPLOAD_PREPARED))g_missionUpload.fail();
     if(!g_begun) return false;
+    if(g_radioOwner.worker()){
+        // Only STOP is supported by this experimental application path.
+        // No legacy fallback, movement, mission or release transmission.
+        if(command.type!=CMD_EMERGENCY_STOP||!sessionReady())return false;
+        const uint32_t now=millis();
+        if(!g_workerControl.requestStop(command,now))return false;
+        RadioCommandAckRecord record{};
+        if(!g_ackTracker.get((uint16_t)command.commandId,record))
+            g_ackTracker.begin((uint16_t)command.commandId,(uint8_t)command.type,
+                               (uint8_t)command.mode,now,15000U);
+        return true; // logical local STOP intent, not RF delivery
+    }
     if(command.type==CMD_MANUAL_MOTORS&&!boatRadio_manualModeConfirmed())return false;
     if(command.type!=CMD_EMERGENCY_STOP&&g_stopMustConfirm)return false;
     const uint32_t now=millis();
@@ -381,6 +401,9 @@ static bool dispatchValidatedPayload(ManagedLink link,const RadioFrame &frame,ui
                                     decoded.ackResult==RADIO_ACK_EXECUTED;
                 if(link==LINK_LORA_BACKUP)g_backupStopConfirmation.acceptedAck(decoded.commandId,accepted);
                 g_stopConfirmation.acceptedAck(decoded.commandId,accepted);
+                if(g_radioOwner.worker())g_workerControl.observeStopAck(
+                    link==LINK_NRF_PRIMARY?flytec_rtos::PhyLink::Primary:flytec_rtos::PhyLink::Backup,
+                    decoded.commandId,accepted,now,millis());
             }
             return true;
         case RADIO_MSG_TELEMETRY:
@@ -396,11 +419,16 @@ static bool dispatchValidatedPayload(ManagedLink link,const RadioFrame &frame,ui
             if(!radio_decodeTelemetryPayload(frame.payload,decoded)) return false;
             if(!telemetryApplyRadioPayload(decoded,link==LINK_NRF_PRIMARY,now))return false;
             if(link==LINK_LORA_BACKUP&&decoded.kind==RADIO_PAYLOAD_STATUS){
-                g_backupStopConfirmed=g_backupStopConfirmation.armed()&&g_backupStopConfirmation.allowsStopStatus(true,decoded.stopState==1);
+                g_backupStopConfirmed=g_radioOwner.worker()?
+                    g_workerControl.observeStopStatus(flytec_rtos::PhyLink::Backup,decoded.stopState==1,now,millis()):
+                    g_backupStopConfirmation.armed()&&g_backupStopConfirmation.allowsStopStatus(true,decoded.stopState==1);
                 if(g_backupStopConfirmed){g_backupStopStatusAt=now;g_stopPending=false;} // does not clear primary movement interlock
             }
             if(link==LINK_NRF_PRIMARY&&decoded.kind==RADIO_PAYLOAD_STATUS){
-                if(g_stopConfirmation.allowsStopStatus(true,decoded.stopState==1)){
+                const bool stopEvidence=g_radioOwner.worker()?
+                    g_workerControl.observeStopStatus(flytec_rtos::PhyLink::Primary,decoded.stopState==1,now,millis()):
+                    g_stopConfirmation.allowsStopStatus(true,decoded.stopState==1);
+                if(stopEvidence){
                     g_stopMustConfirm=false;
                     // After HMAC/session/sequence validation and telemetryApply,
                     // STOP is confirmed logically at Boat. Not physical current-zero.
@@ -429,6 +457,7 @@ static void validateInboundCaptured(ManagedLink link,const RadioFrame &frame,uin
         if(!g_rootReady||frame.sequence||frame.commandId||frame.sessionEpoch||!radio_frameVerify(frame,g_rootKey))return;
         if(g_session.remoteReceive((SessionHandshakeMessage)frame.type,frame.payload,g_rootKey,radioPlatformHmac,now,true)&&g_session.established()){
             g_session.frameKey(g_authKey);g_ackTracker.reset(g_sessionEpoch);
+            if(g_radioOwner.worker()&&!g_workerControl.beginSession(g_sessionEpoch,now))resetSession(now);
         }
         return;
     }
@@ -457,8 +486,34 @@ static void serviceRemoteLegacyRx();
 static void serviceRemoteLegacyTx(uint32_t now);
 static void advanceRemoteApplication(uint32_t now);
 void boatRadio_update() {
-    if(!g_radioOwner.legacy()||!g_begun) return;
+    if(!g_begun) return;
     const uint32_t now=millis();
+    if(g_radioOwner.worker()){
+        // Dormant until an exclusive runtime binds and initializes handoff.
+        // Handshake TX and worker lifecycle startup are intentionally not
+        // routed here yet. Never call prepareRemoteCycle (legacy PHY TX).
+        if(!sessionReady()){resetSession(now);return;}
+        flytec_rtos::RxFrame rx{};
+        for(unsigned i=0;i<RX_FRAME_BUDGET&&g_workerHandoff.primaryRx.take(rx);++i)
+            if(rx.link==flytec_rtos::PhyLink::Primary)validateInboundCaptured(LINK_NRF_PRIMARY,rx.frame,rx.receivedMs);
+        for(unsigned i=0;i<RX_FRAME_BUDGET&&g_workerHandoff.backupRx.take(rx);++i)
+            if(rx.link==flytec_rtos::PhyLink::Backup)validateInboundCaptured(LINK_LORA_BACKUP,rx.frame,rx.receivedMs);
+        if(!sessionReady()){resetSession(millis());return;}
+        if(g_workerTx.linkFault(flytec_rtos::PhyLink::Primary)){
+            g_nrfReady=false;g_linkManager.setTransportReady(LINK_NRF_PRIMARY,false);
+        }
+        if(g_workerTx.linkFault(flytec_rtos::PhyLink::Backup)){
+            g_loraConfigured=false;g_linkManager.setTransportReady(LINK_LORA_BACKUP,false);
+        }
+        const uint8_t flags=(uint8_t)(1U|(g_nrfReady?2U:0U)|(g_loraConfigured?4U:0U)|
+            (boatState.emergencyStopConfirmed&&boatState.emergencyStop?8U:0U));
+        if(!g_workerControl.tick(millis(),g_nrfReady,g_loraConfigured,flags,
+                                 g_txSequence,RadioSessionCounter::REKEY_AT,g_authKey)){
+            resetSession(millis());return;
+        }
+        advanceRemoteApplication(millis());return;
+    }
+    if(!g_radioOwner.legacy())return;
     prepareRemoteCycle(now);
     serviceRemoteLegacyRx();
     serviceRemoteLegacyTx(now);

@@ -75,6 +75,7 @@ public:
   if(!queued)return Submit::Fault;
   s.used=true;s.request=r;s.stop=stop;ticket=r.ticket;return Submit::Queued;
  }
+ bool linkFault(PhyLink link)const{return !owner_.worker()||!validLink(link)||handoff_.fault(link);}
  // Bounded drain. A late, duplicate, wrong-link or previous-generation
  // completion cannot retire the current request or become STOP evidence.
  bool take(PhyLink link,uint32_t now,Result& out){

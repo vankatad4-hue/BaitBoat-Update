@@ -20,7 +20,7 @@ public:
   if(!owner_.worker())return false;
   // Keep backup cooldown across STOP, session changes and ambiguous writes.
   if(backup_.ticket)markBackup(now);
-  active_=false;confirmed_=false;stopId_=0;primary_=Pending{};backup_=Pending{};
+  active_=false;confirmed_=false;stopId_=0;attempts_=0;primary_=Pending{};backup_=Pending{};
   primaryGate_.reset();backupGate_.reset();backupConfirmed_=false;
   return tx_.invalidateSession();
  }
@@ -73,6 +73,9 @@ public:
   if(!owner_.worker()||!active_||!key)return false;
   drain(PhyLink::Primary,primary_,now);drain(PhyLink::Backup,backup_,now);
   if(rekeyAt<2||sequence>=uint16_t(rekeyAt-1)){invalidate(now);return false;}
+  primaryReady=primaryReady&&!tx_.linkFault(PhyLink::Primary);
+  backupReady=backupReady&&!tx_.linkFault(PhyLink::Backup);
+  if(tx_.linkFault(PhyLink::Primary)&&tx_.linkFault(PhyLink::Backup)){invalidate(now);return false;}
   const bool primaryStop=stopId_&&!confirmed_&&uint32_t(now-started_)<PrimaryLifetime&&attempts_<PrimaryBudget;
   const bool backupStop=stopId_&&!confirmed_&&!backupConfirmed_&&uint32_t(now-started_)<BackupLifetime;
   if(primaryReady&&!primary_.ticket){
@@ -123,6 +126,10 @@ private:
   uint32_t ticket=0;
   const auto result=tx_.submit(link,f,created,ttl,now,ticket);
   if(result==RemoteAsyncTx::Submit::Busy)return true;
+  if(result==RemoteAsyncTx::Submit::Fault&&tx_.linkFault(link)){
+   if(link==PhyLink::Backup)markBackup(now);
+   return true; // isolate sticky queue fault to its radio
+  }
   if(result!=RemoteAsyncTx::Submit::Queued){invalidate(now);return false;}
   auto& p=link==PhyLink::Primary?primary_:backup_;p.ticket=ticket;p.stop=stop;
   if(link==PhyLink::Primary){

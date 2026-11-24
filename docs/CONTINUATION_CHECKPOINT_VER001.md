@@ -1,3 +1,13 @@
+## Active continuation — R30H-124G (2026-11-24)
+
+Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged. VS Code + PlatformIO primary; physical worker activation and upload remain locked.
+
+- [R30H-124F head](https://github.com/vankatad4-hue/BaitBoat-Update/commit/1e38a75a15cb93260cb1e9602bad277ddce6b4dc): exact-commit combined status and PR-only workflow lookup returned no entries. Latest push lifecycle/Remote/Boat/PlatformIO/bench results remain UNVERIFIED.
+- [R30H-124G scheduler](https://github.com/vankatad4-hue/BaitBoat-Update/commit/d603149404d11aa79c2ce7e86d94d0e644730d6e): sealed STOP/heartbeat frames using shared session sequence and key; primary eight queue reservations, minimum 150 ms after terminal completion, original 2500 ms STOP expiry; backup 15000 ms STOP expiry and conservative 3000 ms cooldown from terminal/ambiguous reset. Queue reservations are not physical admissions. Local completion never authorizes STOP; matching authenticated ACK and strictly later fresh primary STATUS required; backup STATUS cannot clear primary interlock. Confirmation cancels unadmitted retries without rearm.
+- Added actual application call-site seam in Remote boat_radio.cpp: dormant worker-mode STOP request, captured RX dispatch, ACK/STATUS correlation, session reset/establishment and STOP/heartbeat tick. Legacy production begin still claims Legacy only. No worker initialization, root-key handshake TX, ordinary/mission TX, or live runtime fault/retirement wiring yet. Do not enable Worker. Per-link sticky handoff faults no longer force the other radio to stop submitting.
+- Added real frame HMAC/CRC host regression and lifecycle CI registration. No new CI PASS claimed; no hardware measurement. 100 ms RX age limit is provisional. Heartbeat local lifetimes 100/3000 ms are development values. No real RF pacing, driver start deadline or physical STOP evidence.
+- Next R30H-124H: verify exact-commit lifecycle and both PlatformIO targets/bench, fix regressions; implement root-authenticated handshake queue and exclusive mock runtime startup/retirement, connect worker fault invalidation, then migrate ordinary/mission TX only after tests. Maintain software STOP and conditional RTH, no hardware safety additions or release bump.
+
 ## Active continuation — R30H-124F (2026-11-24)
 
 Branch `platformio-unified-r30h20`. Official Boat VER014 / Remote VER028 unchanged; VS Code + PlatformIO primary. Physical worker activation and upload remain locked.
