@@ -5,6 +5,7 @@
 #include "../source/r30h123_owner_rx.h"
 #include "../source/r30h123_ordinary_tx.h"
 #include "../source/r30h123_telemetry_slots.h"
+#include "../source/r30h123_runtime_owner.h"
 #include "r30h118_completion_gate.h"
 #include <cassert>
 #include "r30h118_radio_handoff.h"
@@ -1060,4 +1061,15 @@ int main(){
  assert(!telemetrySlots.take(8250,telemetryOut,remaining));
  batterySlot[0]=1;assert(!telemetrySlots.offer(batterySlot,8251));
  telemetrySlots.reset();assert(!telemetrySlots.take(8251,telemetryOut,remaining));
+ // Exclusive runtime ownership is irreversible even after task exit.
+ flytec_r30h123::RuntimeOwner legacyRuntime,workerRuntime;
+ assert(!legacyRuntime.claimWorker(false));
+ assert(legacyRuntime.claimLegacy()&&legacyRuntime.legacy());
+ assert(!legacyRuntime.claimWorker(true)&&!legacyRuntime.claimLegacy());
+ legacyRuntime.retire();
+ assert(!legacyRuntime.claimLegacy()&&!legacyRuntime.claimWorker(true));
+ assert(workerRuntime.claimWorker(true)&&workerRuntime.worker());
+ assert(!workerRuntime.claimLegacy()&&!workerRuntime.claimWorker(true));
+ workerRuntime.retire();
+ assert(!workerRuntime.legacy()&&!workerRuntime.worker()&&!workerRuntime.claimLegacy());
 }
