@@ -23,12 +23,12 @@ private:
  static void entry(void *arg){static_cast<PhysicalTask*>(arg)->run();vTaskDelete(nullptr);}
  void run(){
   {
-   PhysicalWorker w(cfg_.ce,cfg_.csn,cfg_.spi,cfg_.channel,cfg_.sck,cfg_.miso,cfg_.mosi,nb_,eb_,ne_,ee_);
    // Dormant local lanes support the original compile-only task constructor.
    HandshakeLane<RadioFrame> unusedN,unusedE;
    SharedPriority unusedNP,unusedEP;
    SharedPhyService<RadioFrame> ns(nb_,nh_?*nh_:unusedN,np_?*np_:unusedNP);
    SharedPhyService<RadioFrame> es(eb_,eh_?*eh_:unusedE,ep_?*ep_:unusedEP);
+   PhysicalWorker w(cfg_.ce,cfg_.csn,cfg_.spi,cfg_.channel,cfg_.sck,cfg_.miso,cfg_.mosi,nb_,eb_,ne_,ee_);
    const bool bound=!nh_||w.bindShared(ns,es,boatId_,remoteId_);
    const bool ok=bound&&life_.phase()==Phase::Starting&&w.begin(true,cfg_.primary,cfg_.pins,cfg_.backup);
    if(ok&&life_.ready()){
