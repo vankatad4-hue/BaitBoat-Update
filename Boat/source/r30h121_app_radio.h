@@ -20,10 +20,20 @@ template<class Frame> class AppRadio {
  PhyOutcome outcome_=PhyOutcome::Uncertain;
  TxState state_=TxState::Idle;
  bool terminalTaken_=false;
+ Ticket supersededTicket_{};
+ TxState supersededState_=TxState::Idle;
+ bool supersededPending_=false;
+ uint32_t supersededOverflow_=0;
+ void preserveSuperseded(){
+  if(!ticket_.serial||terminalTaken_||state_==TxState::Idle)return;
+  if(supersededPending_){if(supersededOverflow_!=UINT32_MAX)++supersededOverflow_;}
+  else{ supersededTicket_=ticket_;supersededState_=(state_==TxState::Queued||state_==TxState::Admitted)?TxState::Uncertain:state_;supersededPending_=true; }
+  terminalTaken_=true;
+ }
 public:
  AppRadio(Bus &bus,Events &events):bus_(bus),events_(events){}
  bool reset(uint8_t epoch){
-  stopRetry_=false;state_=TxState::Idle;admissionSeen_=admitted_=outcomeSeen_=false;
+  preserveSuperseded();stopRetry_=false;state_=TxState::Idle;admissionSeen_=admitted_=outcomeSeen_=false;
   healthSeen_=false;ticket_={};return bus_.invalidate(epoch);
  }
  bool healthy(uint32_t now,uint32_t age)const{
@@ -34,6 +44,7 @@ public:
   if(state_==TxState::Queued||state_==TxState::Admitted||(!stop&&terminalPending()))return false;
   Ticket next{};
   if(!bus_.submit(frame,now,stop,&next))return false;
+  if(stop)preserveSuperseded();
   ticket_=next;terminalTaken_=false;submittedAt_=now;admissionSeen_=admitted_=outcomeSeen_=false;state_=TxState::Queued;return true;
  }
  // Timeout revokes queued work; an already active PHY call cannot be revoked.
@@ -42,7 +53,7 @@ public:
   bus_.invalidate(0);state_=TxState::Uncertain;return true;
  }
  bool preemptStop(const Frame &frame,uint32_t now,uint8_t epoch){
-  bus_.latchStop();stopRetry_=false;if(!bus_.invalidate(epoch)){state_=TxState::Uncertain;return false;}
+  preserveSuperseded();bus_.latchStop();stopRetry_=false;if(!bus_.invalidate(epoch)){state_=TxState::Uncertain;return false;}
   state_=TxState::Uncertain;stopFrame_=frame;stopAt_=now;stopRetry_=true;
   return serviceStop(now,100);
  }
@@ -82,6 +93,8 @@ public:
  }
  // Owner consumes a correlated terminal result once; never an authenticated ACK.
  Ticket currentTicket()const{return ticket_;}
+ uint32_t supersededOverflow()const{return supersededOverflow_;}
+ bool takeSuperseded(Ticket &ticket,TxState &result){if(!supersededPending_)return false;ticket=supersededTicket_;result=supersededState_;supersededPending_=false;return true;}
  bool takeTerminal(Ticket &ticket,TxState &result){
   if(terminalTaken_||!ticket_.serial||state_==TxState::Idle||state_==TxState::Queued||state_==TxState::Admitted)return false;
   ticket=ticket_;result=state_;terminalTaken_=true;return true;
