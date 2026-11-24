@@ -36,7 +36,18 @@ int main(){
  link.update();assert(uart.available()==0);
  for(unsigned i=2;i<=5;++i)assert(link.receiveFrame(out)&&out.commandId==i);
  assert(!link.receiveFrame(out));
- uart.shortWrite=true;
- assert(link.trySendFrame(f,now)==E22UartLink::Admission::Uncertain);
- assert(link.transportFault()&&!link.configured());
+ // TX admission must never consume pending RX bytes.
+ uart.inject(f);
+ assert(link.sendFrame(f,now));
+ assert(uart.available()==32);
+ assert(!link.receiveFrame(out));
+ link.update();
+ assert(link.receiveFrame(out));
+ // Separate instance for uncertain write, independent of pending TX state.
+ FakeStream faultUart;
+ E22UartLink faultLink(faultUart,[](bool,bool,void*){},[](void*){return true;},nullptr,nullptr);
+ assert(faultLink.configureEU868TestProfile());
+ faultUart.shortWrite=true;
+ assert(faultLink.trySendFrame(f,now)==E22UartLink::Admission::Uncertain);
+ assert(faultLink.transportFault()&&!faultLink.configured());
 }
