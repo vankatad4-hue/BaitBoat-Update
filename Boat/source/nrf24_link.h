@@ -8,6 +8,8 @@ class NRF24Link {
 public:
     NRF24Link(int cePin,int csnPin,SPIClass *spiBus,uint8_t channel=76,int sck=-1,int miso=-1,int mosi=-1);
     bool begin(bool remoteRole);
+    // Owner only, after successful hardware initialization. RF inactivity unverified.
+    void shutdownInitialized();
     void disableAdmission(){ready_=false;rxHead_=rxTail_=rxQueueCount_=0;} // owner only; does not stop RF
     void update();
     bool sendFrame(const RadioFrame &frame);
