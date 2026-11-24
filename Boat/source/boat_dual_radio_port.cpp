@@ -130,6 +130,9 @@ void BoatDualRadioPort::resetSession(bool preserveMission){
   haveAuthenticatedRx_=false;lastAnyAuthenticatedRxMs_=0;
  }
  handshake_.reset();radioSession_wipe(key_,32);sessionStarted_=false;
+#if BOAT_R30H121_ENDPOINT_COMPILE
+ if(BOAT_R30H121_PHYSICAL_OWNER){asyncPrimaryTx_.reset();asyncBackupTx_.reset();asyncPrimaryCycle_.close();asyncBackupCycle_.close();}
+#endif
  primarySeqGuard_.resetAfterHandshake();backupSeqGuard_.resetAfterHandshake();crossRadioSeqGuard_.resetAfterHandshake();
  lastNrfRxValid_=lastBackupRxValid_=false;commandQueue_.clear();mission_.reset();dedupe_.clear();txSequence_=0;
  // R30G: never carry a diagnostic offer or stale activity timestamp across
@@ -476,6 +479,39 @@ void BoatDualRadioPort::completeAsyncApplication(ManagedLink link,const flytec_r
    }
   });
 }
+bool BoatDualRadioPort::resetAsyncSession(uint8_t epoch){
+ asyncPrimaryTx_.reset();asyncBackupTx_.reset();
+ const bool p=asyncPrimaryCycle_.resetSession(epoch);
+ const bool b=asyncBackupCycle_.resetSession(epoch);
+ return p&&b;
+}
+void BoatDualRadioPort::serviceAsyncOwner(ManagedLink link,uint32_t now,bool linkTrusted){
+ if(!BOAT_R30H121_PHYSICAL_OWNER||legacyBeginAttempted_||!authenticated_)return;
+ if(link!=LINK_NRF_PRIMARY&&link!=LINK_LORA_BACKUP)return;
+ const bool backup=link==LINK_LORA_BACKUP;
+ auto buildAck=[&](const boat_r30h18::StopAck &ack,RadioFrame &frame){
+  if(!sessionReady()||ack.epoch!=sessionEpoch_)return false;
+  radio_frameInit(frame,RADIO_MSG_ACK,BOAT_ID,REMOTE_ID,++txSequence_,ack.commandId,now,sessionEpoch_);
+  frame.flags=backup?RADIO_FLAG_BACKUP_LINK:0;
+  return radio_encodeAckPayload(ack.result,CMD_EMERGENCY_STOP,ack.commandId,ack.stopState,ack.interlocks,frame.payload)&&radio_frameSeal(frame,key_);
+ };
+ auto buildStatus=[&](const RadioDecodedPayload &status,RadioFrame &frame){
+  if(!sessionReady()||status.kind!=RADIO_PAYLOAD_STATUS)return false;
+  radio_frameInit(frame,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,++txSequence_,0,now,sessionEpoch_);
+  frame.flags=backup?RADIO_FLAG_BACKUP_LINK:0;
+  return radio_encodeTelemetryPayload(status,frame.payload)&&radio_frameSeal(frame,key_);
+ };
+ auto verify=[&](const RadioFrame &frame){return radio_frameVerify(frame,key_);};
+ auto result=[&](const flytec_r30h118::Ticket &ticket,flytec_r30h121::TxState state){
+  completeAsyncApplication(link,ticket,state,now);
+ };
+ // Local handshake transmission completion cannot establish a session.
+ auto hsResult=[](const flytec_r30h118::Ticket &,flytec_r30h120::HandshakeTx){};
+ // Ordinary producers remain disconnected until their scheduling is migrated.
+ auto ordinary=[](flytec_r30h123::OwnerLink<RadioFrame>&){};
+ if(backup)asyncBackupCycle_.step(now,12000U,12000U,sessionReady(),linkTrusted,buildAck,buildStatus,verify,result,hsResult,ordinary);
+ else asyncPrimaryCycle_.step(now,2500U,2500U,sessionReady(),linkTrusted,buildAck,buildStatus,verify,result,hsResult,ordinary);
+}
 unsigned BoatDualRadioPort::drainAsyncRx(ManagedLink link,uint32_t now){
  // Deliberately unreachable until the legacy transmit boundary is migrated.
  // Do not dispatch into legacy PHY calls while a physical worker owns them.
@@ -513,8 +549,20 @@ void BoatDualRadioPort::receiveCaptured(ManagedLink link,const RadioFrame &f,uin
 #endif
      if(!detachedReturn_&&!linkLossHold_){abortMission();controller_.resetSession();}
    }
+#if BOAT_R30H121_ENDPOINT_COMPILE
+   if(BOAT_R30H121_PHYSICAL_OWNER&&newSession&&!resetAsyncSession(sessionEpoch_)){
+    resetSession();return;
+   }
+#endif
    RadioFrame ack;radio_frameInit(ack,(RadioMessageType)reply.type,BOAT_ID,REMOTE_ID,0,0,now,0);
    memcpy(ack.payload,reply.payload,8);
+#if BOAT_R30H121_ENDPOINT_COMPILE
+   if(BOAT_R30H121_PHYSICAL_OWNER){
+    ack.flags=link==LINK_LORA_BACKUP?RADIO_FLAG_BACKUP_LINK:0;
+    if(radio_frameSeal(ack,rootKey_))queueAsyncHandshake(link,ack,now);
+    return;
+   }
+#endif
     if(link==LINK_LORA_BACKUP){
       ack.flags=RADIO_FLAG_BACKUP_LINK;
       if(radio_frameSeal(ack,rootKey_)&&sx1262Ready_)admitBackupLegacy(ack,now);
