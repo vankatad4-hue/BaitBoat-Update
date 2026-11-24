@@ -26,7 +26,7 @@ public:
  nrf_(ce,csn,spi,channel,sck,miso,mosi),na_(nrf_,ne),ea_(e22_,ee),ns_(nb),es_(eb){}
  // Bind worker-local services before begin; their lifetime must cover this worker.
  bool bindShared(SharedPhyService<RadioFrame>& primary,SharedPhyService<RadioFrame>& backup,uint8_t boat,uint8_t remote){
-  if(started_||closed_||!boat||!remote||boat==remote)return false;
+  if(started_||closed_||sharedNrf_||sharedE22_||&primary==&backup||!boat||!remote||boat==remote)return false;
   sharedNrf_=&primary;sharedE22_=&backup;boatId_=boat;remoteId_=remote;return true;
  }
  PhysicalWorker(const PhysicalWorker&)=delete;
@@ -46,9 +46,9 @@ public:
   if(sharedNrf_&&sharedE22_){
    auto primaryAdmit=[&](const Bus::Request &r){return na_.admit(r.ticket,r.frame);};
    auto backupAdmit=[&](const Bus::Request &r){return ea_.admit(r.ticket,r.frame,now);};
-   sharedNrf_->step(now,age,nrf_.txPending(),enabled&&nrfInitialized_&&nrf_.ready(),
+   sharedNrf_->step(now,age,nrfInitialized_&&nrf_.txPending(),enabled&&nrfInitialized_&&nrf_.ready(),
     [&](const RadioFrame &f){return boatReplyShape(f,boatId_,remoteId_,false);},primaryAdmit,primaryAdmit);
-   sharedE22_->step(now,age,e22_.txPending(),enabled&&e22Initialized_&&e22_.ready(),
+   sharedE22_->step(now,age,e22Initialized_&&e22_.txPending(),enabled&&e22Initialized_&&e22_.ready(),
     [&](const RadioFrame &f){return boatReplyShape(f,boatId_,remoteId_,true);},backupAdmit,backupAdmit);
    return;
   }
