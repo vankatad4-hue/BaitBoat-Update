@@ -60,7 +60,7 @@ void E22UartLink::update(){
     if(txState_.fault()){configured_=false;rxIndex_=rxHead_=rxTail_=rxQueueCount_=0;return;}
     if(!configured_)return;
     uint8_t processed=0;
-    while(processed<32U && uart_.available()){
+    while(processed<32U && rxQueueCount_<4U && uart_.available()){
         const int value=uart_.read();if(value<0)break;
         parserByte((uint8_t)value);++processed;
     }
