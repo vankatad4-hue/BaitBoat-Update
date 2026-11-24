@@ -50,4 +50,16 @@ int main(){
  e.state=E22::O::Idle;e.next=E22::Admission::Uncertain;
  assert(!ea.admit(t,42,3000));ea.poll(3001);
  assert(ee.takeOutcome(o)&&sameTicket(o.ticket,t)&&o.result==PhyOutcome::Uncertain);
+ n.up=true;n.success=true;
+ for(unsigned i=0;i<4;++i)assert(ne.publishOutcome({t,i,PhyOutcome::LocalComplete}));
+ assert(na.admit(t,42));n.pending=false;na.poll(4000);
+ assert(!na.admit(t,42));
+ assert(na.admit(t,42,true));n.pending=false;na.poll(4001);
+ assert(ne.takeOutcome(o)&&o.stop&&o.result==PhyOutcome::LocalComplete);
+ e.state=E22::O::Idle;e.next=E22::Admission::Accepted;
+ for(unsigned i=0;i<4;++i)assert(ee.publishOutcome({t,i,PhyOutcome::LocalComplete}));
+ assert(ea.admit(t,42,4000));e.state=E22::O::LocalReady;ea.poll(4040);
+ assert(!ea.admit(t,42,4050));
+ assert(ea.admit(t,42,4050,true));e.state=E22::O::LocalReady;ea.poll(4090);
+ assert(ee.takeOutcome(o)&&o.stop&&o.result==PhyOutcome::LocalComplete);
 }
