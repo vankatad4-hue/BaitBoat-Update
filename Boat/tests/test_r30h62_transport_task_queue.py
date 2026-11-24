@@ -65,6 +65,12 @@ class TestTransportTaskQueue(unittest.TestCase):
         self.assertIn("xQueueReset(ordinary_)", clear_body)
         self.assertNotIn("xQueueReset(stop_)", clear_body)
 
+    def test_superseded_stop_writer_cannot_overwrite_newer_payload(self):
+        source = BOAT.read_text()
+        stop = source.split("bool offerStop(", 1)[1].split("bool receive(", 1)[0]
+        self.assertLess(stop.index("stopWriter_.test_and_set"), stop.index("const uint32_t observed = state_.load"))
+        self.assertLess(stop.index("(observed >> 1) != newEpoch"), stop.index("xQueueOverwrite(stop_, &e)"))
+
     def test_rearm_does_not_remove_or_restore_pending_stop(self):
         source = BOAT.read_text()
         rearm = source.split("bool clearStopLatchAfterAuthorization()", 1)[1].split("void clear()", 1)[0]
