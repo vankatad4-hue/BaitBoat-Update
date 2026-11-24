@@ -1,3 +1,11 @@
+# R30H-121E.6F.1 continuation — 2026-11-24
+
+Branch: platformio-unified-r30h20. VS Code + PlatformIO. Official Boat VER014 / Remote VER028 unchanged. No upload or production Core 0 activation.
+
+Committed since R30H-120: application/handshake ticket domains, owner AppRadio and dual endpoint, STOP saturation retry, dormant BoatDualRadioPort members and full application compile target, legacy TX/RX/health wrappers, owner activation lock, timestamped RX, one-shot terminal result, per-link STOP ACK correlation, authenticated handshake submission, shared PHY selector and 2048 arbitration cases. Latest source 3168fcf: atomic per-PHY SharedPriority publication scaffold. All R30H-121 CI results remain unverified; do not describe tests as passing.
+
+Next R30H-121E.6F.2: verify current host and target CI and fix any source/test errors before further migration; add SharedPriority regression, then connect independent handshake lanes to worker admission with actual queue/ticket validation, STOP priority and domain-specific outcome routing. A priority snapshot is advisory, not authorization. PhysicalWorker currently services application buses only; production consumers remain legacy. Resolve unconsumed terminal overwrite, handshake outcome routing, STOP retry age and session reset semantics before activation. Complete lifecycle and exclusive ownership integration, then full regression. Physical shutdown and commissioning remain unverified. Core 1 retains application/session/actuator authority; Remote shared I2C owner unchanged.
+
 # R30H-120 closeout / R30H-121 continuation — 2026-11-24
 
 Verified workflow results across revisions (not a single final-SHA acceptance): Boat host 45374334768; Remote host 45373455688; inventory 45375176211; three dual-core benches 45373997809; single/dual mock and locked physical compile 45374003092; both primary PlatformIO builds 45375176192. All passed. Shared E22 header drift corrected in 793237b. Physical worker and task wrapper are compile-only; no production activation or physical acceptance. Boat VER014 / Remote VER028 unchanged.
