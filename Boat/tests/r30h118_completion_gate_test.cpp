@@ -498,7 +498,9 @@ int main(){
  assert(sharedAppBus.submit(hf,204,false));
  sharedMask.publish(1);
  sharedWorker.step(205,100,false,true,policy,sharedAppAdmit,sharedHsAdmit);
- assert(sharedAppAdmissions==1&&sharedAppBus.poll(handshakeAdmitted)&&!handshakeAdmitted);
+ assert(sharedAppAdmissions==1&&!sharedAppBus.poll(handshakeAdmitted));
+ assert(sharedAppBus.takeOrdinary(hr));
+ assert(sharedAppBus.complete(hr,false)&&sharedAppBus.poll(handshakeAdmitted)&&!handshakeAdmitted);
  // Domain-specific outcomes with identical numeric ticket identifiers.
  PhyEvents<uint32_t> domainEvents;
  Ticket appOutcomeTicket{1,1,1,TicketDomain::Application};
@@ -585,4 +587,21 @@ int main(){
  raceWorker.step(503,100,false,true,policy,raceAppAdmit,raceHsAdmit);
  assert(raceStopCalls==1&&raceHsCalls==0);
  assert(raceApp.poll(handshakeAdmitted)&&handshakeAdmitted);
+ // Ordinary admission result saturation must not consume STOP capacity.
+ Transport<uint32_t> pressure;
+ flytec_r30h120::PhyService<uint32_t> pressureWorker(pressure);
+ Transport<uint32_t>::Request pressureReq{};
+ for(unsigned i=0;i<3;++i){
+  assert(pressure.invalidate(1)&&pressure.submit(i,600,false));
+  assert(pressure.takeOrdinary(pressureReq)&&pressure.complete(pressureReq,true));
+ }
+ assert(pressure.invalidate(1)&&pressure.submit(9,601,false));
+ pressureWorker.step(602,100,true,[](const Transport<uint32_t>::Request &){return true;});
+ assert(pressureWorker.resultPending());
+ assert(pressure.invalidate(1)&&pressure.submit(10,603,true));
+ unsigned pressureStops=0;
+ pressureWorker.stepStop(604,100,[&](const Transport<uint32_t>::Request &req){assert(req.stop);++pressureStops;return true;});
+ assert(pressureStops==1&&pressure.poll(handshakeAdmitted)&&handshakeAdmitted);
+ assert(!pressure.poll(handshakeAdmitted));
+ assert(pressureWorker.flush());
 }
