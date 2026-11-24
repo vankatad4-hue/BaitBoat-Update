@@ -15,8 +15,9 @@ public:
   if(h.fault(link)&&!outstanding_)return false;
   driver_.update();
   if(outstanding_&&(!driver_.ready()||!driver_.txPending())){
-   const TxCompletion c{request_.ticket,request_.generation,link,
-                       driver_.ready()&&driver_.lastTxSuccess()};
+   const bool ok=driver_.ready()&&driver_.lastTxSuccess();
+   const TxCompletion c{request_.ticket,request_.generation,link,ok,
+                       ok?TxEvidence::NrfAck:TxEvidence::None};
    outstanding_=false;
    if(!h.offerCompletion(link,c))return false;
   }
