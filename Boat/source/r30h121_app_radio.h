@@ -10,6 +10,7 @@ template<class Frame> class AppRadio {
  Bus &bus_;
  Events &events_;
  Ticket ticket_{};
+ uint32_t submittedAt_=0;
  typename Events::Health health_{};
  bool healthSeen_=false, admissionSeen_=false, admitted_=false, outcomeSeen_=false;
  PhyOutcome outcome_=PhyOutcome::Uncertain;
@@ -27,7 +28,16 @@ public:
   if(state_==TxState::Queued||state_==TxState::Admitted)return false;
   Ticket next{};
   if(!bus_.submit(frame,now,stop,&next))return false;
-  ticket_=next;admissionSeen_=admitted_=outcomeSeen_=false;state_=TxState::Queued;return true;
+  ticket_=next;submittedAt_=now;admissionSeen_=admitted_=outcomeSeen_=false;state_=TxState::Queued;return true;
+ }
+ // Timeout revokes queued work; an already active PHY call cannot be revoked.
+ bool expire(uint32_t now,uint32_t timeout){
+  if((state_!=TxState::Queued&&state_!=TxState::Admitted)|| (timeout&&uint32_t(now-submittedAt_)<timeout))return false;
+  bus_.invalidate(0);state_=TxState::Uncertain;return true;
+ }
+ bool preemptStop(const Frame &frame,uint32_t now,uint8_t epoch){
+  bus_.latchStop();if(!bus_.invalidate(epoch)){state_=TxState::Uncertain;return false;}
+  state_=TxState::Uncertain;return submit(frame,now,true);
  }
  void poll(){
   if(events_.latestHealth(health_))healthSeen_=true;
@@ -39,7 +49,7 @@ public:
   if(state_!=TxState::Queued&&state_!=TxState::Admitted)return;
   if(ticket_.generation!=bus_.activeGeneration()){state_=TxState::Uncertain;return;}
   if(admissionSeen_){
-   if(!admitted_){state_=outcomeSeen_?TxState::Uncertain:TxState::Rejected;return;}
+   if(!admitted_){state_=TxState::Uncertain;return;}
    state_=TxState::Admitted;
    if(outcomeSeen_)state_=outcome_==PhyOutcome::LocalComplete?TxState::LocalComplete:outcome_==PhyOutcome::Failed?TxState::Failed:TxState::Uncertain;
   }
