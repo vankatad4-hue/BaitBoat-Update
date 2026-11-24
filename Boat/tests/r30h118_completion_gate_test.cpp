@@ -983,4 +983,30 @@ int main(){
  assert(ordinaryTrack.complete(auditDone,auditState,5301,8,ordinaryResult));
  assert(ordinaryResults==3&&!ordinaryTrack.pending());
  ordinaryOwner.close();
+ // Outbound Boat feedback can continue without clearing the STOP latch.
+ Transport<HandshakeFrame> stoppedBus;
+ PhyEvents<HandshakeFrame> stoppedEvents;
+ AppRadio<HandshakeFrame> stoppedApp(stoppedBus,stoppedEvents);
+ HandshakeLane<HandshakeFrame> stoppedHs;
+ SharedPriority stoppedMask;
+ flytec_r30h123::OwnerLink<HandshakeFrame> stoppedOwner(stoppedApp,stoppedHs,stoppedEvents,stoppedMask);
+ assert(stoppedOwner.setSession(7));
+ assert(stoppedOwner.submitStop(ownerOrdinary,6000,100,acceptAuth));
+ assert(stoppedBus.takeStop(ownerReq)&&stoppedBus.complete(ownerReq,true));
+ assert(stoppedEvents.publishOutcome({ownerReq.ticket,6001,PhyOutcome::LocalComplete,true}));
+ stoppedOwner.poll(6001,100,100);
+ assert(stoppedOwner.takeApplication(auditDone,auditState));
+ assert(!stoppedOwner.ordinaryReady()&&stoppedOwner.feedbackReady());
+ auto movementFrame=ownerOrdinary;movementFrame.type=2;
+ assert(!stoppedOwner.submitFeedback(movementFrame,6002,TxPriority::Heartbeat,100,acceptAuth));
+ assert(!stoppedOwner.submitFeedback(ownerOrdinary,6002,TxPriority::Mission,100,acceptAuth));
+ assert(!stoppedOwner.submitApplication(ownerOrdinary,6002,TxPriority::Heartbeat,100,acceptAuth));
+ assert(stoppedOwner.submitFeedback(ownerOrdinary,6002,TxPriority::Heartbeat,100,acceptAuth));
+ assert(stoppedBus.takeOrdinary(ownerReq)&&stoppedBus.complete(ownerReq,true));
+ assert(stoppedEvents.publishOutcome({ownerReq.ticket,6003,PhyOutcome::LocalComplete}));
+ stoppedOwner.poll(6003,100,100);
+ assert(stoppedOwner.takeApplication(auditDone,auditState)&&auditState==TxState::LocalComplete);
+ assert(!stoppedOwner.ordinaryReady()&&stoppedOwner.feedbackReady());
+ assert(!stoppedOwner.rearm(false));
+ stoppedOwner.close();
 }
