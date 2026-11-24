@@ -3,6 +3,7 @@
 #include "../source/r30h123_stop_ack_service.h"
 #include "../source/r30h123_owner_cycle.h"
 #include "../source/r30h123_owner_rx.h"
+#include "../source/r30h123_ordinary_tx.h"
 #include "r30h118_completion_gate.h"
 #include <cassert>
 #include "r30h118_radio_handoff.h"
@@ -938,4 +939,48 @@ int main(){
  assert(ownerRx.drain(1011,50,epochNow,rootCheck,sessionCheck,rxDispatch)==0);
  assert(rxOwnerEvents.publishRx({rxNew,UINT32_MAX-2}));
  assert(ownerRx.drain(1,50,epochNow,rootCheck,sessionCheck,rxDispatch)==1);
+ // Ordinary TX local completion is exact-ticket, one-shot and age limited.
+ Transport<HandshakeFrame> ordinaryBus;
+ PhyEvents<HandshakeFrame> ordinaryEvents;
+ AppRadio<HandshakeFrame> ordinaryApp(ordinaryBus,ordinaryEvents);
+ HandshakeLane<HandshakeFrame> ordinaryHs;
+ SharedPriority ordinaryMask;
+ flytec_r30h123::OwnerLink<HandshakeFrame> ordinaryOwner(ordinaryApp,ordinaryHs,ordinaryEvents,ordinaryMask);
+ flytec_r30h123::OrdinaryTx<HandshakeFrame> ordinaryTrack;
+ assert(ordinaryOwner.setSession(7));
+ unsigned ordinaryResults=0;
+ auto ordinaryResult=[&](const HandshakeFrame& f,TxState state,uint32_t at){
+  assert(f.sessionEpoch==7);
+  if(ordinaryResults==0){assert(state==TxState::LocalComplete&&at==5000);}
+  else assert(state==TxState::Uncertain);
+  ++ordinaryResults;
+ };
+ assert(ordinaryTrack.submit(ordinaryOwner,ownerOrdinary,5000,TxPriority::Heartbeat,100,acceptAuth));
+ assert(ordinaryResults==0&&ordinaryTrack.pending());
+ assert(ordinaryBus.takeOrdinary(ownerReq));
+ const auto oldOrdinaryTicket=ownerReq.ticket;
+ assert(!ordinaryTrack.complete(oldOrdinaryTicket,TxState::Admitted,5001,7,ordinaryResult));
+ assert(ordinaryBus.complete(ownerReq,true));
+ assert(ordinaryEvents.publishOutcome({ownerReq.ticket,5002,PhyOutcome::LocalComplete}));
+ ordinaryOwner.poll(5002,100,100);
+ assert(ordinaryOwner.takeApplication(auditDone,auditState));
+ assert(ordinaryTrack.complete(auditDone,auditState,5002,7,ordinaryResult));
+ assert(!ordinaryTrack.complete(auditDone,auditState,5002,7,ordinaryResult));
+ assert(ordinaryTrack.submit(ordinaryOwner,ownerOrdinary,5100,TxPriority::Mission,100,acceptAuth));
+ assert(!ordinaryTrack.complete(oldOrdinaryTicket,TxState::LocalComplete,5101,7,ordinaryResult));
+ assert(ordinaryBus.takeOrdinary(ownerReq));
+ assert(ordinaryBus.complete(ownerReq,true));
+ assert(ordinaryEvents.publishOutcome({ownerReq.ticket,5102,PhyOutcome::LocalComplete}));
+ ordinaryOwner.poll(5102,100,100);
+ assert(ordinaryOwner.takeApplication(auditDone,auditState));
+ assert(ordinaryTrack.complete(auditDone,auditState,5200,7,ordinaryResult));
+ assert(ordinaryTrack.submit(ordinaryOwner,ownerOrdinary,5300,TxPriority::Telemetry,100,acceptAuth));
+ assert(ordinaryBus.takeOrdinary(ownerReq));
+ assert(ordinaryBus.complete(ownerReq,true));
+ assert(ordinaryEvents.publishOutcome({ownerReq.ticket,5301,PhyOutcome::LocalComplete}));
+ ordinaryOwner.poll(5301,100,100);
+ assert(ordinaryOwner.takeApplication(auditDone,auditState));
+ assert(ordinaryTrack.complete(auditDone,auditState,5301,8,ordinaryResult));
+ assert(ordinaryResults==3&&!ordinaryTrack.pending());
+ ordinaryOwner.close();
 }
