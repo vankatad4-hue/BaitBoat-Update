@@ -13,6 +13,7 @@ class E22UartLink {
 public:
     E22UartLink(Stream &uart,E22SetModeFn modeFn,E22AuxReadyFn auxFn,E22ResetFn resetFn,void *context,E22TxCapacityFn capacityFn=nullptr);
     bool configureEU868TestProfile(); // blocking setup-only readback/config
+    void disableAdmission(){configured_=false;rxIndex_=rxHead_=rxTail_=rxQueueCount_=0;} // owner only; does not stop RF
     void update();                    // non-blocking RX/TX-state poll
     bool sendFrame(const RadioFrame &frame,uint32_t nowMs);
     enum class Admission:uint8_t { Accepted, Busy, DutyLimited, Invalid, Unavailable, Uncertain };
