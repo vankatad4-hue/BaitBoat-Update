@@ -118,6 +118,8 @@ private:
     flytec_r30h123::OrdinaryTx<RadioFrame> asyncPrimaryTx_,asyncBackupTx_;
     void completeAsyncApplication(ManagedLink link,const flytec_r30h118::Ticket &ticket,flytec_r30h121::TxState state,uint32_t now);
     unsigned drainAsyncRx(ManagedLink link,uint32_t now);
+    void serviceAsyncOwner(ManagedLink link,uint32_t now,bool linkTrusted);
+    bool resetAsyncSession(uint8_t epoch);
     // Queue admission only; caller must correlate terminal completion separately.
     bool queueAsyncHandshake(ManagedLink link,const RadioFrame &frame,uint32_t now);
     bool queueAsyncApplication(ManagedLink link,const RadioFrame &frame,uint32_t now,uint32_t age);
