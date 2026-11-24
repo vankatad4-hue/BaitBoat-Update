@@ -120,7 +120,11 @@ public:
  // Snapshot the exact acknowledgement handed to the asynchronous worker.
  template<class Outbox> bool track(const Ticket &t,const Outbox &box){
   const auto ack=box.ticket();
-  if(pending_||!box.pending()||!box.inFlight()||!ack.commandId||!ack.epoch||!t.generation||!t.serial||t.epoch!=ack.epoch||t.domain!=TicketDomain::Application)return false;
+  if(!box.pending()||!box.inFlight())return false;
+  return trackSnapshot(t,ack);
+ }
+ template<class Ack> bool trackSnapshot(const Ticket &t,const Ack &ack){
+  if(pending_||!ack.commandId||!ack.epoch||!t.generation||!t.serial||t.epoch!=ack.epoch||t.domain!=TicketDomain::Application)return false;
   expected_=t;command_=ack.commandId;epoch_=ack.epoch;result_=ack.result;stopState_=ack.stopState;interlocks_=ack.interlocks;pending_=true;return true;
  }
  template<class Outbox> bool complete(Outbox &box,AckLink source,const Ticket &t,TxState state){
