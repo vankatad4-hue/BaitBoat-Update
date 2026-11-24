@@ -66,6 +66,7 @@ void NRF24Link::update() {
      ++rxQueueCount_;++rxCount_;
    }
  }
+ if(rxQueueCount_==4U && rxFullPollCount_!=UINT32_MAX) ++rxFullPollCount_;
 }
 bool NRF24Link::sendFrame(const RadioFrame &frame) {
  if(!ready_ || txPending_ || frame.magic[0]!=RADIO_FRAME_MAGIC0 || frame.magic[1]!=RADIO_FRAME_MAGIC1) return false;
