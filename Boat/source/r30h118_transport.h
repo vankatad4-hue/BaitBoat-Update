@@ -16,6 +16,7 @@ private:
  SpscQueue<Request,4> ordinary_;
  SpscQueue<Result,4> results_;
 public:
+ explicit Transport(TicketDomain domain=TicketDomain::Application):owner_(domain),guard_(domain){}
  bool invalidate(uint8_t epoch){
   guard_.disable();
   const bool ok=owner_.invalidate(epoch);
