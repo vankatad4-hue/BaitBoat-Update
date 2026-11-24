@@ -10,6 +10,7 @@ public:
  struct Result { Ticket ticket; bool admitted; };
 private:
  CompletionGate owner_;
+ bool stopLatched_=false;
  WorkerGuard guard_;
  SpscQueue<Request,2> stop_;
  SpscQueue<Request,4> ordinary_;
@@ -21,8 +22,12 @@ public:
   if(ok)guard_.publish(owner_.activeGeneration());
   return ok;
  }
+ void latchStop(){stopLatched_=true;}
+ // Owner calls only after authenticated application rearm authorization.
+ bool rearm(uint8_t epoch){if(!invalidate(epoch))return false;stopLatched_=false;return true;}
  uint32_t activeGeneration()const{return owner_.activeGeneration();}
  bool submit(const Frame &frame,uint32_t now,bool stop){
+  if(!stop&&stopLatched_)return false;
   Ticket t;
   if(!owner_.issue(t))return false;
   Request r{t,frame,now,stop};
