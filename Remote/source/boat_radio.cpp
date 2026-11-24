@@ -141,8 +141,7 @@ static bool radioSendTransport(ManagedLink link,const BoatCommand &command){
         if(g_backupTxSent&&now-g_lastBackupTxMs<3000U){
             if(command.type==CMD_EMERGENCY_STOP){
               if(!g_stopPending||g_pendingStop.commandId!=command.commandId)g_backupStopStartedMs=now;
-              if(!g_stopPending||g_pendingStop.commandId!=command.commandId)g_backupStopStartedMs=now;
-      g_pendingStop=command;g_stopPending=true;
+              g_pendingStop=command;g_stopPending=true;
 #if REMOTE_R30H3_STOP_TRACE_ENABLED
               g_stopTrace.record(remote_r30h3::E22_PACING_DEFERRED,now,
                                  (uint16_t)command.commandId,2);
@@ -177,6 +176,7 @@ static bool radioSendTransport(ManagedLink link,const BoatCommand &command){
       return true; // E22 UART accepted, NOT PHY airtime or receipt proof
     }
     if(command.type==CMD_EMERGENCY_STOP){
+      if(!g_stopPending||g_pendingStop.commandId!=command.commandId)g_backupStopStartedMs=now;
       g_pendingStop=command;g_stopPending=true;
 #if REMOTE_R30H3_STOP_TRACE_ENABLED
       g_stopTrace.record(remote_r30h3::E22_UART_BUFFER_REJECTED_PENDING,now,
