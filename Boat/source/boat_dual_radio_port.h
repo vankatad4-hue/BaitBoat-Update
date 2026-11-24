@@ -205,6 +205,10 @@ private:
     bool receiveBackupLegacy(RadioFrame &f);
     bool admitPrimaryLegacy(const RadioFrame &frame);
     bool admitBackupLegacy(const RadioFrame &frame,uint32_t now);
+    void prepareApplicationCycle(uint32_t now);
+    void serviceLegacyRxAndFeedback();
+    void advanceApplicationCycle(uint32_t safetyNow);
+    void serviceLegacyPeriodicTx(uint32_t now);
     void abortMission();
     bool (*missionGate_)()=nullptr;
     uint32_t lastNrfRxMs_,lastBackupRxMs_;
