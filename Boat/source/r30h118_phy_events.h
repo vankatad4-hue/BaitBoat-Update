@@ -39,6 +39,6 @@ public:
  bool takeOutcome(Outcome &v){return outcomes_.pop(v);}
 };
 inline bool sameTicket(const Ticket &a,const Ticket &b){
- return a.generation==b.generation&&a.serial==b.serial&&a.epoch==b.epoch;
+ return a.domain==b.domain&&a.generation==b.generation&&a.serial==b.serial&&a.epoch==b.epoch;
 }
 }
