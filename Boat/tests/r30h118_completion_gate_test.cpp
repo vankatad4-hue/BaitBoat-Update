@@ -246,6 +246,9 @@ int main(){
  endpoint.poll();assert(endpoint.state()==TxState::Queued);
  assert(asyncBus.complete(asyncReq,true));endpoint.poll();
  assert(endpoint.state()==TxState::LocalComplete);
+ Ticket auditDone{};TxState auditState=TxState::Idle;
+ assert(!endpoint.submit(43,20,false));
+ assert(endpoint.takeTerminal(auditDone,auditState)&&auditState==TxState::LocalComplete);
  assert(endpoint.submit(43,20,false));assert(asyncBus.take(asyncReq));
  assert(asyncBus.complete(asyncReq,true));endpoint.poll();assert(endpoint.state()==TxState::Admitted);
  assert(!endpoint.expire(29,10));assert(endpoint.expire(30,10));
@@ -279,6 +282,8 @@ int main(){
  assert(saturatedStopEvents.publishOutcome({asyncReq.ticket,13,PhyOutcome::LocalComplete}));
  stopEndpoint.poll();assert(stopEndpoint.state()==TxState::LocalComplete);
  assert(!stopEndpoint.rearm(1,false));assert(!stopEndpoint.submit(9,14,false));
+ assert(!stopEndpoint.rearm(1,true));
+ assert(stopEndpoint.takeTerminal(auditDone,auditState));
  assert(stopEndpoint.rearm(1,true));assert(stopEndpoint.submit(9,14,false));
 
  // Strict arbitration: failed highest-priority admission never falls through.
@@ -312,6 +317,7 @@ int main(){
  dualEndpoint.step(11,100,200,0,0,dpService,dbService);
  assert(dualEndpoint.primary().state()==TxState::Admitted);
  assert(dualEndpoint.backup().state()==TxState::LocalComplete);
+ assert(dualEndpoint.backup().takeTerminal(auditDone,auditState));
  assert(dualPE.publishHealth({12,true,false,true,false}));
  dualEndpoint.step(12,100,200,32,32,dpService,dbService);
  assert(dpCalls==1&&dbCalls==2);
