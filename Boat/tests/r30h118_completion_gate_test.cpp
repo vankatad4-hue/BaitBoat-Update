@@ -387,20 +387,36 @@ int main(){
  assert(ackBus.invalidate(1)&&ackBus.submit(1,10,true,&ackTicket));
  assert(ackBox.offer(10,1,1,0,0,10));
  ackBox.admitted(10);
- assert(corr.track(ackTicket,10,1));
+ assert(corr.track(ackTicket,ackBox));
  assert(!corr.complete(ackBox,AckLink::Backup,ackTicket,TxState::LocalComplete));
  assert(ackBox.inFlight());
  assert(corr.complete(ackBox,AckLink::Primary,ackTicket,TxState::Uncertain));
  assert(ackBox.pending()&&!ackBox.inFlight());
  assert(!corr.complete(ackBox,AckLink::Primary,ackTicket,TxState::LocalComplete));
  ackBox.admitted(90);
- assert(corr.track(ackTicket,10,1));
+ assert(corr.track(ackTicket,ackBox));
  assert(ackBox.offer(11,1,1,0,0,91));
  ackBox.admitted(91);
  assert(!corr.complete(ackBox,AckLink::Primary,ackTicket,TxState::LocalComplete));
  assert(ackBox.pending()&&ackBox.inFlight()&&ackBox.ticket().commandId==11);
  corr.reset();
  assert(!corr.complete(ackBox,AckLink::Primary,ackTicket,TxState::LocalComplete));
+
+ // Exact ACK payload promotion must survive an older successful completion.
+ boat_r30h18::BackupStopAckOutbox promotedAck;
+ StopAckCorrelation promotedCorrelation(AckLink::Backup);
+ assert(promotedAck.offer(12,1,0,0,0,100));
+ promotedAck.admitted(100);
+ assert(promotedCorrelation.track(ackTicket,promotedAck));
+ assert(promotedAck.offer(12,1,1,1,3,101));
+ assert(promotedCorrelation.complete(promotedAck,AckLink::Backup,ackTicket,TxState::LocalComplete));
+ assert(promotedAck.pending()&&!promotedAck.inFlight()&&promotedAck.ticket().result==1);
+ assert(!promotedAck.due(174,true,true,false));
+ assert(promotedAck.due(175,true,true,false));
+ promotedAck.admitted(175);
+ assert(promotedCorrelation.track(ackTicket,promotedAck));
+ assert(promotedCorrelation.complete(promotedAck,AckLink::Backup,ackTicket,TxState::LocalComplete));
+ assert(!promotedAck.pending());
 
  // Authentication policy is mocked here; actual HMAC is tested separately.
  HandshakeLane<HandshakeFrame> authLane;
