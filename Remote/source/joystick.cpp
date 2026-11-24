@@ -1,5 +1,6 @@
 
 #include "joystick.h"
+#include "centre_sampler.h"
 
 #include "boat_commands.h"
 #include "boat_radio.h"
@@ -47,9 +48,7 @@ static JoystickSnapshot snapshot = {};
 static bool calibrationMode = false;
 static CentreCaptureState centreState = CENTRE_IDLE;
 static uint8_t centreCount = 0;
-static uint32_t centreLast = 0;
-static long centreSum[4];
-static int centreMin[4], centreMax[4];
+static CentreSampler centreSampler;
 static void failCentre() { if (centreState == CENTRE_RUNNING) centreState = CENTRE_FAILED; }
 static bool endpointCapture = false;
 static bool calibrationValid = false; // No motor output until a real calibration succeeds.
@@ -475,8 +474,7 @@ bool joystick_calibrateCentre()
         centreState == CENTRE_RUNNING || !boatState.emergencyStop ||
         !boatState.emergencyStopConfirmed) return false;
     centreCount = 0;
-    centreLast = millis() - 4U;
-    for (int i=0;i<4;++i) { centreSum[i]=0; centreMin[i]=ADC_MAXIMUM; centreMax[i]=ADC_MINIMUM; }
+    centreSampler.start(millis());
     centreState = CENTRE_RUNNING;
     return true;
 }
@@ -487,27 +485,21 @@ static void serviceCentre(const JoystickRaw &raw)
     if (!calibrationMode || !boatState.emergencyStop || !boatState.emergencyStopConfirmed) {
         failCentre(); return;
     }
-    const uint32_t now = millis();
-    if (now-centreLast < 4U) return;
-    centreLast=now;
     const int axes[4]={raw.leftX,raw.leftY,raw.rightX,raw.rightY};
-    for (int i=0;i<4;++i) {
-        centreMin[i]=min(centreMin[i],axes[i]);
-        centreMax[i]=max(centreMax[i],axes[i]);
-        if (centreMax[i]-centreMin[i]>100) { failCentre(); return; }
-        centreSum[i]+=axes[i];
-    }
-    if (++centreCount != 32) return;
+    const auto result=centreSampler.sample(millis(),axes,true);
+    centreCount=centreSampler.count();
+    if(result==CentreSampler::Failed){failCentre();return;}
+    if(result!=CentreSampler::Complete)return;
     calibrationValid=false;
     snapshot.calibrationValid=false;
     joystickPrefs.begin("flytec-joy",false);
     const size_t written=joystickPrefs.putBool("valid",false);
     joystickPrefs.end();
     if (!written) { failCentre(); return; }
-    calibration.leftX.centre=centreSum[0]/32;
-    calibration.leftY.centre=centreSum[1]/32;
-    calibration.rightX.centre=centreSum[2]/32;
-    calibration.rightY.centre=centreSum[3]/32;
+    calibration.leftX.centre=centreSampler.centre(0);
+    calibration.leftY.centre=centreSampler.centre(1);
+    calibration.rightX.centre=centreSampler.centre(2);
+    calibration.rightY.centre=centreSampler.centre(3);
     snapshot.calibration=calibration;
     centreState=CENTRE_COMPLETE;
 }
