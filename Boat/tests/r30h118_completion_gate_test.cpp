@@ -389,4 +389,33 @@ int main(){
  assert(ackBox.pending()&&ackBox.inFlight()&&ackBox.ticket().commandId==11);
  corr.reset();
  assert(!corr.complete(ackBox,AckLink::Primary,ackTicket,TxState::LocalComplete));
+
+ // Authentication policy is mocked here; actual HMAC is tested separately.
+ HandshakeLane<HandshakeFrame> authLane;
+ Transport<HandshakeFrame> rolloverApp;
+ assert(authLane.begin()&&rolloverApp.invalidate(1));
+ hf={13,1,2,0,0,0,0};
+ Ticket confirmTicket{};
+ unsigned verifyCalls=0;
+ auto rejectAuth=[&](const HandshakeFrame&){++verifyCalls;return false;};
+ auto acceptAuth=[&](const HandshakeFrame&){++verifyCalls;return true;};
+ assert(!authLane.submitAuthenticated(hf,100,policy,rejectAuth,&confirmTicket));
+ assert(verifyCalls==1&&!authLane.take(hr));
+ hf.flags=1;
+ assert(!authLane.submitAuthenticated(hf,100,policy,acceptAuth,&confirmTicket));
+ assert(verifyCalls==1);
+ hf.flags=0;
+ assert(authLane.submitAuthenticated(hf,100,policy,acceptAuth,&confirmTicket));
+ assert(confirmTicket.domain==TicketDomain::Handshake);
+ assert(rolloverApp.invalidate(2));
+ assert(authLane.take(hr)&&sameTicket(hr.ticket,confirmTicket));
+ assert(authLane.allows(hr,101,100,policy));
+ authLane.close();
+ assert(!authLane.allows(hr,101,100,policy));
+ assert(authLane.complete(hr,true));
+ assert(!authLane.poll(handshakeAdmitted));
+ assert(authLane.begin());
+ assert(authLane.submitAuthenticated(hf,102,policy,acceptAuth,&confirmTicket));
+ assert(authLane.take(hr)&&sameTicket(hr.ticket,confirmTicket));
+ assert(authLane.complete(hr,true)&&authLane.poll(handshakeAdmitted)&&handshakeAdmitted);
 }
