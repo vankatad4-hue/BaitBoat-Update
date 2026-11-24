@@ -64,6 +64,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: R30H-118C backup STOP ACK expiry and rollover
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -IBoat/source Boat/tests/r30h118_backup_ack_test.cpp -o /tmp/r30h118_backup_ack
+          /tmp/r30h118_backup_ack
       - name: R30H-117I E22 production UART driver regression
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -Itests/r30h117_stubs -IBoat/source Boat/source/e22_uart_link.cpp tests/r30h117_e22_test.cpp -o /tmp/r30h117_e22
