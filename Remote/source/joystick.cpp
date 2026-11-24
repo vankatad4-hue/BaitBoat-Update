@@ -45,6 +45,12 @@ static JoystickSnapshot snapshot = {};
 
 // Calibration state.
 static bool calibrationMode = false;
+static CentreCaptureState centreState = CENTRE_IDLE;
+static uint8_t centreCount = 0;
+static uint32_t centreLast = 0;
+static long centreSum[4];
+static int centreMin[4], centreMax[4];
+static void failCentre() { if (centreState == CENTRE_RUNNING) centreState = CENTRE_FAILED; }
 static bool endpointCapture = false;
 static bool calibrationValid = false; // No motor output until a real calibration succeeds.
 
@@ -357,7 +363,7 @@ void joystick_setLayout(ControlLayout layout)
     }
 
     // Do not change layout while sticks are displaced.
-    if (!joystick_isNeutral())
+    if (centreState == CENTRE_RUNNING || !joystick_isNeutral())
     {
         return;
     }
@@ -419,6 +425,8 @@ bool joystick_calibrationEnter()
 
     // Suppress all motor command generation.
     calibrationMode = true;
+    centreState = CENTRE_IDLE;
+    centreCount = 0;
 
     // Cancel any previous endpoint capture.
     endpointCapture = false;
@@ -463,100 +471,45 @@ bool joystick_calibrationExit()
 
 bool joystick_calibrateCentre()
 {
-    // Centre capture is only allowed in calibration mode.
-    if (!calibrationMode || readCallback == nullptr)
-    {
-        return false;
-    }
-
-    // Accumulate readings for all four axes.
-    long sumLeftX = 0;
-    long sumLeftY = 0;
-    long sumRightX = 0;
-    long sumRightY = 0;
-
-    // Number of samples to average.
-    const int sampleCount = 32;
-
-    // Track sample extremes so a moving stick cannot be mistaken for centre.
-    JoystickRaw sampleMin = {ADC_MAXIMUM, ADC_MAXIMUM, ADC_MAXIMUM, ADC_MAXIMUM};
-    JoystickRaw sampleMax = {ADC_MINIMUM, ADC_MINIMUM, ADC_MINIMUM, ADC_MINIMUM};
-
-    // Read multiple samples to reduce ADC noise.
-    for (int i = 0; i < sampleCount; i++)
-    {
-        JoystickRaw raw;
-
-        // Abort if any hardware read fails.
-        if (!readCallback(raw))
-        {
-            return false;
-        }
-
-        // Reject impossible ADC values immediately.
-        if (raw.leftX < ADC_MINIMUM || raw.leftX > ADC_MAXIMUM ||
-            raw.leftY < ADC_MINIMUM || raw.leftY > ADC_MAXIMUM ||
-            raw.rightX < ADC_MINIMUM || raw.rightX > ADC_MAXIMUM ||
-            raw.rightY < ADC_MINIMUM || raw.rightY > ADC_MAXIMUM)
-        {
-            return false;
-        }
-
-        // Add the current readings.
-        sumLeftX += raw.leftX;
-        sumLeftY += raw.leftY;
-        sumRightX += raw.rightX;
-        sumRightY += raw.rightY;
-
-        // Track the range observed during centre sampling.
-        sampleMin.leftX = min(sampleMin.leftX, raw.leftX);
-        sampleMin.leftY = min(sampleMin.leftY, raw.leftY);
-        sampleMin.rightX = min(sampleMin.rightX, raw.rightX);
-        sampleMin.rightY = min(sampleMin.rightY, raw.rightY);
-        sampleMax.leftX = max(sampleMax.leftX, raw.leftX);
-        sampleMax.leftY = max(sampleMax.leftY, raw.leftY);
-        sampleMax.rightX = max(sampleMax.rightX, raw.rightX);
-        sampleMax.rightY = max(sampleMax.rightY, raw.rightY);
-
-        // Allow ADC readings to settle.
-        delay(4);
-    }
-
-    // If an axis moves too much during sampling, reject this centre capture.
-    const int maxCentreJitter = 100;
-    if (sampleMax.leftX - sampleMin.leftX > maxCentreJitter ||
-        sampleMax.leftY - sampleMin.leftY > maxCentreJitter ||
-        sampleMax.rightX - sampleMin.rightX > maxCentreJitter ||
-        sampleMax.rightY - sampleMin.rightY > maxCentreJitter)
-    {
-        return false;
-    }
-
-    // Calculate average centre positions.
-    // Reject impossible ADC readings before accepting the centre values.
-    if (sumLeftX < 0 || sumLeftY < 0 || sumRightX < 0 || sumRightY < 0 ||
-        sumLeftX > (long)ADC_MAXIMUM * sampleCount ||
-        sumLeftY > (long)ADC_MAXIMUM * sampleCount ||
-        sumRightX > (long)ADC_MAXIMUM * sampleCount ||
-        sumRightY > (long)ADC_MAXIMUM * sampleCount)
-    {
-        return false;
-    }
-
-    calibration.leftX.centre = sumLeftX / sampleCount;
-    calibration.leftY.centre = sumLeftY / sampleCount;
-    calibration.rightX.centre = sumRightX / sampleCount;
-    calibration.rightY.centre = sumRightY / sampleCount;
-
-    // A new centre invalidates the old endpoint calibration.
-    calibrationValid = false;
-    snapshot.calibration = calibration;
-    snapshot.calibrationValid = false;
-    joystickPrefs.begin("flytec-joy",false);
-    joystickPrefs.putBool("valid",false);
-    joystickPrefs.end();
-
+    if (!calibrationMode || !readCallback || endpointCapture ||
+        centreState == CENTRE_RUNNING || !boatState.emergencyStop ||
+        !boatState.emergencyStopConfirmed) return false;
+    centreCount = 0;
+    centreLast = millis() - 4U;
+    for (int i=0;i<4;++i) { centreSum[i]=0; centreMin[i]=ADC_MAXIMUM; centreMax[i]=ADC_MINIMUM; }
+    centreState = CENTRE_RUNNING;
     return true;
+}
+
+static void serviceCentre(const JoystickRaw &raw)
+{
+    if (centreState != CENTRE_RUNNING) return;
+    if (!calibrationMode || !boatState.emergencyStop || !boatState.emergencyStopConfirmed) {
+        failCentre(); return;
+    }
+    const uint32_t now = millis();
+    if (now-centreLast < 4U) return;
+    centreLast=now;
+    const int axes[4]={raw.leftX,raw.leftY,raw.rightX,raw.rightY};
+    for (int i=0;i<4;++i) {
+        centreMin[i]=min(centreMin[i],axes[i]);
+        centreMax[i]=max(centreMax[i],axes[i]);
+        if (centreMax[i]-centreMin[i]>100) { failCentre(); return; }
+        centreSum[i]+=axes[i];
+    }
+    if (++centreCount != 32) return;
+    calibrationValid=false;
+    snapshot.calibrationValid=false;
+    joystickPrefs.begin("flytec-joy",false);
+    const size_t written=joystickPrefs.putBool("valid",false);
+    joystickPrefs.end();
+    if (!written) { failCentre(); return; }
+    calibration.leftX.centre=centreSum[0]/32;
+    calibration.leftY.centre=centreSum[1]/32;
+    calibration.rightX.centre=centreSum[2]/32;
+    calibration.rightY.centre=centreSum[3]/32;
+    snapshot.calibration=calibration;
+    centreState=CENTRE_COMPLETE;
 }
 
 // --------------------------------------------------
@@ -566,7 +519,8 @@ bool joystick_calibrateCentre()
 bool joystick_beginEndpointCapture()
 {
     // Endpoint capture requires calibration mode.
-    if (!calibrationMode || !readCallback)
+    if (!calibrationMode || !readCallback || centreState != CENTRE_COMPLETE ||
+        !boatState.emergencyStop || !boatState.emergencyStopConfirmed)
     {
         return false;
     }
@@ -598,7 +552,8 @@ bool joystick_beginEndpointCapture()
 bool joystick_endEndpointCapture()
 {
     // There must be an active capture.
-    if (!calibrationMode || !endpointCapture)
+    if (!calibrationMode || !endpointCapture || !boatState.emergencyStop ||
+        !boatState.emergencyStopConfirmed)
     {
         return false;
     }
@@ -693,6 +648,8 @@ JoystickSnapshot joystick_getSnapshot()
     result.calibrationMode = calibrationMode;
     result.calibrationValid = calibrationValid;
     result.endpointCapture = endpointCapture;
+    result.centreCaptureState = centreState;
+    result.centreSamples = centreCount;
 
     return result;
 }
@@ -727,10 +684,14 @@ JoystickValues joystick_getValues()
 
 void joystick_update()
 {
+    if (!boatState.emergencyStop || !boatState.emergencyStopConfirmed) {
+        failCentre(); endpointCapture=false;
+    }
     // A valid hardware callback is required.
     if (readCallback == nullptr)
     {
         manualArmed = false;
+        failCentre(); endpointCapture=false;
         snapshot.readingsValid = false;
         snapshot.neutral = false;
         return;
@@ -743,6 +704,7 @@ void joystick_update()
     {
         // Mark readings invalid.
         manualArmed = false;
+        failCentre(); endpointCapture=false;
         snapshot.readingsValid = false;
         snapshot.neutral = false;
 
@@ -757,11 +719,13 @@ void joystick_update()
         raw.rightY < ADC_MINIMUM || raw.rightY > ADC_MAXIMUM)
     {
         manualArmed = false;
+        failCentre(); endpointCapture=false;
         snapshot.readingsValid = false;
         snapshot.neutral = false;
         return;
     }
 
+    serviceCentre(raw);
     // Store raw readings.
     snapshot.raw = raw;
 
