@@ -984,6 +984,19 @@ int main(){
  assert(ordinaryOwner.takeApplication(auditDone,auditState));
  assert(ordinaryTrack.complete(auditDone,auditState,5301,8,ordinaryResult));
  assert(ordinaryResults==3&&!ordinaryTrack.pending());
+ // Lost transport trust invalidates the exact outstanding snapshot and
+ // discards its delayed success without touching any newer ticket.
+ assert(ordinaryTrack.submit(ordinaryOwner,ownerOrdinary,5400,TxPriority::Heartbeat,100,acceptAuth));
+ assert(ordinaryBus.takeOrdinary(ownerReq));
+ const auto lostTrustRequest=ownerReq;
+ assert(ordinaryTrack.cancel(ordinaryOwner));
+ assert(!ordinaryTrack.pending()&&!ordinaryTrack.cancel(ordinaryOwner));
+ assert(!ordinaryBus.allows(lostTrustRequest,5401,100));
+ assert(ordinaryOwner.takeApplication(auditDone,auditState)&&auditState==TxState::Uncertain);
+ assert(!ordinaryTrack.complete(auditDone,auditState,5401,7,ordinaryResult));
+ assert(ordinaryTrack.submit(ordinaryOwner,ownerOrdinary,5402,TxPriority::Heartbeat,100,acceptAuth));
+ assert(!ordinaryTrack.complete(lostTrustRequest.ticket,TxState::LocalComplete,5403,7,ordinaryResult));
+ assert(ordinaryTrack.pending());
  ordinaryOwner.close();
  // Outbound Boat feedback can continue without clearing the STOP latch.
  Transport<HandshakeFrame> stoppedBus;
