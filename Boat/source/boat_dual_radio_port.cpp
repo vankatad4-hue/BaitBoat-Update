@@ -143,7 +143,7 @@ void BoatDualRadioPort::resetSession(bool preserveMission){
   missionIntent_={INTENT_STOP,-1,0};
   haveAuthenticatedRx_=false;lastAnyAuthenticatedRxMs_=0;
  }
- handshake_.reset();radioSession_wipe(key_,32);sessionStarted_=false;
+ recoveryHandshake_.reset();handshake_.reset();radioSession_wipe(key_,32);sessionStarted_=false;
 #if BOAT_R30H121_ENDPOINT_COMPILE
  if(BOAT_R30H121_PHYSICAL_OWNER){asyncPrimaryTx_.reset();asyncBackupTx_.reset();asyncTelemetry_.reset();asyncPrimaryCycle_.close();asyncBackupCycle_.close();}
 #endif
@@ -204,6 +204,7 @@ void BoatDualRadioPort::prepareApplicationCycle(uint32_t now){
  // Sequence-limit rekey still uses the existing primary handshake.
  if(sessionStarted_&&!sessionReady())resetSession(true);
  if(handshake_.timeout(now))resetSession(linkLossHold_||detachedReturn_);
+ recoveryHandshake_.expire(now);
  // Primary-only actions and stick leases must never survive primary-link loss.
  if(!primaryFresh(now)){
   stickLease_.reset();
@@ -704,13 +705,22 @@ void BoatDualRadioPort::receiveCaptured(ManagedLink link,const RadioFrame &f,uin
  if(!authenticated_||!radioLinkFlagMatches(f.flags,link==LINK_LORA_BACKUP)||f.sourceId!=REMOTE_ID||f.destinationId!=BOAT_ID)return;
  if(f.type>=SESSION_HELLO&&f.type<=SESSION_CONFIRM){
    if(f.sequence||f.commandId||f.sessionEpoch||!radio_frameVerify(f,rootKey_))return;
-   SessionHandshakePacket reply{};bool newSession=false;
-   if(!handshake_.boatReceive((SessionHandshakeMessage)f.type,f.payload,radioPlatformNonce(),rootKey_,radioPlatformHmac,now,true,reply,newSession))return;
+   SessionHandshakePacket reply{};bool newSession=false,recovered=false;
+   const bool recoveryAllowed=BoatSessionRecovery::eligible(sessionStarted_,primaryFresh(now),backupFresh(now),lastSessionRx_,now);
+   const auto type=(SessionHandshakeMessage)f.type;
+   const uint64_t nonce=radioPlatformNonce();
+   if(!handshake_.boatReceive(type,f.payload,nonce,rootKey_,radioPlatformHmac,now,true,reply,newSession)){
+     if(!recoveryHandshake_.receive(recoveryAllowed,type,f.payload,nonce,rootKey_,radioPlatformHmac,now,handshake_,reply,recovered))return;
+     newSession=recovered;
+   }
    if(newSession){
+     recoveryHandshake_.reset();
+     const bool preserveLossClock=haveAuthenticatedRx_&&(linkLossHold_||detachedReturn_||recovered);
+     if(recovered&&controller_.canDivertHome()&&!detachedReturn_)linkLossHold_=true;
      ++generation_;releaseIdSeen_=false;
      handshake_.frameKey(key_);sessionStarted_=true;lastSessionRx_=now;txSequence_=0;
      primarySeqGuard_.resetAfterHandshake();backupSeqGuard_.resetAfterHandshake();crossRadioSeqGuard_.resetAfterHandshake();
-     lastNrfRxValid_=lastBackupRxValid_=false;haveAuthenticatedRx_=false;lastAnyAuthenticatedRxMs_=0;commandQueue_.clear();mission_.reset();dedupe_.clear();stickLease_.reset();radioWatchdog_.reset();
+     lastNrfRxValid_=lastBackupRxValid_=false;if(!preserveLossClock){haveAuthenticatedRx_=false;lastAnyAuthenticatedRxMs_=0;}commandQueue_.clear();mission_.reset();dedupe_.clear();stickLease_.reset();radioWatchdog_.reset();
      // New authenticated epoch: discard any optional diagnostic from the
      // previous key/session and require a new successful primary heartbeat.
      optionalDiagnostics_.reset();lastControlRxValid_=false;

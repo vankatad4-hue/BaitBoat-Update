@@ -1,3 +1,12 @@
+## Active continuation — R30H-124K (2026-11-24)
+
+Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged. Production worker activation and upload locked.
+
+- R30H-124J exact-commit combined status and PR-only workflow lookup returned empty. Local git checkout failed DNS; PlatformIO unavailable. Full regression/target builds UNVERIFIED.
+- Actual BoatDualRadioPort previously rejected new HELLO while established, potentially stranding peer after restart/rekey. Added separate recovery candidate after both links stale and 10 s since last session RX. Root HELLO does not replace live authority; matching proof commits new key. Accepted old-session RX cancels candidate. New session retains original authenticated loss clock when held/detached/recovering. No hardware or on-air verification.
+- Host regression registered for old proof replay, fresh backup guard, candidate cancellation, new keys and millis wrap. Mock bench now supplies fresh nonce. Ordinary/mission TX migration deferred.
+- Next R30H-124L: obtain CI run IDs or local source checkout; verify tests and targets, test backup-only recovery including busy Boat CHALLENGE/CONFIRM and RTH continuity, audit async Boat root RX filtering, then migrate ordinary/mission TX only after verification.
+
 ## Active continuation — R30H-124J (2026-11-24)
 
 Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged; production radio worker and upload remain disabled.

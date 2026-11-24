@@ -84,7 +84,7 @@ void loop(){
  if(!exclusive.tick(now,pFault,bFault)){
   finish(backupSeen&&pFault&&bFault);return;
  }
- if(exclusive.permit()&&!app.tick(now,123,pFault,bFault)){finish(false);return;}
+ if(exclusive.permit()&&!app.tick(now,radioPlatformNonce(),pFault,bFault)){finish(false);return;}
  if(app.established()&&!first){first=app.requestStop(17,now);if(!first){finish(false);return;}}
  if(first&&!primaryConfirmed&&app.confirmed()){primaryConfirmed=true;nrf.active=false;}
  if(primaryConfirmed&&pFault&&!second){second=app.requestStop(18,now);if(!second){finish(false);return;}}
