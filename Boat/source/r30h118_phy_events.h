@@ -7,12 +7,13 @@ template<class Frame> class PhyEvents {
 public:
  struct Rx { Frame frame; uint32_t capturedAt; };
  struct Health { uint32_t observedAt; bool configured,ready,fault,pending; };
- struct Outcome { Ticket ticket; uint32_t observedAt; PhyOutcome result; };
+ struct Outcome { Ticket ticket; uint32_t observedAt; PhyOutcome result; bool stop=false; };
 private:
  SpscQueue<Rx,5> rx_;
  SpscQueue<Health,5> health_;
  std::atomic<bool> stickyFault_{false};
  SpscQueue<Outcome,5> outcomes_;
+ SpscQueue<Outcome,5> stopOutcomes_;
  SpscQueue<Outcome,5> handshakeOutcomes_;
 public:
  // Worker publishes; application consumes. Separate instance per physical link.
@@ -26,7 +27,7 @@ public:
  bool stickyFault()const{return stickyFault_.load(std::memory_order_acquire);}
  bool publishOutcome(const Outcome &v){
   switch(v.ticket.domain){
-   case TicketDomain::Application:return outcomes_.push(v);
+   case TicketDomain::Application:return v.stop?stopOutcomes_.push(v):outcomes_.push(v);
    case TicketDomain::Handshake:return handshakeOutcomes_.push(v);
    default:return false;
   }
@@ -43,7 +44,7 @@ public:
   if(stickyFault()){v.fault=true;v.ready=false;}
   return found;
  }
- bool takeOutcome(Outcome &v){return outcomes_.pop(v);}
+ bool takeOutcome(Outcome &v){return stopOutcomes_.pop(v)||outcomes_.pop(v);}
  bool takeHandshakeOutcome(Outcome &v){return handshakeOutcomes_.pop(v);}
 };
 inline bool sameTicket(const Ticket &a,const Ticket &b){
