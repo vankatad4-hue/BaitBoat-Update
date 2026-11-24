@@ -10,7 +10,12 @@ namespace flytec_rtos {
 enum class PhyLink:uint8_t { Primary=1, Backup=2 };
 struct RxFrame { RadioFrame frame; uint32_t receivedMs; PhyLink link; };
 struct TxRequest { RadioFrame frame; uint32_t ticket; uint32_t generation; PhyLink link; };
-struct TxCompletion { uint32_t ticket; uint32_t generation; PhyLink link; bool success; };
+enum class TxEvidence:uint8_t { None, NrfAck, LocalReady };
+struct TxCompletion {
+ uint32_t ticket; uint32_t generation; PhyLink link; bool success; TxEvidence evidence;
+ TxCompletion(uint32_t t=0,uint32_t g=0,PhyLink l=PhyLink::Primary,bool ok=false,TxEvidence e=TxEvidence::None):
+ ticket(t),generation(g),link(l),success(ok),evidence(e){}
+};
 template<class T,unsigned Depth> class FrameQueue {
  static_assert(Depth>0,"Queue depth required");
  static_assert(std::is_trivially_copyable<T>::value,"Copyable records required");
