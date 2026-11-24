@@ -14,7 +14,8 @@ public:
  DualPhyWorker(const DualPhyWorker&)=delete;
  DualPhyWorker& operator=(const DualPhyWorker&)=delete;
  bool begin(bool commissioningAuthorized){
-  if(!commissioningAuthorized||!clock_||started_)return false;
+  if(!commissioningAuthorized||!clock_||started_||retired_)return false;
+  retired_=true; // a failed launch is terminal for this instance
   if(!worker_.begin(&service,this))return false;
   started_=true;
   watchdog_.reset(clock_(),worker_.heartbeat());
@@ -24,10 +25,12 @@ public:
   if(!started_)return RadioWatchdog::State::Fault;
   return watchdog_.update(clock_(),worker_.heartbeat(),worker_.running(),worker_.wrongCore());
  }
- bool permit()const{return started_&&worker_.running()&&!worker_.wrongCore()&&watchdog_.permit();}
+ bool permit()const{return !stopping_&&started_&&worker_.running()&&!worker_.wrongCore()&&watchdog_.permit();}
  // Blocking join, only after bounded callback execution has been established.
  // Never call from an emergency actuator shutdown path.
- void stop(){worker_.stop();}
+ void requestStop(){stopping_=true;worker_.requestStop();}
+ bool exited()const{return worker_.exited();}
+ void stop(){requestStop();worker_.stop();}
 private:
  static void service(void* ctx){
   auto& self=*static_cast<DualPhyWorker*>(ctx);
@@ -35,7 +38,7 @@ private:
  }
  Poller& poll_;Clock clock_;
  RadioWatchdog watchdog_;
- bool started_=false;
+ bool started_=false,retired_=false,stopping_=false;
  RadioWorker worker_; // destroyed first; joins before borrowed members used by service disappear
 };
 }
