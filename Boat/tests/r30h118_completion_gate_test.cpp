@@ -1,6 +1,7 @@
 #include "r30h118_completion_gate.h"
 #include <cassert>
 #include "r30h118_radio_handoff.h"
+#include "r30h118_worker_guard.h"
 using namespace flytec_r30h118;
 int main(){
  CompletionGate g; Ticket a,b,c;
@@ -30,4 +31,15 @@ int main(){
  assert(lane.prepare(7,fresh));
  assert(lane.cancelUnqueued(fresh));
  assert(!lane.accept({fresh.ticket,true},admitted));
+ WorkerGuard guard;
+ CompletionGate owner; Ticket t;
+ assert(owner.invalidate(1));assert(owner.issue(t));
+ assert(!guard.allows(t,0,1,100));
+ guard.publish(owner.activeGeneration());
+ assert(guard.allows(t,0xfffffffeU,1,100));
+ assert(!guard.allows(t,0,100,100));
+ assert(owner.invalidate(1));guard.publish(owner.activeGeneration());
+ assert(!guard.allows(t,0,1,100));
+ assert(owner.issue(t));assert(guard.allows(t,0,1,100));
+ guard.disable();assert(!guard.allows(t,0,1,100));
 }
