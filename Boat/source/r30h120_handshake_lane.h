@@ -15,6 +15,16 @@ template<class Service> bool servicePriority(uint8_t pending,bool phyAvailable,S
  if(!phyAvailable||selected==TxPriority::None)return false;
  return service(selected); // never fall through on failed admission
 }
+// Worker-side admission selection for one PHY. The owner publishes the
+// pending classes; callbacks must revalidate tickets immediately before TX.
+// This does not interrupt an already admitted physical transmission.
+template<class App,class Handshake>
+bool serviceSharedPhy(uint8_t pending,bool busy,bool enabled,App app,Handshake handshake){
+ if(!enabled||busy)return false;
+ return servicePriority(pending,true,[&](TxPriority selected){
+  return selected==TxPriority::Handshake?handshake():app(selected);
+ });
+}
 // Wire message IDs from radio_protocol.h: CHALLENGE=11, CONFIRM=13.
 // Authentication callback is owner-local; the worker checks immutable shape only.
 template<class Frame> bool boatReplyShape(const Frame &f,uint8_t boat,uint8_t remote,bool backup){
