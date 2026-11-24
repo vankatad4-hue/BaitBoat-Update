@@ -37,6 +37,7 @@ NrfAdapter<uint32_t,Nrf> na(n,pe);
 E22Adapter<uint32_t,E22> ea(e,be);
 std::atomic<bool> stop{false},done{false};
 bool launched=false,reported=false,gotP=false,gotB=false,okP=false,okB=false;
+bool healthOK=false;
 uint32_t began=0;
 template<class Admit> void service(Transport<uint32_t>& bus,Transport<uint32_t>::Request& r,bool& held,bool& result,uint32_t now,Admit admit){
  if(held){if(!bus.complete(r,result))return;held=false;}
@@ -69,14 +70,17 @@ void setup(){
 void loop(){
  bool admitted=false;primary.poll(admitted);backup.poll(admitted);
  if(launched&&!stop.load()&&primaryStop.pending()){Ticket pt{};if(primaryStop.service(primary,millis(),1000U,&pt))pg.expect(pt);}
- PhyEvents<uint32_t>::Health h{};while(pe.takeHealth(h)){}while(be.takeHealth(h)){}
+ PhyEvents<uint32_t>::Health hp{},hb{};
+ const bool haveP=pe.latestHealth(hp);be.latestHealth(hb);
+ if(haveP)healthOK=healthyFresh(hp,millis(),1000U)&&!pe.stickyFault()&&be.stickyFault();
+ if(pe.stickyFault())healthOK=false;
  PhyEvents<uint32_t>::Outcome o{};
  while(pe.takeOutcome(o)){if(!pg.accept(o.ticket,primary.activeGeneration()))continue;gotP=true;okP=o.result==PhyOutcome::LocalComplete&&o.ticket.generation==3;}
  while(be.takeOutcome(o)){if(!bg.accept(o.ticket,backup.activeGeneration()))continue;gotB=true;okB=o.result==PhyOutcome::Uncertain;}
- if(launched&&!stop.load()&&((gotP&&gotB)||uint32_t(millis()-began)>=5000U)){
+ if(launched&&!stop.load()&&((gotP&&gotB&&healthOK)||uint32_t(millis()-began)>=5000U)){
   primaryStop.reset();primary.invalidate(0);backup.invalidate(0);stop.store(true,std::memory_order_release);
  }
- if(done.load(std::memory_order_acquire)&&!reported){reported=true;Serial.println(gotP&&gotB&&okP&&okB?"DUAL MOCK PASS":"DUAL MOCK FAIL");}
+ if(done.load(std::memory_order_acquire)&&!reported){reported=true;Serial.println(gotP&&gotB&&okP&&okB&&healthOK?"DUAL MOCK PASS":"DUAL MOCK FAIL");}
  delay(1);
 }
 #endif
