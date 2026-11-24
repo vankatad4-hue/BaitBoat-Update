@@ -15,11 +15,20 @@ class PhysicalWorker {
  flytec_r30h118::NrfAdapter<RadioFrame,NRF24Link> na_;
  flytec_r30h118::E22Adapter<RadioFrame,E22UartBoardPort> ea_;
  PhyService<RadioFrame> ns_,es_;
+ // Optional commissioning-only shared services; legacy constructor remains unchanged.
+ SharedPhyService<RadioFrame>* sharedNrf_=nullptr;
+ SharedPhyService<RadioFrame>* sharedE22_=nullptr;
+ uint8_t boatId_=0,remoteId_=0;
  bool nrfInitialized_=false,e22Initialized_=false,started_=false,closed_=false;
 public:
  PhysicalWorker(int ce,int csn,SPIClass *spi,uint8_t channel,int sck,int miso,int mosi,
                 Bus &nb,Bus &eb,Events &ne,Events &ee):
  nrf_(ce,csn,spi,channel,sck,miso,mosi),na_(nrf_,ne),ea_(e22_,ee),ns_(nb),es_(eb){}
+ // Bind worker-local services before begin; their lifetime must cover this worker.
+ bool bindShared(SharedPhyService<RadioFrame>& primary,SharedPhyService<RadioFrame>& backup,uint8_t boat,uint8_t remote){
+  if(started_||closed_||!boat||!remote||boat==remote)return false;
+  sharedNrf_=&primary;sharedE22_=&backup;boatId_=boat;remoteId_=remote;return true;
+ }
  PhysicalWorker(const PhysicalWorker&)=delete;
  PhysicalWorker& operator=(const PhysicalWorker&)=delete;
  // Caller must enforce existing board pin/RF commissioning gates first.
@@ -34,6 +43,15 @@ public:
   if(!started_||closed_)return;
   if(nrfInitialized_)na_.poll(now);
   if(e22Initialized_)ea_.poll(now);
+  if(sharedNrf_&&sharedE22_){
+   auto primaryAdmit=[&](const Bus::Request &r){return na_.admit(r.ticket,r.frame);};
+   auto backupAdmit=[&](const Bus::Request &r){return ea_.admit(r.ticket,r.frame,now);};
+   sharedNrf_->step(now,age,nrf_.txPending(),enabled&&nrfInitialized_&&nrf_.ready(),
+    [&](const RadioFrame &f){return boatReplyShape(f,boatId_,remoteId_,false);},primaryAdmit,primaryAdmit);
+   sharedE22_->step(now,age,e22_.txPending(),enabled&&e22Initialized_&&e22_.ready(),
+    [&](const RadioFrame &f){return boatReplyShape(f,boatId_,remoteId_,true);},backupAdmit,backupAdmit);
+   return;
+  }
   ns_.step(now,age,enabled&&nrfInitialized_,[&](const Bus::Request &r){return na_.admit(r.ticket,r.frame);});
   es_.step(now,age,enabled&&e22Initialized_,[&](const Bus::Request &r){return ea_.admit(r.ticket,r.frame,now);});
  }
