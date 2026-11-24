@@ -1,0 +1,113 @@
+#pragma once
+#include "radio_frame_handoff.h"
+#include "tx_generation_gate.h"
+#include "remote_radio_owner.h"
+#include "boat_commands.h"
+// R30H-124F experimental Core 1 application seam. Sole generation owner.
+// Frames must already be authenticated/sealed by the application. Never
+// interpret queue admission, nRF ACK or E22 local readiness as Boat STOP.
+namespace flytec_rtos {
+class RemoteAsyncTx {
+public:
+ enum class Submit:uint8_t {Queued,Busy,Denied,Expired,Fault};
+ enum class Outcome:uint8_t {Failed,NrfAck,LocalReady,Expired};
+ struct Result {
+  uint32_t ticket=0,generation=0;
+  uint16_t commandId=0;
+  PhyLink link=PhyLink::Primary;
+  Outcome outcome=Outcome::Failed;
+  bool stop=false;
+ };
+ RemoteAsyncTx(RemoteRadioOwner& o,RadioFrameHandoff& h,TxGenerationGate& g)
+ :owner_(o),handoff_(h),gate_(g){}
+ RemoteAsyncTx(const RemoteAsyncTx&)=delete;
+ RemoteAsyncTx& operator=(const RemoteAsyncTx&)=delete;
+ // Call on EVERY key/session change, even when the wire epoch is reused.
+ // A failed transition leaves submissions inhibited; retry before service.
+ bool invalidateSession(){
+  if(!owner_.worker())return false;
+  active_=false;epoch_=0;stopId_=0;clearSlots();
+  return advanceStop();
+ }
+ bool beginSession(uint8_t epoch){
+  if(!epoch||!invalidateSession())return false;
+  epoch_=epoch;active_=true;return true;
+ }
+ // New logical STOP: invalidate old queued/dequeued work before admission.
+ // Call once per new intent, not once per retry or per link.
+ bool requestStop(uint16_t commandId){
+  if(!owner_.worker()||!active_||!commandId)return false;
+  stopId_=0;clearSlots();
+  if(!advanceStop()){active_=false;return false;}
+  stopId_=commandId;return true;
+ }
+ // Only independent application authorization can rearm. TX results cannot.
+ bool rearm(bool authorized){
+  if(!owner_.worker()||!active_||!authorized||generation_==UINT32_MAX)return false;
+  if(!gate_.rearm(generation_+1,true))return false;
+  ++generation_;stopId_=0;clearSlots();return true;
+ }
+ Submit submit(PhyLink link,const RadioFrame& f,uint32_t created,uint32_t ttl,uint32_t now,uint32_t& ticket){
+  ticket=0;
+  if(!owner_.worker()||!active_||!validLink(link)||f.sessionEpoch!=epoch_||
+     !radioLinkFlagMatches(f.flags,link==PhyLink::Backup))return Submit::Denied;
+  if(!ttl||ttl>INT32_MAX||uint32_t(now-created)>=ttl)return Submit::Expired;
+  const bool stop=f.type==RADIO_MSG_ACTION&&f.payload[0]==CMD_EMERGENCY_STOP;
+  if(stop&&(!stopId_||f.commandId!=stopId_||!gate_.stopped()))return Submit::Denied;
+  const bool safeHeartbeat=f.type==RADIO_MSG_HEARTBEAT&&f.commandId==0;
+  const bool critical=stop||safeHeartbeat;
+  if(gate_.stopped()&&!critical)return Submit::Denied;
+  if(handoff_.fault(link)||nextTicket_==UINT32_MAX)return Submit::Fault;
+  auto& s=slot(link);
+  if(s.used)return Submit::Busy;
+  TxRequest r{};r.frame=f;r.ticket=++nextTicket_;r.generation=generation_;
+  r.link=link;r.createdMs=created;r.lifetimeMs=ttl;
+  const bool queued=link==PhyLink::Primary?
+   (critical?handoff_.primaryCritical.offer(r):handoff_.primaryTx.offer(r)):
+   (critical?handoff_.backupCritical.offer(r):handoff_.backupTx.offer(r));
+  if(!queued)return Submit::Fault;
+  s.used=true;s.request=r;s.stop=stop;ticket=r.ticket;return Submit::Queued;
+ }
+ // Bounded drain. A late, duplicate, wrong-link or previous-generation
+ // completion cannot retire the current request or become STOP evidence.
+ bool take(PhyLink link,uint32_t now,Result& out){
+  if(!owner_.worker()||!active_||!validLink(link))return false;
+  auto& s=slot(link);
+  TxCompletion c;
+  for(unsigned i=0;i<8&&handoff_.takeCompletion(link,c);++i){
+   if(!s.used||c.ticket!=s.request.ticket||c.generation!=generation_||
+      c.generation!=s.request.generation||c.link!=link)continue;
+   const auto outcome=expired(s,now)?Outcome::Expired:
+    link==PhyLink::Primary&&c.success&&c.evidence==TxEvidence::NrfAck?Outcome::NrfAck:
+    link==PhyLink::Backup&&!c.success&&c.evidence==TxEvidence::LocalReady?Outcome::LocalReady:Outcome::Failed;
+   finish(s,out,outcome);return true;
+  }
+  if(s.used&&(expired(s,now)||handoff_.fault(link))){
+   finish(s,out,expired(s,now)?Outcome::Expired:Outcome::Failed);return true;
+  }
+  return false;
+ }
+private:
+ struct Slot{TxRequest request{};bool used=false,stop=false;};
+ static bool validLink(PhyLink l){return l==PhyLink::Primary||l==PhyLink::Backup;}
+ Slot& slot(PhyLink l){return l==PhyLink::Primary?primary_:backup_;}
+ void clearSlots(){primary_=Slot{};backup_=Slot{};}
+ bool advanceStop(){
+  if(generation_==UINT32_MAX)return false;
+  if(!gate_.latchStop(generation_+1))return false;
+  ++generation_;return true;
+ }
+ static bool expired(const Slot& s,uint32_t now){
+  return uint32_t(now-s.request.createdMs)>=s.request.lifetimeMs;
+ }
+ static void finish(Slot& s,Result& out,Outcome outcome){
+  out.ticket=s.request.ticket;out.generation=s.request.generation;
+  out.commandId=s.request.frame.commandId;out.link=s.request.link;
+  out.outcome=outcome;out.stop=s.stop;s=Slot{};
+ }
+ RemoteRadioOwner& owner_;RadioFrameHandoff& handoff_;TxGenerationGate& gate_;
+ Slot primary_,backup_;
+ uint32_t generation_=0,nextTicket_=0;
+ uint16_t stopId_=0;uint8_t epoch_=0;bool active_=false;
+};
+}

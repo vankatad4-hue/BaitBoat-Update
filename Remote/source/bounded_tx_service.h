@@ -7,7 +7,7 @@ namespace flytec_rtos {
 class BoundedTxService {
 public:
  using Start=bool(*)(void*,const TxRequest&);
- bool tick(RadioFrameHandoff& h,PhyLink link,TxGenerationGate& gate,Start start,void* ctx){
+ bool tick(RadioFrameHandoff& h,PhyLink link,TxGenerationGate& gate,Start start,void* ctx,uint32_t now=0){
   if(h.fault(link)||!start)return false;
   if(link!=PhyLink::Primary&&link!=PhyLink::Backup)return false;
   auto& slots=link==PhyLink::Primary?primary_:backup_;
@@ -20,7 +20,8 @@ public:
   if(!s.pending)return true;
   const auto& r=s.request;
   Admission a{start,ctx,&r};
-  const auto result=r.link==link?gate.tryAdmit(r.generation,&invoke,&a,slots.critical.pending):TxGenerationGate::Result::Stale;
+  const bool expired=r.lifetimeMs!=0&&uint32_t(now-r.createdMs)>=r.lifetimeMs;
+  const auto result=r.link==link&&!expired?gate.tryAdmit(r.generation,&invoke,&a,slots.critical.pending):TxGenerationGate::Result::Stale;
   if(result==TxGenerationGate::Result::Stale||result==TxGenerationGate::Result::Inhibited){
    const TxCompletion c{r.ticket,r.generation,r.link,false};
    s.pending=false;return h.offerCompletion(link,c);

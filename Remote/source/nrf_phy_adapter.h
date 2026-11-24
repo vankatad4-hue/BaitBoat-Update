@@ -24,7 +24,7 @@ public:
   if(!driver_.ready()||h.fault(link))return false;
   if(!rx_.tick(h,link,now,&receive,this))return false;
   if(outstanding_||driver_.txPending())return true;
-  return tx_.tick(h,link,gate,&start,this);
+  return tx_.tick(h,link,gate,&start,this,now);
  }
 private:
  static bool receive(void* p,RadioFrame& f){return static_cast<NrfPhyAdapter*>(p)->driver_.receiveFrame(f);}

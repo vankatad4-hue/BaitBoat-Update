@@ -25,7 +25,7 @@ public:
   if(!rx_.tick(h,link,now,&receive,this))return false;
   if(outstanding_||driver_.txPending())return true;
   Context ctx{this,&h,now};
-  const bool ok=tx_.tick(h,link,gate,&start,&ctx);
+  const bool ok=tx_.tick(h,link,gate,&start,&ctx,now);
   return ok&&!h.fault(link)&&!driver_.transportFault();
  }
 private:
