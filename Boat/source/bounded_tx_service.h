@@ -1,33 +1,33 @@
 #pragma once
 #include "radio_frame_handoff.h"
-// Dormant bounded service. Driver adapter must implement nonblocking tryStart:
-// true = accepted, false = busy (no side effects). Completion of accepted
-// frames is reported separately by the driver, not synthesized here.
-// Generation is a snapshot; production must serialize session transition
-// with admission before enabling physical TX.
+// Dormant: one nonblocking admission attempt per link per tick.
+// Generation snapshot must be serialized with session transition before activation.
 namespace flytec_rtos {
 class BoundedTxService {
 public:
  using Start=bool(*)(void*,const TxRequest&);
  bool tick(RadioFrameHandoff& h,PhyLink link,uint32_t generation,Start start,void* ctx){
   if(h.fault()||!start)return false;
-  Slot* s=link==PhyLink::Primary?&primary_:link==PhyLink::Backup?&backup_:nullptr;
-  if(!s)return false;
-  if(!s->pending){
-   if(!h.takeTx(link,s->request))return true;
-   s->pending=true;
-  }
-  const auto& r=s->request;
+  if(link!=PhyLink::Primary&&link!=PhyLink::Backup)return false;
+  auto& slots=link==PhyLink::Primary?primary_:backup_;
+  auto& critical=link==PhyLink::Primary?h.primaryCritical:h.backupCritical;
+  auto& ordinary=link==PhyLink::Primary?h.primaryTx:h.backupTx;
+  if(!slots.critical.pending)slots.critical.pending=critical.take(slots.critical.request);
+  if(!slots.critical.pending&&!slots.ordinary.pending)
+   slots.ordinary.pending=ordinary.take(slots.ordinary.request);
+  auto& s=slots.critical.pending?slots.critical:slots.ordinary;
+  if(!s.pending)return true;
+  const auto& r=s.request;
   if(r.generation!=generation||r.link!=link){
    const TxCompletion c{r.ticket,r.generation,r.link,false};
-   s->pending=false;
-   return h.completions.offer(c);
+   s.pending=false;return h.completions.offer(c);
   }
-  if(start(ctx,r))s->pending=false;
+  if(start(ctx,r))s.pending=false;
   return true;
  }
 private:
  struct Slot{TxRequest request{};bool pending=false;};
- Slot primary_,backup_;
+ struct Slots{Slot critical,ordinary;};
+ Slots primary_,backup_;
 };
 }
