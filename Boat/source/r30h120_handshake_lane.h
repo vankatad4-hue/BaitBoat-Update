@@ -1,6 +1,13 @@
 #pragma once
 #include "r30h118_transport.h"
 namespace flytec_r30h120 {
+// Owner-side priority selection: no lower class may bypass pending safety.
+// A busy PHY call already underway cannot be preempted.
+enum class TxPriority:uint8_t {Stop,Safety,Handshake,Heartbeat,Mission,Telemetry,Diagnostic,None};
+inline TxPriority choosePriority(uint8_t pending){
+ for(uint8_t i=0;i<7;++i)if(pending&(1U<<i))return static_cast<TxPriority>(i);
+ return TxPriority::None;
+}
 // Wire message IDs from radio_protocol.h: CHALLENGE=11, CONFIRM=13.
 // Authentication callback is owner-local; the worker checks immutable shape only.
 template<class Frame> bool boatReplyShape(const Frame &f,uint8_t boat,uint8_t remote,bool backup){
