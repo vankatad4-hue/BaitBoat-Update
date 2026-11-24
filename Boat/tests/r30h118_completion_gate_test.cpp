@@ -1072,4 +1072,22 @@ int main(){
  assert(!workerRuntime.claimLegacy()&&!workerRuntime.claimWorker(true));
  workerRuntime.retire();
  assert(!workerRuntime.legacy()&&!workerRuntime.worker()&&!workerRuntime.claimLegacy());
+ // Physical availability must not confuse a busy E22 with a link fault.
+ Transport<HandshakeFrame> healthBus;
+ PhyEvents<HandshakeFrame> healthEvents;
+ AppRadio<HandshakeFrame> healthApp(healthBus,healthEvents);
+ assert(!healthApp.available(9000,250));
+ assert(healthEvents.publishHealth({9000,true,false,false,true}));
+ healthApp.pollHealth();
+ assert(healthApp.available(9001,250)&&!healthApp.healthy(9001,250));
+ assert(!healthApp.available(9250,250));
+ assert(healthEvents.publishHealth({9251,true,true,false,false}));
+ healthApp.pollHealth();
+ assert(healthApp.available(9252,250)&&healthApp.healthy(9252,250));
+ assert(healthEvents.publishHealth({9253,true,false,true,false}));
+ healthApp.pollHealth();
+ assert(!healthApp.available(9254,250));
+ assert(healthEvents.publishHealth({9255,true,true,false,false}));
+ healthApp.pollHealth();
+ assert(!healthApp.available(9256,250)); // sticky fault; no automatic recovery
 }
