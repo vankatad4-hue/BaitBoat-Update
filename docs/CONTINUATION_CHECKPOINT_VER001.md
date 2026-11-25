@@ -1388,3 +1388,16 @@ W8 IN_PROGRESS; physical timing NOT_RUN. Completion allowance provisional. Produ
 
 ### Next — R30H-124W8.4
 Verify exact CI results, fix integrated test failures, finish timeout and hostile replay/tamper/wrong-transaction/unsafe battery and safety-return regressions. Implement validated bidirectional primary recovery without automatic movement or resumption; preserve STOP/RTH and terminal mission state. Retest both PlatformIO targets and all host/bench/packaging CI. Production Legacy-only, worker/upload locks unchanged, physical timing NOT_RUN, Boat VER014 / Remote VER028 frozen. Future updates append below.
+
+---
+
+## Active continuation — R30H-124W8.4a (2026-11-25)
+
+Exact W8.3b combined statuses for 6c7b6f9 and 4f2f5ee empty; push workflow conclusions still UNVERIFIED. Direct checkout DNS failure reproduced, PlatformIO unavailable locally.
+
+- [e0274b1](https://github.com/vankatad4-hue/BaitBoat-Update/commit/e0274b107280e2b0fe83f4f7c78afb273234a9de): mock app expires backup scope when either required post-transfer STATUS or mission-phase evidence never arrives, and revokes on observed returning, releasing, override or manual-requested phase. Full integration test not run.
+- [6661b90](https://github.com/vankatad4-hue/BaitBoat-Update/commit/6661b90c8cbb3c486e6c50db41bd1394479ba35f): dormant PrimaryRecoveryGate requires fresh authenticated primary challenge echo correlated to unique outstanding sequence and session epoch/generation. Provisional 3 proofs over >=1 s, reply age <250 ms, proof gap <750 ms, RX capture age <100 ms. Generic STATUS and local nRF ACK alone cannot supply this proof. No motion/STOP authority or recovery transition yet.
+- [17b616a](https://github.com/vankatad4-hue/BaitBoat-Update/commit/17b616ab220dd08ba0061cdec15f2bb4bece023c): focused C++17 -Wall -Wextra -Werror host regression LOCAL PASS, exit 0. Local header blob 5aa7559a8b69c402d18ae1b00460c371866d6954 and test c1b4ba745cc2408b9696bebbca99b208e05ee043 match repository readback. Tests wrong sequence/epoch-generation, unauthenticated, pre-offer/replay, timeout, unstable spacing, stable proof and wraparound. This is isolated evidence logic, not cryptographic packet/PHY test.
+- [badc0d9](https://github.com/vankatad4-hue/BaitBoat-Update/commit/badc0d914ad91bde9c1eeb9ced32692cd529af43): lifecycle workflow adds trigger paths and strict compile/run for recovery regression. New CI execution pending.
+
+Next W8.4b: verify latest CI by exact revision/run ID, fix integrated failures; audit existing RADIO_MSG_LINK_PROBE wire semantics before binding a signed correlated primary-only challenge/echo to mock peer, TX scope and application. Ensure STOP preemption, preserve backup pacing and outcome, revoke backup generation on qualified recovery without restoring movement, preserve RTH and terminal mission state. Add hostile/unsafe STATUS and timeout tests, verify both PlatformIO targets. Physical NOT_RUN, production Legacy-only, workers/upload locked, Boat VER014 / Remote VER028 unchanged. Append updates below.
