@@ -208,9 +208,13 @@ public:
   if(backupScope_&&!control_.serviceBackupMission(backupMission_,backupAuthority(now),now,sequence_,RadioSessionCounter::REKEY_AT,key_)){
    if(!inhibit(now))return reset(now);
   }
-  if(recoveryAllowed_&&!servicePrimaryRecovery(now))return reset(now);
+  // While the primary is physically available but not qualified, only
+  // eligible emergency STOP retries may preempt the recovery probes.
+  const bool primaryStopOnly=recoveryAllowed_&&control_.primaryStopOutstanding(now);
+  if(primaryStopOnly){recovery_.reset();recoveryGeneration_=0;}
+  else if(recoveryAllowed_&&!servicePrimaryRecovery(now))return reset(now);
   const uint8_t flags=uint8_t(1U|(!primaryFault_?2U:0U)|(!backupFault_?4U:0U)|(control_.confirmed()?8U:0U));
-  if(!control_.tick(now,!primaryFault_,!backupFault_,flags,sequence_,RadioSessionCounter::REKEY_AT,key_,true))
+  if(!control_.tick(now,!primaryFault_||primaryStopOnly,!backupFault_,flags,sequence_,RadioSessionCounter::REKEY_AT,key_,true))
    return reset(now);
   if(!missionClear_&&!missionAuthorized_&&missionActive()&&!mission_.service(now,missionSafe(now),control_.ordinaryGap(now),1,sequence_,RadioSessionCounter::REKEY_AT,key_)){
    if(!inhibit(now))return reset(now);
@@ -359,7 +363,9 @@ private:
   for(unsigned i=0;i<4&&queue.take(rx);++i){
    if(rx.link!=link||!remoteRxFresh(now,rx.receivedMs))continue;
    const RadioFrame& f=rx.frame;
-   if(link==PhyLink::Backup?backupFault_:(primaryFault_&&(!recoveryAllowed_||f.type!=RADIO_MSG_LINK_PROBE)))continue;
+   const bool primaryRestricted=link==PhyLink::Primary&&primaryFault_;
+   const bool stopEvidence=control_.hasStopIntent(stopId_)&&(f.type==RADIO_MSG_ACK||f.type==RADIO_MSG_TELEMETRY);
+   if(link==PhyLink::Backup?backupFault_:(primaryRestricted&&(!recoveryAllowed_||(f.type!=RADIO_MSG_LINK_PROBE&&!stopEvidence))))continue;
    if(f.sourceId!=2||f.destinationId!=1||!radioLinkFlagMatches(f.flags,link==PhyLink::Backup))continue;
    if(f.type>=RADIO_MSG_SESSION_HELLO&&f.type<=RADIO_MSG_SESSION_CONFIRM){
     if(handshake_.receive(link,f,rx.receivedMs,now,root_,mac_)&&session_.established()){
@@ -421,14 +427,21 @@ private:
    }else if(f.type==RADIO_MSG_HEARTBEAT){
     if(f.commandId||!radio_decodeHeartbeatPayload(f.payload,decoded))continue;
    }else continue;
+   // Do not let unrestricted primary telemetry or ordinary ACKs acquire
+   // authority before recovery. Allow only evidence for the current STOP.
+   if(primaryRestricted&&((decoded.kind==RADIO_PAYLOAD_ACK&&(decoded.commandType!=CMD_EMERGENCY_STOP||decoded.commandId!=stopId_))||
+      (decoded.kind==RADIO_PAYLOAD_STATUS&&decoded.stopState!=1)))continue;
    auto& guard=link==PhyLink::Primary?primary_:backup_;
    if(!guard.accept(f.sequence)||!cross_.accept(f.sequence))continue;
    if(decoded.kind==RADIO_PAYLOAD_ACK&&ack_.observe(decoded,link==PhyLink::Primary?RADIO_ACK_LINK_PRIMARY:RADIO_ACK_LINK_BACKUP,1,rx.receivedMs)){
     if(decoded.commandType==CMD_EMERGENCY_STOP)control_.observeStopAck(link,decoded.commandId,decoded.ackResult==RADIO_ACK_ACCEPTED||decoded.ackResult==RADIO_ACK_EXECUTED,rx.receivedMs,now);
     else if(decoded.commandType==CMD_CLEAR_STOP)clear_.ack(decoded.commandId,1,link==PhyLink::Primary,decoded.ackResult==RADIO_ACK_EXECUTED,decoded.ackResult!=RADIO_ACK_ACCEPTED&&decoded.ackResult!=RADIO_ACK_EXECUTED,rx.receivedMs,now);
    }else if(decoded.kind==RADIO_PAYLOAD_STATUS){
+    const auto before=tx_.generation();
     control_.observeStopStatus(link,decoded.stopState==1,rx.receivedMs,now);
+    if(tx_.generation()!=before)resetRecovery();
     if(link==PhyLink::Primary){
+     if(primaryRestricted)continue; // STOP evidence is not recovery or CLEAR evidence
      primaryStatus_=decoded;primaryStatusAt_=rx.receivedMs;primaryStatusSeen_=true;
      clear_.status(1,true,decoded.stopState==0,primarySafe()&&(decoded.safetyFlags&7U)==1U,rx.receivedMs,now);
     }else{
