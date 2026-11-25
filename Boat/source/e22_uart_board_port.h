@@ -1,5 +1,7 @@
 #pragma once
 #include <Arduino.h>
+#include <driver/uart.h>
+#include <freertos/FreeRTOS.h>
 #include "e22_uart_link.h"
 // External UART E22 adapter. No automatic GPIO selection or actuator control.
 struct E22BoardPins { int8_t tx,rx,m0,m1,aux,nrst; bool audited,rfVerified,levelsVerified; };
@@ -12,9 +14,10 @@ inline bool e22BoardPinsValid(const E22BoardPins &p) {
 }
 class E22UartBoardPort {
 public:
- explicit E22UartBoardPort(HardwareSerial &serial):serial_(serial),
+ explicit E22UartBoardPort(HardwareSerial &serial,uart_port_t uartPort):serial_(serial),uartPort_(uartPort),
   link_(serial_,setMode,auxReady,setReset,this,txCapacity){}
  bool begin(const E22BoardPins &p){
+  if(commissioningLocked_)return false;
   active_=false;
   if(!e22BoardPinsValid(p))return false;
   pins_=p;
@@ -26,6 +29,25 @@ public:
   serial_.begin(9600,SERIAL_8N1,p.rx,p.tx);
   active_=link_.configureEU868TestProfile();
   return active_;
+ }
+ // Commissioning-only host operation, never called from application startup.
+ // A successful lock is sticky until a fresh offline instance/reboot.
+ bool lockForCommissioning(const flytec_rtos::E22CommissioningPermit& permit,
+                           flytec_rtos::E22IsolationProbe isolation,void* context){
+  if(commissioningLocked_||!active_||!permit.valid()||!isolation||!isolation(context)||
+     link_.txPending()||link_.transportFault()||!e22BoardPinsValid(pins_))return false;
+  commissioningLocked_=true;isolation_=isolation;isolationContext_=context;
+  link_.disableAdmission();active_=false;
+  return commissionCheck(commissioningDrain(500));
+ }
+ bool commissioningBaudVerified(uint32_t baud,uint32_t limit){
+  if(!commissioningAllowed()||limit<10U||limit>500U||!flytec_rtos::uartBaudWithinOnePercent(baud,baud))return false;
+  const uint32_t started=millis();
+  if(!commissioningDrain(limit)||!commissioningAllowed()||uart_set_baudrate(uartPort_,baud)!=ESP_OK)return commissionCheck(false);
+  uint32_t actual=0;
+  if(uart_get_baudrate(uartPort_,&actual)!=ESP_OK||!flytec_rtos::uartBaudWithinOnePercent(actual,baud))return commissionCheck(false);
+  const uint32_t elapsed=millis()-started;
+  return commissionCheck(elapsed<limit&&commissioningDrain(limit-elapsed)&&uint32_t(millis()-started)<limit);
  }
  // Owner-only shutdown. UART/module RF inactivity is not certified.
  void shutdownLocal(){link_.shutdownLocal();active_=false;}
@@ -40,6 +62,23 @@ public:
  bool txPending()const{return link_.txPending();}
  flytec_rtos::E22TxState::Outcome txOutcome()const{return link_.txOutcome();}
 private:
+ bool commissioningAllowed()const{return commissioningLocked_&&!commissioningFault_&&isolation_&&isolation_(isolationContext_);}
+ bool commissionCheck(bool ok){if(!ok||!commissioningAllowed()){commissioningFault_=true;return false;}return true;}
+ bool commissioningDrain(uint32_t limit){
+  if(!commissioningAllowed()||limit<5U||limit>500U||uartPort_!=UART_NUM_1)return false;
+  uint32_t baud=0;size_t buffered=0;uart_word_length_t bits;uart_parity_t parity;uart_stop_bits_t stop;
+  const uint32_t started=millis();
+  if(uart_get_baudrate(uartPort_,&baud)!=ESP_OK||
+     (!flytec_rtos::uartBaudWithinOnePercent(baud,9600)&&!flytec_rtos::uartBaudWithinOnePercent(baud,115200))||
+     uart_get_word_length(uartPort_,&bits)!=ESP_OK||bits!=UART_DATA_8_BITS||
+     uart_get_parity(uartPort_,&parity)!=ESP_OK||parity!=UART_PARITY_DISABLE||
+     uart_get_stop_bits(uartPort_,&stop)!=ESP_OK||stop!=UART_STOP_BITS_1)return false;
+  if(uart_wait_tx_done(uartPort_,pdMS_TO_TICKS(limit-4U))!=ESP_OK)return false;
+  // Extra full-character guard for the slower supported rate. Still not RF idle.
+  delay(3);
+  return commissioningAllowed()&&uint32_t(millis()-started)<limit&&
+    uart_get_buffered_data_len(uartPort_,&buffered)==ESP_OK&&buffered==0&&serial_.available()==0&&auxReady(this);
+ }
  static size_t txCapacity(void* ctx){
   auto& p=*static_cast<E22UartBoardPort*>(ctx);
   const int n=p.serial_.availableForWrite();return n>0?static_cast<size_t>(n):0U;
@@ -58,6 +97,9 @@ private:
   return digitalRead(p->pins_.aux)==HIGH;
  }
  HardwareSerial &serial_;
+ const uart_port_t uartPort_;
+ bool commissioningLocked_=false,commissioningFault_=false;
+ flytec_rtos::E22IsolationProbe isolation_=nullptr;void* isolationContext_=nullptr;
  E22BoardPins pins_={-1,-1,-1,-1,-1,-1,false,false,false};
  E22UartLink link_;
  bool active_=false;

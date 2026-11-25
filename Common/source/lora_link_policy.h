@@ -30,6 +30,25 @@ public:
 private:
  uint32_t urgent_=LoRaAirtimeProfile::BaselineGap;
 };
+// Conservative cold-start alternative to persisted airtime history. The owner
+// must prove uninterrupted TX isolation (including RF tail) between samples;
+// a missing sample or loss of that evidence restarts the full quiet hour.
+class LoRaQuietRestart {
+public:
+ static constexpr uint32_t QuietMs=3600000U, MaxSampleGap=1000U;
+ LoRaQuietRestart()=default;
+ LoRaQuietRestart(const LoRaQuietRestart&)=delete;
+ LoRaQuietRestart& operator=(const LoRaQuietRestart&)=delete;
+ void observe(uint32_t now,bool continuousIsolation){
+  if(!continuousIsolation){tracking_=false;return;}
+  if(!tracking_||uint32_t(now-last_)>MaxSampleGap){tracking_=true;since_=now;}
+  last_=now;
+ }
+ bool ready(uint32_t now)const{return tracking_&&uint32_t(now-last_)<=MaxSampleGap&&uint32_t(last_-since_)>=QuietMs;}
+ bool consume(uint32_t now){if(!ready(now))return false;tracking_=false;return true;}
+private:
+ uint32_t since_=0,last_=0;bool tracking_=false;
+};
 class LoRaAirtimePolicy {
 public:
  enum class Traffic:uint8_t{Routine,Mission,Emergency};
@@ -43,6 +62,9 @@ public:
      p.packetMs>p.hourlyMs-p.reserveMs||!p.urgentGapMs||
      p.normalGapMs<p.urgentGapMs||p.normalGapMs>=Window)return false;
   profile_=p;configured_=true;bootAt_=now;quiet_=priorHourQuiet;return true;
+ }
+ bool configureAfterQuiet(const LoRaAirtimeProfile& p,uint32_t now,LoRaQuietRestart& proof){
+  return proof.consume(now)&&configure(p,now,true);
  }
  Decision inspect(Traffic t,uint32_t now,bool phyReady){
   if(!configured_||(!quiet_&&uint32_t(now-bootAt_)<Window))return Decision::Uncommissioned;
@@ -187,6 +209,33 @@ inline uint16_t sc16CommissioningDivisor(uint32_t crystal,uint32_t baud){
  const uint32_t den=16U*baud;
  if(!crystal||crystal%den||crystal/den>65535U)return 0;
  return uint16_t(crystal/den);
+}
+// Offline commissioning host primitives. They never send an RF frame.
+using E22IsolationProbe=bool(*)(void*);
+inline bool uartBaudWithinOnePercent(uint32_t actual,uint32_t requested){
+ if(requested!=E22UartProfile::ConfigBaud&&requested!=E22UartProfile::CandidateBaud)return false;
+ const uint32_t difference=actual>requested?actual-requested:requested-actual;
+ return difference<=requested/100U;
+}
+// NXP SC16IS750: FIFO free slots alone do not establish transmitter idle.
+// Require normal register bank, TEMT, empty RX and no receive error.
+template<class Read> bool sc16CommissioningDrained(Read read){
+ uint8_t lcr=0,tx=0,lsr=0,rx=0;
+ return read(3,lcr)&&lcr==0x03&&read(8,tx)&&tx==64&&read(5,lsr)&&
+        (lsr&0x40U)&&(lsr&0x9fU)==0&&read(9,rx)&&rx==0;
+}
+template<class Read,class Write> bool sc16CommissioningSetBaud(Read read,Write write,uint32_t crystal,uint32_t baud){
+ const uint16_t divisor=sc16CommissioningDivisor(crystal,baud);
+ uint8_t mcr=0,ier=0,lcr=0,dll=0,dlh=0;
+ if(!divisor||!sc16CommissioningDrained(read)||!read(4,mcr)||mcr!=0||!read(1,ier)||ier!=0)return false;
+ // Verify DLAB before writing aliased THR/IER addresses. Never blindly write.
+ const bool bank=write(3,0x83)&&read(3,lcr)&&lcr==0x83;
+ const bool changed=bank&&write(0,uint8_t(divisor))&&write(1,uint8_t(divisor>>8))&&
+                    read(0,dll)&&read(1,dlh)&&dll==uint8_t(divisor)&&dlh==uint8_t(divisor>>8);
+ // Even a failed DLAB write is ambiguous: attempt known 8N1 restoration.
+ // On any failure the caller stays locked; no application TX is allowed.
+ const bool restored=write(3,0x03)&&read(3,lcr)&&lcr==0x03;
+ return changed&&restored&&read(4,mcr)&&mcr==0&&read(1,ier)&&ier==0&&sc16CommissioningDrained(read);
 }
 class E22UartTransition {
 public:

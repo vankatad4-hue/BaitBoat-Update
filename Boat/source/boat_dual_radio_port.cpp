@@ -9,7 +9,7 @@ static constexpr uint8_t REMOTE_ID=0x01,BOAT_ID=0x02;
 
 BoatDualRadioPort::BoatDualRadioPort()
  : nrf_(BOAT_NRF_CE_PIN,BOAT_NRF_CSN_PIN,&SPI,BOAT_NRF_CHANNEL,BOAT_NRF_SCK_PIN,BOAT_NRF_MISO_PIN,BOAT_NRF_MOSI_PIN),
-   e22_(e22Serial_),nrfReady_(false),sx1262Ready_(false),sessionEpoch_(1),
+   e22_(e22Serial_,UART_NUM_1),nrfReady_(false),sx1262Ready_(false),sessionEpoch_(1),
    lastNrfRxMs_(0),lastBackupRxMs_(0),lastNrfHeartbeatTxMs_(0),
    lastBackupHeartbeatTxMs_(0),lastBackupHeartbeatAttemptMs_(0),txSequence_(0),authenticated_(false),
    sessionStarted_(false),lastNrfRxValid_(false),lastBackupRxValid_(false) {

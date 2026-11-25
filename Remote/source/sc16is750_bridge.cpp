@@ -39,6 +39,7 @@ bool SC16IS750Bridge::ping() {
     return readReg(REG_LSR,lsr);
 }
 bool SC16IS750Bridge::begin(uint32_t baud) {
+    if(commissioningLocked_)return false;
     ready_=false;
     if(baud!=9600) return false; // initial design crystal/divisor validated for 9600
     // Crystal is 1.8432MHz: divisor = 1.8432MHz/(16*9600)=12.
@@ -50,11 +51,39 @@ bool SC16IS750Bridge::begin(uint32_t baud) {
     if(!writeReg(REG_IIR_FCR,0x07)) return false; // enable/reset FIFOs
     if(!writeReg(REG_MCR,0x00)) return false;
     // GPIO0=M0, GPIO1=M1, GPIO3=/RESET are outputs; GPIO2=AUX input.
-    if(!setGpioDirection(0xF4)) return false;
+    if(!setGpioDirection(r30h_sc16::E22_GPIO_OUTPUT_MASK)) return false;
+    uint8_t direction=0,state=0;
+    if(!readReg(REG_IODIR,direction)||direction!=r30h_sc16::E22_GPIO_OUTPUT_MASK) return false;
     if(!setGpioState(0x08)) return false; // release E22 reset; normal mode
+    if(!readGpio(state)||(state&0x0BU)!=0x08U)return false;
     delay(2);
     ready_=ping();
     return ready_;
+}
+bool SC16IS750Bridge::commissioningAllowed()const {
+    return commissioningLocked_&&!commissioningFault_&&flytec_rtos::remoteI2cAllowed()&&isolation_&&isolation_(isolationContext_);
+}
+bool SC16IS750Bridge::lockForCommissioning(const flytec_rtos::E22CommissioningPermit& permit,
+                                           flytec_rtos::E22IsolationProbe isolation,void* context) {
+    if(commissioningLocked_||!ready_||!permit.valid()||!flytec_rtos::remoteI2cAllowed()||!isolation||!isolation(context))return false;
+    commissioningLocked_=true;ready_=false;isolation_=isolation;isolationContext_=context;
+    auto read=[&](uint8_t r,uint8_t& v){return commissioningAllowed()&&readReg(r,v);};
+    uint8_t direction=0;
+    if(peekByte_>=0||!read(REG_IODIR,direction)||direction!=r30h_sc16::E22_GPIO_OUTPUT_MASK||
+       !flytec_rtos::sc16CommissioningDrained(read)||!e22AuxReady()||!commissioningAllowed()){
+        commissioningFault_=true;return false;
+    }
+    rxLevelCache_=0;return true;
+}
+bool SC16IS750Bridge::commissioningBaudVerified(uint32_t crystalHz,uint32_t baud,uint32_t limitMs) {
+    if(!commissioningAllowed()||!limitMs||limitMs>500U||!flytec_rtos::sc16CommissioningDivisor(crystalHz,baud))return false;
+    const uint32_t started=millis();
+    auto read=[&](uint8_t r,uint8_t& v){return commissioningAllowed()&&uint32_t(millis()-started)<limitMs&&readReg(r,v);};
+    auto write=[&](uint8_t r,uint8_t v){return commissioningAllowed()&&uint32_t(millis()-started)<limitMs&&writeReg(r,v);};
+    const bool ok=e22AuxReady()&&flytec_rtos::sc16CommissioningSetBaud(read,write,crystalHz,baud)&&
+                  uint32_t(millis()-started)<limitMs&&commissioningAllowed();
+    if(!ok)commissioningFault_=true;
+    return ok;
 }
 bool SC16IS750Bridge::setGpioDirection(uint8_t mask) {
     return writeReg(REG_IODIR,mask);
@@ -93,6 +122,7 @@ int SC16IS750Bridge::available() {
     return level + (peekByte_>=0 ? 1:0);
 }
 int SC16IS750Bridge::peek() {
+    if(commissioningLocked_)return -1;
     if(peekByte_>=0) return peekByte_;
     if(rxLevelCache_==0){uint8_t level=0;if(!readReg(REG_RXLVL,level))return -1;rxLevelCache_=level;}
     if(rxLevelCache_==0) return -1;
@@ -103,6 +133,7 @@ int SC16IS750Bridge::peek() {
     return peekByte_;
 }
 int SC16IS750Bridge::read() {
+    if(commissioningLocked_)return -1;
     if(peekByte_>=0) { int v=peekByte_; peekByte_=-1; return v; }
     if(rxLevelCache_==0){uint8_t level=0;if(!readReg(REG_RXLVL,level))return -1;rxLevelCache_=level;}
     if(rxLevelCache_==0) return -1;
@@ -126,6 +157,7 @@ size_t SC16IS750Bridge::readFifo(uint8_t *data,size_t length) {
     return total;
 }
 size_t SC16IS750Bridge::writeFifo(const uint8_t *data,size_t length) {
+    if(commissioningLocked_)return 0;
     if(!flytec_rtos::remoteI2cAllowed())return 0;
     size_t total=0;
     while(total<length) {
@@ -149,6 +181,7 @@ size_t SC16IS750Bridge::writeFifo(const uint8_t *data,size_t length) {
 size_t SC16IS750Bridge::write(uint8_t value) { return writeFifo(&value,1); }
 size_t SC16IS750Bridge::write(const uint8_t *buffer,size_t size) { return writeFifo(buffer,size); }
 void SC16IS750Bridge::flush() {
+    if(commissioningLocked_)return;
     const uint32_t start=millis();
     while(millis()-start<100) {
         uint8_t level=0;

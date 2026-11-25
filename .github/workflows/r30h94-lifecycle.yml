@@ -76,6 +76,7 @@ on:
       - 'Remote/tests/lora_adaptive_admission_test.cpp'
       - 'Remote/tests/lora_owner_priority_test.cpp'
       - 'Remote/tests/lora_uart_transition_test.cpp'
+      - 'Remote/tests/lora_host_commissioning_test.cpp'
       - 'Remote/tests/r30h124w_mission_scope.cpp'
       - 'Remote/tests/r30h124w_scope_generation.cpp'
       - 'Remote/tests/r30h124w_scoped_transport.cpp'
@@ -268,3 +269,5 @@ jobs:
           timeout 10s /tmp/lora_owner_priority
           g++ -std=c++17 -Wall -Wextra -Werror -ICommon/source Remote/tests/lora_uart_transition_test.cpp -o /tmp/lora_uart_transition
           timeout 10s /tmp/lora_uart_transition
+          g++ -std=c++17 -Wall -Wextra -Werror -ICommon/source -IRemote/source Remote/tests/lora_host_commissioning_test.cpp -o /tmp/lora_host_commissioning
+          timeout 10s /tmp/lora_host_commissioning

@@ -12,7 +12,7 @@ class PhysicalWorker {
  using Events=flytec_r30h118::PhyEvents<RadioFrame>;
  NRF24Link nrf_;
  HardwareSerial serial_{1};
- E22UartBoardPort e22_{serial_};
+ E22UartBoardPort e22_{serial_,UART_NUM_1};
  flytec_r30h118::NrfAdapter<RadioFrame,NRF24Link> na_;
  flytec_r30h118::E22Adapter<RadioFrame,E22UartBoardPort> ea_;
  PhyService<RadioFrame> ns_,es_;

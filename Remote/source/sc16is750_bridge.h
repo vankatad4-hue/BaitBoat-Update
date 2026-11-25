@@ -1,12 +1,17 @@
 #pragma once
 #include <Arduino.h>
 #include <Wire.h>
+#include "lora_link_policy.h"
 
 class SC16IS750Bridge : public Stream {
 public:
     explicit SC16IS750Bridge(TwoWire &wire=Wire, uint8_t address=0x48);
     bool begin(uint32_t baud=9600);
     bool ping();
+    // Commissioning-only; normal UART Stream remains disabled after lock.
+    bool lockForCommissioning(const flytec_rtos::E22CommissioningPermit& permit,
+                              flytec_rtos::E22IsolationProbe isolation,void* context);
+    bool commissioningBaudVerified(uint32_t crystalHz,uint32_t baud,uint32_t limitMs);
     bool setGpioDirection(uint8_t directionMask);
     bool setGpioState(uint8_t outputState);
     bool readGpio(uint8_t &state);
@@ -29,6 +34,9 @@ private:
     int peekByte_;
     uint8_t rxLevelCache_;
     bool ready_;
+    bool commissioningLocked_=false,commissioningFault_=false;
+    flytec_rtos::E22IsolationProbe isolation_=nullptr;void* isolationContext_=nullptr;
+    bool commissioningAllowed()const;
     bool writeReg(uint8_t reg, uint8_t value);
     bool readReg(uint8_t reg, uint8_t &value);
     size_t writeFifo(const uint8_t *data, size_t length);
