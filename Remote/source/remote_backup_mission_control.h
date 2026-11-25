@@ -31,7 +31,9 @@ public:
  bool maintain(uint32_t now,const BackupMissionAuthority& a){
   if(state_==State::Pending&&(!safe(a)||uint32_t(now-started_)>=Deadline||
       (attempts_>=3&&!inFlight()&&uint32_t(now-offeredAt_)>=Gap)))state_=State::Unknown;
-  if(inFlight()&&uint32_t(now-offeredAt_)>=ttl_)state_=State::Unknown;
+  // Local reservation expiry cannot erase an already authenticated peer result.
+  // Keep the ticket until correlated completion/revocation; it still blocks new work.
+  if(state_==State::Pending&&inFlight()&&uint32_t(now-offeredAt_)>=ttl_)state_=State::Unknown;
   return state_!=State::Unknown;
  }
  uint32_t lifetime(uint32_t now)const{
