@@ -59,8 +59,12 @@ def load_policy(root=ROOT):
     threshold = number(r"uint32_t timeoutMs=(\d+)U", rth, "RTH threshold")
     if number(r"lastAnyAuthenticatedRxMs_,now,(\d+)U", boat, "Boat RTH call") != threshold:
         raise ValueError("RTH helper threshold diverges from runtime")
-    est = number(r"EST_AIRTIME_MS=(\d+)", e22, "E22 estimated airtime")
-    budget = number(r"MAX_AIRTIME_PER_HOUR_MS=(\d+)", e22, "E22 budget")
+    profile = (root / "Boat/source/lora_link_policy.h").read_text()
+    remote_profile = (root / "Remote/source/lora_link_policy.h").read_text()
+    if profile != remote_profile or "EST_AIRTIME_MS=flytec_rtos::LoRaAirtimeProfile::BaselinePacket;" not in e22 or "MAX_AIRTIME_PER_HOUR_MS=flytec_rtos::LoRaAirtimeProfile::BaselineHour;" not in e22:
+        raise ValueError("E22 baseline profile/alias mismatch")
+    est = number(r"BaselinePacket=(\d+)", profile, "E22 estimated airtime")
+    budget = number(r"BaselineHour=(\d+)", profile, "E22 budget")
     return Policy(primary, backup, pace, threshold, est, budget)
 
 
