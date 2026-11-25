@@ -50,6 +50,22 @@ class CommonSourceTest(unittest.TestCase):
             (root/'Remote/source/shared.h').unlink();common.stage(root);common.stage(root,check=True)
             self.assertFalse((root/'Boat').exists())
 
+    def test_platformio_pre_script_without_file_global(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);self.setup_root(root,('Boat',))
+            class Env:
+                def subst(self, value):
+                    self_value=value
+                    if self_value!='$PROJECT_DIR':raise ValueError(self_value)
+                    return str(root/'Boat')
+            namespace={'__name__':'scons_extra_script'}
+            def inject(name):
+                self.assertEqual(name,'env');namespace[name]=Env()
+            namespace['Import']=inject
+            exec(compile((ROOT/'Common/stage.py').read_text(),'stage.py','exec'),namespace)
+            self.assertEqual((root/'Boat/source/shared.h').read_bytes(),b'original\n')
+            common.stage(root,check=True)
+
     def test_actual_source_and_generated_paths(self):
         expected=common.stage(ROOT,check=True)
         ignores=(ROOT/'.gitignore').read_text().splitlines()

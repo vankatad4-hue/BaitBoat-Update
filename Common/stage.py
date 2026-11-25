@@ -10,7 +10,15 @@ import json
 import os
 import tempfile
 
-ROOT = Path(__file__).resolve().parent.parent
+# SCons does not supply __file__ to extra scripts. Import the build env
+# before computing the canonical root; ordinary Python retains __file__.
+IS_PIO = 'Import' in globals()
+if IS_PIO:
+    Import('env')  # type: ignore[name-defined]
+    PROJECT = Path(env.subst('$PROJECT_DIR')).resolve()  # type: ignore[name-defined]
+    ROOT = PROJECT.parent
+else:
+    ROOT = Path(__file__).resolve().parent.parent
 SIDES = ('Boat', 'Remote')
 STAMP = '.common-staged.json'
 
@@ -104,11 +112,9 @@ def main():
 
 
 # SCons/PlatformIO pre-script; invoke before build source scanning.
-if 'Import' in globals():
-    Import('env')  # type: ignore[name-defined]
-    project = Path(env.subst('$PROJECT_DIR')).resolve()  # type: ignore[name-defined]
-    if project.parent != ROOT or project.name not in SIDES:
+if IS_PIO:
+    if PROJECT.name not in SIDES or not (PROJECT/'platformio.ini').is_file():
         raise RuntimeError('Open the extracted Boat or Remote PlatformIO project with Common alongside')
-    stage(ROOT, [project.name])
+    stage(ROOT, [PROJECT.name])
 elif __name__ == '__main__':
     main()
