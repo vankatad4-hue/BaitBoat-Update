@@ -1371,3 +1371,9 @@ Exact W7 19af764, W8.1 b0bf2bd and documentation 234b4af combined CI status look
 Verify exact W7/W8.2 CI runs and finish missing regressions. Bind fresh authenticated backup STATUS and mission feedback to mock application, preserving primary high-water, Unknown outcome and STOP/session/failsafe revocation. Enable only backup PAUSE/CANCEL; run authenticated end-to-end tests and implement validated primary recovery without automatic motion/rearm. Verify both PlatformIO targets and remaining CI, then neutral retry and temporary override.
 
 W8 IN_PROGRESS; physical timing NOT_RUN. Completion allowance provisional. Production Legacy-only; workers/upload locked; Boat VER014 / Remote VER028 unchanged. Future updates append below.
+
+---
+
+## Active continuation — R30H-124W8.3a (2026-11-25)
+
+[Source f4f44ff](https://github.com/vankatad4-hue/BaitBoat-Update/commit/f4f44ff561b98ca684a290e05cc988f931b62566), verified blob 8c7145e3bf82ad370e0cac9a99d9331f79e08040: experimental mock application retains authenticated, replay-checked backup STATUS with separate capture time, read-only accessor, reset/fault invalidation and provisional 6500 ms freshness. No primary movement/CLEAR authorization or production UI binding. W6 timeout regression, mock peer PAUSE/CANCEL, W5 freshness/replay test writes failed due to repository/connector timeouts. CI UNVERIFIED. Next W8.3b: retry tests, verify exact CI, bind backup mission ledger with preserved primary high-water, generation revocation, authenticated feedback and safety exclusions; then primary recovery. Physical tests NOT_RUN; production Legacy-only, upload/worker locks and Boat VER014 / Remote VER028 unchanged. Append future updates below.
