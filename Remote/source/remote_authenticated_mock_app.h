@@ -147,7 +147,7 @@ public:
   }
   // Await fresh post-transfer evidence for a bounded interval. Once seen,
   // stale/unsafe STATUS retires the entire generation before new admission.
-  if(backupScope_&&(backupFault_||
+  if(backupScope_&&(backupFault_||backupUnsafeSeen_||
      (backupEvidenceSeen_&&!backupSafety(now))||
      ((!backupEvidenceSeen_||!backupPhaseSeen_)&&uint32_t(now-backupTransferAt_)>=BackupStatusAge)||
      (backupPhaseSeen_&&(uint32_t(now-backupPhaseAt_)>=BackupStatusAge||backupPhase_==MC_RETURNING||backupPhase_==MC_RELEASING||
@@ -282,10 +282,15 @@ private:
   probeTicket_=ticket;probeSequence_=f.sequence;lastProbeAt_=now;
   return recovery_.offer(f.sequence,now,1,generation);
  }
+ static bool safeBackupStatus(const RadioDecodedPayload& s){
+  return s.stopState==0&&s.batteryPercent>20&&s.batteryPercent<=100&&
+   (s.safetyFlags&0xE0U)==0&&(s.safetyFlags&1U);
+ }
+ static bool unsafeBackupPhase(MissionControlPhase p){
+  return p==MC_RETURNING||p==MC_RELEASING||p==MC_OVERRIDE_ACTIVE||p==MC_OVERRIDE_NEUTRAL||p==MC_MANUAL_REQUESTED;
+ }
  bool backupSafety(uint32_t now)const{
-  return backupEvidenceSeen_&&backupStatusFresh(now)&&backupStatus_.stopState==0&&
-   backupStatus_.batteryPercent>20&&backupStatus_.batteryPercent<=100&&
-   (backupStatus_.safetyFlags&0xE0U)==0&&(backupStatus_.safetyFlags&1U);
+  return !backupUnsafeSeen_&&backupEvidenceSeen_&&backupStatusFresh(now)&&safeBackupStatus(backupStatus_);
  }
  BackupMissionAuthority backupAuthority(uint32_t now)const{
   const bool known=backupPhaseSeen_&&uint32_t(now-backupPhaseAt_)<BackupStatusAge&&
@@ -300,11 +305,11 @@ private:
   if(!id||!control_.transferMissionToBackup(id,now,true))return false;
   missionControl_.transportRevoked();mission_.upload().transportRevoked();ordinary_.intent().transportRevoked();
   missionClear_=missionAuthorized_=false;clear_.reset();clearTicket_=0;rearmed_=false;
-  resetRecovery();backupTransferAt_=now;backupEvidenceSeen_=backupPhaseSeen_=false;
+  resetRecovery();backupTransferAt_=now;backupEvidenceSeen_=backupPhaseSeen_=backupUnsafeSeen_=false;
   backupScope_=backupMission_.bind(id,1,tx_.generation(),high,true);
   return backupScope_;
  }
- void revokeBackupMission(){backupMission_.transportRevoked();backupScope_=backupEvidenceSeen_=backupPhaseSeen_=false;}
+ void revokeBackupMission(){backupMission_.transportRevoked();backupScope_=backupEvidenceSeen_=backupPhaseSeen_=backupUnsafeSeen_=false;}
  MissionControlAuthority missionAuthority(uint32_t now)const{
   MissionControlAuthority a{};
   a.session=established();a.primaryFresh=primaryStatusFresh(now);a.missionAuthority=missionAuthorized_;
@@ -351,7 +356,7 @@ private:
   radioSession_wipe(key_,32);sequence_=stopId_=0;ack_.reset(0);
   clear_.reset();clearTicket_=0;ordinary_.intent().reset();rearmed_=false;primaryStatusSeen_=backupStatusSeen_=false;backupStatusAt_=0;backupStatus_=RadioDecodedPayload{};inputValid_=inputNeutral_=false;
   if(a&&b){mission_.upload().resetAfterSession();missionControl_.resetAfterSession();backupMission_.resetAfterSession();}
-  backupScope_=backupEvidenceSeen_=backupPhaseSeen_=false;backupResultSeen_=false;backupResult_=MissionControlFeedback{};resetRecovery();recoveryAllowed_=false;
+  backupScope_=backupEvidenceSeen_=backupPhaseSeen_=backupUnsafeSeen_=false;backupResultSeen_=false;backupResult_=MissionControlFeedback{};resetRecovery();recoveryAllowed_=false;
   missionClear_=missionAuthorized_=false;
   preparedStatusSeen_=false;preparedStatusId_=0;preparedStatusAt_=0;
   cross_.resetAfterHandshake();primary_.resetAfterHandshake();backup_.resetAfterHandshake();
@@ -398,6 +403,9 @@ private:
      if(!backupScope_||feedback.transaction!=backupMission_.transaction()||
         uint32_t(rx.receivedMs-backupTransferAt_)>=0x80000000U||
         !backup_.accept(f.sequence)||!cross_.accept(f.sequence))continue;
+     // Unsafe phase is sticky for this authority, even if a subsequent
+     // safe snapshot is drained in the same application pass.
+     if(unsafeBackupPhase(feedback.phase))backupUnsafeSeen_=true;
      if(feedback.result==MC_STATUS){
       backupPhase_=feedback.phase;backupPhaseAt_=rx.receivedMs;backupPhaseSeen_=true;
      }else if(backupMission_.observe(feedback,1,tx_.generation(),rx.receivedMs,now,true,backupAuthority(now))){
@@ -445,8 +453,9 @@ private:
      primaryStatus_=decoded;primaryStatusAt_=rx.receivedMs;primaryStatusSeen_=true;
      clear_.status(1,true,decoded.stopState==0,primarySafe()&&(decoded.safetyFlags&7U)==1U,rx.receivedMs,now);
     }else{
+     if(backupScope_&&uint32_t(rx.receivedMs-backupTransferAt_)>=0x80000000U)continue;
      backupStatus_=decoded;backupStatusAt_=rx.receivedMs;backupStatusSeen_=true;
-     if(backupScope_&&uint32_t(rx.receivedMs-backupTransferAt_)<0x80000000U)backupEvidenceSeen_=true;
+     if(backupScope_){backupEvidenceSeen_=true;if(!safeBackupStatus(decoded))backupUnsafeSeen_=true;}
     }
    }
   }
@@ -463,7 +472,7 @@ private:
  MissionControlFeedback backupResult_{};bool backupResultSeen_=false;
  MissionControlPhase backupPhase_=MC_IDLE;
  uint32_t backupTransferAt_=0,backupPhaseAt_=0;
- bool backupScope_=false,backupEvidenceSeen_=false,backupPhaseSeen_=false;
+ bool backupScope_=false,backupEvidenceSeen_=false,backupPhaseSeen_=false,backupUnsafeSeen_=false;
  uint32_t preparedStatusAt_=0;uint16_t preparedStatusId_=0;bool preparedStatusSeen_=false;
  bool primaryStatusSeen_=false,inputValid_=false,inputNeutral_=false,rearmed_=false;
  RadioAckTracker ack_;RadioSessionCounter primary_,backup_,cross_;
