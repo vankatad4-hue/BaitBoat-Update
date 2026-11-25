@@ -37,8 +37,15 @@ public:
  bool backupMissionBound()const{return established()&&backupScope_;}
  BackupMissionControl::State backupMissionState()const{return backupMission_.state();}
  uint16_t backupMissionHighWater()const{return backupMission_.requestHighWater();}
+ // Historical authenticated result, never an authorization or live phase.
+ bool lastBackupMissionFeedback(MissionControlFeedback& out)const{
+  if(!established()||!backupResultSeen_)return false;
+  out=backupResult_;return true;
+ }
  bool requestBackupMissionControl(MissionControlOp op,uint32_t now){
-  return backupMissionBound()&&backupMission_.request(op,now,backupAuthority(now));
+  // A probe already admitted to the primary lane must settle before a
+  // new backup transaction. Shared replay ordering cannot tolerate overlap.
+  return backupMissionBound()&&!probeTicket_&&!recovery_.awaiting(now)&&backupMission_.request(op,now,backupAuthority(now));
  }
  bool requestStop(uint16_t id,uint32_t now){
   if(!established()||!id)return false;
@@ -246,6 +253,11 @@ private:
    recoveryGeneration_=generation;lastProbeAt_=now-500U;
   }
   recovery_.expire(now);
+  // Avoid consuming a newer primary echo before an older LoRa mission reply.
+  // Backup operations keep their existing absolute deadline and STOP priority.
+  if(backupMission_.inFlight()||backupMission_.state()==BackupMissionControl::State::Pending){
+   recovery_.begin(1,generation);return true;
+  }
   // Never revoke an ambiguous PAUSE/CANCEL just because primary returns.
   if(recovery_.ready(now,1,generation)&&!probeTicket_&&!tx_.pending(PhyLink::Primary)&&
      !backupMission_.inFlight()&&backupMission_.state()!=BackupMissionControl::State::Pending){
@@ -335,7 +347,7 @@ private:
   radioSession_wipe(key_,32);sequence_=stopId_=0;ack_.reset(0);
   clear_.reset();clearTicket_=0;ordinary_.intent().reset();rearmed_=false;primaryStatusSeen_=backupStatusSeen_=false;backupStatusAt_=0;backupStatus_=RadioDecodedPayload{};inputValid_=inputNeutral_=false;
   if(a&&b){mission_.upload().resetAfterSession();missionControl_.resetAfterSession();backupMission_.resetAfterSession();}
-  backupScope_=backupEvidenceSeen_=backupPhaseSeen_=false;resetRecovery();recoveryAllowed_=false;
+  backupScope_=backupEvidenceSeen_=backupPhaseSeen_=false;backupResultSeen_=false;backupResult_=MissionControlFeedback{};resetRecovery();recoveryAllowed_=false;
   missionClear_=missionAuthorized_=false;
   preparedStatusSeen_=false;preparedStatusId_=0;preparedStatusAt_=0;
   cross_.resetAfterHandshake();primary_.resetAfterHandshake();backup_.resetAfterHandshake();
@@ -361,6 +373,7 @@ private:
    if(f.type==RADIO_MSG_LINK_PROBE){
     uint16_t echoed=0;
     if(link==PhyLink::Primary&&primaryFault_&&recoveryAllowed_&&!f.commandId&&
+       !backupMission_.inFlight()&&backupMission_.state()!=BackupMissionControl::State::Pending&&
        recoveryProbeDecode(f.payload,RecoveryProbeKind::Echo,echoed)&&
        primary_.accept(f.sequence)&&cross_.accept(f.sequence))
      recovery_.observe(echoed,rx.receivedMs,now,1,tx_.generation(),true);
@@ -378,7 +391,10 @@ private:
      if(!backupScope_||feedback.transaction!=backupMission_.transaction()||
         uint32_t(rx.receivedMs-backupTransferAt_)>=0x80000000U||
         !backup_.accept(f.sequence)||!cross_.accept(f.sequence))continue;
-     if(feedback.result==MC_STATUS||backupMission_.observe(feedback,1,tx_.generation(),rx.receivedMs,now,true,backupAuthority(now))){
+     if(feedback.result==MC_STATUS){
+      backupPhase_=feedback.phase;backupPhaseAt_=rx.receivedMs;backupPhaseSeen_=true;
+     }else if(backupMission_.observe(feedback,1,tx_.generation(),rx.receivedMs,now,true,backupAuthority(now))){
+      backupResult_=feedback;backupResultSeen_=true;
       backupPhase_=feedback.phase;backupPhaseAt_=rx.receivedMs;backupPhaseSeen_=true;
      }
      continue;
@@ -430,6 +446,7 @@ private:
  uint32_t recoveryGeneration_=0,probeTicket_=0,lastProbeAt_=0;
  uint16_t probeSequence_=0;bool recoveryAllowed_=false;
  BackupMissionControl backupMission_;
+ MissionControlFeedback backupResult_{};bool backupResultSeen_=false;
  MissionControlPhase backupPhase_=MC_IDLE;
  uint32_t backupTransferAt_=0,backupPhaseAt_=0;
  bool backupScope_=false,backupEvidenceSeen_=false,backupPhaseSeen_=false;
