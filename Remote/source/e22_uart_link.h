@@ -3,6 +3,7 @@
 #include <Stream.h>
 #include "radio_protocol.h"
 #include "e22_tx_state.h"
+#include "lora_airtime_policy.h"
 
 typedef void (*E22SetModeFn)(bool m0,bool m1,void *context);
 typedef bool (*E22AuxReadyFn)(void *context);
@@ -34,8 +35,8 @@ public:
     uint32_t rxFullPollCount() const { return rxFullPollCount_; }
 private:
     uint32_t rxFullPollCount_=0;
-    static constexpr uint32_t EST_AIRTIME_MS=25; // UNVERIFIED estimate; RF TX locked until actual airtime is measured
-    static constexpr uint32_t MAX_AIRTIME_PER_HOUR_MS=36000; // PROVISIONAL 1% policy; actual EU band conditions need signoff
+    static constexpr uint32_t EST_AIRTIME_MS=flytec_rtos::LoRaAirtimeProfile::BaselinePacket; // UNVERIFIED estimate; RF TX locked until actual airtime is measured
+    static constexpr uint32_t MAX_AIRTIME_PER_HOUR_MS=flytec_rtos::LoRaAirtimeProfile::BaselineHour; // PROVISIONAL 1% policy; actual EU band conditions need signoff
     static constexpr uint8_t SUBPACKET_BYTES=32;
     Stream &uart_;
     E22SetModeFn modeFn_;
