@@ -224,6 +224,20 @@ template<class Read> bool sc16CommissioningDrained(Read read){
  return read(3,lcr)&&lcr==0x03&&read(8,tx)&&tx==64&&read(5,lsr)&&
         (lsr&0x40U)&&(lsr&0x9fU)==0&&read(9,rx)&&rx==0;
 }
+// Recovery attachment is read-only. Reject an unknown bank, prescaler,
+// interrupt mode or GPIO configuration; do not repair it by guessing.
+template<class Read> bool sc16OfflineRecoveryReady(Read read){
+ uint8_t mcr=0,ier=0,dir=0,state=0;
+ return sc16CommissioningDrained(read)&&read(4,mcr)&&mcr==0&&read(1,ier)&&ier==0&&
+        read(10,dir)&&dir==0x0bU&&read(11,state)&&(state&0x04U)&&
+        ((state&0x0bU)==0x08U||(state&0x0bU)==0x0aU);
+}
+inline bool e22KnownProfile(const uint8_t* r,unsigned size){
+ if(!r||size!=12||(r[6]!=E22UartProfile::BaselineReg0&&r[6]!=E22UartProfile::CandidateReg0))return false;
+ const uint8_t expected[]={0xc1,0,9,0,0,0,r[6],0xc3,0x12,0,0,0};
+ for(unsigned i=0;i<sizeof(expected);++i)if(r[i]!=expected[i])return false;
+ return true;
+}
 template<class Read,class Write> bool sc16CommissioningSetBaud(Read read,Write write,uint32_t crystal,uint32_t baud){
  const uint16_t divisor=sc16CommissioningDivisor(crystal,baud);
  uint8_t mcr=0,ier=0,lcr=0,dll=0,dlh=0;
@@ -259,20 +273,27 @@ public:
  bool lockedAndIsolated()const{return host_.commissioningAllowed();}
  bool modeVerified(bool config,uint32_t limit){
   if(!valid(limit)||!host_.commissioningModeVerified(config,limit))return fail();
-  config_=config;modeKnown_=true;return true;
+  config_=config;modeKnown_=true;recognizedProfile_=false;return true;
  }
  bool baudVerified(uint32_t baud,uint32_t limit){
   if(!valid(limit)||!modeKnown_||!config_||!host_.commissioningHostBaud(crystal_,baud,limit))return fail();
-  baud_=baud;return true;
+  baud_=baud;recognizedProfile_=false;return true;
  }
  bool exchangeExact(const uint8_t* cmd,unsigned n,uint8_t* out,unsigned size,uint32_t limit){
   if(!valid(limit)||!config_||!modeKnown_||baud_!=9600||!out||!e22CommissioningCommand(cmd,n,size))return fail();
+  // Even an offline caller must read a recognized complete profile before
+  // a volatile write. Consume the proof before the possible write.
+  if(n==4&&!recognizedProfile_)return fail();
+  recognizedProfile_=false;
   const uint32_t start=host_.commissioningNow();
   unsigned count=0;
   if(!host_.commissioningModeMatches(true)||!host_.commissioningTxIdle()||
      !host_.commissioningRxCount(count)||count||!within(start,limit)||
      !host_.commissioningConfigWrite(cmd,n))return fail();
-  return collect(out,size,start,limit)?true:fail();
+  if(!collect(out,size,start,limit))return fail();
+  if(n==3){if(!e22KnownProfile(out,size))return fail();recognizedProfile_=true;}
+  else if(out[0]!=0xc1||out[1]!=3||out[2]!=1||out[3]!=cmd[3])return fail();
+  return true;
  }
  bool receiveFixtureVerified(uint32_t baud,uint32_t limit){
   if(!valid(limit)||!modeKnown_||config_||baud_!=baud||!arm_||fixtureUsed_)return fail();
@@ -304,7 +325,7 @@ private:
   return false;
  }
  Host& host_;const uint32_t crystal_;E22FixtureArm arm_;void* context_;uint8_t token_[8]{};
- uint32_t baud_=0;bool config_=false,modeKnown_=false,fixtureUsed_=false;
+ uint32_t baud_=0;bool config_=false,modeKnown_=false,fixtureUsed_=false,recognizedProfile_=false;
 };
 class E22UartTransition {
 public:

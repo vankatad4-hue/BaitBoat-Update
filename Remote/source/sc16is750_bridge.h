@@ -11,6 +11,10 @@ public:
     // Commissioning-only; normal UART Stream remains disabled after lock.
     bool lockForCommissioning(const flytec_rtos::E22CommissioningPermit& permit,
                               flytec_rtos::E22IsolationProbe isolation,void* context);
+    // Read-only attach to an independently prepared, isolated bridge. Does
+    // not call begin or write E22 settings. Fresh offline instance required.
+    bool attachOfflineRecovery(const flytec_rtos::E22CommissioningPermit& permit,
+                               flytec_rtos::E22IsolationProbe isolation,void* context);
     bool commissioningBaudVerified(uint32_t crystalHz,uint32_t baud,uint32_t limitMs);
     bool setGpioDirection(uint8_t directionMask);
     bool setGpioState(uint8_t outputState);
@@ -34,7 +38,7 @@ private:
     int peekByte_;
     uint8_t rxLevelCache_;
     bool ready_;
-    bool commissioningLocked_=false,commissioningFault_=false;
+    bool commissioningLocked_=false,commissioningFault_=false,applicationBeginAttempted_=false;
     flytec_rtos::E22IsolationProbe isolation_=nullptr;void* isolationContext_=nullptr;
     friend class flytec_rtos::E22OfflinePort<SC16IS750Bridge>;
     void commissioningLatchFault(){commissioningFault_=true;}

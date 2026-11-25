@@ -18,7 +18,7 @@ public:
   link_(serial_,setMode,auxReady,setReset,this,txCapacity){}
  bool begin(const E22BoardPins &p){
   if(commissioningLocked_)return false;
-  active_=false;
+  applicationBeginAttempted_=true;active_=false;
   if(!e22BoardPinsValid(p))return false;
   pins_=p;
   pinMode(p.m0,OUTPUT);digitalWrite(p.m0,LOW);
@@ -39,6 +39,17 @@ public:
   commissioningLocked_=true;isolation_=isolation;isolationContext_=context;
   link_.disableAdmission();active_=false;
   return commissionCheck(commissioningDrain(500));
+ }
+ // Fresh fixture-prepared UART1 only; no serial.begin, pin writes, reset or
+ // E22 configuration write here. A failed attachment remains sticky.
+ bool attachOfflineRecovery(const E22BoardPins& p,const flytec_rtos::E22CommissioningPermit& permit,
+                            flytec_rtos::E22IsolationProbe isolation,void* context){
+  if(applicationBeginAttempted_||commissioningLocked_||active_||!permit.valid()||!isolation||
+     !isolation(context)||uartPort_!=UART_NUM_1||!e22BoardPinsValid(p))return false;
+  commissioningLocked_=true;isolation_=isolation;isolationContext_=context;pins_=p;
+  link_.disableAdmission();
+  return commissionCheck(uart_is_driver_installed(uartPort_)&&
+    (commissioningModeMatches(false)||commissioningModeMatches(true))&&commissioningDrain(500));
  }
  bool commissioningBaudVerified(uint32_t baud,uint32_t limit){
   if(!commissioningAllowed()||limit<10U||limit>500U||!flytec_rtos::uartBaudWithinOnePercent(baud,baud))return false;
@@ -131,7 +142,7 @@ private:
  }
  HardwareSerial &serial_;
  const uart_port_t uartPort_;
- bool commissioningLocked_=false,commissioningFault_=false;
+ bool commissioningLocked_=false,commissioningFault_=false,applicationBeginAttempted_=false;
  flytec_rtos::E22IsolationProbe isolation_=nullptr;void* isolationContext_=nullptr;
  E22BoardPins pins_={-1,-1,-1,-1,-1,-1,false,false,false};
  E22UartLink link_;

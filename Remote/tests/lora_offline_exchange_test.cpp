@@ -39,5 +39,22 @@ int main(){
  const uint8_t persistent[]={0xc0,3,1,0xe7};assert(!ip.exchangeExact(persistent,4,out,4,500)&&invalid.writes==0);
  Mock busy;P bp(busy,0,&Mock::arm,&busy,token);assert(bp.modeVerified(true,500)&&bp.baudVerified(9600,500));busy.busy=true;assert(!bp.exchangeExact(read,3,out,12,500)&&busy.writes==0);
  Mock wrong;P wp(wrong,0,&Mock::arm,&wrong,token);assert(wp.modeVerified(false,500));assert(!wp.exchangeExact(read,3,out,12,500)&&wrong.writes==0);
+ // Fresh offline recovery: accept only a recognized full profile, never
+ // blind writes. Restore temporary candidate to baseline, verify fresh RX.
+ Mock recovery;recovery.reg=0xe7;recovery.baud=115200;
+ P rp(recovery,0,&Mock::arm,&recovery,token);E22UartTransition rt;
+ assert(rt.begin(rp,permit,recovery.now,true));while(rt.step(rp,recovery.now))++recovery.now;
+ assert(rt.state()==S::VerifiedLocked&&rt.verifiedBaud()==9600&&recovery.reg==0x67&&recovery.writes==3&&recovery.arms==1);
+ Mock already;P ap(already,0,&Mock::arm,&already,token);E22UartTransition at;
+ assert(at.begin(ap,permit,already.now,true));while(at.step(ap,already.now))++already.now;
+ assert(at.verifiedBaud()==9600&&already.writes==2); // two reads, no write
+ Mock unknown;unknown.reg=0x27;P up(unknown,0,&Mock::arm,&unknown,token);E22UartTransition ut;
+ assert(ut.begin(up,permit,unknown.now,true));while(ut.step(up,unknown.now))++unknown.now;
+ assert(ut.state()==S::FaultLocked&&unknown.writes==1&&unknown.reg==0x27&&unknown.fault);
+ Mock blind;P bl(blind,0,&Mock::arm,&blind,token);assert(bl.modeVerified(true,500)&&bl.baudVerified(9600,500));
+ const uint8_t temporary[]={0xc2,3,1,0x67};assert(!bl.exchangeExact(temporary,4,out,4,500)&&blind.writes==0);
+ Mock repeat;P re(repeat,0,&Mock::arm,&repeat,token);assert(re.modeVerified(true,500)&&re.baudVerified(9600,500));
+ assert(re.exchangeExact(read,3,out,12,500)&&re.exchangeExact(temporary,4,out,4,500));
+ assert(!re.exchangeExact(temporary,4,out,4,500)&&repeat.writes==2);
  Mock wrap;wrap.now=0xfffffff0;P wrapPort(wrap,0,&Mock::arm,&wrap,token);E22UartTransition wrapTransition;run(wrap,wrapPort,wrapTransition);assert(wrapTransition.verifiedBaud()==115200);
 }

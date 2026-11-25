@@ -3,14 +3,14 @@
 #include <cassert>
 using namespace flytec_rtos;
 struct Registers {
- uint8_t lcr=3,mcr=0,ier=0,lsr=0x60,tx=64,rx=0,dll=12,dlh=0;
+ uint8_t lcr=3,mcr=0,ier=0,lsr=0x60,tx=64,rx=0,dll=12,dlh=0,dir=0x0b,state=0x0c;
  bool wrongLatch=false,wrongDivisor=false;unsigned calls=0,failAt=0,divisorWrites=0;
  bool allow(){return ++calls!=failAt;}
  bool read(uint8_t r,uint8_t& v){
   if(!allow())return false;
   switch(r){case 0:v=uint8_t(dll^(wrongDivisor?1U:0U));return true;
    case 1:v=lcr&0x80?dlh:ier;return true;case 3:v=lcr;return true;
-   case 4:v=mcr;return true;case 5:v=lsr;return true;case 8:v=tx;return true;case 9:v=rx;return true;default:return false;}
+   case 4:v=mcr;return true;case 5:v=lsr;return true;case 8:v=tx;return true;case 9:v=rx;return true;case 10:v=dir;return true;case 11:v=state;return true;default:return false;}
  }
  bool write(uint8_t r,uint8_t v){
   if(!allow())return false;
@@ -38,6 +38,12 @@ int main(){
  Registers badClock;assert(!badClock.configure(1000000,115200)&&!badClock.calls);
  Registers noBank;noBank.wrongLatch=true;assert(!noBank.configure()&&!noBank.divisorWrites&&noBank.lcr==3);
  Registers wrong;wrong.wrongDivisor=true;assert(!wrong.configure()&&wrong.divisorWrites==2&&wrong.lcr==3);
+ auto attach=[](Registers& r){return sc16OfflineRecoveryReady([&](uint8_t n,uint8_t& v){return r.read(n,v);});};
+ Registers fresh;assert(attach(fresh)&&!fresh.divisorWrites);const unsigned reads=fresh.calls;
+ fresh.state=0x0e;assert(attach(fresh));fresh.state=0x0d;assert(!attach(fresh));fresh.state=0x08;assert(!attach(fresh));
+ Registers inverted;inverted.dir=0xf4;assert(!attach(inverted));
+ Registers unknownBank;unknownBank.lcr=0x83;assert(!attach(unknownBank));
+ for(unsigned i=1;i<=reads;++i){Registers r;r.failAt=i;assert(!attach(r)&&!r.divisorWrites);}
  LoRaAirtimeProfile profile;profile.commissioned=true;LoRaAirtimePolicy policy;LoRaQuietRestart quiet;
  const uint32_t start=0xffff0000U;quiet.observe(start,true);quiet.observe(start+3600000U,true);
  assert(!quiet.ready(start+3600000U)&&!policy.configureAfterQuiet(profile,start+3600000U,quiet));
