@@ -2,6 +2,7 @@
 #include "radio_handshake.h"
 #include "radio_command_codec.h"
 #include "radio_payload_codec.h"
+#include "mission_wire.h"
 // Test-only Boat peer. No hardware, motor outputs, GPIO, provisioned keys.
 namespace flytec_rtos {
 class RemoteMockPeer {
@@ -15,14 +16,21 @@ public:
    if(f.commandId||f.sequence||f.sessionEpoch||!radio_frameVerify(f,root_))return false;
    SessionHandshakePacket p{};bool fresh=false;
    if(!session_.boatReceive((SessionHandshakeMessage)f.type,f.payload,456,root_,mac_,now,true,p,fresh,SessionHandshake::BackupWindowMs))return false;
-   if(fresh){session_.frameKey(key_);sequence_=0;rx_.resetAfterHandshake();}
+   if(fresh){session_.frameKey(key_);sequence_=0;rx_.resetAfterHandshake();mission_.reset();}
    radio_frameInit(response,(RadioMessageType)p.type,2,1,0,0,now,0);
    memcpy(response.payload,p.payload,8);response.flags=flags;return radio_frameSeal(response,root_);
   }
   if(!session_.established()||f.sessionEpoch!=1||!radio_frameVerify(f,key_)||!rx_.accept(f.sequence))return false;
+  if(f.type==RADIO_MSG_MISSION_PREPARE){
+   const uint16_t id=uint16_t(f.payload[1])|(uint16_t(f.payload[2])<<8);
+   if(backup||!id||id!=f.commandId||f.payload[0]<MISSION_BEGIN||f.payload[0]>MISSION_COMMIT)return false;
+   const auto result=mission_.ingest(f.payload,now,true,stopped_);
+   radio_frameInit(response,RADIO_MSG_MISSION_ACK,2,1,++sequence_,id,now,1);
+   return missionAck_encode(id,static_cast<MissionOpcode>(f.payload[0]),result,response.payload)&&radio_frameSeal(response,key_);
+  }
   if(f.type==RADIO_MSG_ACTION&&f.payload[0]==CMD_EMERGENCY_STOP){
    BoatCommand c{};if(!radio_decodeCommand(f,1,2,now,0,backup,c,key_))return false;
-   stopped_=true;lastStop_=uint16_t(c.commandId);
+   stopped_=true;mission_.reset();lastStop_=uint16_t(c.commandId);
    radio_frameInit(response,RADIO_MSG_ACK,2,1,++sequence_,lastStop_,now,1);
    response.flags=flags;response.payload[1]=RADIO_ACK_ACCEPTED;
    response.payload[2]=CMD_EMERGENCY_STOP;response.payload[3]=uint8_t(lastStop_);
@@ -55,8 +63,9 @@ public:
  }
  uint16_t lastStop()const{return lastStop_;}
  unsigned mockReleases()const{return mockReleases_;}
+ bool prepared(MissionPlan& out,uint32_t now)const{return mission_.getPrepared(out,now);}
 private:
- SessionHmac mac_;SessionHandshake session_;RadioSessionCounter rx_;
+ SessionHmac mac_;SessionHandshake session_;RadioSessionCounter rx_;MissionAssembler mission_;
  uint8_t root_[32]{42},key_[32]{};uint16_t sequence_=0,lastStop_=0;bool stopped_=false;unsigned mockReleases_=0;
 };
 }

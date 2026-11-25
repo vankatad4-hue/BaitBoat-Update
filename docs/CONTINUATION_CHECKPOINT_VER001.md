@@ -1,3 +1,13 @@
+## Active continuation — R30H-124T (2026-11-25)
+
+Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged; production remains Legacy-only; worker activation and upload locked.
+
+- Scoped primary-only mission preparation admission while STOP latched, no pending STOP request or CLEAR, explicit owner approval, transaction/shape checks, max 100 ms TTL. General submit cannot admit PREPARE; preparation generation blocks CLEAR/rearm until explicit future handoff or revocation. No START, sticks or control permission added.
+- RemoteMissionPrepareTx binds scheduler to signed real wire frame, completion router and isolated mock application. Authenticated primary mission ACK requires correct transaction/opcode and capture; mock uses real MissionAssembler, checks safe stopped/neutral simulated status and battery percentage. Production additionally requires fresh battery voltage, actual calibrated sticks and commissioned link. Local cancellation revokes generation only, retains mission lock (peer may still hold plan); actual peer CANCEL and prepared handoff remain pending.
+- LOCAL PASS: focused signed PREPARE producer test using mock queue, actual radio_protocol.cpp and mission_protocol.cpp with exact repository host Arduino and OpenSSL-backed mbedTLS stub. All dependencies matched Git blob hashes; new header 5a791319bf14daebfd37674180234671ea8d5dfb and test 4760d279f637916e2e01d0f3b3fdd1ff325b9bf4. g++ C++17 -Wall -Wextra -Werror -lcrypto, exit 0 under 10 s. Covers six authenticated frames, invalid shape/transaction/link, stale completion, authorization withdrawal. Actual RemoteAsyncTx/FreeRTOS integrated test NOT_RUN. Added CI test and mission_protocol.cpp to existing authenticated mock test/bench build inputs.
+- Full Q/R/J/F/G/H/I/P/O/S/T integration and PlatformIO still unverified; base combined status empty; current git ls-remote fails DNS, pio absent. No RF/physical acceptance.
+- Next R30H-124U: execute integrated tests and fix failures; implement explicit preparation handoff and cancellation uncertainty handling (no auto clear), then authenticated control request scheduler and START/PAUSE/RESUME/CANCEL feedback. Keep production activation disabled.
+
 ## Active continuation — R30H-124S (2026-11-25)
 
 Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged; production Legacy-only, worker activation/upload locked.

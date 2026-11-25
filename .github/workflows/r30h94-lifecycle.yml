@@ -49,6 +49,9 @@ on:
       - 'Remote/source/radio_ack_tracker.cpp'
       - 'Remote/tests/r30h124r_ack_deadline.cpp'
       - 'Remote/source/remote_async_mission_upload.h'
+      - 'Remote/source/remote_mission_prepare_tx.h'
+      - 'Remote/tests/r30h124t_prepare_tx.cpp'
+      - 'Remote/tests/r30h124t_authenticated_mission.cpp'
       - 'Remote/source/mission_protocol.h'
       - 'Remote/source/mission_protocol.cpp'
       - 'Remote/tests/r30h124s_mission_upload.cpp'
@@ -145,7 +148,7 @@ jobs:
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -IRemote/source Remote/tests/r30h124i_exclusive_runtime.cpp -o /tmp/remote_exclusive_runtime
           timeout 10s /tmp/remote_exclusive_runtime
 
-          g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -Itests/r30h20_stubs -IRemote/source Remote/source/radio_protocol.cpp Remote/source/radio_command_codec.cpp Remote/source/radio_payload_codec.cpp Remote/source/radio_ack_tracker.cpp Remote/tests/r30h124j_authenticated_mock.cpp -lcrypto -o /tmp/remote_authenticated_mock
+          g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -Itests/r30h20_stubs -IRemote/source Remote/source/radio_protocol.cpp Remote/source/radio_command_codec.cpp Remote/source/radio_payload_codec.cpp Remote/source/radio_ack_tracker.cpp Remote/source/mission_protocol.cpp Remote/tests/r30h124j_authenticated_mock.cpp -lcrypto -o /tmp/remote_authenticated_mock
           timeout 10s /tmp/remote_authenticated_mock
 
           g++ -std=c++17 -Wall -Wextra -Werror -Itests/r30h20_stubs -IBoat/source Boat/tests/r30h124k_session_recovery.cpp -lcrypto -o /tmp/boat_session_recovery
@@ -170,7 +173,7 @@ jobs:
 
           g++ -std=c++17 -Wall -Wextra -Werror -IRemote/source Remote/tests/r30h124q_clear_gate.cpp -o /tmp/remote_clear_gate
           timeout 10s /tmp/remote_clear_gate
-          g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -Itests/r30h20_stubs -IRemote/source Remote/source/radio_protocol.cpp Remote/source/radio_command_codec.cpp Remote/source/radio_payload_codec.cpp Remote/source/radio_ack_tracker.cpp Remote/tests/r30h124q_authenticated_ordinary.cpp -lcrypto -o /tmp/remote_authenticated_ordinary
+          g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -Itests/r30h20_stubs -IRemote/source Remote/source/radio_protocol.cpp Remote/source/radio_command_codec.cpp Remote/source/radio_payload_codec.cpp Remote/source/radio_ack_tracker.cpp Remote/source/mission_protocol.cpp Remote/tests/r30h124q_authenticated_ordinary.cpp -lcrypto -o /tmp/remote_authenticated_ordinary
           timeout 10s /tmp/remote_authenticated_ordinary
 
           g++ -std=c++17 -Wall -Wextra -Werror -IRemote/source Remote/source/radio_ack_tracker.cpp Remote/tests/r30h124r_ack_deadline.cpp -o /tmp/ack_deadline
@@ -178,3 +181,8 @@ jobs:
 
           g++ -std=c++17 -Wall -Wextra -Werror -IRemote/source Remote/source/mission_protocol.cpp Remote/tests/r30h124s_mission_upload.cpp -o /tmp/async_mission_upload
           timeout 10s /tmp/async_mission_upload
+
+          g++ -std=c++17 -Wall -Wextra -Werror -Itests/r30h20_stubs -IRemote/source Remote/source/radio_protocol.cpp Remote/source/mission_protocol.cpp Remote/tests/r30h124t_prepare_tx.cpp -lcrypto -o /tmp/prepare_tx
+          timeout 10s /tmp/prepare_tx
+          g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -Itests/r30h20_stubs -IRemote/source Remote/source/radio_protocol.cpp Remote/source/radio_command_codec.cpp Remote/source/radio_payload_codec.cpp Remote/source/radio_ack_tracker.cpp Remote/source/mission_protocol.cpp Remote/tests/r30h124t_authenticated_mission.cpp -lcrypto -o /tmp/authenticated_mission
+          timeout 10s /tmp/authenticated_mission
