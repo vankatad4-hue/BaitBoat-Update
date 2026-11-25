@@ -47,6 +47,10 @@ bool RadioAckTracker::observe(const RadioDecodedPayload &ack,RadioAckLink link,u
        (link==RADIO_ACK_LINK_BACKUP && primaryOnly(slot.record.commandType,slot.record.requestedMode))) return false;
     const RadioCommandAckState current=slot.record.state;
     if(current!=RADIO_CMD_ACK_WAITING && current!=RADIO_CMD_ACK_ACCEPTED) return false;
+    // Check the immutable request deadline even before periodic update().
+    // Unsigned subtraction also rejects captures predating the request.
+    if(uint32_t(now-slot.record.createdAtMs)>=slot.timeoutMs ||
+       uint32_t(now-slot.record.updatedAtMs)>=0x80000000U) return false;
     slot.record.lastResult=ack.ackResult; slot.record.stopState=ack.stopState;
     slot.record.interlockFlags=ack.interlockFlags; slot.record.updatedAtMs=now;
     switch(ack.ackResult) {

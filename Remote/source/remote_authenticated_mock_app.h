@@ -27,7 +27,7 @@ public:
  bool backupFault()const{return backupFault_;}
  bool requestStop(uint16_t id,uint32_t now){
   if(!established()||!id)return false;
-  if(id==stopId_)return !rearmed_&&!clear_.pending();
+  if(id==stopId_)return control_.hasStopIntent(id)&&!rearmed_&&!clear_.pending();
   // STOP is always prioritized, including when one lane failed.
   BoatCommand c{};c.type=CMD_EMERGENCY_STOP;c.mode=MODE_MANUAL;c.commandId=id;
   if(!control_.requestStop(c,now))return false;
@@ -63,7 +63,7 @@ public:
   if(!owner_.worker()||!initialized_)return false;
   primaryFault_|=primaryFault||tx_.linkFault(PhyLink::Primary);
   backupFault_|=backupFault||tx_.linkFault(PhyLink::Backup);
-  if(primaryFault_&&backupFault_)return false;
+  if(primaryFault_&&backupFault_){retire(now);return false;}
   if((session_.established()&&sequence_>=RadioSessionCounter::REKEY_AT-1)||session_.timeout(now)){
    if(!reset(now))return false;
   }
@@ -90,6 +90,12 @@ public:
    return handshake_.tick(now,!primaryFault_,!backupFault_,root_,true);
   }
   ack_.update(now);
+  // Do not allow a busy ordinary/CLEAR slot to delay primary heartbeat.
+  // The shared generation revocation keeps the STOP latch closed and
+  // preserves backup cooldown; already admitted RF is not retractable.
+  if(control_.ordinaryBlockingHeartbeat(now)){
+   if(!inhibit(now))return reset(now);
+  }
   if(clear_.ready(now,clearAuth(now))&&primaryStatus_.stopState==0&&(primaryStatus_.safetyFlags&1U)){
    if(!control_.rearmAfterClear(true,now))return reset(now);
    clear_.reset();clearTicket_=0;rearmed_=true;
@@ -112,7 +118,7 @@ public:
   return true;
  }
  void retire(uint32_t now){
-  if(!owner_.worker())return;
+  if(!owner_.worker()||!initialized_)return;
   reset(now);radioSession_wipe(root_,32);initialized_=false;mac_=nullptr;
  }
 private:

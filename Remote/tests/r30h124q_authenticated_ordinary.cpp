@@ -15,9 +15,9 @@ int main(){
  assert(bindRemoteI2cOwner());RemoteRadioOwner owner;assert(owner.claimWorker(true));
  RadioFrameHandoff h;assert(h.begin());TxGenerationGate gate;RemoteAsyncTx tx(owner,h,gate);
  RemoteAuthenticatedMockApp app(owner,h,tx);RemoteMockPeer peer(mac);
- assert(app.initialize(peer.root(),mac));BoundedTxService service;Driver p;
- constexpr auto P=PhyLink::Primary;
- auto tick=[&](uint32_t n,bool fault=false){return app.tick(n,123,fault,true);};
+ assert(app.initialize(peer.root(),mac));BoundedTxService service;Driver p,b;
+ constexpr auto P=PhyLink::Primary,B=PhyLink::Backup;
+ auto tick=[&](uint32_t n,bool fault=false){return app.tick(n,123,fault,false);};
  auto poll=[&](uint32_t n){assert(service.tick(h,P,gate,&Driver::send,&p,n));};
  auto deliver=[&](uint32_t n){RadioFrame f{};assert(peer.exchange(p.last.frame,f,false,n));assert(h.primaryRx.offer({f,n,P}));assert(h.offerCompletion(P,{p.last.ticket,p.last.generation,P,true,TxEvidence::NrfAck}));};
  auto status=[&](uint32_t n){RadioFrame f{};assert(peer.status(f,false,n));assert(h.primaryRx.offer({f,n,P}));};
@@ -38,7 +38,23 @@ int main(){
  assert(app.commandAck(19,ack)&&ack.state==RADIO_CMD_ACK_EXECUTED&&peer.mockReleases()==1);
  c.commandId=20;c.createdAtMs=12;assert(app.requestOrdinary(c,12));assert(tick(12));
  p.ready=false;poll(12);const auto before=p.starts;
- assert(!tick(13,true)); // both radios faulted: runtime must retire
- app.retire(13);p.ready=true;poll(14);
- assert(p.starts==before&&gate.stopped()&&peer.mockReleases()==1);
+ assert(tick(13,true)&&app.established()&&!app.rearmed()&&gate.stopped());
+ p.ready=true;poll(14);
+ assert(p.starts==before&&peer.mockReleases()==1);
+ // Stale root request and canceled primary command drain without RF.
+ assert(service.tick(h,B,gate,&Driver::send,&b,14)&&b.starts==0);
+ assert(!app.requestStop(17,14)); // old intent cannot be reported as newly active
+ assert(!app.requestOrdinary(c,14));assert(!app.requestClear(21,14));
+ assert(app.requestStop(22,14));assert(tick(14,true));
+ assert(tick(3014,true));assert(service.tick(h,B,gate,&Driver::send,&b,3014));
+ assert(b.last.frame.commandId==22&&b.last.frame.flags==RADIO_FLAG_BACKUP_LINK);
+ RadioFrame backupAck{};assert(peer.exchange(b.last.frame,backupAck,true,3015));
+ assert(h.backupRx.offer({backupAck,3015,B}));
+ assert(h.offerCompletion(B,{b.last.ticket,b.last.generation,B,false,TxEvidence::LocalReady}));
+ assert(tick(3015,true)&&!app.confirmed());
+ RadioFrame backupStatus{};assert(peer.status(backupStatus,true,3016));
+ assert(h.backupRx.offer({backupStatus,3016,B}));assert(tick(3016,true));
+ assert(app.backupConfirmed()&&!app.confirmed()&&!app.rearmed()&&gate.stopped());
+ assert(!app.tick(3017,123,true,true)&&!app.established()&&gate.stopped());
+ app.retire(3017);assert(peer.mockReleases()==1);
 }

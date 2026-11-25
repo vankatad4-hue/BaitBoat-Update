@@ -87,6 +87,13 @@ public:
   if(!ok)active_=false;
   return ok;
  }
+ bool hasStopIntent(uint16_t id)const{return owner_.worker()&&active_&&id&&id==stopId_;}
+ // A busy noncritical primary slot must not indefinitely defer the critical
+ // heartbeat. The application revokes it before the next scheduler pass.
+ bool ordinaryBlockingHeartbeat(uint32_t now)const{
+  return owner_.worker()&&active_&&!primary_.ticket&&tx_.pending(PhyLink::Primary)&&
+   uint32_t(now-lastPrimary_)>=PrimaryHeartbeat;
+ }
  bool ordinaryGap(uint32_t now)const{
   return owner_.worker()&&active_&&(!stopId_||confirmed_)&&!primary_.ticket&&
    !tx_.pending(PhyLink::Primary)&&uint32_t(now-lastPrimary_)<PrimaryHeartbeat;

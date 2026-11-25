@@ -46,6 +46,8 @@ on:
       - 'Remote/source/remote_ordinary_intent.h'
       - 'Remote/source/remote_async_ordinary.h'
       - 'Remote/source/remote_clear_gate.h'
+      - 'Remote/source/radio_ack_tracker.cpp'
+      - 'Remote/tests/r30h124r_ack_deadline.cpp'
       - 'Remote/tests/r30h124q_clear_gate.cpp'
       - 'Remote/tests/r30h124q_authenticated_ordinary.cpp'
       - 'Remote/tests/r30h124p_ordinary_intent.cpp'
@@ -166,3 +168,6 @@ jobs:
           timeout 10s /tmp/remote_clear_gate
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -Itests/r30h20_stubs -IRemote/source Remote/source/radio_protocol.cpp Remote/source/radio_command_codec.cpp Remote/source/radio_payload_codec.cpp Remote/source/radio_ack_tracker.cpp Remote/tests/r30h124q_authenticated_ordinary.cpp -lcrypto -o /tmp/remote_authenticated_ordinary
           timeout 10s /tmp/remote_authenticated_ordinary
+
+          g++ -std=c++17 -Wall -Wextra -Werror -IRemote/source Remote/source/radio_ack_tracker.cpp Remote/tests/r30h124r_ack_deadline.cpp -o /tmp/ack_deadline
+          timeout 10s /tmp/ack_deadline

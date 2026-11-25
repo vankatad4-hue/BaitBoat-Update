@@ -916,3 +916,14 @@ Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged; physi
 - Local clear-gate regression PASS with g++ C++17 -Wall -Wextra -Werror and timeout 10s; header blob 61f076add6ca419395efd1ae7f8ace747c817c0c, test b76d06ff22404fadf19e8e4d61e0488c7121b0b5 (readback verify). New full authenticated ordinary regression added; NOT_RUN. Existing full F/G/H/J/O/P integration and target builds remain unverified; direct Git DNS failure reproduced, no PlatformIO installed. All other physical tests NOT_RUN.
 - Next R30H-124R: run integrated Q/J/F/G/H/I regressions and fix failures; test revocation on primary loss with backup healthy, heartbeat deadline and late clear completion; bind real application authorization/neutral and lifecycle without enabling workers, clarify manual-mode semantics, then migrate mission TX.
 
+
+## Active continuation — R30H-124R (2026-11-25)
+
+Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged; production Legacy-only, worker activation/upload locked.
+
+- ACK tracker rejects captures predating request, earlier than latest acknowledgment, or at/after immutable timeout even before update(). Real tracker local regression PASS: base tracker and both declaration headers Git SHA-1 verified, modified source blob 1cc482aba87134ae2df5e306b3623d6e17f7f3f6, new test d88661242aa8d855cad1178a75eaf0596ef8ed61; g++ -std=c++17 -Wall -Wextra -Werror, timeout 10s, exit 0. No codec or RTOS stubs used for this focused tracker test.
+- Mock retires immediately on simultaneous link faults; duplicate historical STOP cannot report a new active intent after revocation. Busy ordinary/CLEAR primary slot is revoked when the critical heartbeat becomes due, before new scheduling; backup cooldown retained. This is a software scheduling guard, not a measured physical heartbeat guarantee.
+- Expanded integrated authenticated ordinary regression: primary fault with backup still healthy, canceled dequeued release, old STOP intent rejection, backup STOP and backup-only confirmation, final both-link retirement. Added external owner retirement regression to exclusive runtime suite. Both integrated tests NOT_RUN on this revision.
+- Full Q/J/F/G/H/I/P/O integration verification and PlatformIO targets remain unverified; direct checkout DNS failure and missing PlatformIO confirmed. Real Boat manual-mode semantics and production authorization/neutral integration remain open.
+- Next R30H-124S: verify integrated mock and worker tests (including heartbeat busy-boundary, late CLEAR and primary-only fault), resolve any failures; then implement mission TX scheduler and transaction correlation without production activation. Do not widen safety authority before integrated/target tests pass.
+

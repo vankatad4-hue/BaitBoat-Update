@@ -45,6 +45,13 @@ int main(){
  RemoteExclusiveRuntime<decltype(fr)> fe(failedOwner,fh,fr);App fa{failedOwner,ft};fa.ok=false;
  assert(!fe.begin(true,&App::init,&App::revoke,&fa)&&fa.revokes==1&&fw.starts==0);
  assert(!failedOwner.claimLegacy()&&!fe.begin(true,&App::init,&App::revoke,&fa));
+ // External application retirement must not strand a live Core 0 worker.
+ RemoteRadioOwner eo;RadioFrameHandoff eh;TxGenerationGate eg;RemoteAsyncTx et(eo,eh,eg);
+ Worker ew;Service es;RemoteWorkerRuntime<Worker,Service> er(ew,es);
+ RemoteExclusiveRuntime<decltype(er)> ee(eo,eh,er);App ea{eo,et};
+ assert(ee.begin(true,&App::init,&App::revoke,&ea));assert(ee.tick(0));
+ assert(et.invalidateSession());eo.retire();assert(!ee.tick(1)&&ew.stops==1);
+ assert(!ee.permit()&&eg.stopped());ee.requestStop();assert(ew.stops==1);
  // Actual mock driver admissions: wait from terminal local completion even
  // when the application generation changes. Deadline is still checked first.
  RadioFrameHandoff ph;assert(ph.begin());TxGenerationGate pg;assert(pg.transition(1));
