@@ -176,7 +176,7 @@ private:
     flytec_r30h123::StatusService<RadioFrame> asyncPrimaryStatus_{asyncPrimaryOwner_,statusOutbox_};
     flytec_r30h123::StatusService<RadioFrame> asyncBackupStatus_{asyncBackupOwner_,backupStatusOutbox_};
     flytec_r30h123::OwnerCycle<RadioFrame,boat_r30h18::StopAckOutbox> asyncPrimaryCycle_{asyncPrimaryOwner_,asyncPrimaryAck_,asyncPrimaryStatus_,stopAck_,statusOutbox_};
-    flytec_r30h123::OwnerCycle<RadioFrame,boat_r30h18::BackupStopAckOutbox> asyncBackupCycle_{asyncBackupOwner_,asyncBackupAck_,asyncBackupStatus_,backupStopAck_,backupStatusOutbox_};
+    flytec_r30h123::OwnerCycle<RadioFrame,boat_r30h18::BackupStopAckOutbox> asyncBackupCycle_{asyncBackupOwner_,asyncBackupAck_,asyncBackupStatus_,backupStopAck_,backupStatusOutbox_,flytec_rtos::LoRaAirtimeProfile::BaselineGap};
 #endif
     MissionAssembler mission_;
     BoatMissionController controller_;

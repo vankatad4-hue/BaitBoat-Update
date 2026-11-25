@@ -125,16 +125,21 @@ template<class Frame,class AckBox> class OwnerCycle {
  StatusService<Frame>& status_;
  AckBox& ackBox_;
  boat_r30h19::StatusOutbox& statusBox_;
+ // Owner pacing hint only: the physical adapter still enforces its
+ // independent airtime budget and RF-tail guard. Primary defaults to zero.
+ const uint32_t postAckGap_;
+ uint32_t ackCompletedAt_=0;
+ bool ackCompleted_=false;
 public:
  OwnerCycle(OwnerLink<Frame>& owner,StopAckService<Frame,AckBox>& ack,
-            StatusService<Frame>& status,AckBox& ackBox,boat_r30h19::StatusOutbox& statusBox):
-  owner_(owner),ack_(ack),status_(status),ackBox_(ackBox),statusBox_(statusBox){}
+            StatusService<Frame>& status,AckBox& ackBox,boat_r30h19::StatusOutbox& statusBox,uint32_t postAckGap=0):
+  owner_(owner),ack_(ack),status_(status),ackBox_(ackBox),statusBox_(statusBox),postAckGap_(postAckGap){}
  // Explicit session teardown revokes application work and resets feedback.
  // Full close is separate so root-key CONFIRM can survive application rollover.
  bool resetSession(uint8_t epoch){
-  status_.reset();ack_.reset();return owner_.setSession(epoch);
+  ackCompleted_=false;status_.reset();ack_.reset();return owner_.setSession(epoch);
  }
- void close(){status_.reset();ack_.reset();owner_.close();}
+ void close(){ackCompleted_=false;status_.reset();ack_.reset();owner_.close();}
  template<class BuildAck,class BuildStatus,class Verify,class AppResult,class HsResult,class Ordinary>
  void step(uint32_t now,uint32_t appTimeout,uint32_t hsTimeout,bool sessionReady,bool linkReady,
            BuildAck buildAck,BuildStatus buildStatus,Verify verify,
@@ -145,7 +150,9 @@ public:
   owner_.poll(now,appTimeout,hsTimeout);
   ack_.syncDeferred();
   auto route=[&](const Ticket& t,TxState state){
-   if(!ack_.complete(t,state)&&!status_.complete(t,state))appResult(t,state);
+   if(ack_.complete(t,state)){
+    if(state==TxState::LocalComplete){ackCompletedAt_=now;ackCompleted_=true;}
+   }else if(!status_.complete(t,state))appResult(t,state);
   };
   Ticket t{};TxState state=TxState::Idle;
   if(owner_.takeSuperseded(t,state))route(t,state);
@@ -154,6 +161,11 @@ public:
   if(owner_.takeHandshake(t,hs))hsResult(t,hs);
   ack_.step(now,sessionReady,linkReady,buildAck,verify);
   if(ackBox_.pending()||ack_.pending())return;
+  // Do not reserve a 300 ms stopped snapshot inside the mandatory
+  // post-ACK gap (500 ms candidate, 3000 ms baseline). The producer may
+  // replace unsent samples. Expiry/trust reconciliation above still runs.
+  if(ackCompleted_&&uint32_t(now-ackCompletedAt_)>=postAckGap_)ackCompleted_=false;
+  if(ackCompleted_&&statusBox_.pending()&&statusBox_.status().stopState==1U)return;
   status_.step(now,sessionReady,linkReady,false,buildStatus,verify);
   if(statusBox_.pending()||status_.pending())return;
   if(sessionReady&&linkReady)ordinary(owner_);

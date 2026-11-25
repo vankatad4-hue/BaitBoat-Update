@@ -84,9 +84,91 @@ static void backupStatusCadence(){
  s.batteryPercent=200;
  assert(!cadence.offer(box,s,6008,6008,true,false,false)&&!box.pending());
 }
+// Exercise real owner cycle, worker, ticket correlation and adaptive policy
+// under synthetic timing. No physical RF or actual STOP evidence implied.
+static void integratedOwnerCycle(){
+ uint8_t key[32]={9};uint16_t seq=0;uint32_t now=0;
+ auto verify=[&](const RadioFrame& f){return radio_frameVerify(f,key);};
+ auto make=[&](RadioMessageType type,uint16_t id){
+  RadioFrame f{};radio_frameInit(f,type,2,1,++seq,id,now,1);f.flags=1;return f;
+ };
+ Transport<RadioFrame> bus;PhyEvents<RadioFrame> events;AppRadio<RadioFrame> app(bus,events);
+ HandshakeLane<RadioFrame> hs;SharedPriority priority;OwnerLink<RadioFrame> owner(app,hs,events,priority);
+ SharedPhyService<RadioFrame> worker(bus,hs,priority);
+ boat_r30h18::BackupStopAckOutbox acks;
+ boat_r30h19::StatusOutbox statuses;boat_r30h19::BackupStatusCadence cadence;
+ StopAckService<RadioFrame,boat_r30h18::BackupStopAckOutbox> ack(owner,acks,AckLink::Backup);
+ StatusService<RadioFrame> status(owner,statuses);
+ OwnerCycle<RadioFrame,boat_r30h18::BackupStopAckOutbox> cycle(owner,ack,status,acks,statuses,500);
+ assert(cycle.resetSession(1));
+ LoRaAirtimeProfile profile;profile.commissioned=true;profile.hourlyMs=200;profile.reserveMs=50;profile.packetMs=25;
+ LoRaAirtimePolicy budget;assert(budget.configure(profile,0,true));
+ Driver d;E22AdaptiveAdmission<Driver> admission(d,budget,20,true);
+ E22Adapter<RadioFrame,Driver> phy(d,events,admission);
+ OrdinaryTx<RadioFrame> ordinaryTx;
+ bool heartbeatWanted=true,missionWanted=false;unsigned missionComplete=0;
+ auto buildAck=[&](const boat_r30h18::StopAck& a,RadioFrame& f){
+  f=make(RADIO_MSG_ACK,a.commandId);
+  return radio_encodeAckPayload(a.result,1,a.commandId,a.stopState,a.interlocks,f.payload)&&radio_frameSeal(f,key);
+ };
+ auto buildStatus=[&](const RadioDecodedPayload& s,RadioFrame& f){
+  f=make(RADIO_MSG_TELEMETRY,0);
+  return radio_encodeTelemetryStatusPayload(s.boatMode,s.stopState,s.safetyFlags,s.batteryPercent,0,0,f.payload)&&radio_frameSeal(f,key);
+ };
+ auto result=[&](const Ticket& t,TxState state){
+  ordinaryTx.complete(t,state,now,1,[&](const RadioFrame& f,TxState outcome,uint32_t){
+   if(f.type==RADIO_MSG_MISSION_FEEDBACK&&outcome==TxState::LocalComplete){missionWanted=false;++missionComplete;}
+  });
+ };
+ auto ordinary=[&](OwnerLink<RadioFrame>& o){
+  if(!o.feedbackReady()||ordinaryTx.pending())return;
+  if(missionWanted){
+   auto f=make(RADIO_MSG_MISSION_FEEDBACK,9);
+   assert(missionFeedbackEncode({9,MC_PAUSED,MCTRL_PAUSE,2,MC_ACCEPTED},f.payload)&&radio_frameSeal(f,key));
+   assert(ordinaryTx.submit(o,f,now,TxPriority::Mission,12000,verify,true));
+  }else if(heartbeatWanted){
+   auto f=make(RADIO_MSG_HEARTBEAT,0);
+   assert(radio_encodeHeartbeatPayload(1,1,f.payload)&&radio_frameSeal(f,key));
+   assert(ordinaryTx.submit(o,f,now,TxPriority::Heartbeat,6000,verify,true));heartbeatWanted=false;
+  }
+ };
+ RadioDecodedPayload sample{};sample.kind=RADIO_PAYLOAD_STATUS;sample.batteryPercent=80;sample.safetyFlags=1;
+ auto tick=[&](uint32_t at,bool sampleNow=false){
+  now=at;
+  if(sampleNow)cadence.offer(statuses,sample,now,now,true,status.pending(),missionWanted);
+  cadence.suppressNonStopped(statuses,missionWanted);
+  phy.poll(now);
+  cycle.step(now,12000,12000,true,true,buildAck,buildStatus,verify,result,[](const Ticket&,HandshakeTx){},ordinary);
+  worker.step(now,100,false,true,[](const RadioFrame&){return false;},
+   [&](const Transport<RadioFrame>::Request& r){return phy.tryAdmitReply(r,now);},
+   [](const Transport<RadioFrame>::Request&){return false;});
+ };
+ tick(0);assert(d.writes==1&&d.last.type==RADIO_MSG_HEARTBEAT);
+ d.state=Driver::O::LocalReady;tick(10);tick(30);assert(!ordinaryTx.pending());
+ tick(100,true);assert(status.pending()&&d.writes==1);
+ missionWanted=true;tick(110);assert(!status.pending()&&ordinaryTx.pending()&&d.writes==1);
+ // STOP preempts a deferred mission, preserving the correlated response.
+ assert(acks.offer(22,1,RADIO_ACK_EXECUTED,1,0,200));sample.stopState=1;
+ tick(200,true);assert(ack.pending()&&acks.attempts()==1&&d.writes==1);
+ for(uint32_t at=300;at<=500;at+=100)tick(at,true);
+ tick(530,true);assert(d.writes==2&&d.last.type==RADIO_MSG_ACK&&verify(d.last));
+ d.state=Driver::O::LocalReady;tick(540,true);tick(560,true);
+ assert(!acks.pending()&&statuses.pending()&&!status.pending()&&d.writes==2);
+ for(uint32_t at=660;at<1060;at+=100){tick(at,true);assert(!status.pending()&&d.writes==2);}
+ tick(1060,true);assert(d.writes==3&&d.last.type==RADIO_MSG_TELEMETRY&&d.last.payload[2]==1&&verify(d.last));
+ d.state=Driver::O::LocalReady;tick(1070,true);tick(1090,true);
+ assert(!statuses.pending()&&ordinaryTx.pending()&&missionWanted&&d.writes==3);
+ tick(1590,true);assert(d.writes==4&&d.last.type==RADIO_MSG_MISSION_FEEDBACK&&verify(d.last));
+ d.state=Driver::O::LocalReady;tick(1600);tick(1620);
+ assert(missionComplete==1&&!missionWanted&&!ordinaryTx.pending()&&budget.usedMs(1620)==100);
+ // Expired stopped evidence cannot become fresh merely by waiting.
+ assert(statuses.offer(sample,2000));tick(2301);assert(!statuses.pending()&&d.writes==4);
+ assert(cycle.resetSession(0));assert(!statuses.pending()&&!acks.pending());
+}
 int main(){
  workerRetention();
  backupStatusCadence();
+ integratedOwnerCycle();
  using T=LoRaAirtimePolicy::Traffic;
  uint8_t key[32]={7};uint16_t seq=0;
  auto verify=[&](const RadioFrame& f){return radio_frameVerify(f,key);};
