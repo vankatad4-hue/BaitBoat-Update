@@ -1,5 +1,6 @@
 #pragma once
 #include "remote_async_tx.h"
+#include "remote_backup_mission_control.h"
 #include "radio_command_codec.h"
 #include "r30h17_stop_confirmation_gate.h"
 // R30H-124G: Core 1 application-side STOP/heartbeat scheduling.
@@ -19,7 +20,7 @@ public:
  bool invalidate(uint32_t now){
   if(!owner_.worker())return false;
   // Keep backup cooldown across STOP, session changes and ambiguous writes.
-  if(backup_.ticket)markBackup(now);
+  if(backup_.ticket||tx_.pending(PhyLink::Backup))markBackup(now);
   active_=false;confirmed_=false;stopId_=0;attempts_=0;primary_=Pending{};backup_=Pending{};
   primaryGate_.reset();backupGate_.reset();backupConfirmed_=false;
   return tx_.invalidateSession();
@@ -39,7 +40,7 @@ public:
   if(!owner_.worker()||!active_||c.type!=CMD_EMERGENCY_STOP||
      c.commandId==0||c.commandId>UINT16_MAX||c.activate)return false;
   if(stopId_==c.commandId)return true; // duplicate intent never extends lifetime
-  if(backup_.ticket)markBackup(now);
+  if(backup_.ticket||tx_.pending(PhyLink::Backup))markBackup(now);
   if(!tx_.requestStop(uint16_t(c.commandId))){invalidate(now);return false;}
   stop_=c;stopId_=uint16_t(c.commandId);started_=now;attempts_=0;
   primary_=Pending{};backup_=Pending{};primaryAttempted_=false;
@@ -65,7 +66,7 @@ public:
    backupConfirmed_=true;return true; // cannot clear primary interlock
   }
   if(link!=PhyLink::Primary||!primaryGate_.ackAccepted()||!after(captured,primaryAckAt_))return false;
-  if(backup_.ticket)markBackup(now);
+  if(backup_.ticket||tx_.pending(PhyLink::Backup))markBackup(now);
   if(!tx_.cancelStop(stopId_)){invalidate(now);return false;}
   primary_=Pending{};backup_=Pending{};confirmed_=true;return true;
  }
@@ -73,7 +74,7 @@ public:
  // Rollover revokes pending heartbeat reservations; retain backup pacing.
  bool rearmAfterClear(bool authorized,uint32_t now){
   if(!owner_.worker()||!active_||!confirmed_||!authorized)return false;
-  if(backup_.ticket)markBackup(now);
+  if(backup_.ticket||tx_.pending(PhyLink::Backup))markBackup(now);
   if(!tx_.rearm(true))return false;
   primary_=Pending{};backup_=Pending{};stopId_=0;confirmed_=false;backupConfirmed_=false;
   primaryGate_.reset();backupGate_.reset();lastPrimary_=now-PrimaryHeartbeat;return true;
@@ -87,12 +88,50 @@ public:
  }
  bool inhibitOrdinary(uint32_t now){
   if(!owner_.worker()||!active_)return false;
-  if(backup_.ticket)markBackup(now);
+  if(backup_.ticket||tx_.pending(PhyLink::Backup))markBackup(now);
   const bool ok=tx_.inhibitSessionTraffic();
   primary_=Pending{};backup_=Pending{};stopId_=0;confirmed_=backupConfirmed_=false;
   primaryGate_.reset();backupGate_.reset();lastPrimary_=now-PrimaryHeartbeat;
   if(!ok)active_=false;
   return ok;
+ }
+ // Caller revokes the primary producer/ledger before using the returned
+ // backup-only scope. The previously authorized transaction is mandatory.
+ bool transferMissionToBackup(uint16_t transaction,uint32_t now,bool primaryUnavailable){
+  if(!owner_.worker()||!active_||stopId_||!primaryUnavailable)return false;
+  if(backup_.ticket||tx_.pending(PhyLink::Backup))markBackup(now);
+  if(!tx_.transferMissionToBackup(transaction,true))return false;
+  primary_=Pending{};backup_=Pending{};confirmed_=backupConfirmed_=false;
+  primaryGate_.reset();backupGate_.reset();lastPrimary_=now-PrimaryHeartbeat;
+  return true;
+ }
+ // Owner calls after routed completions and BEFORE regular heartbeat tick.
+ // STOP intent always excludes this reservation. Same conservative backup
+ // cooldown is used by all producers, including on ambiguous completion.
+ bool serviceBackupMission(BackupMissionControl& ledger,const BackupMissionAuthority& a,
+                           uint32_t now,uint16_t& sequence,uint16_t rekeyAt,const uint8_t key[32]){
+  if(!owner_.worker()||!active_||!key||!ledger.maintain(now,a))return false;
+  const bool available=!stopId_&&!backup_.ticket&&!tx_.pending(PhyLink::Backup)&&
+      !tx_.linkFault(PhyLink::Backup)&&(!backupSent_||uint32_t(now-lastBackup_)>=BackupGap);
+  MissionControlRequest q{};
+  if(!ledger.due(now,a,available,q))return true;
+  if(rekeyAt<2||sequence>=uint16_t(rekeyAt-1))return false;
+  RadioFrame f{};radio_frameInit(f,RADIO_MSG_MISSION_CONTROL,1,2,uint16_t(sequence+1),q.transaction,now,epoch_);
+  f.flags=RADIO_FLAG_BACKUP_LINK;
+  const uint32_t ttl=ledger.lifetime(now);
+  if(!ttl||!missionControlEncode(q,f.payload)||!radio_frameSeal(f,key))return false;
+  ++sequence;uint32_t ticket=0;const auto result=tx_.submitBackupMission(f,now,ttl,now,ticket,true);
+  if(result==RemoteAsyncTx::Submit::Busy)return true;
+  if(result!=RemoteAsyncTx::Submit::Queued)return false;
+  markBackup(now);
+  return ledger.queued(ticket,tx_.generation(),sequence,epoch_,now,ttl);
+ }
+ bool observeBackupMissionCompletion(BackupMissionControl& ledger,const RemoteAsyncTx::Result& result,uint32_t now){
+  if(!owner_.worker()||!active_||result.link!=PhyLink::Backup||result.kind!=RemoteAsyncTx::Kind::Mission||
+     result.stop||result.messageType!=RADIO_MSG_MISSION_CONTROL||result.epoch!=epoch_)return false;
+  if(!ledger.complete(result.ticket,result.generation,result.sequence,result.epoch,result.commandId,result.createdMs,result.lifetimeMs))return false;
+  markBackup(now); // local evidence only; conservative shared pacing
+  return true;
  }
  bool hasStopIntent(uint16_t id)const{return owner_.worker()&&active_&&id&&id==stopId_;}
  // A busy noncritical primary slot must not indefinitely defer the critical

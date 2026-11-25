@@ -77,6 +77,22 @@ public:
   if(!advanceStop()){active_=false;return false;}
   return true;
  }
+ // Explicit narrow transfer, never from an idle/preparation/STOP scope.
+ // Old primary and backup reservations are revoked before new authorization.
+ bool transferMissionToBackup(uint16_t transaction,bool primaryUnavailable){
+  if(!owner_.worker()||!active_||!epoch_||!gate_.stopped()||stopId_||
+     !missionScope_.permitsMission(transaction,primaryUnavailable))return false;
+  if(!inhibitSessionTraffic())return false;
+  return missionScope_.openBackupAfterRevocation(transaction);
+ }
+ Submit submitBackupMission(const RadioFrame& f,uint32_t created,uint32_t ttl,uint32_t now,uint32_t& ticket,bool approved){
+  ticket=0;MissionControlRequest q{};
+  if(!owner_.worker()||!gate_.stopped()||stopId_||!missionScope_.permitsBackup(f.commandId,approved)||
+     f.type!=RADIO_MSG_MISSION_CONTROL||f.sourceId!=1||f.destinationId!=2||f.flags!=RADIO_FLAG_BACKUP_LINK||
+     !f.sequence||!missionControlDecode(f.payload,q)||q.transaction!=f.commandId||
+     (q.op!=MCTRL_PAUSE&&q.op!=MCTRL_CANCEL)||ttl>250U)return Submit::Denied;
+  return submitImpl(PhyLink::Backup,f,created,ttl,now,ticket,false,false,true);
+ }
  Submit submit(PhyLink link,const RadioFrame& f,uint32_t created,uint32_t ttl,uint32_t now,uint32_t& ticket){
   return submitImpl(link,f,created,ttl,now,ticket,false);
  }

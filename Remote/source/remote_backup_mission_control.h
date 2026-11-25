@@ -15,6 +15,7 @@ public:
  enum class State:uint8_t{Unbound,Idle,Pending,Accepted,Rejected,Unknown};
  static constexpr uint32_t Deadline=12000U,Gap=3000U,TxLifetime=250U;
  State state()const{return state_;}
+ uint16_t transaction()const{return transaction_;}
  uint16_t requestHighWater()const{return high_;}
  bool inFlight()const{return ticket_!=0;}
  bool bind(uint16_t transaction,uint8_t epoch,uint32_t generation,uint16_t highWater,bool primaryRevoked){

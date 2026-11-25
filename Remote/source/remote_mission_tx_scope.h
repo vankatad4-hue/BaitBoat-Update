@@ -6,7 +6,7 @@
 namespace flytec_rtos {
 class MissionTxScope {
 public:
- enum class State:uint8_t{Idle,Preparing,HandedOff,ClearQueued,Authorized,Canceling};
+ enum class State:uint8_t{Idle,Preparing,HandedOff,ClearQueued,Authorized,Canceling,BackupOnly};
  State state()const{return state_;}
  bool locked()const{return state_!=State::Idle;}
  uint16_t transaction()const{return transaction_;}
@@ -35,6 +35,13 @@ public:
   state_=State::Authorized;return true;
  }
  bool permitsMission(uint16_t id,bool approved)const{return state_==State::Authorized&&id==transaction_&&approved;}
+ // Transfer only from a previously independently authorized primary mission.
+ // Called by the transport AFTER successful old-generation revocation.
+ bool openBackupAfterRevocation(uint16_t id){
+  if(state_!=State::Idle||!id)return false;
+  transaction_=id;state_=State::BackupOnly;return true;
+ }
+ bool permitsBackup(uint16_t id,bool approved)const{return state_==State::BackupOnly&&id==transaction_&&approved;}
  void resetAfterRevocation(){*this=MissionTxScope{};}
 private:
  State state_=State::Idle;uint16_t transaction_=0,clearId_=0;bool commitQueued_=false;
