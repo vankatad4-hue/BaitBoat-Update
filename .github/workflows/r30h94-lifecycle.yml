@@ -52,6 +52,10 @@ on:
       - 'Remote/source/remote_mission_prepare_tx.h'
       - 'Remote/tests/r30h124t_prepare_tx.cpp'
       - 'Remote/tests/r30h124u_handoff.cpp'
+      - 'Remote/source/remote_async_mission_control.h'
+      - 'Remote/tests/r30h124v_mission_control.cpp'
+      - 'Remote/tests/r30h124v_boat_controller.cpp'
+      - 'Boat/source/mission_controller.h'
       - 'Remote/tests/r30h124t_authenticated_mission.cpp'
       - 'Remote/source/mission_protocol.h'
       - 'Remote/source/mission_protocol.cpp'
@@ -190,3 +194,8 @@ jobs:
 
           g++ -std=c++17 -Wall -Wextra -Werror -Itests/r30h20_stubs -IRemote/source Remote/source/radio_protocol.cpp Remote/source/mission_protocol.cpp Remote/tests/r30h124u_handoff.cpp -lcrypto -o /tmp/mission_handoff
           timeout 10s /tmp/mission_handoff
+
+          g++ -std=c++17 -Wall -Wextra -Werror -IRemote/source Remote/tests/r30h124v_mission_control.cpp -o /tmp/async_mission_control
+          timeout 10s /tmp/async_mission_control
+          g++ -std=c++17 -Wall -Wextra -Werror -IBoat/source -IRemote/source Boat/source/mission_protocol.cpp Remote/tests/r30h124v_boat_controller.cpp -o /tmp/mission_control_boat
+          timeout 10s /tmp/mission_control_boat

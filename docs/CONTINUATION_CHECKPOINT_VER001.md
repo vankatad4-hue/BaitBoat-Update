@@ -1,3 +1,13 @@
+## Active continuation — R30H-124V (2026-11-25)
+
+Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged; production Legacy-only, physical worker activation and upload locked.
+
+- Added isolated Core 1 AsyncMissionControl scheduler for START/PAUSE/RESUME/CANCEL. Explicit handoff, independent mission authority and fresh primary evidence required; START/RESUME additionally require released STOP, stationary state, local neutral and Boat neutral lease, battery/interlocks. CANCEL cannot override low-battery/failsafe RTH. Primary only; no new transport permission or runtime binding. Status-only feedback never completes a request; matching peer response plus local slot drain required before next request. Missing/invalid feedback leaves Unknown; only explicit CANCEL recovery, no automatic resume.
+- Stable request ID across retries, 1800 ms deadline, 400 ms retry gap, max 3 reservations, local TX TTL <=100 ms clipped to original request and 9 s upload START budget. Correlated session/ticket/generation/sequence/transaction/time/lifetime; stale ACKs rejected even before timeout update. Caller MUST maintain authority before consuming feedback, revoke generation on failure and not treat local result as execution.
+- LOCAL PASS: focused scheduler regression C++17 -Wall -Wextra -Werror, timeout 10s exit 0; actual mission_control_wire.h Git blob 5f0f6bf59d6fcd0b303f6aba2f8f6cf2c62fc560, tested scheduler 1836bb8bfb45ae65e39a50840b84368243ad1920 and test 7484ee62a837d731042d14687ae034e884fa44fc (readback verify). Simulated peer feedback; no actual HMAC, queue, RTOS or controller exercised in this focused test. Added separate real Boat controller regression for CI, NOT_RUN. Identical mirrored control-wire headers now have a common guard so both endpoint definitions can coexist in one test TU; this guard-only change is not part of the exact local baseline test.
+- Base combined statuses empty; direct checkout still DNS failure and PlatformIO absent. Full integrated Q/R/J/F/G/H/I/P/O/S/T/U/V tests and targets unverified.
+- Next R30H-124W: run cross-controller and integrated tests; add mission-specific CLEAR/rearm capability and signed control producer, bind authenticated mock handoff, feedback, neutral stick lease, START budget and STOP priority. Prevent ordinary movement/release while mission authority exists. Mission sticks/override after control integration; no production activation.
+
 ## Active continuation — R30H-124U (2026-11-25)
 
 Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged. Legacy production only; worker activation/upload locked.

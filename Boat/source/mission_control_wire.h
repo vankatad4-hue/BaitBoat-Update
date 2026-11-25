@@ -1,4 +1,6 @@
 #pragma once
+#ifndef FLYTEC_MISSION_CONTROL_WIRE_SHARED_H
+#define FLYTEC_MISSION_CONTROL_WIRE_SHARED_H
 #include <stdint.h>
 // Session-authenticated mission-control contract, separate from plan upload.
 // Request: op, transaction LE16, request ID LE16, three reserved zero bytes.
@@ -34,3 +36,5 @@ inline bool missionFeedbackDecode(const uint8_t p[8],MissionControlFeedback &f){
  if(!missionFeedbackValid(v))return false;
  f=v;return true;
 }
+
+#endif // FLYTEC_MISSION_CONTROL_WIRE_SHARED_H
