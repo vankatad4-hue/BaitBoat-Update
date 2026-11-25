@@ -96,7 +96,7 @@ public:
  Submit submitPrepare(const RadioFrame& f,uint32_t created,uint32_t ttl,uint32_t now,uint32_t& ticket,bool approved){
   ticket=0;
   if(!owner_.worker()||!approved||!gate_.stopped()||stopId_||clearUsed_||
-     !scopedPrepareFrame(f)||ttl>AsyncMissionUpload::TxLifetime)return Submit::Denied;
+     !(scopedPrepareFrame(f)||(prepareUsed_&&scopedCancelPreparationFrame(f)))||ttl>AsyncMissionUpload::TxLifetime)return Submit::Denied;
   const auto result=submitImpl(PhyLink::Primary,f,created,ttl,now,ticket,false,true);
   if(result==Submit::Queued)prepareUsed_=true;
   return result;

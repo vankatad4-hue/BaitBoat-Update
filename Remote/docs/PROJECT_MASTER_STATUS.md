@@ -948,3 +948,14 @@ Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged; produ
 - Full Q/R/J/F/G/H/I/P/O/S/T integration and PlatformIO still unverified; base combined status empty; current git ls-remote fails DNS, pio absent. No RF/physical acceptance.
 - Next R30H-124U: execute integrated tests and fix failures; implement explicit preparation handoff and cancellation uncertainty handling (no auto clear), then authenticated control request scheduler and START/PAUSE/RESUME/CANCEL feedback. Keep production activation disabled.
 
+
+## Active continuation — R30H-124U (2026-11-25)
+
+Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged. Legacy production only; worker activation/upload locked.
+
+- Explicit handoff requires all six preparation ACKs, drained local ticket, and matching fresh authenticated primary MC_PREPARED status captured strictly after COMMIT ACK, within original 9 s upload deadline. Handoff is a transaction state only, not CLEAR_STOP, START or movement.
+- Preparation cancellation added to scheduler/primary stopped transport, zero reserved bytes and matching transaction, requires existing preparation generation, no CLEAR or STOP retry pending. Bounded 1800 ms cancellation deadline, 500 ms retry gap, up to 3 reservations. Matching CANCELLED or DUPLICATE peer ACK confirms cancellation only after local slot drain; rejected/missing ACK leaves uncertainty. Confirmed cancellation remains locked against movement and new mission until future explicit release/reset; local-only cancel remains available. Mock accepts authenticated primary feedback, binds handoff and peer CANCEL; mock MC_PREPARED is generated from its assembler, not real controller or NVS validation. No START or production permission.
+- Local tests U/S/T PASS with g++ C++17 -Wall -Wextra -Werror and 10 s timeout. Actual mission and radio codecs + existing host Arduino/OpenSSL-backed mbedTLS stub hashes verified. Tested modified upload header 451c83c13e72ed5f5120cff1c117861e6baf29af, producer e4841fa3988de498e85b8e4a7058a48e6fd94d10, U test d0ba2637e98956dcf184f0c4c8fe5ca03e52e3e1. Focused test includes real assembler duplicate CANCEL after lost ACK, timeout, strict handoff correlation and malformed cancel shape. Integrated authenticated mock test expanded but NOT_RUN.
+- Base combined status empty; git clone/ls-remote DNS failure reproduced and PlatformIO absent. Full integrated and physical verification still outstanding.
+- Next R30H-124V: verify integrated suites; implement bounded mission control request scheduler (START/PAUSE/RESUME/CANCEL, immutable deadlines, stable request IDs and feedback correlation). Coordinate mission-specific CLEAR and neutral evidence after explicit prepared handoff, without ordinary authority; preserve STOP and fail-closed behavior. Verify Boat actual prepared controller and Home persistence in integration. No physical activation.
+

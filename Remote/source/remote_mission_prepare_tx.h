@@ -14,6 +14,13 @@ inline bool scopedPrepareFrame(const RadioFrame& f){
  }
  return f.payload[3]==0;
 }
+inline bool scopedCancelPreparationFrame(const RadioFrame& f){
+ if(f.type!=RADIO_MSG_MISSION_PREPARE||f.sourceId!=1||f.destinationId!=2||f.flags||
+    !f.sequence||!f.sessionEpoch||!f.commandId||f.payload[0]!=MISSION_CANCEL||
+    f.commandId!=(uint16_t(f.payload[1])|(uint16_t(f.payload[2])<<8)))return false;
+ for(unsigned i=3;i<8;++i)if(f.payload[i])return false;
+ return true;
+}
 template<class Tx> class RemoteMissionPrepareTx {
 public:
  explicit RemoteMissionPrepareTx(Tx& tx):tx_(tx){}
@@ -30,7 +37,7 @@ public:
   if(!epoch||!key||rekeyAt<2||seq>=uint16_t(rekeyAt-1)||tx_.linkFault(L::Primary))return false;
   RadioFrame f{};radio_frameInit(f,RADIO_MSG_MISSION_PREPARE,1,2,uint16_t(seq+1),upload_.transaction(),now,epoch);
   memcpy(f.payload,payload,8);
-  if(!scopedPrepareFrame(f)||!radio_frameSeal(f,key))return false;
+  if(!(scopedPrepareFrame(f)||scopedCancelPreparationFrame(f))||!radio_frameSeal(f,key))return false;
   ++seq;uint32_t ticket=0;
   const auto result=tx_.submitPrepare(f,now,AsyncMissionUpload::TxLifetime,now,ticket,safe);
   if(result==Q::Busy)return true;

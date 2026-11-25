@@ -51,6 +51,7 @@ on:
       - 'Remote/source/remote_async_mission_upload.h'
       - 'Remote/source/remote_mission_prepare_tx.h'
       - 'Remote/tests/r30h124t_prepare_tx.cpp'
+      - 'Remote/tests/r30h124u_handoff.cpp'
       - 'Remote/tests/r30h124t_authenticated_mission.cpp'
       - 'Remote/source/mission_protocol.h'
       - 'Remote/source/mission_protocol.cpp'
@@ -186,3 +187,6 @@ jobs:
           timeout 10s /tmp/prepare_tx
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -Itests/r30h20_stubs -IRemote/source Remote/source/radio_protocol.cpp Remote/source/radio_command_codec.cpp Remote/source/radio_payload_codec.cpp Remote/source/radio_ack_tracker.cpp Remote/source/mission_protocol.cpp Remote/tests/r30h124t_authenticated_mission.cpp -lcrypto -o /tmp/authenticated_mission
           timeout 10s /tmp/authenticated_mission
+
+          g++ -std=c++17 -Wall -Wextra -Werror -Itests/r30h20_stubs -IRemote/source Remote/source/radio_protocol.cpp Remote/source/mission_protocol.cpp Remote/tests/r30h124u_handoff.cpp -lcrypto -o /tmp/mission_handoff
+          timeout 10s /tmp/mission_handoff

@@ -6,6 +6,7 @@
 #include "remote_async_control.h"
 #include "radio_ack_tracker.h"
 #include "mission_wire.h"
+#include "mission_control_wire.h"
 #include "remote_mission_prepare_tx.h"
 // R30H-124J: authenticated application composition for isolated mock runtime.
 // Isolated mock only. No physical driver, real joystick, or mission authority.
@@ -65,9 +66,19 @@ public:
  // Mock-only preparation. Battery percentage here is simulated telemetry;
  // real production must also check fresh measured battery voltage.
  bool requestMission(const MissionPlan& plan,uint32_t now){
-  return owner_.worker()&&missionSafe(now)&&mission_.upload().begin(plan,1,now,true);
+  return owner_.worker()&&!missionLocked()&&missionSafe(now)&&mission_.upload().begin(plan,1,now,true);
  }
  bool missionPrepared(uint32_t now)const{return owner_.worker()&&missionSafe(now)&&mission_.upload().prepared(now);}
+ // Explicit handoff binds the transaction to future control; no START or CLEAR.
+ bool acceptPreparedHandoff(uint32_t now){
+  return owner_.worker()&&missionSafe(now)&&preparedStatusSeen_&&
+   mission_.upload().handoff(preparedStatusId_,1,preparedStatusAt_,now,true);
+ }
+ bool requestMissionCancel(uint32_t now){
+  return owner_.worker()&&mission_.upload().beginCancel(now,missionSafe(now));
+ }
+ bool missionHandedOff()const{return mission_.upload().state()==AsyncMissionUpload::State::HandedOff;}
+ bool missionCancelled()const{return mission_.upload().state()==AsyncMissionUpload::State::Cancelled&&!mission_.upload().inFlight();}
  bool missionLocked()const{return mission_.upload().state()!=AsyncMissionUpload::State::Idle;}
  // Local cancellation only. Peer may have retained a preparation: keep
  // CLEAR and movement blocked until a fresh session or future handoff.
@@ -83,7 +94,7 @@ public:
   consume(PhyLink::Primary,now);consume(PhyLink::Backup,now);
   if(!initialized_)return false;
   // Fail closed before draining results when authority was withdrawn.
-  if(missionActive()&&!mission_.upload().maintain(now,missionSafe(now))){if(!inhibit(now))return reset(now);}
+  if((missionActive()||mission_.upload().inFlight())&&!mission_.upload().maintain(now,missionSafe(now))){if(!inhibit(now))return reset(now);}
   if(mission_.upload().state()==AsyncMissionUpload::State::Failed&&mission_.upload().inFlight()){if(!inhibit(now))return reset(now);}
   if(clear_.pending()||clear_.state()==RemoteClearGate::State::Failed){
    if(!clear_.maintain(now,clearAuth(now))&&!inhibit(now))return reset(now);
@@ -140,7 +151,7 @@ public:
  }
 private:
  bool missionActive()const{
-  const auto s=mission_.upload().state();return s==AsyncMissionUpload::State::Active||s==AsyncMissionUpload::State::Prepared;
+  const auto s=mission_.upload().state();return s==AsyncMissionUpload::State::Active||s==AsyncMissionUpload::State::Prepared||s==AsyncMissionUpload::State::HandedOff||s==AsyncMissionUpload::State::Canceling;
  }
  bool missionSafe(uint32_t now)const{
   return established()&&control_.confirmed()&&!rearmed_&&!clear_.pending()&&primaryStatusFresh(now)&&
@@ -174,6 +185,7 @@ private:
   radioSession_wipe(key_,32);sequence_=stopId_=0;ack_.reset(0);
   clear_.reset();clearTicket_=0;ordinary_.intent().reset();rearmed_=false;primaryStatusSeen_=false;inputValid_=inputNeutral_=false;
   if(a&&b)mission_.upload().resetAfterSession();
+  preparedStatusSeen_=false;preparedStatusId_=0;preparedStatusAt_=0;
   cross_.resetAfterHandshake();primary_.resetAfterHandshake();backup_.resetAfterHandshake();
   return a&&b;
  }
@@ -193,6 +205,14 @@ private:
     continue;
    }
    if(!session_.established()||f.sessionEpoch!=1||!radio_frameVerify(f,key_))continue;
+   if(f.type==RADIO_MSG_MISSION_FEEDBACK){
+    MissionControlFeedback feedback{};
+    if(link!=PhyLink::Primary||!missionFeedbackDecode(f.payload,feedback)||feedback.transaction!=f.commandId||
+       feedback.transaction!=mission_.upload().transaction()||feedback.result!=MC_STATUS)continue;
+    if(!primary_.accept(f.sequence)||!cross_.accept(f.sequence))continue;
+    preparedStatusSeen_=feedback.phase==MC_PREPARED;
+    preparedStatusId_=feedback.transaction;preparedStatusAt_=rx.receivedMs;continue;
+   }
    if(f.type==RADIO_MSG_MISSION_ACK){
     uint16_t id=0;MissionOpcode op=MISSION_BEGIN;MissionReceive result=MISSION_REJECTED;
     if(link!=PhyLink::Primary||!missionAck_decode(f.payload,id,op,result)||id!=f.commandId||!missionSafe(now))continue;
@@ -226,6 +246,7 @@ private:
  SessionHandshake session_;RemoteAsyncHandshake handshake_;RemoteAsyncControl control_;
  RemoteClearGate clear_;RemoteAsyncOrdinary<RemoteAsyncTx> ordinary_;RemoteMissionPrepareTx<RemoteAsyncTx> mission_;
  RadioDecodedPayload primaryStatus_{};uint32_t primaryStatusAt_=0,clearTicket_=0;
+ uint32_t preparedStatusAt_=0;uint16_t preparedStatusId_=0;bool preparedStatusSeen_=false;
  bool primaryStatusSeen_=false,inputValid_=false,inputNeutral_=false,rearmed_=false;
  RadioAckTracker ack_;RadioSessionCounter primary_,backup_,cross_;
  uint8_t root_[32]{},key_[32]{};SessionHmac mac_=nullptr;

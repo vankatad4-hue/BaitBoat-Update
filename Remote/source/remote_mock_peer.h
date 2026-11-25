@@ -3,6 +3,7 @@
 #include "radio_command_codec.h"
 #include "radio_payload_codec.h"
 #include "mission_wire.h"
+#include "mission_control_wire.h"
 // Test-only Boat peer. No hardware, motor outputs, GPIO, provisioned keys.
 namespace flytec_rtos {
 class RemoteMockPeer {
@@ -23,7 +24,7 @@ public:
   if(!session_.established()||f.sessionEpoch!=1||!radio_frameVerify(f,key_)||!rx_.accept(f.sequence))return false;
   if(f.type==RADIO_MSG_MISSION_PREPARE){
    const uint16_t id=uint16_t(f.payload[1])|(uint16_t(f.payload[2])<<8);
-   if(backup||!id||id!=f.commandId||f.payload[0]<MISSION_BEGIN||f.payload[0]>MISSION_COMMIT)return false;
+   if(backup||!id||id!=f.commandId||f.payload[0]<MISSION_BEGIN||f.payload[0]>MISSION_CANCEL)return false;
    const auto result=mission_.ingest(f.payload,now,true,stopped_);
    radio_frameInit(response,RADIO_MSG_MISSION_ACK,2,1,++sequence_,id,now,1);
    return missionAck_encode(id,static_cast<MissionOpcode>(f.payload[0]),result,response.payload)&&radio_frameSeal(response,key_);
@@ -63,6 +64,11 @@ public:
  }
  uint16_t lastStop()const{return lastStop_;}
  unsigned mockReleases()const{return mockReleases_;}
+ bool missionStatus(RadioFrame& f,uint32_t now){
+  MissionPlan p{};if(!mission_.getPrepared(p,now))return false;
+  radio_frameInit(f,RADIO_MSG_MISSION_FEEDBACK,2,1,++sequence_,p.transaction,now,1);
+  return missionFeedbackEncode({p.transaction,MC_PREPARED,0,0,MC_STATUS},f.payload)&&radio_frameSeal(f,key_);
+ }
  bool prepared(MissionPlan& out,uint32_t now)const{return mission_.getPrepared(out,now);}
 private:
  SessionHmac mac_;SessionHandshake session_;RadioSessionCounter rx_;MissionAssembler mission_;

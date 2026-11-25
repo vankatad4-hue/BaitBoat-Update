@@ -33,6 +33,11 @@ int main(){
  }
  MissionPlan got{};assert(app.missionPrepared(at)&&peer.prepared(got,at)&&missionPlan_digest(got)==missionPlan_digest(plan));
  assert(!app.requestClear(18,at)&&!app.rearmed()&&gate.stopped());
- assert(app.cancelMissionLocal(at)&&!app.missionPrepared(at)&&app.missionLocked()&&gate.stopped());
- assert(!app.requestClear(19,at)&&peer.mockReleases()==0);
+ assert(!app.acceptPreparedHandoff(at));
+ RadioFrame feedback{};assert(peer.missionStatus(feedback,++at));assert(h.primaryRx.offer({feedback,at,P}));assert(tick(at));
+ assert(app.acceptPreparedHandoff(at)&&app.missionHandedOff()&&gate.stopped());
+ assert(app.requestMissionCancel(++at));assert(tick(at));poll(at);
+ assert(d.last.frame.payload[0]==MISSION_CANCEL&&gate.stopped()&&!app.missionCancelled());
+ deliver(++at);assert(tick(at)&&app.missionCancelled()&&app.missionLocked());
+ assert(!peer.prepared(got,at)&&!app.requestClear(19,at)&&peer.mockReleases()==0);
 }
