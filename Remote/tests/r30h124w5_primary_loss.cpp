@@ -79,6 +79,9 @@ int main(){
  assert(tick(at,true)&&app.backupStatusFresh(at));
  assert(!app.requestBackupMissionControl(MCTRL_START,at)&&!app.requestBackupMissionControl(MCTRL_RESUME,at));
  assert(app.requestBackupMissionControl(MCTRL_PAUSE,at)&&app.backupMissionHighWater()==3);
+ // Raw primary recovery must not overtake pending LoRa PAUSE.
+ assert(tick(++at,false)&&app.primaryFault()&&!tx.pending(P));
+ assert(tick(++at,true));
  at+=3000;assert(tick(at,true)&&service.tick(h,B,gate,&Driver::send,&b,at));
  MissionControlRequest q{};assert(missionControlDecode(b.last.frame.payload,q)&&q.op==MCTRL_PAUSE&&q.request==3);
  RadioFrame reply{};assert(peer.exchange(b.last.frame,reply,true,++at));
@@ -86,11 +89,15 @@ int main(){
  assert(tick(at,true)&&app.backupMissionState()==BackupMissionControl::State::Accepted&&gate.stopped());
  assert(peer.status(status,true,++at)&&h.backupRx.offer({status,at,B})&&tick(at,true));
  assert(app.requestBackupMissionControl(MCTRL_CANCEL,at)&&app.backupMissionHighWater()==4);
+ assert(tick(++at,false)&&app.primaryFault()&&!tx.pending(P));
+ assert(tick(++at,true));
  at+=3000;assert(tick(at,true)&&service.tick(h,B,gate,&Driver::send,&b,at));
  assert(missionControlDecode(b.last.frame.payload,q)&&q.op==MCTRL_CANCEL&&q.request==4);
  assert(peer.exchange(b.last.frame,reply,true,++at));
  assert(h.backupRx.offer({reply,at,B})&&h.offerCompletion(B,{b.last.ticket,b.last.generation,B,false,TxEvidence::LocalReady}));
  assert(tick(at,true)&&app.backupMissionState()==BackupMissionControl::State::Accepted&&!app.missionAuthorized());
+ MissionControlFeedback historical{};
+ assert(app.lastBackupMissionFeedback(historical)&&historical.request==4&&historical.op==MCTRL_CANCEL&&historical.phase==MC_ABORTED&&historical.result==MC_ACCEPTED);
  assert(!app.requestStop(17,at));
  assert(app.requestStop(20,at)&&tick(at,true));
  at+=3000;assert(tick(at,true));assert(service.tick(h,B,gate,&Driver::send,&b,at));
@@ -109,7 +116,9 @@ int main(){
  assert(d.last.frame.type==RADIO_MSG_LINK_PROBE);
  RadioFrame echo{};assert(peer.exchange(d.last.frame,echo,false,++at));
  assert(h.offerCompletion(P,{d.last.ticket,d.last.generation,P,true,TxEvidence::NrfAck}));
- assert(tick(at,false)&&app.primaryFault()); // drop first authenticated echo
+ RadioFrame tampered=echo;tampered.payload[4]^=1;
+ assert(h.primaryRx.offer({tampered,at,P}));
+ assert(tick(at,false)&&app.primaryFault()); // tampered echo and local ACK
  at+=500;assert(tick(at,false));poll(at);
  assert(d.last.frame.type==RADIO_MSG_LINK_PROBE);
  for(unsigned i=0;i<3;++i){
@@ -118,5 +127,7 @@ int main(){
  }
  assert(!app.primaryFault()&&!app.rearmed()&&!app.missionAuthorized()&&!app.backupMissionBound()&&gate.stopped());
  assert(peer.lastStop()==20&&peer.mockReleases()==0&&!app.requestOrdinary(ordinary,at));
+ assert(app.lastBackupMissionFeedback(historical)&&historical.request==4&&historical.phase==MC_ABORTED&&historical.result==MC_ACCEPTED);
  assert(!app.tick(++at,123,true,true)&&!app.established()&&gate.stopped());
+ assert(!app.lastBackupMissionFeedback(historical));
 }
