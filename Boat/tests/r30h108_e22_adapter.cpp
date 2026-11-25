@@ -48,7 +48,7 @@ int main(){
  d2.state.poll(34,true);assert(adaptive.tick(h2,g2,34)&&!h2.takeCompletion(q.link,c));
  assert(adaptive.tick(h2,g2,54)&&h2.takeCompletion(q.link,c)&&c.ticket==31&&c.evidence==TxEvidence::LocalReady);
  q.ticket=32;assert(h2.backupCritical.offer(q)&&adaptive.tick(h2,g2,3054)&&d2.writes==1);
- assert(g2.transition(2));q.generation=2;q.ticket=33;assert(h2.backupCritical.offer(q));
+ assert(g2.latchStop(2)&&g2.stopped());q.generation=2;q.ticket=33;assert(h2.backupCritical.offer(q));
  assert(adaptive.tick(h2,g2,3055)&&h2.takeCompletion(q.link,c)&&c.ticket==32&&c.evidence==TxEvidence::None);
  assert(adaptive.tick(h2,g2,3056)&&d2.writes==2); // STOP may use reserve
  d2.state.poll(3090,true);assert(adaptive.tick(h2,g2,3090)&&!h2.takeCompletion(q.link,c));
