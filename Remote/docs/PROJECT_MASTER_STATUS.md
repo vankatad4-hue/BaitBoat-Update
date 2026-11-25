@@ -1011,3 +1011,12 @@ Updated R30G static audit to require authenticated capturedAt dispatch, diagnost
 
 Next: check new HEAD CI automatically by head SHA, resolve any remaining Boat host/source/target failure, validate authenticated Remote ESP32 mock build and gated Boat receipt build, then test primary failure with backup healthy and neutral retry/STOP/RTH policy before advancing to mission override.
 
+
+## Active continuation — R30H-124W5 (2026-11-25)
+
+Verified exact previous revision `8b2305713bf37f28d9d93812ed74dfcf7479e4e0`: all six triggered workflows PASS: [Boat host 45566897473](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45566897473), [source inventory 45566897483](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45566897483), [both primary PlatformIO targets 45566897513](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45566897513), [Boat mock/locked endpoint/gated neutral receipt compile 45566897501](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45566897501), [Boat/Remote dual-core and Remote authenticated mock target 45566897527](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45566897527), [ZIP 45566897585](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45566897585). Gated Boat receipt and authenticated Remote ESP32 compile steps individually confirmed PASS. Previous lifecycle 7aa769c and Remote host c135613 PASS; no firmware logic changed between those and W4 part 2.
+
+Added R30H-124W5 integrated primary-loss scenario using existing signed mock mission startup, held/dequeued PAUSE before PHY admission, generation revocation and stale frame drain, historical peer phase remains OUTBOUND (no automatic STOP on primary failure), application mission outcome explicitly Unknown, no CLEAR/ordinary/control authorization, explicit backup STOP with separate ACK and STATUS, and both-link retirement. No production firmware changes; test is queued for CI, not verified yet. Mock does not implement actual LoRa autonomous RTH or real Boat navigation; existing Boat RTH host tests previously passed. Transport low-level rearm requires caller authorization; application lock remains mandatory. No backup PAUSE/CANCEL yet.
+
+Next: confirm new lifecycle run and repair any timing assumptions; add real Boat controller link-loss and backup command cross-tests; finish neutral retry policy, then temporary override and backup PAUSE/CANCEL integration. No physical task enable/upload. Boat VER014 / Remote VER028 frozen.
+

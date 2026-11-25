@@ -61,6 +61,7 @@ on:
       - 'Boat/source/boat_neutral_receipt.h'
       - 'Boat/tests/r30h124w3_boat_neutral.cpp'
       - 'Remote/tests/r30h124w3_authenticated_control.cpp'
+      - 'Remote/tests/r30h124w5_primary_loss.cpp'
       - 'Remote/tests/r30h124w_mission_scope.cpp'
       - 'Remote/tests/r30h124w_scope_generation.cpp'
       - 'Remote/tests/r30h124w_scoped_transport.cpp'
@@ -225,3 +226,6 @@ jobs:
           timeout 10s /tmp/boat_neutral_receipt
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -Itests/r30h20_stubs -IRemote/source Remote/source/radio_protocol.cpp Remote/source/radio_command_codec.cpp Remote/source/radio_payload_codec.cpp Remote/source/radio_ack_tracker.cpp Remote/source/mission_protocol.cpp Remote/tests/r30h124w3_authenticated_control.cpp -lcrypto -o /tmp/authenticated_control
           timeout 10s /tmp/authenticated_control
+
+          g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -Itests/r30h20_stubs -IRemote/source Remote/source/radio_protocol.cpp Remote/source/radio_command_codec.cpp Remote/source/radio_payload_codec.cpp Remote/source/radio_ack_tracker.cpp Remote/source/mission_protocol.cpp Remote/tests/r30h124w5_primary_loss.cpp -lcrypto -o /tmp/mission_primary_loss
+          timeout 10s /tmp/mission_primary_loss

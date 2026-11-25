@@ -89,6 +89,8 @@ public:
  }
  bool missionAuthorized()const{return established()&&missionAuthorized_;}
  bool missionNeutral(uint32_t now)const{return missionControl_.neutralFresh(1,now,inputValid_&&inputNeutral_);}
+ // Last observed phase is historical when missionOutcomeUnknown() is true.
+ bool missionOutcomeUnknown()const{return missionControl_.control().state()==AsyncMissionControl::State::Unknown;}
  MissionControlPhase missionPhase()const{return missionControl_.control().phase();}
  bool requestMissionControl(MissionControlOp op,uint32_t now){
   return missionAuthorized()&&missionControl_.control().request(op,now,missionAuthority(now));
