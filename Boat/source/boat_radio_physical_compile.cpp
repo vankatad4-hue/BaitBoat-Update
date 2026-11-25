@@ -1,5 +1,5 @@
 #ifdef FLYTEC_R30H120_PHYSICAL_COMPILE
-#include "r30h120_physical_task.h"
+#include "boat_radio_physical_worker.h"
 #include "boat_radio_hw_config.h"
 static_assert(!BOAT_NRF_PIN_AUDIT_SIGNED && !BOAT_E22_UART_PIN_AUDIT_SIGNED && !BOAT_E22_RF_AIRTIME_AUDIT_SIGNED,"Compile-only target requires unsigned hardware");
 using namespace flytec_r30h118;

@@ -1,5 +1,5 @@
 #if defined(FLYTEC_R30H118_MOCK_BENCH)
-#include "r30h118_mock_task.h"
+#include "boat_radio_mock_task.h"
 using namespace flytec_r30h118;
 static MockTask mock;
 static uint32_t began=0;

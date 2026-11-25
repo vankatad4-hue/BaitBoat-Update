@@ -1,6 +1,6 @@
 #pragma once
 // Consolidated Boat radio component; original types and owner contracts retained.
-#include "r30h121_app_radio.h"
+#include "boat_radio_application.h"
 namespace flytec_r30h123 {
 using namespace flytec_r30h118;
 using namespace flytec_r30h120;
@@ -136,7 +136,6 @@ public:
 };
 }
 
-#include "r30h121_app_radio.h"
 namespace flytec_r30h123 {
 // Owner-side RX boundary. Capture time is local PHY observation, not sender
 // tick or proof of RF age. The existing application must still enforce replay,

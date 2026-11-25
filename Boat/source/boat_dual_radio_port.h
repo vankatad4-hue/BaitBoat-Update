@@ -42,7 +42,7 @@ static_assert(BOAT_R30H9_MARKER_GPIO == -1 && BOAT_R30H9_GPIO_OUTPUT_SIGNED == 0
 #endif
 #if BOAT_R30H121_ENDPOINT_COMPILE
 #include "boat_radio_services.h"
-#include "r30h120_physical_task.h"
+#include "boat_radio_physical_worker.h"
 #endif
 
 // Link values match the Remote manager and queue records.

@@ -3,14 +3,17 @@ on:
   push:
     branches: [platformio-unified-r30h20]
     paths:
-      - 'Boat/source/r30h118*'
-      - 'Boat/source/r30h120*'
-      - 'Boat/source/r30h121*'
-      - 'Boat/source/r30h123*'
       - 'Boat/source/boat_radio_transport.h'
       - 'Boat/source/boat_radio_phy.h'
       - 'Boat/source/boat_radio_owner.h'
       - 'Boat/source/boat_radio_services.h'
+      - 'Boat/source/boat_radio_worker_policy.h'
+      - 'Boat/source/boat_radio_physical_worker.h'
+      - 'Boat/source/boat_radio_mock_task.h'
+      - 'Boat/source/boat_radio_mock_bench.cpp'
+      - 'Boat/source/boat_dual_phy_mock_bench.cpp'
+      - 'Boat/source/boat_radio_physical_compile.cpp'
+      - 'Boat/source/boat_radio_application.h'
       - 'Boat/source/boat_r30h18_stop_ack_outbox.h'
       - 'Boat/source/boat_r30h19_status_outbox.h'
       - 'Boat/source/boat_dual_radio_port*'

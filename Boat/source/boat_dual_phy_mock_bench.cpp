@@ -2,8 +2,7 @@
 #include <Arduino.h>
 #include "boat_radio_phy.h"
 #include "boat_radio_transport.h"
-#include "r30h120_phy_service.h"
-#include "r30h120_lifecycle.h"
+#include "boat_radio_worker_policy.h"
 using namespace flytec_r30h118;
 namespace {
 struct Nrf {

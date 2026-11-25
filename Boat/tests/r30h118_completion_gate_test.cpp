@@ -1,5 +1,5 @@
 #include "../source/boat_r30h18_stop_ack_outbox.h"
-#include "../source/r30h121_app_radio.h"
+#include "../source/boat_radio_application.h"
 #include "../source/boat_radio_services.h"
 #include "../source/boat_radio_services.h"
 #include "../source/boat_radio_owner.h"
@@ -9,9 +9,7 @@
 #include "boat_radio_transport.h"
 #include <cassert>
 #include "boat_radio_phy.h"
-#include "r30h120_phy_service.h"
-#include "r30h120_lifecycle.h"
-#include "r30h120_handshake_lane.h"
+#include "boat_radio_worker_policy.h"
 using namespace flytec_r30h118;
 int main(){
  CompletionGate g; Ticket a,b,c;

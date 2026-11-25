@@ -28,7 +28,7 @@ on:
       - 'Boat/source/boat_session_recovery.h'
       - 'Boat/source/boat_handshake_reply.h'
       - 'Boat/source/boat_radio_transport.h'
-      - 'Boat/source/r30h120_handshake_lane.h'
+      - 'Boat/source/boat_radio_worker_policy.h'
       - 'Boat/source/boat_radio_owner.h'
       - 'Boat/tests/r30h124m_handshake_cancel.cpp'
       - 'Boat/tests/r30h124n_backup_handshake.cpp'

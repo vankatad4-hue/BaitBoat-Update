@@ -108,6 +108,16 @@ RETIRED_NAMES = (
     'r30h123_stop_ack_service.h',
     'r30h123_status_service.h',
     'r30h123_owner_cycle.h',
+    'r30h120_handshake_lane.h',
+    'r30h120_phy_service.h',
+    'r30h120_lifecycle.h',
+    'r30h120_physical_worker.h',
+    'r30h120_physical_task.h',
+    'r30h118_mock_task.h',
+    'r30h118_mock_bench.cpp',
+    'r30h118_dual_mock.cpp',
+    'r30h120_physical_compile.cpp',
+    'r30h121_app_radio.h',
 )
 
 def cleanup_inventory(src):
