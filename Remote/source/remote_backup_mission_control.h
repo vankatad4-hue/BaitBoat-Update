@@ -1,5 +1,6 @@
 #pragma once
 #include "mission_control_wire.h"
+#include "lora_airtime_policy.h"
 #include <stdint.h>
 namespace flytec_rtos {
 // Dormant backup-only request ledger. No TX ownership or implicit failover.
@@ -13,7 +14,7 @@ struct BackupMissionAuthority {
 class BackupMissionControl {
 public:
  enum class State:uint8_t{Unbound,Idle,Pending,Accepted,Rejected,Unknown};
- static constexpr uint32_t Deadline=12000U,Gap=3000U,TxLifetime=250U;
+ static constexpr uint32_t Deadline=12000U,Gap=LoRaAirtimeProfile::BaselineGap,TxLifetime=250U;
  // Admission remains 250 ms. Allow the E22's 2 s local TX watchdog plus
  // 100 ms polling/dispatch margin after the latest possible admission.
  // This is a provisional software observation budget, not RF proof.
