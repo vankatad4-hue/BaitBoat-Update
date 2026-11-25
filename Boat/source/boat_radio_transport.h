@@ -80,6 +80,11 @@ namespace flytec_r30h118 {
 // Prototype only: one owner and one worker per instance. No physical driver.
 // STOP classification is the trusted application owner's responsibility.
 enum class ReplyClass:uint8_t {Unclassified,Routine,Mission,StopAck,Status};
+// Deferred means the adapter guarantees no write and no airtime reservation.
+// The worker retains the immutable request; only terminal outcomes reach owner.
+enum class AdmissionResult:uint8_t {Accepted,Deferred,Rejected};
+inline AdmissionResult admissionResult(bool accepted){return accepted?AdmissionResult::Accepted:AdmissionResult::Rejected;}
+inline AdmissionResult admissionResult(AdmissionResult result){return result;}
 template<class Frame> class Transport {
 public:
  struct Request { Ticket ticket; Frame frame; uint32_t queuedAt; bool stop; uint32_t maxAge=0; ReplyClass reply=ReplyClass::Unclassified; };

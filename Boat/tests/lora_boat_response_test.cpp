@@ -18,7 +18,48 @@ struct Driver {
  bool receiveFrame(RadioFrame&){return false;}
  void update(){}
 };
+// Independent lanes: a temporary ordinary denial must not block STOP, and
+// a retained request must never be reissued after generation or age expiry.
+static void workerRetention(){
+ using A=AdmissionResult;
+ Transport<RadioFrame> bus;HandshakeLane<RadioFrame> hs;SharedPriority pr;
+ SharedPhyService<RadioFrame> worker(bus,hs,pr);
+ assert(bus.invalidate(1)&&hs.begin());
+ RadioFrame ordinary{},stop{},handshake{};
+ ordinary.type=1;stop.type=5;handshake.type=11;
+ Ticket initial{},replacement{};
+ auto shape=[](const RadioFrame& f){return f.type==11;};
+ unsigned calls=0,stopCalls=0,hsCalls=0;bool blocked=true;
+ auto app=[&](const Transport<RadioFrame>::Request& r){
+  if(r.stop){++stopCalls;return A::Accepted;}
+  ++calls;return blocked?A::Deferred:A::Accepted;
+ };
+ auto hand=[&](const Transport<RadioFrame>::Request&){++hsCalls;return blocked?A::Deferred:A::Accepted;};
+ auto run=[&](uint32_t now){worker.step(now,100,false,true,shape,app,hand);};
+ auto select=[&](TxPriority p){pr.publish(uint8_t(1U<<static_cast<unsigned>(p)));};
+ bool admitted=false;
+ assert(bus.submit(ordinary,UINT32_MAX-4,false,&initial,20));
+ select(TxPriority::Heartbeat);run(UINT32_MAX-4);run(0);
+ assert(calls==2&&!bus.poll(admitted));
+ // STOP revokes the retained ordinary generation before the next driver call.
+ assert(bus.invalidate(1)&&bus.submit(stop,1,true,&replacement,20));
+ select(TxPriority::Stop);run(1);
+ assert(stopCalls==1&&calls==2&&bus.poll(admitted)&&admitted);
+ // A stale ordinary result must not be delivered as the new STOP result.
+ assert(!bus.poll(admitted));
+ assert(bus.submit(ordinary,2,false,&initial,5));
+ select(TxPriority::Heartbeat);run(2);run(6);assert(calls==4&&!bus.poll(admitted));
+ run(7);assert(calls==4&&bus.poll(admitted)&&!admitted);
+ // Handshake deferral is separate, and revoked handshake is never retried.
+ assert(hs.submit(handshake,8,shape));select(TxPriority::Handshake);run(8);run(9);
+ assert(hsCalls==2&&!hs.poll(admitted));
+ hs.close();run(10);assert(hsCalls==2&&!hs.poll(admitted));
+ // A temporary denial can recover without requeue or a new ticket.
+ assert(bus.submit(ordinary,11,false,&initial,20));select(TxPriority::Heartbeat);run(11);
+ blocked=false;run(12);assert(calls==6&&bus.poll(admitted)&&admitted);
+}
 int main(){
+ workerRetention();
  using T=LoRaAirtimePolicy::Traffic;
  uint8_t key[32]={7};uint16_t seq=0;
  auto verify=[&](const RadioFrame& f){return radio_frameVerify(f,key);};
@@ -29,7 +70,7 @@ int main(){
  LoRaAirtimeProfile profile;profile.commissioned=true;profile.hourlyMs=75;profile.reserveMs=50;profile.packetMs=25;
  LoRaAirtimePolicy budget;assert(budget.configure(profile,0,true));Driver d;E22AdaptiveAdmission<Driver> admission(d,budget,20,true);
  E22Adapter<RadioFrame,Driver> phy(d,events,admission);
- auto step=[&](uint32_t now){worker.step(now,100,false,true,[](const RadioFrame&){return false;},[&](const Transport<RadioFrame>::Request& r){return phy.admitReply(r,now);},[](const Transport<RadioFrame>::Request&){return false;});};
+ auto step=[&](uint32_t now){worker.step(now,100,false,true,[](const RadioFrame&){return false;},[&](const Transport<RadioFrame>::Request& r){return phy.tryAdmitReply(r,now);},[](const Transport<RadioFrame>::Request&){return false;});};
  auto poll=[&](uint32_t now){phy.poll(now);owner.poll(now,12000,12000);};
  Ticket ticket{};TxState state=TxState::Idle;
  auto hb=make(RADIO_MSG_HEARTBEAT,0,0);assert(radio_encodeHeartbeatPayload(1,1,hb.payload)&&radio_frameSeal(hb,key));
@@ -49,7 +90,14 @@ int main(){
  assert(service.step(1060,true,true,false,buildStatus,verify));step(1060);assert(d.writes==3&&d.last.type==RADIO_MSG_TELEMETRY&&verify(d.last));
  d.state=Driver::O::LocalReady;poll(1070);poll(1090);assert(owner.takeApplication(ticket,state)&&service.complete(ticket,state)&&!status.pending());assert(budget.usedMs(1090)==75);
  assert(box.offer(23,1,RADIO_ACK_EXECUTED,1,0,1590)&&ack.step(1590,true,true,buildAck,verify));step(1590);poll(1590);
- assert(d.writes==3&&owner.takeApplication(ticket,state)&&state==TxState::Uncertain&&ack.complete(ticket,state)&&box.pending());
+ assert(d.writes==3&&!owner.takeApplication(ticket,state)&&box.pending()&&box.inFlight()&&box.attempts()==1);
+ // Repeated budget denials retain the same original ticket and deadline.
+ const auto retained=owner.currentTicket();
+ for(uint32_t now=1591;now<1700;++now){step(now);poll(now);}
+ assert(d.writes==3&&sameTicket(retained,owner.currentTicket())&&box.attempts()==1&&!owner.takeApplication(ticket,state));
+ step(13590);poll(13590);
+ assert(d.writes==3&&owner.takeApplication(ticket,state)&&state==TxState::Uncertain&&ack.complete(ticket,state));
+ ack.reconcile(13590,true,true);assert(!box.pending());
  // Immutable classification cannot promote a malformed or wrong-direction frame.
  Transport<RadioFrame>::Request r{};r.ticket={1,1,1};r.frame=d.last;r.stop=true;r.reply=ReplyClass::Status;T traffic=T::Routine;
  assert(classifyBackupReply<RadioFrame>(r,traffic)&&traffic==T::Emergency);

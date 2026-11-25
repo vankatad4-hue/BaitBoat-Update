@@ -157,16 +157,25 @@ public:
  E22Adapter(Driver &d,PhyEvents<Frame>& e):driver_(d),pump_(e){}
  // Opt-in mock/commissioning seam. Raw admission cannot bypass the budget.
  E22Adapter(Driver &d,PhyEvents<Frame>& e,Adaptive& admission):driver_(d),pump_(e),adaptive_(&admission),adaptiveFault_(!admission.belongsTo(d)){}
- bool admitReply(const typename Transport<Frame>::Request& r,uint32_t now){
+ AdmissionResult tryAdmitReply(const typename Transport<Frame>::Request& r,uint32_t now){
   using T=flytec_rtos::LoRaAirtimePolicy::Traffic;using R=typename Adaptive::Result;
+  using A=AdmissionResult;
   T traffic=T::Routine;
-  if(!adaptive_||adaptiveFault_||!pump_.canAdmit(r.ticket,r.stop)||!classifyBackupReply<Frame>(r,traffic))return false;
+  if(!adaptive_||adaptiveFault_||!classifyBackupReply<Frame>(r,traffic))return A::Rejected;
+  if(driver_.transportFault()){adaptiveFault_=true;return A::Rejected;}
+  if(!pump_.canAdmit(r.ticket,r.stop))return A::Deferred;
   const auto result=adaptive_->start(r.frame,traffic,now);
-  if(result==R::Fault){adaptiveFault_=true;return false;}
-  if(result!=R::Accepted)return false;
+  if(result==R::Busy||result==R::DutyLimited)return A::Deferred;
+  if(result==R::Fault)adaptiveFault_=true;
+  if(result!=R::Accepted)return A::Rejected;
   active_=pump_.track(r.ticket,r.stop);
   if(!active_)adaptiveFault_=true;
-  return active_;
+  return active_?A::Accepted:A::Rejected;
+ }
+ // Compatibility for direct boolean callers; shared adaptive worker must
+ // use tryAdmitReply so temporary denial is not a terminal admission result.
+ bool admitReply(const typename Transport<Frame>::Request& r,uint32_t now){
+  return tryAdmitReply(r,now)==AdmissionResult::Accepted;
  }
  bool admit(const Ticket &t,const Frame &f,uint32_t now,bool stop=false){
   if(adaptive_)return false;

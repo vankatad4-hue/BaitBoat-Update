@@ -79,7 +79,7 @@ template<class Frame> class HandshakeService {
  using Lane=HandshakeLane<Frame>;
  Lane &lane_;
  typename Lane::Request request_{};
- bool held_=false,admitted_=false;
+ bool held_=false,admitted_=false,deferred_=false;
 public:
  explicit HandshakeService(Lane &lane):lane_(lane){}
  bool flush(){
@@ -87,10 +87,20 @@ public:
   return !held_;
  }
  template<class Policy,class Admit> bool step(uint32_t now,uint32_t age,bool enabled,Policy permitted,Admit admit){
-  if(!flush()||!enabled||!lane_.take(request_))return false;
-  admitted_=lane_.allows(request_,now,age,permitted)&&admit(request_);
+  using A=flytec_r30h118::AdmissionResult;
+  if(!flush()||!enabled||(!deferred_&&!lane_.take(request_)))return false;
+  const auto result=lane_.allows(request_,now,age,permitted)?
+    flytec_r30h118::admissionResult(admit(request_)):A::Rejected;
+  deferred_=result==A::Deferred;
+  if(deferred_)return false;
+  admitted_=result==A::Accepted;
   held_=!lane_.complete(request_,admitted_);
   return admitted_;
+ }
+ template<class Policy> void retireStale(uint32_t now,uint32_t age,Policy permitted){
+  if(deferred_&&!lane_.allows(request_,now,age,permitted)){
+   deferred_=false;admitted_=false;held_=!lane_.complete(request_,false);
+  }
  }
  bool resultPending()const{return held_;}
 };
@@ -146,29 +156,45 @@ template<class Frame> class PhyService {
  using Bus=flytec_r30h118::Transport<Frame>;
  Bus &bus_;
  typename Bus::Request request_{};
- bool held_=false,admitted_=false;
+ bool held_=false,admitted_=false,deferred_=false;
  typename Bus::Request stopRequest_{};
- bool stopHeld_=false,stopAdmitted_=false;
+ bool stopHeld_=false,stopAdmitted_=false,stopDeferred_=false;
+ template<class Admit> void attempt(typename Bus::Request& request,bool& held,bool& admitted,bool& deferred,
+   uint32_t now,uint32_t age,Admit admit){
+  using A=flytec_r30h118::AdmissionResult;
+  const auto result=bus_.allows(request,now,age)?
+    flytec_r30h118::admissionResult(admit(request)):A::Rejected;
+  deferred=result==A::Deferred;
+  if(deferred)return;
+  admitted=result==A::Accepted;
+  held=!bus_.complete(request,admitted);
+ }
+ void retire(typename Bus::Request& request,bool& held,bool& admitted,bool& deferred,uint32_t now,uint32_t age){
+  if(deferred&&!bus_.allows(request,now,age)){
+   deferred=false;admitted=false;held=!bus_.complete(request,false);
+  }
+ }
 public:
  explicit PhyService(Bus &bus):bus_(bus){}
  bool flush(){if(held_&&bus_.complete(request_,admitted_))held_=false;return !held_;}
  bool flushStop(){if(stopHeld_&&bus_.complete(stopRequest_,stopAdmitted_))stopHeld_=false;return !stopHeld_;}
+ void retireStale(uint32_t now,uint32_t age){
+  retire(request_,held_,admitted_,deferred_,now,age);
+  retire(stopRequest_,stopHeld_,stopAdmitted_,stopDeferred_,now,age);
+ }
  template<class Admit> void step(uint32_t now,uint32_t maxAge,bool enabled,Admit admit){
   if(!flush())return;
-  if(!enabled||!bus_.take(request_))return;
-  admitted_=bus_.allows(request_,now,maxAge)&&admit(request_);
-  held_=!bus_.complete(request_,admitted_);
+  if(!enabled||(!deferred_&&!bus_.take(request_)))return;
+  attempt(request_,held_,admitted_,deferred_,now,maxAge,admit);
  }
  // Shared arbitration must never dequeue STOP through the ordinary lane.
  template<class Admit> void stepOrdinary(uint32_t now,uint32_t age,bool enabled,Admit admit){
-  if(!flush()||!enabled||!bus_.takeOrdinary(request_))return;
-  admitted_=bus_.allows(request_,now,age)&&admit(request_);
-  held_=!bus_.complete(request_,admitted_);
+  if(!flush()||!enabled||(!deferred_&&!bus_.takeOrdinary(request_)))return;
+  attempt(request_,held_,admitted_,deferred_,now,age,admit);
  }
  template<class Admit> void stepStop(uint32_t now,uint32_t age,Admit admit){
-  if(!flushStop()||!bus_.takeStop(stopRequest_))return;
-  stopAdmitted_=bus_.allows(stopRequest_,now,age)&&admit(stopRequest_);
-  stopHeld_=!bus_.complete(stopRequest_,stopAdmitted_);
+  if(!flushStop()||(!stopDeferred_&&!bus_.takeStop(stopRequest_)))return;
+  attempt(stopRequest_,stopHeld_,stopAdmitted_,stopDeferred_,now,age,admit);
  }
  bool resultPending()const{return held_||stopHeld_;}
 };
@@ -183,6 +209,11 @@ public:
  SharedPhyService(flytec_r30h118::Transport<Frame>& app,HandshakeLane<Frame>& hs,const SharedPriority &priority):app_(app),handshake_(hs),priority_(priority){}
  template<class Policy,class AppAdmit,class HsAdmit>
  void step(uint32_t now,uint32_t age,bool busy,bool enabled,Policy policy,AppAdmit appAdmit,HsAdmit hsAdmit){
+  using A=flytec_r30h118::AdmissionResult;
+  // Retire revoked/expired deferred requests even while another class owns
+  // the PHY. No driver callback or refreshed timestamp is used for retirement.
+  app_.retireStale(now,age);
+  handshake_.retireStale(now,age,policy);
   const bool stopClear=app_.flushStop();
   const bool appClear=app_.flush();
   const bool hsClear=handshake_.flush();
@@ -191,17 +222,22 @@ public:
   if(!appClear&&choosePriority(priority_.snapshot())!=TxPriority::Stop)return;
   if(!hsClear&&choosePriority(priority_.snapshot())!=TxPriority::Stop)return;
   priority_.service(busy,enabled,[&](TxPriority selected){
-   if(selected==TxPriority::Stop){app_.stepStop(now,age,[&](const typename flytec_r30h118::Transport<Frame>::Request &r){return appAdmit(r);});return true;}
+   if(selected==TxPriority::Stop){app_.stepStop(now,age,[&](const typename flytec_r30h118::Transport<Frame>::Request &r){
+    return choosePriority(priority_.snapshot())==TxPriority::Stop?
+      flytec_r30h118::admissionResult(appAdmit(r)):A::Deferred;
+   });return true;}
    if(!appClear||!hsClear)return false;
    app_.stepOrdinary(now,age,true,[&](const typename flytec_r30h118::Transport<Frame>::Request &r){
     // A stale advisory STOP mask must never admit an ordinary request.
-    return (selected==TxPriority::Stop)==r.stop&&
-     choosePriority(priority_.snapshot())==selected&&appAdmit(r);
+    if(r.stop)return A::Rejected;
+    if(choosePriority(priority_.snapshot())!=selected)return A::Deferred;
+    return flytec_r30h118::admissionResult(appAdmit(r));
    });
    return true;
   },[&](){if(!appClear||!hsClear)return false;
   return handshake_.step(now,age,true,policy,[&](const typename HandshakeLane<Frame>::Request &r){
-   return choosePriority(priority_.snapshot())==TxPriority::Handshake&&hsAdmit(r);
+   return choosePriority(priority_.snapshot())==TxPriority::Handshake?
+     flytec_r30h118::admissionResult(hsAdmit(r)):A::Deferred;
   });});
  }
 };
