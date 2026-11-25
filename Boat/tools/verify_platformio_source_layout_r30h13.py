@@ -149,7 +149,7 @@ def audit(root: Path = ROOT, overrides: dict[str, str] | None = None):
         ("Boat/source/boat_dual_radio_port.cpp", "stopAck_.offer((uint16_t)cmd.commandId,sessionEpoch_,result,"),
         ("Boat/source/boat_dual_radio_port.cpp", "stopAck_.due(ackNow,sessionReady(),nrfReady_,primaryDriverPending())"),
         ("Boat/source/boat_dual_radio_port.cpp", "stopAck_.completed(primaryDriverReady()&&primaryDriverSuccess());"),
-        ("Boat/source/boat_dual_radio_port.cpp", "if(stopAck_.pending()||statusOutbox_.pending())return false;"),
+        ("Boat/source/boat_dual_radio_port.cpp", "if(stopAck_.pending()||statusOutbox_.pending()||primaryHandshakeReply_.pending())return false;"),
         ("Boat/source/boat_dual_radio_port.h", '#include "boat_r30h19_status_outbox.h"'),
         ("Boat/source/boat_dual_radio_port.h", '#include "boat_r30h21_primary_tx_budget.h"'),
         ("Boat/source/boat_r30h21_primary_tx_budget.h", "!s.stopAckPending && !s.statusPending;"),

@@ -43,8 +43,13 @@ receiver=read("Remote/source/boat_radio.cpp")
 assert "radio_frameVerify(frame,g_authKey)" in receiver
 assert "frame.payload[0]==radio_r30f::SUBTYPE ||" in receiver
 assert "frame.payload[0]==flytec_time::SUBTYPE" in receiver
-assert receiver.index("frame.payload[0]==radio_r30f::SUBTYPE")<receiver.index(
-        "g_linkManager.reportValidRx(link,true,now);")
+# Validate the authenticated captured-frame path, not a stale loop-time token.
+guard=receiver.index("if(!g_session.established()||frame.sessionEpoch!=g_sessionEpoch||!radio_frameVerify(frame,g_authKey))return;")
+dispatch=receiver.index("if(!dispatchValidatedPayload(link,frame,capturedAt))return;",guard)
+skip=receiver.index("frame.payload[0]==radio_r30f::SUBTYPE ||",dispatch)
+skip_return=receiver.index("frame.payload[0]==flytec_time::SUBTYPE))return;",skip)
+report=receiver.index("g_linkManager.reportValidRx(link,true,capturedAt);",skip_return)
+assert guard<dispatch<skip<skip_return<report
 telemetry=read("Remote/source/boat_telemetry.cpp")
 assert "case RADIO_PAYLOAD_SAFETY_DIAGNOSTIC:" in telemetry
 assert "if(!primary||!radio_r30f::validate(d))return false;" in telemetry

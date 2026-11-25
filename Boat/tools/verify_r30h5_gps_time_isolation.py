@@ -46,12 +46,12 @@ def verify(source):
     for t in ("g_gpsUtcClock.observe(utcMs,now)","link!=LINK_NRF_PRIMARY",
               "frame.payload[0]==flytec_time::SUBTYPE",
               "g_gpsUtcClock.reset()","settimeofday(&tv,nullptr)",
-              "g_linkManager.reportValidRx(link,true,now)"):
+              "g_linkManager.reportValidRx(link,true,capturedAt)"):
         require("Remote/source/boat_radio.cpp",t)
     guard_start=remote.find("if(!g_session.established()||frame.sessionEpoch!=g_sessionEpoch||!radio_frameVerify(frame,g_authKey))return;")
-    payload_dispatch=remote.find("if(!dispatchValidatedPayload(link,frame,now))return;")
+    payload_dispatch=remote.find("if(!dispatchValidatedPayload(link,frame,capturedAt))return;")
     skip_time=remote.find("frame.payload[0]==flytec_time::SUBTYPE))return;")
-    report=remote.find("g_linkManager.reportValidRx(link,true,now);")
+    report=remote.find("g_linkManager.reportValidRx(link,true,capturedAt);")
     if min(guard_start,payload_dispatch,skip_time,report)<0 or not guard_start<payload_dispatch<skip_time<report:
         errors.append("UTC receive must be HMAC/session-validated and NEVER refresh command-link freshness")
     for name in ("Boat/source/boat_dual_radio_port.cpp","Boat/source/boat_radio_safety.h"):

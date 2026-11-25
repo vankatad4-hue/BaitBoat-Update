@@ -32,6 +32,14 @@ class TestGNSSUTCIsolation(unittest.TestCase):
         self.hostile("Remote/source/boat_radio.cpp",
                      "frame.payload[0]==flytec_time::SUBTYPE))return;",
                      "frame.payload[0]==flytec_time::SUBTYPE)){}")
+    def test_dispatch_cannot_refresh_delayed_payload(self):
+        self.hostile("Remote/source/boat_radio.cpp",
+                     "if(!dispatchValidatedPayload(link,frame,capturedAt))return;",
+                     "if(!dispatchValidatedPayload(link,frame,now))return;")
+    def test_delayed_frame_cannot_refresh_link(self):
+        self.hostile("Remote/source/boat_radio.cpp",
+                     "g_linkManager.reportValidRx(link,true,capturedAt);",
+                     "g_linkManager.reportValidRx(link,true,now);")
     def test_remote_cannot_skip_hmac(self):
         self.hostile("Remote/source/boat_radio.cpp",
                      "frame.sessionEpoch!=g_sessionEpoch||!radio_frameVerify(frame,g_authKey)",

@@ -79,8 +79,13 @@ class TestSourceLayout(unittest.TestCase):
 
     def test_boat_stop_ack_cannot_be_silently_dropped(self):
         self.check_rejects_edit("Boat/source/boat_dual_radio_port.cpp",
-            "if(stopAck_.pending()||statusOutbox_.pending())return false;",
+            "if(stopAck_.pending()||statusOutbox_.pending()||primaryHandshakeReply_.pending())return false;",
             "if(false)return false;")
+
+    def test_boat_root_reply_priority_cannot_be_removed(self):
+        self.check_rejects_edit("Boat/source/boat_dual_radio_port.cpp",
+            "if(stopAck_.pending()||statusOutbox_.pending()||primaryHandshakeReply_.pending())return false;",
+            "if(stopAck_.pending()||statusOutbox_.pending())return false;")
 
     def test_boat_stop_status_priority_before_heartbeat(self):
         src=(ROOT/"Boat/source/boat_dual_radio_port.cpp").read_text(encoding="utf-8")
