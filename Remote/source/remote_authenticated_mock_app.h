@@ -32,6 +32,13 @@ public:
  static constexpr uint32_t BackupStatusAge=6500U;
  bool backupStatusFresh(uint32_t now)const{return established()&&!backupFault_&&backupStatusSeen_&&uint32_t(now-backupStatusAt_)<BackupStatusAge;}
  bool backupStatus(uint32_t now,RadioDecodedPayload& out)const{if(!backupStatusFresh(now))return false;out=backupStatus_;return true;}
+ // Backup-only requests are explicit and separate from primary control.
+ bool backupMissionBound()const{return established()&&backupScope_;}
+ BackupMissionControl::State backupMissionState()const{return backupMission_.state();}
+ uint16_t backupMissionHighWater()const{return backupMission_.requestHighWater();}
+ bool requestBackupMissionControl(MissionControlOp op,uint32_t now){
+  return backupMissionBound()&&backupMission_.request(op,now,backupAuthority(now));
+ }
  bool requestStop(uint16_t id,uint32_t now){
   if(!established()||!id)return false;
   if(id==stopId_)return control_.hasStopIntent(id)&&!rearmed_&&!clear_.pending()&&!missionLocked();
@@ -40,7 +47,7 @@ public:
   if(!control_.requestStop(c,now))return false;
   clear_.reset();clearTicket_=0;ordinary_.intent().transportRevoked();rearmed_=false;
   if(missionLocked())mission_.upload().transportRevoked();
-  missionControl_.transportRevoked();missionClear_=missionAuthorized_=false;
+  missionControl_.transportRevoked();revokeBackupMission();missionClear_=missionAuthorized_=false;
   if(!ack_.begin(id,CMD_EMERGENCY_STOP,MODE_MANUAL,now,15000U)){reset(now);return false;}
   stopId_=id;return true;
  }
@@ -116,12 +123,24 @@ public:
   if(missionAuthorized_&&(!missionAuthority(now).primaryFresh||
      !missionAuthority(now).stopReleased||!missionAuthority(now).actuatorReady||
      !missionControl_.control().maintain(now,missionAuthority(now)))){
-   if(!inhibit(now))return reset(now);
+   // Only explicit primary fault transfers a previously authorized scope.
+   // Otherwise (unsafe/stale primary alone) retain the existing inhibit path.
+   if(primaryFault_&&!backupFault_){if(!transferBackupMission(now)&&!inhibit(now))return reset(now);}
+   else if(!inhibit(now))return reset(now);
   }
   consume(PhyLink::Primary,now);consume(PhyLink::Backup,now);
   if(!initialized_)return false;
   // Recheck after RX: a fresh unsafe STATUS must revoke in this same pass.
   if(missionAuthorized_&&(!missionAuthority(now).primaryFresh||!missionAuthority(now).stopReleased||!missionAuthority(now).actuatorReady)){
+   if(!inhibit(now))return reset(now);
+  }
+  // Await fresh post-transfer evidence for a bounded interval. Once seen,
+  // stale/unsafe STATUS retires the entire generation before new admission.
+  if(backupScope_&&(backupFault_||
+     (backupEvidenceSeen_&&!backupSafety(now))||
+     (!backupEvidenceSeen_&&uint32_t(now-backupTransferAt_)>=BackupStatusAge)||
+     (backupPhaseSeen_&&uint32_t(now-backupPhaseAt_)>=BackupStatusAge)||
+     !backupMission_.maintain(now,backupAuthority(now)))){
    if(!inhibit(now))return reset(now);
   }
   // Fail closed before draining results when authority was withdrawn.
@@ -140,7 +159,10 @@ public:
       [&](const RemoteAsyncTx::Result& c,uint32_t at){
        if(clearTicket_&&c.ticket==clearTicket_&&c.commandId==clear_.id()&&c.link==PhyLink::Primary&&c.epoch==1&&c.messageType==RADIO_MSG_ACTION){clearTicket_=0;return true;}
        return ordinary_.observeCompletion(c,at);
-      },[&](const RemoteAsyncTx::Result& c,uint32_t){return c.messageType==RADIO_MSG_MISSION_PREPARE?mission_.observeCompletion(c):missionControl_.observeCompletion(c);}))return reset(now);
+      },[&](const RemoteAsyncTx::Result& c,uint32_t at){
+       if(c.link==PhyLink::Backup)return control_.observeBackupMissionCompletion(backupMission_,c,at);
+       return c.messageType==RADIO_MSG_MISSION_PREPARE?mission_.observeCompletion(c):missionControl_.observeCompletion(c);
+      }))return reset(now);
   if(!session_.established()){
    if(!handshake_.active()&&!handshake_.start(nonce,now,SessionHandshake::windowFor(!backupFault_)))return false;
    return handshake_.tick(now,!primaryFault_,!backupFault_,root_,true);
@@ -162,6 +184,11 @@ public:
     if(!control_.rearmAfterClear(true,now))return reset(now);
     clear_.reset();clearTicket_=0;rearmed_=true;
    }
+  }
+  // Explicit pending backup mission traffic shares pacing with heartbeat;
+  // STOP always revokes the scope and is serviced by control_.tick.
+  if(backupScope_&&!control_.serviceBackupMission(backupMission_,backupAuthority(now),now,sequence_,RadioSessionCounter::REKEY_AT,key_)){
+   if(!inhibit(now))return reset(now);
   }
   const uint8_t flags=uint8_t(1U|(!primaryFault_?2U:0U)|(!backupFault_?4U:0U)|(control_.confirmed()?8U:0U));
   if(!control_.tick(now,!primaryFault_,!backupFault_,flags,sequence_,RadioSessionCounter::REKEY_AT,key_,true))
@@ -198,6 +225,29 @@ public:
   reset(now);radioSession_wipe(root_,32);initialized_=false;mac_=nullptr;
  }
 private:
+ bool backupSafety(uint32_t now)const{
+  return backupEvidenceSeen_&&backupStatusFresh(now)&&backupStatus_.stopState==0&&
+   backupStatus_.batteryPercent>20&&backupStatus_.batteryPercent<=100&&
+   (backupStatus_.safetyFlags&0xE0U)==0&&(backupStatus_.safetyFlags&1U);
+ }
+ BackupMissionAuthority backupAuthority(uint32_t now)const{
+  const bool known=backupPhaseSeen_&&uint32_t(now-backupPhaseAt_)<BackupStatusAge&&
+   (backupPhase_==MC_OUTBOUND||backupPhase_==MC_PAUSED);
+  return {established(),primaryFault_,backupSafety(now),backupScope_&&known,
+   backupStatus_.batteryPercent>20&&backupStatus_.batteryPercent<=100,
+   (backupStatus_.safetyFlags&0xE0U)!=0,!backupScope_};
+ }
+ bool transferBackupMission(uint32_t now){
+  const auto id=missionControl_.control().transaction();
+  const auto high=missionControl_.control().requestHighWater();
+  if(!id||!control_.transferMissionToBackup(id,now,true))return false;
+  missionControl_.transportRevoked();mission_.upload().transportRevoked();ordinary_.intent().transportRevoked();
+  missionClear_=missionAuthorized_=false;clear_.reset();clearTicket_=0;rearmed_=false;
+  backupTransferAt_=now;backupEvidenceSeen_=backupPhaseSeen_=false;
+  backupScope_=backupMission_.bind(id,1,tx_.generation(),high,true);
+  return backupScope_;
+ }
+ void revokeBackupMission(){backupMission_.transportRevoked();backupScope_=backupEvidenceSeen_=backupPhaseSeen_=false;}
  MissionControlAuthority missionAuthority(uint32_t now)const{
   MissionControlAuthority a{};
   a.session=established();a.primaryFresh=primaryStatusFresh(now);a.missionAuthority=missionAuthorized_;
@@ -233,7 +283,7 @@ private:
  bool inhibit(uint32_t now){
   const bool ok=control_.inhibitOrdinary(now);
   if(ok){ordinary_.intent().transportRevoked();if(missionLocked())mission_.upload().transportRevoked();missionControl_.transportRevoked();}
-  missionClear_=missionAuthorized_=false;
+  revokeBackupMission();missionClear_=missionAuthorized_=false;
   clear_.reset();clearTicket_=0;rearmed_=false;
   return ok;
  }
@@ -243,7 +293,8 @@ private:
   const bool b=handshake_.reset(now,defer);
   radioSession_wipe(key_,32);sequence_=stopId_=0;ack_.reset(0);
   clear_.reset();clearTicket_=0;ordinary_.intent().reset();rearmed_=false;primaryStatusSeen_=backupStatusSeen_=false;backupStatusAt_=0;backupStatus_=RadioDecodedPayload{};inputValid_=inputNeutral_=false;
-  if(a&&b){mission_.upload().resetAfterSession();missionControl_.resetAfterSession();}
+  if(a&&b){mission_.upload().resetAfterSession();missionControl_.resetAfterSession();backupMission_.resetAfterSession();}
+  backupScope_=backupEvidenceSeen_=backupPhaseSeen_=false;
   missionClear_=missionAuthorized_=false;
   preparedStatusSeen_=false;preparedStatusId_=0;preparedStatusAt_=0;
   cross_.resetAfterHandshake();primary_.resetAfterHandshake();backup_.resetAfterHandshake();
@@ -271,8 +322,17 @@ private:
    }
    if(f.type==RADIO_MSG_MISSION_FEEDBACK){
     MissionControlFeedback feedback{};
-    if(link!=PhyLink::Primary||!missionFeedbackDecode(f.payload,feedback)||feedback.transaction!=f.commandId||
+    if(!missionFeedbackDecode(f.payload,feedback)||feedback.transaction!=f.commandId||
        feedback.transaction!=mission_.upload().transaction())continue;
+    if(link==PhyLink::Backup){
+     if(!backupScope_||feedback.transaction!=backupMission_.transaction()||
+        uint32_t(rx.receivedMs-backupTransferAt_)>=0x80000000U||
+        !backup_.accept(f.sequence)||!cross_.accept(f.sequence))continue;
+     if(feedback.result==MC_STATUS||backupMission_.observe(feedback,1,tx_.generation(),rx.receivedMs,now,true,backupAuthority(now))){
+      backupPhase_=feedback.phase;backupPhaseAt_=rx.receivedMs;backupPhaseSeen_=true;
+     }
+     continue;
+    }
     if(!primary_.accept(f.sequence)||!cross_.accept(f.sequence))continue;
     if(missionHandedOff())missionControl_.observeControlFeedback(feedback,1,rx.receivedMs,now,true);
     if(feedback.result!=MC_STATUS)continue;
@@ -306,6 +366,7 @@ private:
      clear_.status(1,true,decoded.stopState==0,primarySafe()&&(decoded.safetyFlags&7U)==1U,rx.receivedMs,now);
     }else{
      backupStatus_=decoded;backupStatusAt_=rx.receivedMs;backupStatusSeen_=true;
+     if(backupScope_&&uint32_t(rx.receivedMs-backupTransferAt_)<0x80000000U)backupEvidenceSeen_=true;
     }
    }
   }
@@ -315,6 +376,10 @@ private:
  RemoteClearGate clear_;RemoteAsyncOrdinary<RemoteAsyncTx> ordinary_;RemoteMissionPrepareTx<RemoteAsyncTx> mission_;RemoteMissionControlTx<RemoteAsyncTx> missionControl_;
  RadioDecodedPayload primaryStatus_{},backupStatus_{};uint32_t primaryStatusAt_=0,backupStatusAt_=0,clearTicket_=0;
  bool backupStatusSeen_=false;
+ BackupMissionControl backupMission_;
+ MissionControlPhase backupPhase_=MC_IDLE;
+ uint32_t backupTransferAt_=0,backupPhaseAt_=0;
+ bool backupScope_=false,backupEvidenceSeen_=false,backupPhaseSeen_=false;
  uint32_t preparedStatusAt_=0;uint16_t preparedStatusId_=0;bool preparedStatusSeen_=false;
  bool primaryStatusSeen_=false,inputValid_=false,inputNeutral_=false,rearmed_=false;
  RadioAckTracker ack_;RadioSessionCounter primary_,backup_,cross_;
