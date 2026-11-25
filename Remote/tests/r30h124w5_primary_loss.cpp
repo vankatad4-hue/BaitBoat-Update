@@ -98,6 +98,15 @@ int main(){
  assert(tick(at,true)&&app.backupMissionState()==BackupMissionControl::State::Accepted&&!app.missionAuthorized());
  MissionControlFeedback historical{};
  assert(app.lastBackupMissionFeedback(historical)&&historical.request==4&&historical.op==MCTRL_CANCEL&&historical.phase==MC_ABORTED&&historical.result==MC_ACCEPTED);
+ // Unsafe authenticated snapshot cannot be hidden by a newer healthy
+ // snapshot in the same drain. Scope revocation must advance generation.
+ const auto unsafeGeneration=tx.generation();
+ peer.mockBattery(15);
+ assert(peer.status(status,true,++at)&&h.backupRx.offer({status,at,B}));
+ peer.mockBattery(80);
+ assert(peer.status(status,true,++at)&&h.backupRx.offer({status,at,B}));
+ assert(tick(at,true)&&!app.backupMissionBound()&&tx.generation()!=unsafeGeneration);
+ assert(!app.requestBackupMissionControl(MCTRL_CANCEL,at));
  assert(!app.requestStop(17,at));
  assert(app.requestStop(20,at)&&tick(at,true));
  at+=3000;assert(tick(at,true));assert(service.tick(h,B,gate,&Driver::send,&b,at));
@@ -147,6 +156,14 @@ int main(){
  assert(!app.primaryFault()&&!app.rearmed()&&!app.missionAuthorized()&&!app.backupMissionBound()&&gate.stopped());
  assert(peer.lastStop()==21&&peer.mockReleases()==0&&!app.requestOrdinary(ordinary,at));
  assert(app.lastBackupMissionFeedback(historical)&&historical.request==4&&historical.phase==MC_ABORTED&&historical.result==MC_ACCEPTED);
- assert(!app.tick(++at,123,true,true)&&!app.established()&&gate.stopped());
+ // Overflow is sticky even after the raw fault input clears. Never
+ // qualify recovery against a damaged handoff; both lanes lost retire.
+ for(unsigned i=0;i<8;++i)assert(h.primaryRx.offer({status,at,P}));
+ assert(!h.primaryRx.offer({status,at,P})&&h.fault(P));
+ assert(tick(++at,false)&&app.primaryFault()&&!app.backupFault());
+ assert(tick(++at,false)&&app.primaryFault()&&!app.rearmed());
+ for(unsigned i=0;i<8;++i)assert(h.backupRx.offer({status,at,B}));
+ assert(!h.backupRx.offer({status,at,B})&&h.fault(B));
+ assert(!app.tick(++at,123,false,false)&&!app.established()&&gate.stopped());
  assert(!app.lastBackupMissionFeedback(historical));
 }
