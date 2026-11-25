@@ -52,7 +52,7 @@ int main(){
  assert(ctl.serviceBackupMission(ledger,a,3007,seq,RadioSessionCounter::REKEY_AT,key)&&!tx.pending(B));
  assert(ctl.serviceBackupMission(ledger,a,3008,seq,RadioSessionCounter::REKEY_AT,key)&&tx.pending(B));
  Driver backup;assert(service.tick(h,B,gate,&Driver::send,&backup,3008)&&backup.starts==1);
- assert(backup.last.frame.flags==RADIO_FLAG_BACKUP_LINK&&radio_frameVerify(backup.last.frame,key));
+ assert(backup.last.traffic==TxTraffic::BackupMission&&backup.last.frame.flags==RADIO_FLAG_BACKUP_LINK&&radio_frameVerify(backup.last.frame,key));
  MissionControlRequest q{};assert(missionControlDecode(backup.last.frame.payload,q)&&q.op==MCTRL_PAUSE&&q.request==2);
  // A valid LoRa completion may arrive after the 250 ms admission limit.
  assert(backup.last.lifetimeMs==250U);
@@ -76,5 +76,5 @@ int main(){
  assert(tx.submitBackupMission(f2,8010,250,8010,t,true)==A::Submit::Denied);
  assert(ctl.tick(11009,false,true,1,seq,RadioSessionCounter::REKEY_AT,key,true));
  assert(service.tick(h,B,gate,&Driver::send,&backup,11009)&&backup.starts==before+1);
- assert(backup.last.frame.type==RADIO_MSG_ACTION&&backup.last.frame.payload[0]==CMD_EMERGENCY_STOP&&backup.last.frame.commandId==22);
+ assert(backup.last.traffic==TxTraffic::EmergencyStop&&backup.last.frame.type==RADIO_MSG_ACTION&&backup.last.frame.payload[0]==CMD_EMERGENCY_STOP&&backup.last.frame.commandId==22);
 }

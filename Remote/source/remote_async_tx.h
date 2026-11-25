@@ -181,6 +181,13 @@ private:
   if(s.used)return Submit::Busy;
   TxRequest r{};r.frame=f;r.ticket=++nextTicket_;r.generation=generation_;
   r.link=link;r.createdMs=created;r.lifetimeMs=ttl;
+  // Set local priority only after the corresponding owner/scope checks.
+  // The adaptive PHY denies any unclassified backup request.
+  if(link==PhyLink::Backup){
+   if(stop)r.traffic=TxTraffic::EmergencyStop;
+   else if(mission)r.traffic=TxTraffic::BackupMission;
+   else if(handshake||safeHeartbeat)r.traffic=TxTraffic::Routine;
+  }
   const bool queued=link==PhyLink::Primary?
    (critical?handoff_.primaryCritical.offer(r):handoff_.primaryTx.offer(r)):
    (critical?handoff_.backupCritical.offer(r):handoff_.backupTx.offer(r));

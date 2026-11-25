@@ -41,6 +41,7 @@ struct MockE22{
  bool configured()const{return active&&!state.fault();}
  bool transportFault()const{return !active||state.fault();}
  bool txPending()const{return state.pending();}
+ bool ready()const{return configured()&&!txPending();}
  E22TxState::Outcome txOutcome()const{return state.outcome();}
  void update(){state.poll(millis(),true);}
  bool receiveFrame(RadioFrame& f){return !state.pending()&&inbox.receive(f,true);}
@@ -55,15 +56,19 @@ static uint32_t clockUs(){return micros();}
 static D dispatcher(clockUs);static S scheduler(dispatcher);
 static RadioFrameHandoff handoff;static TxGenerationGate gate;static RemoteRadioOwner owner;
 static RemoteAsyncTx tx(owner,handoff,gate);
-static RemoteAuthenticatedMockApp app(owner,handoff,tx);
+// Synthetic RF profile only; never copied to a physical worker configuration.
+static const LoRaAirtimeProfile mockProfile=[](){LoRaAirtimeProfile p;p.commissioned=true;return p;}();
+static LoRaAirtimePolicy mockBudget;
+static RemoteAuthenticatedMockApp app(owner,handoff,tx,LoRaOwnerTiming::fromProfile(mockProfile,true));
 static MockNrf nrf;static MockE22 lora;
 static NrfPhyAdapter<MockNrf> primary(nrf);
-static E22PhyAdapter<MockE22> backup(lora,3000);
+static E22AdaptiveAdmission<MockE22> admission(lora,mockBudget,20,true);
+static E22PhyAdapter<MockE22> backup(lora,admission);
 static RemoteI2cPhyService<decltype(primary),decltype(backup)> phy(dispatcher,primary,backup,handoff,gate);
 static DualPhyWorker<S> worker(scheduler,clockMs);
 static RemoteWorkerRuntime<decltype(worker),decltype(phy)> runtime(worker,phy);
 static RemoteExclusiveRuntime<decltype(runtime)> exclusive(owner,handoff,runtime);
-static bool init(void*){return dispatcher.begin()&&app.initialize(peer.root(),radioPlatformHmac);}
+static bool init(void*){return mockBudget.configure(mockProfile,millis(),true)&&dispatcher.begin()&&app.initialize(peer.root(),radioPlatformHmac);}
 static void revoke(void*){app.retire(millis());}
 static bool running=false,first=false,primaryConfirmed=false,second=false,backupSeen=false;
 static uint32_t start=0;

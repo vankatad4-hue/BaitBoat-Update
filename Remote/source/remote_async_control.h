@@ -15,7 +15,7 @@ public:
  static constexpr uint32_t PrimaryGap=150U, BackupGap=LoRaAirtimeProfile::BaselineGap;
  static constexpr uint32_t PrimaryHeartbeat=100U, BackupHeartbeat=LoRaAirtimeProfile::BaselineGap;
  static constexpr unsigned PrimaryBudget=8U;
- RemoteAsyncControl(RemoteRadioOwner& owner,RemoteAsyncTx& tx):owner_(owner),tx_(tx){}
+ RemoteAsyncControl(RemoteRadioOwner& owner,RemoteAsyncTx& tx,LoRaOwnerTiming timing={}):owner_(owner),tx_(tx),timing_(timing){}
  RemoteAsyncControl(const RemoteAsyncControl&)=delete;
  RemoteAsyncControl& operator=(const RemoteAsyncControl&)=delete;
  bool invalidate(uint32_t now){
@@ -113,7 +113,7 @@ public:
                            uint32_t now,uint16_t& sequence,uint16_t rekeyAt,const uint8_t key[32]){
   if(!owner_.worker()||!active_||!key||!ledger.maintain(now,a))return false;
   const bool available=!stopId_&&!backup_.ticket&&!tx_.pending(PhyLink::Backup)&&
-      !tx_.linkFault(PhyLink::Backup)&&(!backupSent_||uint32_t(now-lastBackup_)>=BackupGap);
+      !tx_.linkFault(PhyLink::Backup)&&(!backupSent_||uint32_t(now-lastBackup_)>=timing_.urgentGap());
   MissionControlRequest q{};
   if(!ledger.due(now,a,available,q))return true;
   if(rekeyAt<2||sequence>=uint16_t(rekeyAt-1))return false;
@@ -187,7 +187,7 @@ public:
     if(!offer(PhyLink::Primary,false,now,heartbeatFlags,sequence,rekeyAt,key))return false;
    }
   }
-  if(backupReady&&!backup_.ticket&&!tx_.pending(PhyLink::Backup)&&(!backupSent_||uint32_t(now-lastBackup_)>=BackupGap)){
+  if(backupReady&&!backup_.ticket&&!tx_.pending(PhyLink::Backup)&&(!backupSent_||uint32_t(now-lastBackup_)>=(backupStop?timing_.urgentGap():BackupHeartbeat))){
    if(!offer(PhyLink::Backup,backupStop,now,heartbeatFlags,sequence,rekeyAt,key))return false;
   }
   return true;
@@ -235,7 +235,7 @@ private:
   }else markBackup(now);
   return true;
  }
- RemoteRadioOwner& owner_;RemoteAsyncTx& tx_;
+ RemoteRadioOwner& owner_;RemoteAsyncTx& tx_;const LoRaOwnerTiming timing_;
  flytec_r30h17::StopConfirmationGate primaryGate_,backupGate_;
  Pending primary_,backup_;
  BoatCommand stop_{};

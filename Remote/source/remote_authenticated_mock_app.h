@@ -14,8 +14,8 @@
 namespace flytec_rtos {
 class RemoteAuthenticatedMockApp {
 public:
- RemoteAuthenticatedMockApp(RemoteRadioOwner& owner,RadioFrameHandoff& handoff,RemoteAsyncTx& tx):
-  owner_(owner),handoff_(handoff),tx_(tx),handshake_(owner,tx,session_),control_(owner,tx),ordinary_(tx),mission_(tx),missionControl_(tx){}
+ RemoteAuthenticatedMockApp(RemoteRadioOwner& owner,RadioFrameHandoff& handoff,RemoteAsyncTx& tx,LoRaOwnerTiming timing={}):
+  owner_(owner),handoff_(handoff),tx_(tx),handshake_(owner,tx,session_),control_(owner,tx,timing),ordinary_(tx),mission_(tx),missionControl_(tx),backupMission_(timing){}
  RemoteAuthenticatedMockApp(const RemoteAuthenticatedMockApp&)=delete;
  RemoteAuthenticatedMockApp& operator=(const RemoteAuthenticatedMockApp&)=delete;
  bool initialize(const uint8_t root[32],SessionHmac mac){

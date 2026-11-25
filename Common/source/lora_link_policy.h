@@ -13,6 +13,23 @@ struct LoRaAirtimeProfile {
  uint32_t normalGapMs=BaselineGap, urgentGapMs=CandidateUrgentGap;
  bool commissioned=false;
 };
+// Immutable owner pacing hint; not airtime permission. The single PHY
+// owner independently enforces the commissioned profile and RF-tail guard.
+class LoRaOwnerTiming {
+public:
+ LoRaOwnerTiming()=default;
+ static LoRaOwnerTiming fromProfile(const LoRaAirtimeProfile& p,bool adaptiveBound){
+  LoRaOwnerTiming t;
+  if(adaptiveBound&&p.commissioned&&p.normalGapMs==LoRaAirtimeProfile::BaselineGap&&
+     p.urgentGapMs>=LoRaAirtimeProfile::CandidateUrgentGap&&p.urgentGapMs<=p.normalGapMs&&
+     p.hourlyMs&&p.hourlyMs<=3600000U&&p.packetMs&&p.packetMs<=p.reserveMs&&
+     p.reserveMs<p.hourlyMs&&p.packetMs<=p.hourlyMs-p.reserveMs)t.urgent_=p.urgentGapMs;
+  return t;
+ }
+ uint32_t urgentGap()const{return urgent_;}
+private:
+ uint32_t urgent_=LoRaAirtimeProfile::BaselineGap;
+};
 class LoRaAirtimePolicy {
 public:
  enum class Traffic:uint8_t{Routine,Mission,Emergency};

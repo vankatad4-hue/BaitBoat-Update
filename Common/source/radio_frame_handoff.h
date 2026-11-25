@@ -9,7 +9,9 @@
 namespace flytec_rtos {
 enum class PhyLink:uint8_t { Primary=1, Backup=2 };
 struct RxFrame { RadioFrame frame; uint32_t receivedMs; PhyLink link; };
-struct TxRequest { RadioFrame frame; uint32_t ticket; uint32_t generation; PhyLink link; uint32_t createdMs=0; uint32_t lifetimeMs=0; };
+// Local owner metadata only; not part of the authenticated 32-byte RF frame.
+enum class TxTraffic:uint8_t { Unclassified, Routine, BackupMission, EmergencyStop };
+struct TxRequest { RadioFrame frame; uint32_t ticket; uint32_t generation; PhyLink link; uint32_t createdMs=0; uint32_t lifetimeMs=0; TxTraffic traffic=TxTraffic::Unclassified; };
 enum class TxEvidence:uint8_t { None, NrfAck, LocalReady };
 struct TxCompletion {
  uint32_t ticket; uint32_t generation; PhyLink link; bool success; TxEvidence evidence;

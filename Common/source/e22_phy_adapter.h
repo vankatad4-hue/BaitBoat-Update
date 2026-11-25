@@ -3,6 +3,7 @@
 #include "bounded_rx_service.h"
 #include "e22_tx_state.h"
 #include "lora_link_policy.h"
+#include "mission_control_wire.h"
 // Dormant: single PHY owner. LocalReady is NOT RF delivery or peer ACK.
 // Driver initialization, bus ownership and RF signoff remain external.
 namespace flytec_rtos {
@@ -15,6 +16,31 @@ public:
  // Only the trusted application/worker boundary supplies classification of
  // immutable, owner-sealed requests. No classification of raw RX frames.
  using Classify=bool(*)(void*,const TxRequest&,Traffic&);
+ // Remote application metadata is emitted only after owner admission. A
+ // raw packet, stale generation or unknown classification cannot use reserve.
+ static bool classifyRemoteOwner(void*,const TxRequest& r,Traffic& out){
+  const auto& f=r.frame;
+  if(r.link!=PhyLink::Backup||!r.ticket||!r.generation||f.sourceId!=1||f.destinationId!=2||
+     !radioLinkFlagMatches(f.flags,true))return false;
+  switch(r.traffic){
+   case TxTraffic::Routine:
+    if(f.commandId)return false;
+    if(f.type==RADIO_MSG_HEARTBEAT){if(!f.sessionEpoch||!f.sequence)return false;}
+    else if((f.type!=RADIO_MSG_SESSION_HELLO&&f.type!=RADIO_MSG_SESSION_PROOF)||f.sessionEpoch||f.sequence)return false;
+    out=Traffic::Routine;return true;
+   case TxTraffic::BackupMission:{
+    MissionControlRequest q{};
+    if(f.type!=RADIO_MSG_MISSION_CONTROL||!f.commandId||!f.sessionEpoch||!f.sequence||
+       !missionControlDecode(f.payload,q)||q.transaction!=f.commandId||(q.op!=MCTRL_PAUSE&&q.op!=MCTRL_CANCEL))return false;
+    out=Traffic::Mission;return true;
+   }
+   case TxTraffic::EmergencyStop:
+    if(f.type!=RADIO_MSG_ACTION||!f.commandId||!f.sessionEpoch||!f.sequence||f.payload[0]!=RADIO_ACTION_STOP||f.payload[6]||f.payload[7])return false;
+    out=Traffic::Emergency;return true;
+   default:return false;
+  }
+ }
+ E22PhyAdapter(Driver& driver,Adaptive& admission):E22PhyAdapter(driver,admission,&classifyRemoteOwner,nullptr){}
  E22PhyAdapter(Driver& driver,Adaptive& admission,Classify classify,void* context):
   driver_(driver),minimumGapMs_(0),adaptive_(&admission),classify_(classify),classifyContext_(context){
   adaptiveFault_=!admission.belongsTo(driver)||!classify;
