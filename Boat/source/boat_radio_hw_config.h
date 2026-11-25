@@ -1,5 +1,5 @@
 #pragma once
-#include "boat_pin_assignments_r30h32.h"
+#include "boat_pin_assignments.h"
 // R20 candidate mapping for ESP32-S3-DevKitC-1-N32R16V.
 // Pin audit flags intentionally remain 0: board revision and harness not physically signed.
 #define BOAT_NRF_CE_PIN 10

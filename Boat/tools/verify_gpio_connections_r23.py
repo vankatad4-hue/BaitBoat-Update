@@ -10,7 +10,7 @@ import re
 BOAT=Path(__file__).resolve().parents[1]
 R20=BOAT/"docs/BOAT_R20_GPIO_RESOURCE_CROSSWALK.csv"
 R23=BOAT/"docs/BOAT_R23_MODULE_CONNECTION_MATRIX.csv"
-CONTRACT=BOAT/"source/boat_r23_gpio_connection_contract.h"
+CONTRACT=BOAT/"source/boat_gpio_connection_contract.h"
 RADIO=BOAT/"source/boat_radio_hw_config.h"
 read=lambda p:p.read_text(encoding="utf-8")
 

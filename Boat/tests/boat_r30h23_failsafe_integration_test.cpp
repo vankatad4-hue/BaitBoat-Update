@@ -3,7 +3,7 @@
 // Physics inputs are deliberately injected, not inferred from a radio ACK.
 #include "../source/boat_hardware_supervisor.h"
 #include "../source/boat_hardware_status.h"
-#include "../source/boat_shared_supply_fault_guard_r30b.h"
+#include "../source/boat_shared_supply_fault_guard.h"
 #include "../source/boat_home_point_record.h"
 #include "../source/boat_radio_safety.h"
 #include "../source/mission_controller.h"

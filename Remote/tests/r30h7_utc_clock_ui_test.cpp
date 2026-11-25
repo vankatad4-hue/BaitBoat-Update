@@ -1,4 +1,4 @@
-#include "../source/r30h7_utc_clock_ui.h"
+#include "../source/utc_clock_ui.h"
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>

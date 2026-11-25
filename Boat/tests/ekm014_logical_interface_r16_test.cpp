@@ -1,7 +1,7 @@
 #include <cassert>
 #include <cstring>
 #include <iostream>
-#include "../source/ekm014_logical_interface_r16.h"
+#include "../source/ekm014_logical_interface.h"
 
 using namespace flytec_ekm014_r16;
 int main() {

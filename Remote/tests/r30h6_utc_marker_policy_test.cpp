@@ -1,4 +1,4 @@
-#include "../source/r30h6_utc_marker_policy.h"
+#include "../source/utc_marker_policy.h"
 #include <assert.h>
 #include <stdio.h>
 int main(){

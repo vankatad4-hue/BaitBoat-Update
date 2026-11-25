@@ -1,7 +1,7 @@
 #pragma once
 // Consolidated Boat radio component; original types and owner contracts retained.
 #include "boat_radio_owner.h"
-#include "boat_r30h18_stop_ack_outbox.h"
+#include "boat_stop_delivery.h"
 namespace flytec_r30h123 {
 // One owner-only STOP ACK service per PHY. Caller must route terminal results
 // after OwnerLink::poll and syncDeferred, before attempting another ACK.
@@ -75,7 +75,6 @@ public:
 };
 }
 
-#include "boat_r30h19_status_outbox.h"
 namespace flytec_r30h123 {
 // Owner-only service. Before polling the owner, reconcile replacements,
 // expiry and lost trust; after polling route the exact terminal result.

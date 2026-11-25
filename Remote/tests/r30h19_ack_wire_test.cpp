@@ -4,7 +4,7 @@
 #include "../source/radio_payload_codec.h"
 #include "../source/radio_payload_encoder.h"
 #include "../source/radio_ack_tracker.h"
-#include "../source/r30h17_stop_confirmation_gate.h"
+#include "../source/remote_stop_delivery.h"
 #include <cassert>
 #include <iostream>
 static RadioDecodedPayload ackPayload(uint16_t id,uint8_t type,uint8_t result){

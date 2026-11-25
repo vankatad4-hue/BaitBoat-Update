@@ -4,8 +4,8 @@
 #include "boat_commands.h"
 #include "dual_radio_manager.h"
 #include "radio_ack_tracker.h"
-#include "r30h3_stop_trace.h"
-#include "r30h6_utc_marker_policy.h"
+#include "remote_stop_trace.h"
+#include "utc_marker_policy.h"
 #include "mission_upload.h"
 #include "mission_control_wire.h"
 

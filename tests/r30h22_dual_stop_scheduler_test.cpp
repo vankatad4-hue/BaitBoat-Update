@@ -8,11 +8,8 @@
 #include "radio_payload_codec.h"
 #include "radio_payload_encoder.h"
 #include "radio_session_v2.h"
-#include "../Boat/source/boat_r30h18_stop_ack_outbox.h"
-#include "../Boat/source/boat_r30h19_status_outbox.h"
-#include "../Boat/source/boat_r30h21_primary_tx_budget.h"
-#include "../Remote/source/r30h15_primary_stop_retry.h"
-#include "../Remote/source/r30h17_stop_confirmation_gate.h"
+#include "../Boat/source/boat_stop_delivery.h"
+#include "../Remote/source/remote_stop_delivery.h"
 #include "../Remote/source/radio_ack_tracker.h"
 #include <cassert>
 #include <cstdint>

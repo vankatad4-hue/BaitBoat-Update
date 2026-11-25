@@ -1,5 +1,5 @@
 #include "physical_button_scanner.h"
-#include "remote_pin_assignments_r30h32.h"
+#include "remote_pin_assignments.h"
 #include "release_button_guard.h"
 #include <Wire.h>
 #include "remote_i2c_owner.h"

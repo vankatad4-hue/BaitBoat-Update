@@ -1,7 +1,7 @@
 // R30H-27 pure host evidence classification: real R30D diagnostic capture,
 // command echoes, MCP23017 readback, spoofed source types, old values,
 // simulated physical-current-zero and status-wire semantics. NO HARDWARE.
-#include "../source/boat_r30h27_feedback_provenance_audit.h"
+#include "../source/boat_feedback_provenance_audit.h"
 #include <cassert>
 #include <cstdint>
 #include <iostream>

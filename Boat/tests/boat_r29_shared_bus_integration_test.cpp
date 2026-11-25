@@ -1,8 +1,8 @@
-#include "../source/boat_r29_shared_bus_contract.h"
+#include "../source/boat_shared_bus_contract.h"
 #include "../source/boat_radio_safety.h"
 #include "../source/boat_battery_policy.h"
 #include "../source/boat_physical_driver_adapter.h"
-#include "../source/ina231_acquisition_r28.h"
+#include "../source/ina231_acquisition.h"
 #include <cassert>
 #include <iostream>
 #include <limits>

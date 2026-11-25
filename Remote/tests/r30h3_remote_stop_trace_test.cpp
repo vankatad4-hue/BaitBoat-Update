@@ -1,4 +1,4 @@
-#include "../source/r30h3_stop_trace.h"
+#include "../source/remote_stop_trace.h"
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>

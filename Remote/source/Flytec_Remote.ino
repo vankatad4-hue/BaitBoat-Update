@@ -17,7 +17,7 @@
 #include "display_port.h"
 #include "physical_button_scanner.h"
 #include "release_button_guard.h"
-#include "r30h10_gpio_test_profile.h" // passive resource-map compile checks
+#include "gpio_test_profile.h" // passive resource-map compile checks
 
 static bool uiReady = false;
 // Shared handler for touchscreen, physical and startup safety STOP.

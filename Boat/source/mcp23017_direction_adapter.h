@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-#include "boat_pin_assignments_r30h32.h"
+#include "boat_pin_assignments.h"
 // R20: MCP23017 bank=0 default register map; port B pins 0/1 direction.
 // This adapter does not initialize a physical bus, authorize motor power,
 // control PWM, or replace the independent STOP/contactor.

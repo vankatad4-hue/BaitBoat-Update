@@ -3,7 +3,7 @@
 #include "lora_link_policy.h"
 #include "remote_backup_mission_control.h"
 #include "radio_command_codec.h"
-#include "r30h17_stop_confirmation_gate.h"
+#include "remote_stop_delivery.h"
 // R30H-124G: Core 1 application-side STOP/heartbeat scheduling.
 // Use ONLY after authenticated session establishment. Caller owns key,
 // session sequence counter, link readiness and authenticated RX dispatch.

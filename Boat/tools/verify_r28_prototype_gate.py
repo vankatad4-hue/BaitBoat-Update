@@ -4,9 +4,9 @@ from pathlib import Path
 import csv
 ROOT=Path(__file__).resolve().parents[2]
 read=lambda p:(ROOT/p).read_text(encoding="utf-8")
-r27=read("Boat/source/ina231_voltage_contract_r27.h")
-r28=read("Boat/source/ina231_acquisition_r28.h")
-wire=read("Boat/source/ina231_arduino_wire_r28.h")
+r27=read("Boat/source/ina231_voltage_contract.h")
+r28=read("Boat/source/ina231_acquisition.h")
+wire=read("Boat/source/ina231_arduino_wire.h")
 port=read("Boat/source/tracker_sensor_port.cpp")
 cfg=read("Boat/source/tracker_sensor_profile.example.h")
 hal=read("Boat/source/boat_physical_driver_adapter.h")

@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-#include "ina231_voltage_contract_r27.h"
+#include "ina231_voltage_contract.h"
 // R28 transport-neutral, logic-only INA231 voltage sampling contract.
 // The normal Boat target MUST pass INA231_PHYSICAL_COMMISSIONED (currently false)
 // AND the signed local profile before this sampler can start.

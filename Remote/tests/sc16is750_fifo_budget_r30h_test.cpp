@@ -1,4 +1,4 @@
-#include "../source/sc16is750_fifo_budget_r30h.h"
+#include "../source/sc16is750_fifo_budget.h"
 #include <cassert>
 #include <cstdint>
 #include <iostream>

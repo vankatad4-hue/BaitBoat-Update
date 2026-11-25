@@ -9,8 +9,8 @@ B="Boat/docs/BOAT_R30H_10_PIN_MAP.csv"
 R="Remote/docs/REMOTE_R30H_10_PIN_MAP.csv"
 BH="Boat/source/boat_radio_hw_config.h"
 RH="Remote/source/radio_hw_config.h"
-BP="Boat/source/boat_pin_assignments_r30h32.h"
-RP="Remote/source/remote_pin_assignments_r30h32.h"
+BP="Boat/source/boat_pin_assignments.h"
+RP="Remote/source/remote_pin_assignments.h"
 
 def snapshot(root=ROOT):
     return {p:(root/p).read_text(encoding="utf8") for p in (B,R,BH,RH,BP,RP)}

@@ -1,6 +1,6 @@
 #include "sc16is750_bridge.h"
 #include "remote_i2c_owner.h"
-#include "sc16is750_fifo_budget_r30h.h"
+#include "sc16is750_fifo_budget.h"
 
 static constexpr uint8_t REG_RHR_THR_DLL=0x00;
 static constexpr uint8_t REG_IER_DLH=0x01;

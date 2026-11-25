@@ -4,7 +4,7 @@
 #include "../source/boat_hardware_supervisor.h"
 #include "../source/boat_hardware_status.h"
 #include "../source/boat_radio_safety.h"
-#include "../source/boat_shared_supply_fault_guard_r30b.h"
+#include "../source/boat_shared_supply_fault_guard.h"
 #include <cassert>
 #include <cstdint>
 #include <limits>

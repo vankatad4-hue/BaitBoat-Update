@@ -15,9 +15,9 @@
 #include "figure8_calibration_nvs.h"
 #include "boat_home_point_nvs.h"
 #include "boat_endpoint_memory_gate.h"
-#include "boat_common_bus_readonly_port_r30d.h"
-#include "r30h10_gpio_test_profile.h" // passive constants; no hardware outputs
-#include "boat_r30e_fault_status.h"
+#include "boat_common_bus_readonly_port.h"
+#include "gpio_test_profile.h" // passive constants; no hardware outputs
+#include "boat_fault_status.h"
 
 // R30D: compile the prospective input-only common-bus feedback contract on
 // the real ESP32-S3 target without constructing a reader or touching GPIO.

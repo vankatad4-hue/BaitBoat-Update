@@ -1,6 +1,6 @@
 #pragma once
 #include <Arduino.h>
-#include "remote_pin_assignments_r30h32.h"
+#include "remote_pin_assignments.h"
 
 // ADS1115 four-axis joystick reader. Address 0x4A is a provisional strap;
 // confirm ADDR pin wiring on the carrier before hardware use.

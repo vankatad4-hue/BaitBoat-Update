@@ -4,7 +4,7 @@ from pathlib import Path
 import csv
 root=Path(__file__).resolve().parents[2]
 get=lambda p:(root/p).read_text(encoding="utf-8")
-status=get("Boat/source/boat_r30e_fault_status.h")
+status=get("Boat/source/boat_fault_status.h")
 app=get("Boat/source/firmware/Flytec_Boat.ino")
 test=get("Boat/tests/boat_r30e_fault_status_test.cpp")
 for token in ("NO_READER","SOURCE_DUPLICATED","BATTERY_EXPIRED",
@@ -14,7 +14,7 @@ for token in ("NO_READER","SOURCE_DUPLICATED","BATTERY_EXPIRED",
               "safeToActuate=false","0xD5","encodeLocal",
               "UNVERIFIED|COMMISSIONING_LOCK"):
     assert token in status,token
-assert 'boat_r30e_fault_status.h' in app
+assert 'boat_fault_status.h' in app
 assert "safetyObservations.snapshot(" in app
 assert "boat_r30e::makeStatus(" in app
 assert "boat_r30e::encodeLocal(" in app
@@ -28,12 +28,12 @@ assert "radio.sendHardwareTelemetry(status)" not in app
 wire=get("Boat/source/radio_payload_codec.h")
 assert "RADIO_PAYLOAD_R30E" not in wire
 assert "RADIO_PAYLOAD_DIAGNOSTIC" not in wire
-port=get("Boat/source/boat_common_bus_readonly_port_r30d.h")
+port=get("Boat/source/boat_common_bus_readonly_port.h")
 assert "ACTUAL_READER_COMMISSIONED = false" in port
-assert "COMMON_BUS_HARDWARE_COMMISSIONED = false" in get("Boat/source/boat_common_bus_feedback_r30c.h")
-assert "SHARED_BUS_PHYSICALLY_ACCEPTED = false" in get("Boat/source/boat_r29_shared_bus_contract.h")
-assert "SEPARATE_MOTOR_SOLENOID_POWER = false" in get("Boat/source/boat_r29_shared_bus_contract.h")
-assert "INA231_PHYSICAL_COMMISSIONED=false" in get("Boat/source/ina231_voltage_contract_r27.h")
+assert "COMMON_BUS_HARDWARE_COMMISSIONED = false" in get("Boat/source/boat_common_bus_feedback.h")
+assert "SHARED_BUS_PHYSICALLY_ACCEPTED = false" in get("Boat/source/boat_shared_bus_contract.h")
+assert "SEPARATE_MOTOR_SOLENOID_POWER = false" in get("Boat/source/boat_shared_bus_contract.h")
+assert "INA231_PHYSICAL_COMMISSIONED=false" in get("Boat/source/ina231_voltage_contract.h")
 assert "assert(!physical.begin(unavailable,pulses,false))" in test
 with (root/"Boat/docs/BOAT_R30A_READINESS_GATES.csv").open(newline="",encoding="utf-8") as f:
     gates=list(csv.DictReader(f))

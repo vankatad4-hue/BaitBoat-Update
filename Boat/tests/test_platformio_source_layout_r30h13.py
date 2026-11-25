@@ -112,7 +112,7 @@ class TestSourceLayout(unittest.TestCase):
         self.assertTrue(any("R30H-21 busy-TX heartbeat" in e for e in errors),errors)
 
     def test_r30h21_pending_status_and_stop_ack_deny_ordinary_tx(self):
-        self.check_rejects_edit("Boat/source/boat_r30h21_primary_tx_budget.h",
+        self.check_rejects_edit("Boat/source/boat_stop_delivery.h",
             "!s.stopAckPending && !s.statusPending;",
             "true;")
 
@@ -127,7 +127,7 @@ class TestSourceLayout(unittest.TestCase):
             "if(false)")
 
     def test_r30h23_critical_battery_gate_cannot_be_removed(self):
-        self.check_rejects_edit("Boat/source/boat_shared_supply_fault_guard_r30b.h",
+        self.check_rejects_edit("Boat/source/boat_shared_supply_fault_guard.h",
             "snapshot.critical", "false")
 
     def test_r30h24_actuator_boundary_rejects_stale_cached_navigation(self):
@@ -161,12 +161,12 @@ class TestSourceLayout(unittest.TestCase):
             "driverFaultLatched_=false; // unsafe mutation")
 
     def test_r30h26_coil_feedback_deadline_cannot_be_removed(self):
-        self.check_rejects_edit("Boat/source/boat_r30h26_output_off_feedback_guard.h",
+        self.check_rejects_edit("Boat/source/boat_output_off_feedback_guard.h",
             "(uint32_t)(now-releaseOffSince_)>=RELEASE_OFF_SETTLE_MS",
             "false")
 
     def test_r30h26_motor_feedback_deadline_cannot_be_removed(self):
-        self.check_rejects_edit("Boat/source/boat_r30h26_output_off_feedback_guard.h",
+        self.check_rejects_edit("Boat/source/boat_output_off_feedback_guard.h",
             "(uint32_t)(now-motorsOffSince_)>=MOTOR_OFF_SETTLE_MS",
             "false")
 
@@ -176,12 +176,12 @@ class TestSourceLayout(unittest.TestCase):
             "radio_.completeApplicationAction(manualRelease_,generation_,false,1,0);")
 
     def test_r30h27_actual_current_zero_not_signed(self):
-        self.check_rejects_edit("Boat/source/boat_r30h27_feedback_provenance_audit.h",
+        self.check_rejects_edit("Boat/source/boat_feedback_provenance_audit.h",
             "PHYSICAL_FEEDBACK_SIGNOFF_COMPLETE = false",
             "PHYSICAL_FEEDBACK_SIGNOFF_COMPLETE = true")
 
     def test_r30h27_mcp_output_echo_does_not_certify_current(self):
-        self.check_rejects_edit("Boat/source/boat_r30h27_feedback_provenance_audit.h",
+        self.check_rejects_edit("Boat/source/boat_feedback_provenance_audit.h",
             "Origin::MCP_OUTPUT_LATCH_READBACK",
             "Origin::EXTERNAL_CURRENT_MEASUREMENT")
 

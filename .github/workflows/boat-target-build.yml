@@ -87,7 +87,7 @@ jobs:
         run: |
           mkdir -p /tmp/BoatInaBench
           cp Boat/hardware_test/INA231_Battery_Bench/INA231_Battery_Bench.ino /tmp/BoatInaBench/BoatInaBench.ino
-          cp Boat/source/ina231_voltage_contract_r27.h Boat/source/ina231_acquisition_r28.h Boat/source/ina231_arduino_wire_r28.h /tmp/BoatInaBench/
+          cp Boat/source/ina231_voltage_contract.h Boat/source/ina231_acquisition.h Boat/source/ina231_arduino_wire.h /tmp/BoatInaBench/
           # No locally signed bench profile is staged. Default sketch never touches Wire pins.
       - name: Compile selected R30A INA231-only locked target
         run: |

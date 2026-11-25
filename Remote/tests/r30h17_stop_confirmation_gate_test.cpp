@@ -1,5 +1,5 @@
 // R30H-17 STOP evidence gate: no RF, GPIO or actuator.
-#include "r30h17_stop_confirmation_gate.h"
+#include "remote_stop_delivery.h"
 #include <assert.h>
 int main(){
     flytec_r30h17::StopConfirmationGate gate;

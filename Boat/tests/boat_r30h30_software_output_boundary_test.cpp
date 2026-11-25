@@ -1,4 +1,4 @@
-#include "boat_r30h30_software_output_boundary.h"
+#include "boat_software_output_boundary.h"
 #include <cassert>
 #include <cstdint>
 int main(){

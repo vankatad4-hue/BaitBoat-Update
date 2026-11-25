@@ -24,8 +24,8 @@ on:
       - 'tests/r30h20_stubs/**'
       - 'tools/**'
       - 'Remote/tools/pio_deny_upload.py'
-      - 'Boat/source/boat_r30h9_marker_config.h'
-      - 'Remote/source/remote_r30h9_marker_config.h'
+      - 'Boat/source/boat_diagnostic_marker_config.h'
+      - 'Remote/source/remote_diagnostic_marker_config.h'
       - '.github/workflows/platformio-migration-build.yml'
   pull_request:
     branches: [main, hardware-ready-dual-radio-r1]
@@ -73,10 +73,10 @@ jobs:
           grep -F '#define REMOTE_NRF_PIN_AUDIT_SIGNED 0' Remote/source/radio_hw_config.h
           grep -F '#define BOAT_R30H_LOCAL_TRACE_ENABLED 0' Boat/source/boat_radio_hw_config.h
           grep -F '#define REMOTE_R30H3_STOP_TRACE_ENABLED 0' Remote/source/radio_hw_config.h
-          grep -F '#define BOAT_R30H9_MARKER_GPIO (-1)' Boat/source/boat_r30h9_marker_config.h
-          grep -F '#define BOAT_R30H9_GPIO_OUTPUT_SIGNED 0' Boat/source/boat_r30h9_marker_config.h
-          grep -F '#define REMOTE_R30H9_MARKER_GPIO (-1)' Remote/source/remote_r30h9_marker_config.h
-          grep -F '#define REMOTE_R30H9_GPIO_OUTPUT_SIGNED 0' Remote/source/remote_r30h9_marker_config.h
+          grep -F '#define BOAT_R30H9_MARKER_GPIO (-1)' Boat/source/boat_diagnostic_marker_config.h
+          grep -F '#define BOAT_R30H9_GPIO_OUTPUT_SIGNED 0' Boat/source/boat_diagnostic_marker_config.h
+          grep -F '#define REMOTE_R30H9_MARKER_GPIO (-1)' Remote/source/remote_diagnostic_marker_config.h
+          grep -F '#define REMOTE_R30H9_GPIO_OUTPUT_SIGNED 0' Remote/source/remote_diagnostic_marker_config.h
           grep -F '#define REMOTE_SD_DUMMY_CSN_PIN 6' Remote/source/radio_hw_config.h
           grep -F '#define REMOTE_NRF_CE_PIN   (-1)' Remote/source/radio_hw_config.h
           grep -F '#define REMOTE_NRF_CSN_PIN  (-1)' Remote/source/radio_hw_config.h

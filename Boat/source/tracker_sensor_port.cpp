@@ -1,6 +1,6 @@
 #include "tracker_sensor_port.h"
-#include "ina231_voltage_contract_r27.h"
-#include "ina231_arduino_wire_r28.h"
+#include "ina231_voltage_contract.h"
+#include "ina231_arduino_wire.h"
 namespace{
  bool validPins(const TrackerSensorConfig &c){
   if(!c.pinAuditSigned||!(c.gnssBaud==9600||c.gnssBaud==115200)||(c.imuAddress!=0x68&&c.imuAddress!=0x69)||

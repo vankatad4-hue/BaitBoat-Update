@@ -19,7 +19,7 @@ assert nets["EKM_LOGIC_VL"]["Voltage_Domain"]=="5V_LOGIC"
 purchase=get("docs/PROJECT_PURCHASE_REGISTER_R20.csv")
 assert "VH remains separate 3S pack" not in purchase
 assert "VH and Cytron MDD20A VM share the same common 3S4P battery distribution bus" in purchase
-code=get("Boat/source/boat_r29_shared_bus_contract.h")
+code=get("Boat/source/boat_shared_bus_contract.h")
 assert "SHARED_3S_PACK = true" in code
 assert "SEPARATE_MOTOR_SOLENOID_POWER = false" in code
 assert "SHARED_BUS_PHYSICALLY_ACCEPTED = false" in code
@@ -27,7 +27,7 @@ assert "exclusiveActuatorRequest" in code
 driver=get("Boat/source/boat_physical_driver_adapter.h")
 assert "exclusiveActuatorRequest(request)" in driver
 assert "!independentHardwareCommissioned" in driver
-ina=get("Boat/source/ina231_voltage_contract_r27.h")
+ina=get("Boat/source/ina231_voltage_contract.h")
 assert "INA231_PHYSICAL_COMMISSIONED=false" in ina
 sensor=get("Boat/source/tracker_sensor_profile.example.h")
 assert "c.ina231BoardAndWiringSigned=false" in sensor

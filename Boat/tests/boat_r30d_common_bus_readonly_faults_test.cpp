@@ -1,4 +1,4 @@
-#include "../source/boat_common_bus_readonly_port_r30d.h"
+#include "../source/boat_common_bus_readonly_port.h"
 #include "../source/boat_physical_driver_adapter.h"
 #include <cassert>
 #include <iostream>

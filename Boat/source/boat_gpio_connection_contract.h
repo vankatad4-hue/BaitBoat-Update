@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-#include "boat_pin_assignments_r30h32.h"
+#include "boat_pin_assignments.h"
 // R23 MODULE-ONLY BOAT PIN CONTRACT — candidate header mapping verified
 // against published Espressif DevKitC-1 v1.1 J1/J3 headers.
 // Physical PCB revision, connector orientation, signal levels and actual

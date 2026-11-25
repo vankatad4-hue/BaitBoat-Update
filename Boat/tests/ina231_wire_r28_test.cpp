@@ -1,4 +1,4 @@
-#include "../source/ina231_arduino_wire_r28.h"
+#include "../source/ina231_arduino_wire.h"
 #include <cassert>
 #include <iostream>
 int main(){

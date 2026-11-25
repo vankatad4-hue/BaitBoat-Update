@@ -1,4 +1,4 @@
-#include "../source/mcp23017_joint_boot_audit_r24.h"
+#include "../source/mcp23017_joint_boot_audit.h"
 #include <cassert>
 #include <cstdint>
 #include <iostream>

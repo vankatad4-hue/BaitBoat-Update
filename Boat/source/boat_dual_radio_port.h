@@ -4,12 +4,12 @@
 #include "nrf24_link.h"
 #include "e22_uart_board_port.h"
 #include "boat_radio_hw_config.h"
-#include "boat_r30h9_marker_config.h"
-#include "r30h9_marker_contract.h"
+#include "boat_diagnostic_marker_config.h"
+#include "diagnostic_marker_contract.h"
 // R30H-9: marker commissioning impossible in diagnostic firmware.
 static_assert(BOAT_R30H9_MARKER_GPIO == -1 && BOAT_R30H9_GPIO_OUTPUT_SIGNED == 0,
               "Boat marker GPIO must remain electrically disconnected and unsigned");
-#include "boat_r30h2_local_trace.h"
+#include "boat_local_stop_trace.h"
 #include "gnss_utc_sync.h"
 #include "radio_utc_time_v1.h"
 #include "radio_command_codec.h"
@@ -17,10 +17,8 @@ static_assert(BOAT_R30H9_MARKER_GPIO == -1 && BOAT_R30H9_GPIO_OUTPUT_SIGNED == 0
 #include "boat_radio_safety.h"
 #include "boat_home_point_record.h"
 #include "radio_payload_encoder.h"
-#include "boat_r30g_optional_diag_budget.h"
-#include "boat_r30h18_stop_ack_outbox.h"
-#include "boat_r30h19_status_outbox.h"
-#include "boat_r30h21_primary_tx_budget.h"
+#include "boat_optional_diagnostic_budget.h"
+#include "boat_stop_delivery.h"
 #include "boat_command_queue.h"
 #include "mission_wire.h"
 #include "mission_controller.h"

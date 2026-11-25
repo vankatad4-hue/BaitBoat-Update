@@ -330,7 +330,7 @@ jobs:
           python3 -m unittest Boat/tests/test_r30h5_gps_time_isolation.py -v
       - name: R30H-6 clock quality is NOT common RF clock, marker I/O unsigned
         run: |
-          cmp Boat/source/r30h6_utc_marker_policy.h Remote/source/r30h6_utc_marker_policy.h
+          cmp Boat/source/utc_marker_policy.h Remote/source/utc_marker_policy.h
           cmp Boat/source/radio_utc_time_v1.h Remote/source/radio_utc_time_v1.h
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IBoat/source \
             Boat/tests/r30h6_utc_marker_policy_test.cpp -o /tmp/boat_r30h6_utc_marker
@@ -431,13 +431,13 @@ jobs:
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/ina226_candidate_voltage_r26_test.cpp -o /tmp/boat_r26_ina226
           /tmp/boat_r26_ina226
-          grep -F 'INA226_HARDWARE_SELECTED = false' Boat/source/ina226_voltage_candidate_r26.h
+          grep -F 'INA226_HARDWARE_SELECTED = false' Boat/source/ina226_voltage_candidate.h
       - name: R27 selected Ardboard INA231 BUS-only contract, R79 policy and ADS fail-closed
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Boat/tests/ina231_voltage_contract_r27_test.cpp -o /tmp/boat_r27_ina231
           /tmp/boat_r27_ina231
           python3 Boat/tools/verify_r27_battery_selection.py
-          grep -F 'INA231_PHYSICAL_COMMISSIONED=false' Boat/source/ina231_voltage_contract_r27.h
+          grep -F 'INA231_PHYSICAL_COMMISSIONED=false' Boat/source/ina231_voltage_contract.h
           grep -F 'if(boat_r27::INA231_MODULE_SELECTED)' Boat/source/tracker_sensor_port.cpp
           grep -F 'c.battery={false' Boat/source/tracker_sensor_profile.example.h
       - name: R28 INA231 triggered bus, fresh-sample and I2C fault simulations
@@ -514,7 +514,7 @@ jobs:
           grep -F "R30H-8 NOT_RUN" /tmp/r30h8_blank.log
       - name: R30H-9 Boat/Remote no-GPIO diagnostic marker + hostile unsigned physical probe preflight
         run: |
-          cmp Boat/source/r30h9_marker_contract.h Remote/source/r30h9_marker_contract.h
+          cmp Boat/source/diagnostic_marker_contract.h Remote/source/diagnostic_marker_contract.h
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IBoat/source \
             Boat/tests/r30h9_marker_contract_test.cpp -o /tmp/boat_r30h9_marker
           /tmp/boat_r30h9_marker

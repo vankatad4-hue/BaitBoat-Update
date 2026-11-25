@@ -9,7 +9,7 @@
 // coil contactor status. The R29/R30C-selected Boat uses ONE shared 3S
 // actuator power bus and has NO separately-switched motor/coil domains.
 // Do NOT short, duplicate, alias or fake these two legacy contactor fields
-// to claim independent safety. See boat_common_bus_feedback_r30c.h for the
+// to claim independent safety. See boat_common_bus_feedback.h for the
 // proposed ONE-common-bus supervision contract (still uncommissioned).
 // "Independent" means functionally capable of cutting/observing load power
 // despite a stalled MCU, NOT a second actuator battery.

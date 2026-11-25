@@ -87,7 +87,7 @@ class TestR30HPreflight(unittest.TestCase):
                      "static constexpr uint8_t VERSION=2;")
 
     def test_r30h7_no_fabricated_rf_reference(self):
-        self.hostile("Boat/source/r30h6_utc_marker_policy.h",
+        self.hostile("Boat/source/utc_marker_policy.h",
                      "bool rfEndToEndStopClock=false;",
                      "bool rfEndToEndStopClock=true;")
 

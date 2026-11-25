@@ -4,7 +4,7 @@
 #pragma once
 #include <stdint.h>
 #include "boat_hardware_supervisor.h"
-#include "boat_r29_shared_bus_contract.h"
+#include "boat_shared_bus_contract.h"
 
 // R30C: electrical evidence schema for ONE common 3S actuator supply.
 // MDD20A VM and EKM014 VH share a single distribution bus. There is no

@@ -1,4 +1,4 @@
-#include "../source/boat_r23_gpio_connection_contract.h"
+#include "../source/boat_gpio_connection_contract.h"
 #include "../source/boat_radio_hw_config.h"
 #include <cassert>
 #include <cstring>

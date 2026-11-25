@@ -21,12 +21,11 @@
 #include "sc18is606_wire_io.h"
 #include "mcp23017_ce_wire_io.h"
 #include "sc18is606_nrf_link.h"
-#include "r30h15_primary_stop_retry.h"
-#include "r30h17_stop_confirmation_gate.h"
+#include "remote_stop_delivery.h"
 #include "radio_hw_config.h"
-#include "remote_pin_assignments_r30h32.h"
-#include "remote_r30h9_marker_config.h"
-#include "r30h9_marker_contract.h"
+#include "remote_pin_assignments.h"
+#include "remote_diagnostic_marker_config.h"
+#include "diagnostic_marker_contract.h"
 // R30H-9: only read-only software events; do not turn Waveshare GPIO into probe output.
 static_assert(REMOTE_R30H9_MARKER_GPIO == -1 && REMOTE_R30H9_GPIO_OUTPUT_SIGNED == 0,
               "Remote diagnostic marker must stay unwired and unsigned");

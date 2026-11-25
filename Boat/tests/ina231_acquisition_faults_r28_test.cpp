@@ -1,4 +1,4 @@
-#include "../source/ina231_acquisition_r28.h"
+#include "../source/ina231_acquisition.h"
 #include "../source/boat_battery_policy.h"
 #include <cassert>
 #include <iostream>

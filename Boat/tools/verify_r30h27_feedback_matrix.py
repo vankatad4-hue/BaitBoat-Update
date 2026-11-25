@@ -55,7 +55,7 @@ def audit(overrides:dict[str,str]|None=None)->list[str]:
    errors.append("INA231 is selected for BUS voltage ONLY; not current-zero")
   if any("SEPARATE_MOTOR" in r.get("Required_Function","") for r in rows):
    errors.append("shared 3S bus must not invent separate motor power")
-  hdr=rd("Boat/source/boat_r30h27_feedback_provenance_audit.h")
+  hdr=rd("Boat/source/boat_feedback_provenance_audit.h")
   for req in (
      "PHYSICAL_FEEDBACK_SIGNOFF_COMPLETE = false",
      "Origin::SOFTWARE_COMMAND_ECHO",
@@ -65,9 +65,9 @@ def audit(overrides:dict[str,str]|None=None)->list[str]:
      "return PHYSICAL_FEEDBACK_SIGNOFF_COMPLETE &&",
   ):
    if req not in hdr:errors.append(f"provenance code missing {req}")
-  r30d=rd("Boat/source/boat_common_bus_readonly_port_r30d.h")
-  r30c=rd("Boat/source/boat_common_bus_feedback_r30c.h")
-  power=rd("Boat/source/boat_r29_shared_bus_contract.h")
+  r30d=rd("Boat/source/boat_common_bus_readonly_port.h")
+  r30c=rd("Boat/source/boat_common_bus_feedback.h")
+  power=rd("Boat/source/boat_shared_bus_contract.h")
   main=rd("Boat/source/firmware/Flytec_Boat.ino")
   if "ACTUAL_READER_COMMISSIONED = false" not in r30d:errors.append("read-only physical reader lock broken")
   if "COMMON_BUS_HARDWARE_COMMISSIONED = false" not in r30c:errors.append("shared-bus commissioning lock broken")

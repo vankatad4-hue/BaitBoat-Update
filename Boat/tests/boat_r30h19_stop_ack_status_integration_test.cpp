@@ -1,8 +1,7 @@
 // R30H-19 full logical STOP -> Boat ACK -> primary STATUS -> Remote gate.
 // Zero ESP GPIO, zero RF; the simulated TX slot can be occupied or dropped.
-#include "../source/boat_r30h18_stop_ack_outbox.h"
-#include "../source/boat_r30h19_status_outbox.h"
-#include "../../Remote/source/r30h17_stop_confirmation_gate.h"
+#include "../source/boat_stop_delivery.h"
+#include "../../Remote/source/remote_stop_delivery.h"
 #include <cassert>
 #include <iostream>
 using boat_r30h18::StopAckOutbox;

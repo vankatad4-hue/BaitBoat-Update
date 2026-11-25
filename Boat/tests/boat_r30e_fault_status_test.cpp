@@ -1,4 +1,4 @@
-#include "../source/boat_r30e_fault_status.h"
+#include "../source/boat_fault_status.h"
 #include "../source/boat_physical_driver_adapter.h"
 #include <cassert>
 #include <cstring>

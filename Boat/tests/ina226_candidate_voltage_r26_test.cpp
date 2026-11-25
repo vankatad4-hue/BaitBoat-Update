@@ -1,4 +1,4 @@
-#include "../source/ina226_voltage_candidate_r26.h"
+#include "../source/ina226_voltage_candidate.h"
 #include "../source/boat_battery_policy.h"
 #include <cassert>
 #include <iostream>

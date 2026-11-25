@@ -1,4 +1,4 @@
-#include "../source/boat_r30h18_stop_ack_outbox.h"
+#include "../source/boat_stop_delivery.h"
 #include <cassert>
 #include <iostream>
 using boat_r30h18::StopAckOutbox;

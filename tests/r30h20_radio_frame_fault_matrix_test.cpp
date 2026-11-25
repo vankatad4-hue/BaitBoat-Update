@@ -5,7 +5,7 @@
 #include "radio_protocol.h"
 #include "radio_payload_codec.h"
 #include "radio_session_v2.h"
-#include "../Remote/source/r30h17_stop_confirmation_gate.h"
+#include "../Remote/source/remote_stop_delivery.h"
 #include <openssl/hmac.h>
 #include <cassert>
 #include <cstring>

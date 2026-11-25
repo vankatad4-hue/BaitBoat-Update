@@ -1,5 +1,5 @@
-#include "../source/r30h9_marker_contract.h"
-#include "../source/boat_r30h9_marker_config.h"
+#include "../source/diagnostic_marker_contract.h"
+#include "../source/boat_diagnostic_marker_config.h"
 #include <assert.h>
 #include <stdio.h>
 #include <initializer_list>

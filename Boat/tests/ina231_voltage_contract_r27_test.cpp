@@ -1,4 +1,4 @@
-#include "../source/ina231_voltage_contract_r27.h"
+#include "../source/ina231_voltage_contract.h"
 #include "../source/boat_battery_policy.h"
 #include <cassert>
 #include <iostream>

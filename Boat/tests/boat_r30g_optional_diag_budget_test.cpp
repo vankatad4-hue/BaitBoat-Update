@@ -1,4 +1,4 @@
-#include "../source/boat_r30g_optional_diag_budget.h"
+#include "../source/boat_optional_diagnostic_budget.h"
 #include <cassert>
 #include <cstring>
 #include <iostream>

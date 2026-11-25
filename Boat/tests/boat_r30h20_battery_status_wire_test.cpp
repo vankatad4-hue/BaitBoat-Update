@@ -1,7 +1,7 @@
 // R30H-20: actual locally sampled Boat physical STATUS and critical
 // battery must be representable on wire. Host-only: no actuator hardware.
 #include "../source/boat_hardware_status.h"
-#include "../source/boat_r30h19_status_outbox.h"
+#include "../source/boat_stop_delivery.h"
 #include <cassert>
 #include <iostream>
 int main(){

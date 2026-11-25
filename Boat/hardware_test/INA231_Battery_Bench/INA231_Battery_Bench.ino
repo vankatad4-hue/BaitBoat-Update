@@ -11,9 +11,9 @@
  */
 #include <Arduino.h>
 #include <Wire.h>
-#include "ina231_voltage_contract_r27.h"
-#include "ina231_acquisition_r28.h"
-#include "ina231_arduino_wire_r28.h"
+#include "ina231_voltage_contract.h"
+#include "ina231_acquisition.h"
+#include "ina231_arduino_wire.h"
 
 #if __has_include("ina231_local_bench_config.h")
 #include "ina231_local_bench_config.h"

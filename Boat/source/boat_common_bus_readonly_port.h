@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
-#include "boat_common_bus_feedback_r30c.h"
-#include "ina231_voltage_contract_r27.h"
+#include "boat_common_bus_feedback.h"
+#include "ina231_voltage_contract.h"
 
 // R30D READ-ONLY diagnostic adapter for the selected ONE common 3S bus.
 // It has NO GPIO, Arduino, motor, coil, contactor or watchdog output APIs.

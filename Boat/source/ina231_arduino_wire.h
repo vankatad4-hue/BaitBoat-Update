@@ -1,6 +1,6 @@
 #pragma once
 #include <Wire.h>
-#include "ina231_acquisition_r28.h"
+#include "ina231_acquisition.h"
 // R28 ESP32-S3 TwoWire adapter. Performs no I2C activity in constructor.
 // Calling code must establish signed physical power/pinout/level validation
 // AND explicit INA231_PHYSICAL_COMMISSIONED before allowing polling.

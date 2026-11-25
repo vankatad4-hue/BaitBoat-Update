@@ -100,9 +100,9 @@ def main():
     radio=f("Boat/source/boat_radio_hw_config.h")
     assert "#define BOAT_NRF_PIN_AUDIT_SIGNED 0" in radio
     assert "#define BOAT_E22_UART_PIN_AUDIT_SIGNED 0" in radio
-    ina=f("Boat/source/ina231_voltage_contract_r27.h")
+    ina=f("Boat/source/ina231_voltage_contract.h")
     assert "INA231_PHYSICAL_COMMISSIONED=false" in ina
-    bus=f("Boat/source/boat_r29_shared_bus_contract.h")
+    bus=f("Boat/source/boat_shared_bus_contract.h")
     assert "SEPARATE_MOTOR_SOLENOID_POWER = false" in bus
     assert "SHARED_BUS_PHYSICALLY_ACCEPTED = false" in bus
     driver=f("Boat/source/boat_physical_driver_adapter.h")

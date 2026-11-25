@@ -1,4 +1,4 @@
-#include "boat_r30h18_stop_ack_outbox.h"
+#include "boat_stop_delivery.h"
 #include <cassert>
 using namespace boat_r30h18;
 int main(){

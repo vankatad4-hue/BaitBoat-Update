@@ -30,6 +30,8 @@ on:
       - 'Boat/source/boat_radio_transport.h'
       - 'Boat/source/boat_radio_worker_policy.h'
       - 'Boat/source/boat_radio_owner.h'
+      - 'Boat/source/boat_stop_delivery.h'
+      - 'Remote/source/remote_stop_delivery.h'
       - 'Boat/tests/r30h124m_handshake_cancel.cpp'
       - 'Boat/tests/r30h124n_backup_handshake.cpp'
       - 'Boat/source/radio_handshake.h'

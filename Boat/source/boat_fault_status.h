@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-#include "boat_common_bus_readonly_port_r30d.h"
+#include "boat_common_bus_readonly_port.h"
 
 // R30E diagnostic-only status and local telemetry envelope.
 // There is deliberately NO radio payload kind, actuator command or GPIO API.

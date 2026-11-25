@@ -1,7 +1,7 @@
 #include <cassert>
 #include <cstdint>
 #include <iostream>
-#include "../source/premade_module_output_r15.h"
+#include "../source/premade_module_output.h"
 
 static ModuleOnlyAcceptanceR15 qualified() {
     ModuleOnlyAcceptanceR15 q;

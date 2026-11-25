@@ -1,8 +1,8 @@
 #pragma once
 #include <stdint.h>
 #include "mcp23017_direction_adapter.h"
-#include "boat_pin_assignments_r30h32.h"
-#include "ekm014_logical_interface_r16.h"
+#include "boat_pin_assignments.h"
+#include "ekm014_logical_interface.h"
 
 // Low-level R20 I2C expander adapter: MCP23017 GPA0..3 -> EKM014 IN1..IN4.
 // This is only an output transport. It does NOT replace Ekm014PulseGuard,

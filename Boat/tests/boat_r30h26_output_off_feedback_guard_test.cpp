@@ -1,6 +1,6 @@
 // R30H-26: deterministic, non-actuating OFF-command versus LOCAL physical
 // feedback guard. UINT32 rollover, settling windows, fresh-source contract.
-#include "../source/boat_r30h26_output_off_feedback_guard.h"
+#include "../source/boat_output_off_feedback_guard.h"
 #include <cassert>
 #include <cstdint>
 #include <iostream>

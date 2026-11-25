@@ -74,11 +74,11 @@ def main() -> None:
             "#define REMOTE_R30H10_REJECTED_CE_GPIO 6",
             "#define REMOTE_R30H10_REJECTED_CSN_GPIO 15",
         ],
-        "Boat/source/boat_r30h9_marker_config.h": [
+        "Boat/source/boat_diagnostic_marker_config.h": [
             "#define BOAT_R30H9_MARKER_GPIO (-1)",
             "#define BOAT_R30H9_GPIO_OUTPUT_SIGNED 0",
         ],
-        "Remote/source/remote_r30h9_marker_config.h": [
+        "Remote/source/remote_diagnostic_marker_config.h": [
             "#define REMOTE_R30H9_MARKER_GPIO (-1)",
             "#define REMOTE_R30H9_GPIO_OUTPUT_SIGNED 0",
         ],

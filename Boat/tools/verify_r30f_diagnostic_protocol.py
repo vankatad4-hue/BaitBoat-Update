@@ -67,11 +67,11 @@ assert "diagnosticStatusLabel" in ui and "НЕПОТВ." in ui
 assert "diagnosticReasonBulgarian" in ui
 assert "RADIO_PROTOCOL_VERSION = 1" in read("Boat/source/radio_protocol.h")
 assert read("Boat/source/radio_protocol.h")==read("Remote/source/radio_protocol.h")
-assert "ACTUAL_READER_COMMISSIONED = false" in read("Boat/source/boat_common_bus_readonly_port_r30d.h")
-assert "COMMON_BUS_HARDWARE_COMMISSIONED = false" in read("Boat/source/boat_common_bus_feedback_r30c.h")
-assert "SHARED_BUS_PHYSICALLY_ACCEPTED = false" in read("Boat/source/boat_r29_shared_bus_contract.h")
-assert "SEPARATE_MOTOR_SOLENOID_POWER = false" in read("Boat/source/boat_r29_shared_bus_contract.h")
-assert "INA231_PHYSICAL_COMMISSIONED=false" in read("Boat/source/ina231_voltage_contract_r27.h")
+assert "ACTUAL_READER_COMMISSIONED = false" in read("Boat/source/boat_common_bus_readonly_port.h")
+assert "COMMON_BUS_HARDWARE_COMMISSIONED = false" in read("Boat/source/boat_common_bus_feedback.h")
+assert "SHARED_BUS_PHYSICALLY_ACCEPTED = false" in read("Boat/source/boat_shared_bus_contract.h")
+assert "SEPARATE_MOTOR_SOLENOID_POWER = false" in read("Boat/source/boat_shared_bus_contract.h")
+assert "INA231_PHYSICAL_COMMISSIONED=false" in read("Boat/source/ina231_voltage_contract.h")
 with (root/"Boat/docs/BOAT_R30A_READINESS_GATES.csv").open(newline="",encoding="utf-8") as f:
     gates=list(csv.DictReader(f))
 assert len(gates)==24 and all(g["State"]=="OPEN" for g in gates)

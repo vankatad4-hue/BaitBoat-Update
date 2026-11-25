@@ -220,7 +220,7 @@ jobs:
           /tmp/remote_ui_sd_status
       - name: R30H-9 Remote no-GPIO marker policy and Boat-sourced physical preflight
         run: |
-          cmp Boat/source/r30h9_marker_contract.h Remote/source/r30h9_marker_contract.h
+          cmp Boat/source/diagnostic_marker_contract.h Remote/source/diagnostic_marker_contract.h
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
             Remote/tests/r30h9_marker_contract_test.cpp -o /tmp/remote_r30h9_marker
           /tmp/remote_r30h9_marker
@@ -228,7 +228,7 @@ jobs:
           python3 -m unittest Boat/tests/test_r30h9_marker_preflight.py -v
       - name: R30H-6 GPS clock quality and uncommissioned external marker policy
         run: |
-          cmp Boat/source/r30h6_utc_marker_policy.h Remote/source/r30h6_utc_marker_policy.h
+          cmp Boat/source/utc_marker_policy.h Remote/source/utc_marker_policy.h
           cmp Boat/source/radio_utc_time_v1.h Remote/source/radio_utc_time_v1.h
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -IRemote/source \
             Remote/tests/r30h6_utc_marker_policy_test.cpp -o /tmp/remote_r30h6_utc

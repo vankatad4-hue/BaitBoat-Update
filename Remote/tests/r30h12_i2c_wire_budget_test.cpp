@@ -1,4 +1,4 @@
-#include "r30h12_i2c_wire_budget.h"
+#include "i2c_wire_budget.h"
 #include <assert.h>
 int main(){
     using namespace r30h12_wire;

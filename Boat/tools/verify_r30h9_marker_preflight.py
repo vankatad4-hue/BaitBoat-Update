@@ -12,14 +12,14 @@ import re
 
 ROOT=pathlib.Path(__file__).resolve().parents[2]
 PATHS=(
- "Boat/source/r30h9_marker_contract.h",
- "Remote/source/r30h9_marker_contract.h",
- "Boat/source/boat_r30h9_marker_config.h",
- "Remote/source/remote_r30h9_marker_config.h",
+ "Boat/source/diagnostic_marker_contract.h",
+ "Remote/source/diagnostic_marker_contract.h",
+ "Boat/source/boat_diagnostic_marker_config.h",
+ "Remote/source/remote_diagnostic_marker_config.h",
  "Boat/source/boat_dual_radio_port.h",
- "Boat/source/boat_r30h2_local_trace.h",
+ "Boat/source/boat_local_stop_trace.h",
  "Remote/source/boat_radio.cpp",
- "Remote/source/r30h3_stop_trace.h",
+ "Remote/source/remote_stop_trace.h",
  "Boat/docs/BOAT_R30H_9_PROBE_CROSSWALK.csv",
  "Boat/docs/BOAT_R30H_9_PHYSICAL_SIGNOFF.csv",
 )
@@ -42,14 +42,14 @@ def verify(data):
  def require(path,*words):
   for word in words:
    if word not in data[path]:errors.append(f"{path}: missing expected {word}")
- boat="Boat/source/boat_r30h9_marker_config.h"
- remote="Remote/source/remote_r30h9_marker_config.h"
+ boat="Boat/source/boat_diagnostic_marker_config.h"
+ remote="Remote/source/remote_diagnostic_marker_config.h"
  for p,locks in ((boat,BOAT_LOCKS),(remote,REMOTE_LOCKS)):
   require(p,*locks,"#error")
   if any(t in data[p] for t in DRIVE_TOKENS):
    errors.append(f"{p}: GPIO driver code prohibited in unsigned marker configuration")
- contract="Boat/source/r30h9_marker_contract.h"
- mirrored="Remote/source/r30h9_marker_contract.h"
+ contract="Boat/source/diagnostic_marker_contract.h"
+ mirrored="Remote/source/diagnostic_marker_contract.h"
  if data[contract]!=data[mirrored]:
   errors.append("R30H-9 Boat and Remote marker contract headers must match byte-for-byte")
  require(contract,"inline bool currentlyApprovedOutput(Endpoint, int) {return false;}",
@@ -59,17 +59,17 @@ def verify(data):
   if any(t in data[p] for t in DRIVE_TOKENS):
    errors.append(f"{p}: no physical IO, timers or GPIO allowed in recorder")
  require("Boat/source/boat_dual_radio_port.h",
-         '#include "boat_r30h9_marker_config.h"',
-         '#include "r30h9_marker_contract.h"',
+         '#include "boat_diagnostic_marker_config.h"',
+         '#include "diagnostic_marker_contract.h"',
          "BOAT_R30H9_MARKER_GPIO == -1",
          "BOAT_R30H9_GPIO_OUTPUT_SIGNED == 0")
  require("Remote/source/boat_radio.cpp",
-         '#include "remote_r30h9_marker_config.h"',
-         '#include "r30h9_marker_contract.h"',
+         '#include "remote_diagnostic_marker_config.h"',
+         '#include "diagnostic_marker_contract.h"',
          "REMOTE_R30H9_MARKER_GPIO == -1",
          "REMOTE_R30H9_GPIO_OUTPUT_SIGNED == 0")
- require("Boat/source/boat_r30h2_local_trace.h",*STOP_OBSERVABLES)
- require("Remote/source/r30h3_stop_trace.h",
+ require("Boat/source/boat_local_stop_trace.h",*STOP_OBSERVABLES)
+ require("Remote/source/remote_stop_trace.h",
          "STOP_BUTTON_REQUEST","NRF_BUFFER_ADMITTED",
          "E22_UART_BUFFER_ADMITTED")
  probes=list(csv.DictReader(io.StringIO(data["Boat/docs/BOAT_R30H_9_PROBE_CROSSWALK.csv"])))

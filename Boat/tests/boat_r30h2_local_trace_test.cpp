@@ -1,4 +1,4 @@
-#include "../source/boat_r30h2_local_trace.h"
+#include "../source/boat_local_stop_trace.h"
 #include "../source/boat_radio_safety.h"
 #include <assert.h>
 #include <stdint.h>

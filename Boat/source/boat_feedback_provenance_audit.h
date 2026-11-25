@@ -3,7 +3,7 @@
 // Historical diagnostic code only; do not use as a release gate.
 #pragma once
 #include <stdint.h>
-#include "boat_common_bus_readonly_port_r30d.h"
+#include "boat_common_bus_readonly_port.h"
 #include "boat_hardware_status.h"
 
 // R30H-27: DIAGNOSTIC-ONLY origin classification of the seven R30D

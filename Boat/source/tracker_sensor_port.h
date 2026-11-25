@@ -11,7 +11,7 @@
 #include "m100_compass_qmc5883l.h"
 #include "carrier_sensor_math.h"
 #include "boat_hardware_supervisor.h"
-#include "ina231_acquisition_r28.h"
+#include "ina231_acquisition.h"
 // Logic-only sensor driver. Caller must establish verified GNSS power/reset
 // and choose exact UART/I2C header pins. Does not set safety or stationary flags.
 struct TrackerSensorConfig{

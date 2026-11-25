@@ -1,5 +1,5 @@
 #pragma once
-#include "remote_pin_assignments_r30h32.h"
+#include "remote_pin_assignments.h"
 // R30H-10: no verified direct nRF CE/CSN pin on Waveshare Standard SKU25948.
 // Historical CE=GPIO6 collides with SD dummy CS/Sensor AD; historical CSN=GPIO15
 // collides with the onboard RS485 transmitter. Never wire these as nRF pins.

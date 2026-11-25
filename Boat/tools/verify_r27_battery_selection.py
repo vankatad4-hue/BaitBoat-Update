@@ -25,7 +25,7 @@ assert len(selected)==1 and selected[0]["Qty"]=="1"
 assert selected[0]["Selected_or_candidate"]=="R27_SELECTED_EXACT_ARDBOARD1491_NOT_PURCHASED"
 assert "Ardboard INA231" in selected[0]["Exact_part"]
 assert "INA231" in next(r["Purchase_gate"] for r in b if r["Item"]=="Sensor and I2C expansion 3V3 power")
-source=read("Boat/source/ina231_voltage_contract_r27.h")
+source=read("Boat/source/ina231_voltage_contract.h")
 assert "INA231_MODULE_SELECTED=true" in source
 assert "INA231_PHYSICAL_COMMISSIONED=false" in source
 assert "readForBoatSafety" in source

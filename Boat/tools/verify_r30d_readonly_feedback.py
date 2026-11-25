@@ -4,17 +4,17 @@ import csv
 from pathlib import Path
 root=Path(__file__).resolve().parents[2]
 rd=lambda path:(root/path).read_text(encoding="utf-8")
-port=rd("Boat/source/boat_common_bus_readonly_port_r30d.h")
-check=rd("Boat/source/boat_common_bus_feedback_r30c.h")
+port=rd("Boat/source/boat_common_bus_readonly_port.h")
+check=rd("Boat/source/boat_common_bus_feedback.h")
 firmware=rd("Boat/source/firmware/Flytec_Boat.ino")
 test=rd("Boat/tests/boat_r30d_common_bus_readonly_faults_test.cpp")
 assert "ACTUAL_READER_COMMISSIONED = false" in port
 assert "COMMON_BUS_HARDWARE_COMMISSIONED = false" in check
 assert "return COMMON_BUS_HARDWARE_COMMISSIONED &&" in check
-assert "INA231_PHYSICAL_COMMISSIONED=false" in rd("Boat/source/ina231_voltage_contract_r27.h")
-assert "SHARED_BUS_PHYSICALLY_ACCEPTED = false" in rd("Boat/source/boat_r29_shared_bus_contract.h")
-assert "SEPARATE_MOTOR_SOLENOID_POWER = false" in rd("Boat/source/boat_r29_shared_bus_contract.h")
-assert 'boat_common_bus_readonly_port_r30d.h' in firmware
+assert "INA231_PHYSICAL_COMMISSIONED=false" in rd("Boat/source/ina231_voltage_contract.h")
+assert "SHARED_BUS_PHYSICALLY_ACCEPTED = false" in rd("Boat/source/boat_shared_bus_contract.h")
+assert "SEPARATE_MOTOR_SOLENOID_POWER = false" in rd("Boat/source/boat_shared_bus_contract.h")
+assert 'boat_common_bus_readonly_port.h' in firmware
 assert "static_assert(!boat_r30d::ACTUAL_READER_COMMISSIONED" in firmware
 assert "application.attach(" not in firmware
 assert "application.tick();" in firmware

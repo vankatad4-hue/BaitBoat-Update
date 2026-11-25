@@ -1,8 +1,8 @@
 #include "boat_application_port.h"
 #include "boat_hardware_status.h"
 #include "boat_hardware_telemetry.h"
-#include "boat_shared_supply_fault_guard_r30b.h"
-#include "boat_r30h30_software_output_boundary.h"
+#include "boat_shared_supply_fault_guard.h"
+#include "boat_software_output_boundary.h"
 BoatApplicationPort *BoatApplicationPort::active_=nullptr;
 bool BoatApplicationPort::attach(const BoatPhysicalDriver &driver,const BoatActuatorConfig &config){
  if(attached_||active_||!driver.read||!driver.apply||!driver.disable)return false;

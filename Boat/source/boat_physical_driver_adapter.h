@@ -3,7 +3,7 @@
 #include "boat_hardware_supervisor.h"
 #include "physical_driver_commissioning_gate.h"
 #include "ekm014_pulse_guard.h"
-#include "boat_r29_shared_bus_contract.h"
+#include "boat_shared_bus_contract.h"
 // R50 transport-neutral physical-driver coordinator. Hardware HAL callbacks
 // must be wired to actual local, independently verified contacts. No fake
 // feedback or default GPIO assignments. This is not commissioned hardware.

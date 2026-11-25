@@ -25,7 +25,7 @@ class TestR30H27Provenance(unittest.TestCase):
  def test_cannot_claim_commissioned_source(self):
   self.changed(module.MATRIX,",UNSELECTED,UNASSIGNED,",",COMMISSIONED,GPIO1,")
  def test_cannot_change_source_guard_to_commissioned(self):
-  self.changed("Boat/source/boat_r30h27_feedback_provenance_audit.h",
+  self.changed("Boat/source/boat_feedback_provenance_audit.h",
        "PHYSICAL_FEEDBACK_SIGNOFF_COMPLETE = false",
        "PHYSICAL_FEEDBACK_SIGNOFF_COMPLETE = true")
  def test_cannot_attach_unsupported_hardware_driver(self):

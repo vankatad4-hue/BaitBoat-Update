@@ -6,7 +6,7 @@ ROOT=Path(__file__).resolve().parents[2]
 def read(p):return (ROOT/p).read_text(encoding="utf-8")
 s=read("Boat/source/boat_dual_radio_port.cpp")
 h=read("Boat/source/boat_dual_radio_port.h")
-budget=read("Boat/source/boat_r30g_optional_diag_budget.h")
+budget=read("Boat/source/boat_optional_diagnostic_budget.h")
 for token in (
     "MAX_PENDING_AGE_MS=500U",
     "MIN_DIAGNOSTIC_PERIOD_MS=2000U",
@@ -71,11 +71,11 @@ assert "s.actuatorSafetyReady=statusFresh" in tel
 assert read("Boat/source/radio_safety_diagnostic_v1.h")==read(
     "Remote/source/radio_safety_diagnostic_v1.h")
 for p,token in (
- ("Boat/source/boat_common_bus_feedback_r30c.h","COMMON_BUS_HARDWARE_COMMISSIONED = false"),
- ("Boat/source/boat_common_bus_readonly_port_r30d.h","ACTUAL_READER_COMMISSIONED = false"),
- ("Boat/source/ina231_voltage_contract_r27.h","INA231_PHYSICAL_COMMISSIONED=false"),
- ("Boat/source/boat_r29_shared_bus_contract.h","SHARED_BUS_PHYSICALLY_ACCEPTED = false"),
- ("Boat/source/boat_r29_shared_bus_contract.h","SEPARATE_MOTOR_SOLENOID_POWER = false"),
+ ("Boat/source/boat_common_bus_feedback.h","COMMON_BUS_HARDWARE_COMMISSIONED = false"),
+ ("Boat/source/boat_common_bus_readonly_port.h","ACTUAL_READER_COMMISSIONED = false"),
+ ("Boat/source/ina231_voltage_contract.h","INA231_PHYSICAL_COMMISSIONED=false"),
+ ("Boat/source/boat_shared_bus_contract.h","SHARED_BUS_PHYSICALLY_ACCEPTED = false"),
+ ("Boat/source/boat_shared_bus_contract.h","SEPARATE_MOTOR_SOLENOID_POWER = false"),
 ):
     assert token in read(p),(p,token)
 assert "application.attach(" not in read("Boat/source/firmware/Flytec_Boat.ino")

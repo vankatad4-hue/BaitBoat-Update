@@ -13,10 +13,10 @@ import re
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 REQUIRED = (
     "Remote/source/sc16is750_bridge.cpp",
-    "Remote/source/sc16is750_fifo_budget_r30h.h",
+    "Remote/source/sc16is750_fifo_budget.h",
     "Remote/source/boat_radio.cpp",
     "Remote/source/boat_radio.h",
-    "Remote/source/r30h3_stop_trace.h",
+    "Remote/source/remote_stop_trace.h",
     "Remote/source/radio_hw_config.h",
     "Remote/source/e22_uart_link.cpp",
     "Remote/source/e22_uart_link.h",
@@ -24,7 +24,7 @@ REQUIRED = (
     "Boat/source/boat_radio_hw_config.h",
     "Boat/source/boat_dual_radio_port.cpp",
     "Boat/source/boat_dual_radio_port.h",
-    "Boat/source/boat_r30h2_local_trace.h",
+    "Boat/source/boat_local_stop_trace.h",
     "Boat/source/e22_uart_link.cpp",
     "Boat/source/e22_uart_link.h",
     "Boat/source/lora_link_policy.h",
@@ -33,8 +33,8 @@ REQUIRED = (
     "Boat/source/gnss_utc_sync.h",
     "Boat/source/radio_utc_time_v1.h",
     "Remote/source/radio_utc_time_v1.h",
-    "Boat/source/r30h6_utc_marker_policy.h",
-    "Remote/source/r30h6_utc_marker_policy.h",
+    "Boat/source/utc_marker_policy.h",
+    "Remote/source/utc_marker_policy.h",
     "Boat/docs/BOAT_R30H_1_RF_MODULE_SIGNOFF.csv",
     "Boat/docs/BOAT_R30H_RF_TEST_MATRIX.csv",
     "Boat/docs/BOAT_R30H_3_STOP_RF_ACCEPTANCE.csv",
@@ -82,10 +82,10 @@ def verify(source):
             errors.append(f"{name}: missing {phrase!r}")
 
     b = "Remote/source/sc16is750_bridge.cpp"
-    h = "Remote/source/sc16is750_fifo_budget_r30h.h"
+    h = "Remote/source/sc16is750_fifo_budget.h"
     need(b, "freeBytes=r30h_sc16::freeTxSlots(level)")
     need(b, "r30h_sc16::txFifoEmpty(level)")
-    need(b, '#include "sc16is750_fifo_budget_r30h.h"')
+    need(b, '#include "sc16is750_fifo_budget.h"')
     if "size_t freeBytes=64U-level" in source[b] or "level==0) break" in source[b]:
         errors.append("SC16IS750 inverted TXLVL regression")
     need(h, "txlvl <= FIFO_CAPACITY ? txlvl : 0")
@@ -113,7 +113,7 @@ def verify(source):
     need(remote, "remote_r30h3::STOP_BUTTON_REQUEST")
     need("Remote/source/boat_radio.h",
          "boatRadio_takeR30H3StopTrace(remote_r30h3::Record &out)")
-    need("Remote/source/r30h3_stop_trace.h",
+    need("Remote/source/remote_stop_trace.h",
          "static constexpr uint8_t CAPACITY=16")
     if "Serial." in source[remote]:
         errors.append("Remote R30H-3 must not print in the critical radio/control path")
@@ -123,7 +123,7 @@ def verify(source):
          "R30H2,BOAT_LOCAL,")
     need("Boat/source/boat_dual_radio_port.h",
          "bool takeR30HTrace(boat_r30h2::Record &out)")
-    need("Boat/source/boat_r30h2_local_trace.h",
+    need("Boat/source/boat_local_stop_trace.h",
          "static constexpr uint8_t CAPACITY=32")
     need("Boat/source/boat_dual_radio_port.cpp",
          "boat_r30h2::STOP_AUTH_RECEIVED")
@@ -144,9 +144,9 @@ def verify(source):
          "frame.payload[0]==flytec_time::SUBTYPE))return;")
     if source["Boat/source/radio_utc_time_v1.h"] != source["Remote/source/radio_utc_time_v1.h"]:
         errors.append("Boat/Remote GPS UTC wire discipline headers differ")
-    if source["Boat/source/r30h6_utc_marker_policy.h"] != source["Remote/source/r30h6_utc_marker_policy.h"]:
+    if source["Boat/source/utc_marker_policy.h"] != source["Remote/source/utc_marker_policy.h"]:
         errors.append("Boat/Remote debug marker gate headers differ")
-    for p in ("Boat/source/r30h6_utc_marker_policy.h","Remote/source/r30h6_utc_marker_policy.h"):
+    for p in ("Boat/source/utc_marker_policy.h","Remote/source/utc_marker_policy.h"):
         need(p, "bool rfEndToEndStopClock=false;")
         need(p, "bool traceReferenceCertified=false;")
     if "settimeofday" in source[boat] or "settimeofday" in source[remote].split("bool boatRadio_utcNow")[1]:

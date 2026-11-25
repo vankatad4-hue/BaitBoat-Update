@@ -8,7 +8,7 @@
 #include "lake_storage.h"
 #include "joystick.h"
 #include "boat_radio.h"
-#include "r30h7_utc_clock_ui.h"
+#include "utc_clock_ui.h"
 #include "boat_commands.h"
 #include "boat_telemetry.h"
 #include "release_button_guard.h"

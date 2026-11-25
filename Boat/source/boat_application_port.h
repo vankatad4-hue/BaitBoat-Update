@@ -1,6 +1,6 @@
 #pragma once
 #include "boat_hardware_supervisor.h"
-#include "boat_r30h26_output_off_feedback_guard.h"
+#include "boat_output_off_feedback_guard.h"
 #include "boat_dual_radio_port.h"
 // Current modular Boat uses ready-made ESP32-S3-DevKitC-1-N32R16V,
 // MDD20A, EKM014 and
