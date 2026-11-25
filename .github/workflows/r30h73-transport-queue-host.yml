@@ -3,6 +3,7 @@ on:
   push:
     branches: [platformio-unified-r30h20]
     paths:
+      - 'Common/**'
       - 'Boat/source/transport_task_queue.h'
       - 'Remote/source/transport_task_queue.h'
       - 'Boat/tests/r30h73*'
@@ -21,6 +22,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - name: Stage canonical shared firmware source
+        run: python3 Common/stage.py
       - name: Compile and run real transport header with FreeRTOS host mocks (5 repetitions)
         run: |
           for run in 1 2 3 4 5; do

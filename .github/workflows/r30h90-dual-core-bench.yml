@@ -3,6 +3,7 @@ on:
   workflow_dispatch:
   push:
     paths:
+      - 'Common/**'
       - 'Boat/platformio.ini'
       - 'Remote/platformio.ini'
       - '**/source/dual_core_bench.cpp'
@@ -47,6 +48,8 @@ jobs:
             environment: remote_authenticated_mock_bench
     steps:
       - uses: actions/checkout@v4
+      - name: Stage canonical shared firmware source
+        run: python3 Common/stage.py
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'

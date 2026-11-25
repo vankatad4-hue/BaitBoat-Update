@@ -5,6 +5,7 @@ on:
     branches:
       - hardware-ready-dual-radio-r1
     paths:
+      - 'Common/**'
       - 'Remote/source/**'
       - 'Remote/tools/generate_bg_font.sh'
       - '.github/workflows/remote-target-build.yml'
@@ -21,6 +22,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Stage canonical shared firmware source
+        run: python3 Common/stage.py
       - name: Install Arduino CLI
         uses: arduino/setup-arduino-cli@v2
 

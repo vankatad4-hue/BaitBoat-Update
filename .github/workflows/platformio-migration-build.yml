@@ -4,6 +4,7 @@ on:
   push:
     branches: [hardware-ready-dual-radio-r1, platformio-unified-r30h20]
     paths:
+      - 'Common/**'
       - 'Boat/platformio.ini'
       - 'Boat/source/**'
       - 'Remote/platformio.ini'
@@ -30,6 +31,7 @@ on:
   pull_request:
     branches: [main, hardware-ready-dual-radio-r1]
     paths:
+      - 'Common/**'
       - 'Boat/platformio.ini'
       - 'Boat/source/**'
       - 'Remote/platformio.ini'
@@ -61,6 +63,8 @@ jobs:
             environment: remote_waveshare_43_diagnostic
     steps:
       - uses: actions/checkout@v4
+      - name: Stage canonical shared firmware source
+        run: python3 Common/stage.py
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'

@@ -3,6 +3,7 @@ on:
   push:
     branches: [platformio-unified-r30h20]
     paths:
+      - 'Common/**'
       - 'Boat/source/boat_radio_transport.h'
       - 'Boat/source/boat_radio_phy.h'
       - 'Boat/source/boat_radio_owner.h'
@@ -31,6 +32,8 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+      - name: Stage canonical shared firmware source
+        run: python3 Common/stage.py
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'

@@ -3,6 +3,7 @@ on:
   push:
     branches: [hardware-ready-dual-radio-r1]
     paths:
+      - 'Common/**'
       - 'Boat/tools/r22_interface_gate.py'
       - 'Boat/tools/r24_safety_gate.py'
       - 'Boat/tools/r26_pin_budget.py'
@@ -42,6 +43,7 @@ on:
       - '.github/workflows/r23-interface-gates.yml'
   pull_request:
     paths:
+      - 'Common/**'
       - 'Boat/tools/r22_interface_gate.py'
       - 'Boat/tools/r24_safety_gate.py'
       - '.github/workflows/r23-interface-gates.yml'
@@ -54,6 +56,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+      - name: Stage canonical shared firmware source
+        run: python3 Common/stage.py
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'

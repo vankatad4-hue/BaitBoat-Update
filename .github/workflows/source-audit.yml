@@ -3,6 +3,7 @@ on:
   push:
     branches: [hardware-ready-dual-radio-r1, platformio-unified-r30h20]
     paths:
+      - 'Common/**'
       - 'Boat/source/**'
       - 'Remote/source/**'
       - 'Boat/platformio.ini'
@@ -26,6 +27,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Stage canonical shared firmware source
+        run: python3 Common/stage.py
       - name: Unified PlatformIO workspace and no-upload gates
         run: |
           python3 tools/verify_platformio_unified.py

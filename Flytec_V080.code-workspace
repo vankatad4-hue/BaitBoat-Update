@@ -9,11 +9,16 @@
       "path": "Remote"
     },
     {
+      "name": "Common firmware — canonical",
+      "path": "Common"
+    },
+    {
       "name": "Shared docs",
       "path": "docs"
     }
   ],
   "settings": {
+    "explorer.excludeGitIgnore": true,
     "files.exclude": {
       "**/.pio": false
     },
@@ -42,7 +47,8 @@
         "type": "shell",
         "command": "python",
         "args": [
-          "Boat/tools/verify_platformio_source_layout_r30h13.py"
+          "tools/flytec.py",
+          "audit"
         ],
         "options": {
           "cwd": "${workspaceFolder:Flytec Boat — PlatformIO}/.."

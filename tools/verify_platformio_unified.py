@@ -36,6 +36,7 @@ def verify(root:Path=ROOT)->list[str]:
             "src_dir":(pio.get("src_dir"),"source"),
             "platform":(target.get("platform"),"espressif32 @ 8.0.0"),
             "framework":(target.get("framework"),"arduino"),
+            "common stage hook":(target.get("extra_scripts"),"pre:../Common/stage.py"),
             "board":(target.get("board"),"esp32-s3-devkitc-1"),
             "memory_type":(target.get("board_build.arduino.memory_type"),memory),
             "flash_size":(target.get("board_upload.flash_size"),flash),
@@ -57,7 +58,7 @@ def verify(root:Path=ROOT)->list[str]:
     try:
         ws=json.loads((root/"Flytec_V080.code-workspace").read_text(encoding="utf-8"))
         folders={v["path"] for v in ws["folders"]}
-        if not {"Boat","Remote"}.issubset(folders):errors.append("VS Code workspace missing Boat/Remote roots")
+        if not {"Boat","Remote","Common"}.issubset(folders):errors.append("VS Code workspace missing Boat/Remote/Common roots")
         labels={v["label"] for v in ws["tasks"]["tasks"]}
         if not {"Flytec: Boat PlatformIO build (NO UPLOAD)",
                 "Flytec: Remote PlatformIO build (NO UPLOAD)"}.issubset(labels):

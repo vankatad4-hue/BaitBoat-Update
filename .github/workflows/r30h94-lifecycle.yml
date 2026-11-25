@@ -2,6 +2,7 @@ name: R30H-94 dual-core lifecycle host
 on:
   push:
     paths:
+      - 'Common/**'
       - '**/source/dual_core_diagnostic.h'
       - '**/source/radio_worker.h'
       - '**/source/radio_watchdog.h'
@@ -116,6 +117,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Stage canonical shared firmware source
+        run: python3 Common/stage.py
       - run: |
           cmp Boat/source/dual_core_diagnostic.h Remote/source/dual_core_diagnostic.h
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IBoat/tests/r30h94_mock -IBoat/source Boat/tests/r30h94_lifecycle.cpp -o /tmp/lifecycle

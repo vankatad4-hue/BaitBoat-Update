@@ -6,6 +6,7 @@ on:
       - hardware-ready-dual-radio-r1
       - platformio-unified-r30h20
     paths:
+      - 'Common/**'
       - 'Remote/source/**'
       - 'Remote/tests/**'
       - 'tests/r30h20_**'
@@ -27,6 +28,7 @@ on:
     branches:
       - main
     paths:
+      - 'Common/**'
       - 'Remote/source/**'
       - 'Remote/tests/**'
       - 'tests/r30h20_**'
@@ -50,6 +52,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Stage canonical shared firmware source
+        run: python3 Common/stage.py
       - name: R30H-117I E22 production UART driver regression
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -Itests/r30h117_stubs -IRemote/source Remote/source/e22_uart_link.cpp tests/r30h117_e22_test.cpp -o /tmp/r30h117_e22

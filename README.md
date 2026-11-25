@@ -346,3 +346,8 @@ See [full source cleanup and build evidence](docs/SOURCE_CLEANUP_R30H_10_R1.md).
 Dual-core development branch `platformio-unified-r30h20`. Centralized Remote asynchronous completion routing and typed result metadata added to dormant worker path and authenticated mock. K/L/M/N portable regressions passed; full CI, PlatformIO and physical radio acceptance remain unverified. Ordinary/mission producers and production activation are not enabled. Resume R30H-124P from [continuation checkpoint](docs/CONTINUATION_CHECKPOINT_VER001.md). Official Boat VER014 / Remote VER028 unchanged.
 
 R30H-124O portable completion-router regression PASS (exact Git blobs, C++17 warnings-as-errors); integration/target verification remains outstanding. Resume R30H-124P with ordinary-command authorization and producer, then mission scheduler. No release or physical activation.
+
+
+### Canonical shared firmware
+
+Edit shared radio, protocol and transport modules in `Common/source/` only. Run `python Common/stage.py` after checkout (also available as `python tools/flytec.py stage-common`). The PlatformIO pre-build hook stages the selected endpoint automatically; CI stages before host tests and Arduino reference checks. Endpoint `source/` copies listed in `.gitignore` are generated, not authoritative; local edits or collisions stop staging rather than being overwritten. The full source snapshot contains canonical files only. Each endpoint ZIP contains its own endpoint and a sibling `Common/` directory, plus the staged source copies for legacy tools; extract the entire archive before opening the endpoint in VS Code. No hardware or upload policy changes.

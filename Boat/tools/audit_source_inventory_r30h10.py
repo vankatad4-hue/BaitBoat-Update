@@ -5,6 +5,8 @@ import hashlib
 import json
 import pathlib
 import re
+import subprocess
+import sys
 from collections import defaultdict
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
@@ -190,7 +192,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--json', type=pathlib.Path, required=True)
     args = parser.parse_args()
+    subprocess.run([sys.executable, str(ROOT/'Common/stage.py'), '--check'], check=True)
     check_guards()
+    canonical = sorted(p for p in (ROOT/'Common/source').iterdir() if p.is_file() and p.suffix in EXT)
     src, roots = inventory(), build_roots()
     if any(not p.exists() for p in roots):
         raise RuntimeError('missing entrypoint')
@@ -213,13 +217,16 @@ def main():
     report = {
         'evidence': 'STATIC_SOURCE_ONLY_NOT_PHYSICAL',
         'source_files': len(src),
+        'canonical_common_sources': [rel(p) for p in canonical],
+        'generated_endpoint_source_count': 2*len(canonical),
+        'canonical_firmware_source_count': len(src)-len(canonical),
         **cleanup_inventory(src),
         'active_compile_roots': len(roots),
         'reachable_files': len(used),
         'externally_consumed_configuration_headers': sorted(external_config),
         'test_only_headers': [rel(p) for p in unused if p.name in included_by_tests],
         'review_candidate_headers': [rel(p) for p in unused if p.name not in included_by_tests],
-        'duplicate_identical_source_groups_retained': [x for x in hashes.values() if len(x)>1],
+        'generated_or_identical_source_groups': [x for x in hashes.values() if len(x)>1],
         'deprecated_lvgl_flag_calls': {
             rel(p): p.read_text(encoding='utf-8').count('lv_obj_add_flag(') +
                     p.read_text(encoding='utf-8').count('lv_obj_remove_flag(')

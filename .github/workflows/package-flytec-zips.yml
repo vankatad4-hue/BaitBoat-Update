@@ -6,6 +6,7 @@ on:
       - hardware-ready-dual-radio-r1
       - platformio-unified-r30h20
     paths:
+      - 'Common/**'
       - 'Remote/**'
       - 'Boat/**'
       - 'tools/**'
@@ -17,6 +18,7 @@ on:
     branches:
       - main
     paths:
+      - 'Common/**'
       - 'Remote/**'
       - 'Boat/**'
       - 'tools/**'
@@ -43,6 +45,8 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: true
+      - name: Stage canonical shared firmware source
+        run: python3 Common/stage.py
       - name: Read archive versions
         id: version
         shell: bash
@@ -83,14 +87,23 @@ jobs:
           BOAT_VERSION="$(tr -d '\r\n ' < Boat/releases/VERSION)"
           mkdir -p out releases
           # Sorted file lists and normalized timestamps make ZIP bytes reproducible.
-          find Remote -type f ! -path 'Remote/releases/*.zip' -print | LC_ALL=C sort > out/remote-files.txt
-          find Boat -type f ! -path 'Boat/releases/*.zip' -print | LC_ALL=C sort > out/boat-files.txt
+          find Remote Common/source Common/stage.py -type f ! -path 'Remote/releases/*.zip' -print | LC_ALL=C sort > out/remote-files.txt
+          find Boat Common/source Common/stage.py -type f ! -path 'Boat/releases/*.zip' -print | LC_ALL=C sort > out/boat-files.txt
           while IFS= read -r file; do touch -t 198001010000 "$file"; done < out/remote-files.txt
           while IFS= read -r file; do touch -t 198001010000 "$file"; done < out/boat-files.txt
           zip -X -D "out/Flytec_Remote_ver${REMOTE_VERSION}.zip" -@ < out/remote-files.txt
           zip -X -D "out/Flytec_Boat_ver${BOAT_VERSION}.zip" -@ < out/boat-files.txt
           unzip -tq "out/Flytec_Remote_ver${REMOTE_VERSION}.zip"
           unzip -tq "out/Flytec_Boat_ver${BOAT_VERSION}.zip"
+          # Independently extract each ZIP and verify its shared sources.
+          for side in Boat Remote; do
+            case "$side" in Boat) version="$BOAT_VERSION"; other=Remote;; Remote) version="$REMOTE_VERSION"; other=Boat;; esac
+            isolated="$(mktemp -d)"
+            unzip -q "out/Flytec_${side}_ver${version}.zip" -d "$isolated"
+            test ! -e "$isolated/$other"
+            python3 "$isolated/Common/stage.py" --side "$side" --check
+            rm -rf "$isolated"
+          done
           sha256sum out/*.zip | tee "out/SHA256SUMS_ver${REMOTE_VERSION}_${BOAT_VERSION}.txt"
       - name: Package complete Git-tracked project source and SHA-256
         run: |

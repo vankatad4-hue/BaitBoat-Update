@@ -2,7 +2,7 @@
 """Flytec VS Code/PlatformIO entrypoint. Build/tests/source ZIP; NEVER upload.
 
 Runs the existing endpoint-specific PlatformIO project configurations without
-copying old sketch files into new compiler roots. The source ZIP includes ALL
+copying old sketches into new compiler roots. Stages canonical shared sources. The source ZIP includes ALL
 git-tracked repo files, not merely Boat/Remote, and no untracked local secrets.
 """
 from __future__ import annotations
@@ -76,7 +76,11 @@ def snapshot(root:Path,output:Path)->tuple[int,str]:
         f"{digest}  {output.name}\n",encoding="utf-8")
     return len(entries),digest
 
+def stage_common()->None:
+    command(sys.executable,"Common/stage.py")
+
 def audit()->None:
+    stage_common()
     command(sys.executable,"tools/verify_platformio_unified.py")
     command(sys.executable,"Boat/tools/verify_platformio_source_layout_r30h13.py")
     command(sys.executable,"Boat/tools/verify_r30h10_physical_lock.py")
@@ -88,6 +92,7 @@ def audit()->None:
 
 def compile_host()->None:
     """Build the portable STOP fault matrices for BOTH concrete wire codecs."""
+    stage_common()
     if not shutil.which("g++"):raise RuntimeError("g++ required for host tests")
     with tempfile.TemporaryDirectory(prefix="flytec-r30h20-") as tmp:
         groups=[
@@ -180,13 +185,14 @@ def build(endpoint:str)->None:
 def main()->int:
     parser=argparse.ArgumentParser(description=__doc__)
     sub=parser.add_subparsers(dest="action",required=True)
-    for name in ("audit","test-host","build-boat","build-remote","build-all","snapshot"):
+    for name in ("audit","test-host","build-boat","build-remote","build-all","snapshot","stage-common"):
         p=sub.add_parser(name)
         if name=="snapshot":
             p.add_argument("--output",type=Path,
                            default=Path("out/Flytec_Project_PlatformIO_R30H20_source_snapshot.zip"))
     args=parser.parse_args()
-    if args.action=="audit":audit()
+    if args.action=="stage-common":stage_common()
+    elif args.action=="audit":audit()
     elif args.action=="test-host":compile_host()
     elif args.action=="build-boat":audit();build("boat")
     elif args.action=="build-remote":audit();build("remote")
