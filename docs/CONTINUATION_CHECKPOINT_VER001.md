@@ -1428,3 +1428,14 @@ W8.4b exact-revision combined status for 6c9397c remains empty; integrated CI UN
 - [6031c8f](https://github.com/vankatad4-hue/BaitBoat-Update/commit/6031c8f89b5e8fbca54dbe8f49468554f590d816): lifecycle triggers include recovery wire codec. Source, test and workflow blobs read back successfully.
 
 Next W8.4d: obtain exact workflow results and correct full integration failures; test primary STOP priority during recovery, reasserted faults, sticky queue faults and backup safety-return, audit cross-lane ordering beyond recovery probes. Verify legacy LINK_PROBE compatibility before actual Boat binding; confirm physical drivers and complete neutral retry/temporary override. No production activation, physical timing NOT_RUN, upload locked, Boat VER014 / Remote VER028 unchanged. Append future updates below.
+
+---
+
+## Active continuation — R30H-124W8.4d (2026-11-25)
+
+- [62dcaa6](https://github.com/vankatad4-hue/BaitBoat-Update/commit/62dcaa62bbfc0232b9ea364419162b757985c92c): expose original primary STOP retry eligibility; retain original 2.5 s deadline and 8-reservation budget.
+- [53f70d3](https://github.com/vankatad4-hue/BaitBoat-Update/commit/53f70d386e02e971a7b62a91b4f45a67624b9f23): raw-available but logically faulted primary can service eligible STOP retries ahead of recovery probes. During recovery accept only current authenticated STOP ACK/stopped STATUS or correlated probe echo; restricted STATUS cannot authorize CLEAR/movement. Reset probe evidence when STOP confirmation advances generation. Existing raw fault reassertion clears proof accumulation. Already admitted RF cannot be retracted.
+- [3531825](https://github.com/vankatad4-hue/BaitBoat-Update/commit/35318255b9d2497e8bc7fae6ec534f6481356fa8): integrated W5 regression adds new STOP 21 preempting admitted probe, late old-generation completion/echo, primary STOP confirmation while still logically faulted, reasserted raw fault, fresh recovery proofs, retained historical CANCEL and movement lock.
+- All three changed blobs verified by readback. Exact 3531825 combined status empty; integrated regression/target CI UNVERIFIED. Re-ran existing strict C++17 isolated gate regression locally: exit 0 PASS, header 75d699e8679f1d918e96d3b83f93a6e1b2cde9e6 and test c1b4ba745cc2408b9696bebbca99b208e05ee043 match saved revisions; this is not execution of new integrated test. No full PlatformIO run.
+
+Next W8.4e: verify lifecycle and target CI, resolve integration failures, finish sticky queue-fault and unsafe-battery/safety-return regressions. Audit remaining shared monotonic cross-link sequence ordering, including STOP/heartbeat and physical admission timing; do not weaken replay protection. Confirm legacy LINK_PROBE compatibility and real Boat binding before production migration. Neutral retry and temporary override remain. Production Legacy-only, workers/upload locked, physical NOT_RUN, Boat VER014 / Remote VER028 unchanged. Future updates append below.
