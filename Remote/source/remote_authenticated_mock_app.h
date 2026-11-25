@@ -76,7 +76,7 @@ public:
  bool missionPrepared(uint32_t now)const{return owner_.worker()&&missionSafe(now)&&mission_.upload().prepared(now);}
  // Explicit handoff binds the transaction to future control; no START or CLEAR.
  bool acceptPreparedHandoff(uint32_t now){
-  if(!owner_.worker()||!missionSafe(now)||!preparedStatusSeen_||
+  if(!owner_.worker()||!missionSafe(now)||!preparedStatusSeen_||tx_.pending(PhyLink::Primary)||
      !mission_.upload().handoff(preparedStatusId_,1,preparedStatusAt_,now,true))return false;
   if(!tx_.handoffMission(preparedStatusId_,true)||
      !missionControl_.control().bind(preparedStatusId_,1,mission_.upload().started(),preparedStatusAt_,now,true)){
@@ -114,6 +114,10 @@ public:
   }
   consume(PhyLink::Primary,now);consume(PhyLink::Backup,now);
   if(!initialized_)return false;
+  // Recheck after RX: a fresh unsafe STATUS must revoke in this same pass.
+  if(missionAuthorized_&&(!missionAuthority(now).primaryFresh||!missionAuthority(now).stopReleased||!missionAuthority(now).actuatorReady)){
+   if(!inhibit(now))return reset(now);
+  }
   // Fail closed before draining results when authority was withdrawn.
   if(!missionClear_&&!missionAuthorized_&&(missionActive()||mission_.upload().inFlight())&&!mission_.upload().maintain(now,missionSafe(now))){if(!inhibit(now))return reset(now);}
   if(mission_.upload().state()==AsyncMissionUpload::State::Failed&&mission_.upload().inFlight()){if(!inhibit(now))return reset(now);}
@@ -264,7 +268,7 @@ private:
     if(link!=PhyLink::Primary||!missionFeedbackDecode(f.payload,feedback)||feedback.transaction!=f.commandId||
        feedback.transaction!=mission_.upload().transaction())continue;
     if(!primary_.accept(f.sequence)||!cross_.accept(f.sequence))continue;
-    if(missionHandedOff())missionControl_.control().observe(feedback,1,rx.receivedMs,now,true);
+    if(missionHandedOff())missionControl_.observeControlFeedback(feedback,1,rx.receivedMs,now,true);
     if(feedback.result!=MC_STATUS)continue;
     preparedStatusSeen_=feedback.phase==MC_PREPARED;
     preparedStatusId_=feedback.transaction;preparedStatusAt_=rx.receivedMs;continue;

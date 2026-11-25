@@ -35,6 +35,13 @@ public:
   return neutralEvidence_.receipt(id,sequence,f.sessionEpoch,tx_.generation(),captured,now,authenticatedPrimary);
  }
  void invalidateNeutral(){neutralEvidence_.reset();}
+ bool observeControlFeedback(const MissionControlFeedback& f,uint8_t epoch,uint32_t captured,uint32_t now,bool authenticatedPrimary){
+  if(!control_.observe(f,epoch,captured,now,authenticatedPrimary))return false;
+  // Every correlated control response ends the previous neutral evidence
+  // window. Especially PAUSE: the peer may have reset its local stick lease.
+  if(f.result!=MC_STATUS)neutralEvidence_.reset();
+  return true;
+ }
  bool service(uint32_t now,const MissionControlAuthority& a,bool gap,uint8_t epoch,uint16_t& seq,uint16_t rekeyAt,const uint8_t key[32]){
   using L=typename Tx::Link;using Q=typename Tx::Submit;using S=AsyncMissionControl::State;
   if(!control_.maintain(now,a))return false;

@@ -25,6 +25,12 @@ static_assert(BOAT_R30H9_MARKER_GPIO == -1 && BOAT_R30H9_GPIO_OUTPUT_SIGNED == 0
 #include "mission_wire.h"
 #include "mission_controller.h"
 #include "mission_stick.h"
+#ifndef BOAT_R30H124W3_NEUTRAL_RECEIPT
+#define BOAT_R30H124W3_NEUTRAL_RECEIPT 0
+#endif
+#if BOAT_R30H124W3_NEUTRAL_RECEIPT
+#include "boat_neutral_receipt.h"
+#endif
 #include "radio_session_platform.h"
 #include "boat_session_recovery.h"
 #include "boat_handshake_reply.h"
@@ -177,6 +183,9 @@ private:
     MissionAssembler mission_;
     BoatMissionController controller_;
     MissionStickLease stickLease_;
+#if BOAT_R30H124W3_NEUTRAL_RECEIPT
+    BoatNeutralReceipt neutralReceipt_;
+#endif
     BoatRadioWatchdog radioWatchdog_;
 #if BOAT_R30H_LOCAL_TRACE_ENABLED
     boat_r30h2::LocalTrace localTrace_{};

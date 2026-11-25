@@ -215,6 +215,9 @@ void BoatDualRadioPort::prepareApplicationCycle(uint32_t now){
 }
 void BoatDualRadioPort::serviceLegacyRxAndFeedback(){
  if(!legacyBeginAttempted_||!runtimeOwner_.legacy())return;
+#if BOAT_R30H124W3_NEUTRAL_RECEIPT
+ neutralReceipt_.reset(); // only this bounded RX pass
+#endif
  if(nrfReady_){
   const bool stopAckWasInFlight=stopAck_.inFlight();
   nrf_.update();
@@ -319,6 +322,21 @@ void BoatDualRadioPort::serviceLegacyRxAndFeedback(){
   }
  }
 
+#if BOAT_R30H124W3_NEUTRAL_RECEIPT
+ // Both RX lanes have been serviced. STOP ACK, hardware STATUS and root
+ // replies take priority. No retry queue and no retained stale receipt.
+ const uint32_t receiptNow=millis();const auto mc=controller_.status();
+ const bool phaseAllowed=!detachedReturn_&&!failsafeRthActive_&&
+  (mc.phase==MC_PREPARED||mc.phase==MC_PAUSED||mc.phase==MC_OVERRIDE_NEUTRAL);
+ const bool ready=primaryOrdinaryTxReady()&&primaryFresh(receiptNow)&&
+  txSequence_<RadioSessionCounter::REKEY_AT-1;
+ uint8_t payload[8]{};
+ if(neutralReceipt_.take(mc.transaction,sessionEpoch_,generation_,receiptNow,ready,phaseAllowed,stickLease_,payload)){
+  RadioFrame reply{};radio_frameInit(reply,RADIO_MSG_MISSION_NEUTRAL_ACK,BOAT_ID,REMOTE_ID,++txSequence_,mc.transaction,receiptNow,sessionEpoch_);
+  memcpy(reply.payload,payload,8);
+  if(radio_frameSeal(reply,key_))sendFrame(LINK_NRF_PRIMARY,reply);
+ }
+#endif
 }
 void BoatDualRadioPort::advanceApplicationCycle(uint32_t safetyNow){
  const auto watchdogEvent=radioWatchdog_.update(primaryFresh(safetyNow),backupFresh(safetyNow));
@@ -802,7 +820,12 @@ void BoatDualRadioPort::receiveCaptured(ManagedLink link,const RadioFrame &f,uin
    if(link!=LINK_NRF_PRIMARY||!crossSequenceAccepted)return;
    MissionStickInput input{};if(!missionStickDecode(f.payload,input)||f.commandId!=input.transaction)return;
    if(detachedReturn_&&(!input.neutral||input.left||input.right))return;
-   if(stickLease_.receive(input,controller_.status().transaction,capturedAt,true)){lastRx=capturedAt;lastSessionRx_=now;rxValid=true;noteAuthenticatedRx(capturedAt);}
+   if(stickLease_.receive(input,controller_.status().transaction,capturedAt,true)){
+     lastRx=capturedAt;lastSessionRx_=now;rxValid=true;noteAuthenticatedRx(capturedAt);
+#if BOAT_R30H124W3_NEUTRAL_RECEIPT
+     if(runtimeOwner_.legacy())neutralReceipt_.offer(input,f.sequence,sessionEpoch_,generation_,capturedAt,now,!detachedReturn_&&!failsafeRthActive_);
+#endif
+   }
    return;
  }
  if(f.type==RADIO_MSG_MISSION_CONTROL){

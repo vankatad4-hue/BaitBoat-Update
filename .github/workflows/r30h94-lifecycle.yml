@@ -58,6 +58,9 @@ on:
       - 'Remote/source/mission_neutral_wire.h'
       - 'Remote/source/remote_neutral_evidence.h'
       - 'Remote/tests/r30h124w2_neutral_receipt.cpp'
+      - 'Boat/source/boat_neutral_receipt.h'
+      - 'Boat/tests/r30h124w3_boat_neutral.cpp'
+      - 'Remote/tests/r30h124w3_authenticated_control.cpp'
       - 'Remote/tests/r30h124w_mission_scope.cpp'
       - 'Remote/tests/r30h124w_scope_generation.cpp'
       - 'Remote/tests/r30h124w_scoped_transport.cpp'
@@ -217,3 +220,8 @@ jobs:
 
           g++ -std=c++17 -Wall -Wextra -Werror -Itests/r30h20_stubs -IRemote/source Remote/source/radio_protocol.cpp Remote/tests/r30h124w2_neutral_receipt.cpp -lcrypto -o /tmp/neutral_receipt
           timeout 10s /tmp/neutral_receipt
+
+          g++ -std=c++17 -Wall -Wextra -Werror -Itests/r30h20_stubs -IBoat/source -IRemote/source Boat/source/radio_protocol.cpp Boat/tests/r30h124w3_boat_neutral.cpp -lcrypto -o /tmp/boat_neutral_receipt
+          timeout 10s /tmp/boat_neutral_receipt
+          g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -Itests/r30h20_stubs -IRemote/source Remote/source/radio_protocol.cpp Remote/source/radio_command_codec.cpp Remote/source/radio_payload_codec.cpp Remote/source/radio_ack_tracker.cpp Remote/source/mission_protocol.cpp Remote/tests/r30h124w3_authenticated_control.cpp -lcrypto -o /tmp/authenticated_control
+          timeout 10s /tmp/authenticated_control
