@@ -402,7 +402,14 @@ private:
     if(link==PhyLink::Backup){
      if(!backupScope_||feedback.transaction!=backupMission_.transaction()||
         uint32_t(rx.receivedMs-backupTransferAt_)>=0x80000000U||
-        !backup_.accept(f.sequence)||!cross_.accept(f.sequence))continue;
+        !backup_.accept(f.sequence))continue;
+     // A newer primary frame can overtake a slower backup safety warning.
+     // Per-lane new, authenticated negative evidence may ONLY revoke scope;
+     // never accept out-of-order positive feedback or advance cross high-water.
+     if(!cross_.accept(f.sequence)){
+      if(unsafeBackupPhase(feedback.phase))backupUnsafeSeen_=true;
+      continue;
+     }
      // Unsafe phase is sticky for this authority, even if a subsequent
      // safe snapshot is drained in the same application pass.
      if(unsafeBackupPhase(feedback.phase))backupUnsafeSeen_=true;
@@ -440,7 +447,12 @@ private:
    if(primaryRestricted&&((decoded.kind==RADIO_PAYLOAD_ACK&&(decoded.commandType!=CMD_EMERGENCY_STOP||decoded.commandId!=stopId_))||
       (decoded.kind==RADIO_PAYLOAD_STATUS&&decoded.stopState!=1)))continue;
    auto& guard=link==PhyLink::Primary?primary_:backup_;
-   if(!guard.accept(f.sequence)||!cross_.accept(f.sequence))continue;
+   if(!guard.accept(f.sequence))continue;
+   if(!cross_.accept(f.sequence)){
+    if(link==PhyLink::Backup&&backupScope_&&decoded.kind==RADIO_PAYLOAD_STATUS&&
+       uint32_t(rx.receivedMs-backupTransferAt_)<0x80000000U&&!safeBackupStatus(decoded))backupUnsafeSeen_=true;
+    continue;
+   }
    if(decoded.kind==RADIO_PAYLOAD_ACK&&ack_.observe(decoded,link==PhyLink::Primary?RADIO_ACK_LINK_PRIMARY:RADIO_ACK_LINK_BACKUP,1,rx.receivedMs)){
     if(decoded.commandType==CMD_EMERGENCY_STOP)control_.observeStopAck(link,decoded.commandId,decoded.ackResult==RADIO_ACK_ACCEPTED||decoded.ackResult==RADIO_ACK_EXECUTED,rx.receivedMs,now);
     else if(decoded.commandType==CMD_CLEAR_STOP)clear_.ack(decoded.commandId,1,link==PhyLink::Primary,decoded.ackResult==RADIO_ACK_EXECUTED,decoded.ackResult!=RADIO_ACK_ACCEPTED&&decoded.ackResult!=RADIO_ACK_EXECUTED,rx.receivedMs,now);
