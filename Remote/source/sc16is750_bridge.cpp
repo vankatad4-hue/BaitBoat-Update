@@ -61,11 +61,13 @@ bool SC16IS750Bridge::begin(uint32_t baud) {
     return ready_;
 }
 bool SC16IS750Bridge::commissioningAllowed()const {
-    return commissioningLocked_&&!commissioningFault_&&flytec_rtos::remoteI2cAllowed()&&isolation_&&isolation_(isolationContext_);
+    return commissioningLocked_&&!commissioningFault_&&flytec_rtos::remoteI2cAllowed()&&
+           wire_.getTimeOut()>0&&wire_.getTimeOut()<=20U&&isolation_&&isolation_(isolationContext_);
 }
 bool SC16IS750Bridge::lockForCommissioning(const flytec_rtos::E22CommissioningPermit& permit,
                                            flytec_rtos::E22IsolationProbe isolation,void* context) {
-    if(commissioningLocked_||!ready_||!permit.valid()||!flytec_rtos::remoteI2cAllowed()||!isolation||!isolation(context))return false;
+    if(commissioningLocked_||!ready_||!permit.valid()||!flytec_rtos::remoteI2cAllowed()||
+       !wire_.getTimeOut()||wire_.getTimeOut()>20U||!isolation||!isolation(context))return false;
     commissioningLocked_=true;ready_=false;isolation_=isolation;isolationContext_=context;
     auto read=[&](uint8_t r,uint8_t& v){return commissioningAllowed()&&readReg(r,v);};
     uint8_t direction=0;
@@ -84,6 +86,47 @@ bool SC16IS750Bridge::commissioningBaudVerified(uint32_t crystalHz,uint32_t baud
                   uint32_t(millis()-started)<limitMs&&commissioningAllowed();
     if(!ok)commissioningFault_=true;
     return ok;
+}
+bool SC16IS750Bridge::commissioningModeMatches(bool config){
+    uint8_t dir=0,state=0;
+    return commissioningAllowed()&&readReg(REG_IODIR,dir)&&dir==r30h_sc16::E22_GPIO_OUTPUT_MASK&&
+           readGpio(state)&&(state&0x0BU)==(config?0x0AU:0x08U);
+}
+bool SC16IS750Bridge::commissioningModeVerified(bool config,uint32_t limit){
+    const uint32_t start=millis();auto read=[&](uint8_t r,uint8_t& v){return commissioningAllowed()&&readReg(r,v);};
+    if(!commissioningAllowed()||!limit||limit>500U||!flytec_rtos::sc16CommissioningDrained(read)||!e22AuxReady()||!setE22Mode(false,config)){
+        commissioningFault_=true;return false;
+    }
+    delay(3);
+    while(commissioningAllowed()&&uint32_t(millis()-start)<limit){
+        if(commissioningModeMatches(config)&&e22AuxReady()){
+            delay(3);if(uint32_t(millis()-start)<limit&&commissioningModeMatches(config)&&e22AuxReady())return true;
+            break;
+        }
+        delay(1);
+    }
+    commissioningFault_=true;return false;
+}
+bool SC16IS750Bridge::commissioningRxCount(unsigned& count){
+    uint8_t lcr=0,lsr=0,rx=0;
+    if(!commissioningAllowed()||!readReg(REG_LCR,lcr)||lcr!=3||!readReg(REG_LSR,lsr)||(lsr&0x9EU)||
+       !readReg(REG_RXLVL,rx)||rx>64)return false;
+    count=rx;return true;
+}
+bool SC16IS750Bridge::commissioningReadByte(uint8_t& b){
+    unsigned count=0;return commissioningRxCount(count)&&count&&readFifo(&b,1)==1;
+}
+bool SC16IS750Bridge::commissioningTxIdle(){
+    uint8_t lcr=0,lsr=0,tx=0;
+    return commissioningAllowed()&&readReg(REG_LCR,lcr)&&lcr==3&&readReg(REG_TXLVL,tx)&&tx==64&&
+           readReg(REG_LSR,lsr)&&(lsr&0x40U)&&!(lsr&0x9EU)&&e22AuxReady();
+}
+bool SC16IS750Bridge::commissioningConfigWrite(const uint8_t* cmd,unsigned n){
+    if(!commissioningModeMatches(true)||!commissioningTxIdle()||!flytec_rtos::e22CommissioningCommand(cmd,n,n==3?12:4))return false;
+    // One small I2C FIFO transaction, only with DLAB verified clear.
+    wire_.beginTransmission(address_);wire_.write(i2cSubAddress(REG_RHR_THR_DLL));
+    for(unsigned i=0;i<n;++i)wire_.write(cmd[i]);
+    return wire_.endTransmission()==0;
 }
 bool SC16IS750Bridge::setGpioDirection(uint8_t mask) {
     return writeReg(REG_IODIR,mask);
@@ -190,3 +233,6 @@ void SC16IS750Bridge::flush() {
         delay(1);
     }
 }
+
+// Compile the offline binding against the real bridge; never invoke it here.
+template class flytec_rtos::E22OfflinePort<SC16IS750Bridge>;

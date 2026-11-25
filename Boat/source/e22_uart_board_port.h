@@ -62,6 +62,39 @@ public:
  bool txPending()const{return link_.txPending();}
  flytec_rtos::E22TxState::Outcome txOutcome()const{return link_.txOutcome();}
 private:
+ friend class flytec_rtos::E22OfflinePort<E22UartBoardPort>;
+ void commissioningLatchFault(){commissioningFault_=true;}
+ uint32_t commissioningNow()const{return millis();}
+ void commissioningWait(){delay(1);}
+ bool commissioningHostBaud(uint32_t,uint32_t baud,uint32_t limit){return commissioningBaudVerified(baud,limit);}
+ bool commissioningModeMatches(bool config){
+  return commissioningAllowed()&&digitalRead(pins_.m0)==LOW&&digitalRead(pins_.m1)==(config?HIGH:LOW)&&digitalRead(pins_.nrst)==HIGH;
+ }
+ bool commissioningModeVerified(bool config,uint32_t limit){
+  const uint32_t start=millis();
+  if(!commissioningDrain(limit)||!commissioningAllowed())return commissionCheck(false);
+  setMode(false,config,this);delay(3);
+  while(commissioningAllowed()&&uint32_t(millis()-start)<limit){
+   if(commissioningModeMatches(config)&&auxReady(this)){delay(3);return commissionCheck(uint32_t(millis()-start)<limit&&commissioningModeMatches(config)&&auxReady(this));}
+   delay(1);
+  }
+  return commissionCheck(false);
+ }
+ bool commissioningRxCount(unsigned& count){
+  size_t n=0;if(!commissioningAllowed()||uart_get_buffered_data_len(uartPort_,&n)!=ESP_OK||n>128U)return false;
+  count=unsigned(n);return true;
+ }
+ bool commissioningReadByte(uint8_t& b){
+  return commissioningAllowed()&&uart_read_bytes(uartPort_,&b,1,0)==1;
+ }
+ bool commissioningTxIdle(){return commissioningAllowed()&&uart_wait_tx_done(uartPort_,0)==ESP_OK&&auxReady(this);}
+ bool commissioningConfigWrite(const uint8_t* cmd,unsigned n){
+  uint32_t baud=0;
+  if(!commissioningModeMatches(true)||!commissioningTxIdle()||uart_get_baudrate(uartPort_,&baud)!=ESP_OK||
+     !flytec_rtos::uartBaudWithinOnePercent(baud,9600)||!flytec_rtos::e22CommissioningCommand(cmd,n,n==3?12:4))return false;
+  // Direct FIFO operation: never waits for space or enables application TX.
+  return uart_tx_chars(uartPort_,reinterpret_cast<const char*>(cmd),n)==int(n);
+ }
  bool commissioningAllowed()const{return commissioningLocked_&&!commissioningFault_&&isolation_&&isolation_(isolationContext_);}
  bool commissionCheck(bool ok){if(!ok||!commissioningAllowed()){commissioningFault_=true;return false;}return true;}
  bool commissioningDrain(uint32_t limit){

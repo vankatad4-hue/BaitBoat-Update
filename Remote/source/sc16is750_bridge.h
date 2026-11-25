@@ -36,6 +36,17 @@ private:
     bool ready_;
     bool commissioningLocked_=false,commissioningFault_=false;
     flytec_rtos::E22IsolationProbe isolation_=nullptr;void* isolationContext_=nullptr;
+    friend class flytec_rtos::E22OfflinePort<SC16IS750Bridge>;
+    void commissioningLatchFault(){commissioningFault_=true;}
+    uint32_t commissioningNow()const{return millis();}
+    void commissioningWait(){delay(1);}
+    bool commissioningHostBaud(uint32_t crystal,uint32_t baud,uint32_t limit){return commissioningBaudVerified(crystal,baud,limit);}
+    bool commissioningModeMatches(bool config);
+    bool commissioningModeVerified(bool config,uint32_t limit);
+    bool commissioningRxCount(unsigned& count);
+    bool commissioningReadByte(uint8_t& value);
+    bool commissioningTxIdle();
+    bool commissioningConfigWrite(const uint8_t* cmd,unsigned n);
     bool commissioningAllowed()const;
     bool writeReg(uint8_t reg, uint8_t value);
     bool readReg(uint8_t reg, uint8_t &value);

@@ -1041,3 +1041,6 @@ bool BoatDualRadioPort::backupDriverReady() const{return e22_.ready();}
 bool BoatDualRadioPort::backupDriverFault() const{return e22_.transportFault();}
 bool BoatDualRadioPort::receivePrimaryLegacy(RadioFrame &f){return nrf_.receiveFrame(f);}
 bool BoatDualRadioPort::receiveBackupLegacy(RadioFrame &f){return e22_.receiveFrame(f);}
+
+// Compile the offline binding against the actual ESP32 host; never invoke it here.
+template class flytec_rtos::E22OfflinePort<E22UartBoardPort>;

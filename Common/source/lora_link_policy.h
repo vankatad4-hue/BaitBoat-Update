@@ -237,6 +237,75 @@ template<class Read,class Write> bool sc16CommissioningSetBaud(Read read,Write w
  const bool restored=write(3,0x03)&&read(3,lcr)&&lcr==0x03;
  return changed&&restored&&read(4,mcr)&&mcr==0&&read(1,ier)&&ier==0&&sc16CommissioningDrained(read);
 }
+// Only known offline configuration commands may reach the UART, never normal
+// RF payloads. C2 is volatile and changes only REG0's baud bits.
+inline bool e22CommissioningCommand(const uint8_t* cmd,unsigned size,unsigned responseSize){
+ if(!cmd)return false;
+ if(size==3)return responseSize==12&&cmd[0]==0xc1&&cmd[1]==0&&cmd[2]==9;
+ return size==4&&responseSize==4&&cmd[0]==0xc2&&cmd[1]==3&&cmd[2]==1&&
+        (cmd[3]==E22UartProfile::BaselineReg0||cmd[3]==E22UartProfile::CandidateReg0);
+}
+// Offline fixture must inject a fresh, caller-selected token only after the
+// receive arm. Callback may not use this endpoint to transmit. No RF approval.
+using E22FixtureArm=bool(*)(void*,uint32_t,const uint8_t*,unsigned,uint32_t);
+// Host operations are private to this friend binding. Clock must be monotonic;
+// the iteration cap also fails closed if the clock stops. No cached RX drain.
+template<class Host> class E22OfflinePort {
+public:
+ E22OfflinePort(Host& host,uint32_t crystal,E22FixtureArm arm,void* context,const uint8_t (&token)[8]):
+  host_(host),crystal_(crystal),arm_(arm),context_(context){for(unsigned i=0;i<8;++i)token_[i]=token[i];}
+ E22OfflinePort(const E22OfflinePort&)=delete;
+ E22OfflinePort& operator=(const E22OfflinePort&)=delete;
+ bool lockedAndIsolated()const{return host_.commissioningAllowed();}
+ bool modeVerified(bool config,uint32_t limit){
+  if(!valid(limit)||!host_.commissioningModeVerified(config,limit))return fail();
+  config_=config;modeKnown_=true;return true;
+ }
+ bool baudVerified(uint32_t baud,uint32_t limit){
+  if(!valid(limit)||!modeKnown_||!config_||!host_.commissioningHostBaud(crystal_,baud,limit))return fail();
+  baud_=baud;return true;
+ }
+ bool exchangeExact(const uint8_t* cmd,unsigned n,uint8_t* out,unsigned size,uint32_t limit){
+  if(!valid(limit)||!config_||!modeKnown_||baud_!=9600||!out||!e22CommissioningCommand(cmd,n,size))return fail();
+  const uint32_t start=host_.commissioningNow();
+  unsigned count=0;
+  if(!host_.commissioningModeMatches(true)||!host_.commissioningTxIdle()||
+     !host_.commissioningRxCount(count)||count||!within(start,limit)||
+     !host_.commissioningConfigWrite(cmd,n))return fail();
+  return collect(out,size,start,limit)?true:fail();
+ }
+ bool receiveFixtureVerified(uint32_t baud,uint32_t limit){
+  if(!valid(limit)||!modeKnown_||config_||baud_!=baud||!arm_||fixtureUsed_)return fail();
+  const uint32_t start=host_.commissioningNow();unsigned count=0;uint8_t data[8]{};
+  uint8_t nonzero=0;for(auto b:token_)nonzero|=b;
+  if(!nonzero||!host_.commissioningModeMatches(false)||!host_.commissioningTxIdle()||
+     !host_.commissioningRxCount(count)||count||!within(start,limit))return fail();
+  fixtureUsed_=true;
+  if(!arm_(context_,baud,token_,8,limit)||!collect(data,8,start,limit))return fail();
+  for(unsigned i=0;i<8;++i)if(data[i]!=token_[i])return fail();
+  return true;
+ }
+private:
+ bool valid(uint32_t limit)const{return lockedAndIsolated()&&limit>20U&&limit<=500U;}
+ bool within(uint32_t start,uint32_t limit){return lockedAndIsolated()&&uint32_t(host_.commissioningNow()-start)<limit;}
+ bool fail(){host_.commissioningLatchFault();return false;}
+ bool collect(uint8_t* out,unsigned size,uint32_t start,uint32_t limit){
+  unsigned received=0;uint32_t quietAt=0;bool quiet=false;
+  for(unsigned polls=0;polls<limit+1U&&within(start,limit);++polls){
+   unsigned count=0;
+   if(!host_.commissioningModeMatches(config_)||!host_.commissioningRxCount(count)||count>size-received)return false;
+   while(count--){if(!within(start,limit)||!host_.commissioningReadByte(out[received]))return false;++received;}
+   if(received==size&&host_.commissioningTxIdle()){
+    if(!quiet){quiet=true;quietAt=host_.commissioningNow();}
+    if(uint32_t(host_.commissioningNow()-quietAt)>=10U)return within(start,limit);
+   }else quiet=false;
+   host_.commissioningWait();
+  }
+  return false;
+ }
+ Host& host_;const uint32_t crystal_;E22FixtureArm arm_;void* context_;uint8_t token_[8]{};
+ uint32_t baud_=0;bool config_=false,modeKnown_=false,fixtureUsed_=false;
+};
 class E22UartTransition {
 public:
  enum class State:uint8_t{Idle,ConfigMode,ConfigBaud,ReadBefore,WriteTemporary,ReadAfter,RuntimeBaud,NormalMode,VerifyRx,VerifiedLocked,FaultLocked};
