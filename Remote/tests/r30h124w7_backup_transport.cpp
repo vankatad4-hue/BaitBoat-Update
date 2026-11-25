@@ -1,4 +1,5 @@
 #include "remote_async_control.h"
+#include "radio_session_v2.h"
 #include "bounded_tx_service.h"
 #include <cassert>
 using namespace flytec_rtos;
