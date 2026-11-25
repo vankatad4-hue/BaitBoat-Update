@@ -6,6 +6,7 @@
 #include "remote_mission_prepare_tx.h"
 #include "remote_mission_tx_scope.h"
 #include "remote_mission_control_tx.h"
+#include "remote_backup_mission_control.h"
 // R30H-124F experimental Core 1 application seam. Sole generation owner.
 // Frames must already be authenticated/sealed by the application. Never
 // interpret queue admission, nRF ACK or E22 local readiness as Boat STOP.
@@ -90,7 +91,7 @@ public:
   if(!owner_.worker()||!gate_.stopped()||stopId_||!missionScope_.permitsBackup(f.commandId,approved)||
      f.type!=RADIO_MSG_MISSION_CONTROL||f.sourceId!=1||f.destinationId!=2||f.flags!=RADIO_FLAG_BACKUP_LINK||
      !f.sequence||!missionControlDecode(f.payload,q)||q.transaction!=f.commandId||
-     (q.op!=MCTRL_PAUSE&&q.op!=MCTRL_CANCEL)||ttl>250U)return Submit::Denied;
+     (q.op!=MCTRL_PAUSE&&q.op!=MCTRL_CANCEL)||ttl>BackupMissionControl::TxLifetime)return Submit::Denied;
   return submitImpl(PhyLink::Backup,f,created,ttl,now,ticket,false,false,true);
  }
  Submit submit(PhyLink link,const RadioFrame& f,uint32_t created,uint32_t ttl,uint32_t now,uint32_t& ticket){
@@ -211,7 +212,11 @@ private:
   ++generation_;return true;
  }
  static bool expired(const Slot& s,uint32_t now){
-  return uint32_t(now-s.request.createdMs)>=s.request.lifetimeMs;
+  // The worker still enforces the original immutable admission TTL.
+  // Only the application observation slot may outlive it for LoRa mission TX.
+  const uint32_t grace=s.request.link==PhyLink::Backup&&s.request.frame.type==RADIO_MSG_MISSION_CONTROL
+   ?BackupMissionControl::CompletionGrace:0U;
+  return uint32_t(now-s.request.createdMs)>=s.request.lifetimeMs+grace;
  }
  static Kind classify(const RadioFrame& f,bool stop){
   if(stop)return Kind::Stop;
