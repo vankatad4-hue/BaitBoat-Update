@@ -1,4 +1,5 @@
 #pragma once
+#include "lora_airtime_policy.h"
 #include "remote_async_tx.h"
 #include "radio_handshake.h"
 // Experimental Core 1 root-key handshake. Caller supplies provisioned root,
@@ -23,7 +24,7 @@ public:
  }
  bool active()const{return owner_.worker()&&active_;}
  bool backupRecentlyUsed(uint32_t now)const{
-  return owner_.worker()&&(backupTicket_||(backupSent_&&uint32_t(now-lastBackup_)<3000U));
+  return owner_.worker()&&(backupTicket_||(backupSent_&&uint32_t(now-lastBackup_)<LoRaAirtimeProfile::BaselineGap));
  }
  bool observeCompletion(const RemoteAsyncTx::Result& c,uint32_t now){
   if(!owner_.worker()||!active_||c.kind!=RemoteAsyncTx::Kind::Handshake||c.epoch||
@@ -45,7 +46,7 @@ public:
    if(!offer(PhyLink::Primary,packet,root,now,primaryTicket_))return false;
   }
   if(backupReady&&!tx_.linkFault(PhyLink::Backup)&&!backupTicket_&&
-     (!backupSent_||uint32_t(now-lastBackup_)>=3000U)){
+     (!backupSent_||uint32_t(now-lastBackup_)>=LoRaAirtimeProfile::BaselineGap)){
    if(!offer(PhyLink::Backup,packet,root,now,backupTicket_))return false;
   }
   return true;
