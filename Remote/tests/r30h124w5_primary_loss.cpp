@@ -69,6 +69,28 @@ int main(){
  // Drain the old backup root/heartbeat generation before fresh STOP.
  assert(service.tick(h,B,gate,&Driver::send,&b,at));
  assert(b.starts==0); // stale queued traffic cannot reach RF
+ // W8.3b backup mission scope cannot bypass fresh authenticated evidence.
+ assert(app.backupMissionBound()&&app.backupMissionHighWater()==2);
+ assert(!app.requestBackupMissionControl(MCTRL_PAUSE,at));
+ peer.mockPrimaryUnavailable(true);
+ RadioFrame phase{};
+ assert(peer.status(status,true,++at)&&h.backupRx.offer({status,at,B}));
+ assert(peer.missionStatus(phase,++at,true)&&h.backupRx.offer({phase,at,B}));
+ assert(tick(at,true)&&app.backupStatusFresh(at));
+ assert(!app.requestBackupMissionControl(MCTRL_START,at)&&!app.requestBackupMissionControl(MCTRL_RESUME,at));
+ assert(app.requestBackupMissionControl(MCTRL_PAUSE,at)&&app.backupMissionHighWater()==3);
+ at+=3000;assert(tick(at,true)&&service.tick(h,B,gate,&Driver::send,&b,at));
+ MissionControlRequest q{};assert(missionControlDecode(b.last.frame.payload,q)&&q.op==MCTRL_PAUSE&&q.request==3);
+ RadioFrame reply{};assert(peer.exchange(b.last.frame,reply,true,++at));
+ assert(h.backupRx.offer({reply,at,B})&&h.offerCompletion(B,{b.last.ticket,b.last.generation,B,false,TxEvidence::LocalReady}));
+ assert(tick(at,true)&&app.backupMissionState()==BackupMissionControl::State::Accepted&&gate.stopped());
+ assert(peer.status(status,true,++at)&&h.backupRx.offer({status,at,B})&&tick(at,true));
+ assert(app.requestBackupMissionControl(MCTRL_CANCEL,at)&&app.backupMissionHighWater()==4);
+ at+=3000;assert(tick(at,true)&&service.tick(h,B,gate,&Driver::send,&b,at));
+ assert(missionControlDecode(b.last.frame.payload,q)&&q.op==MCTRL_CANCEL&&q.request==4);
+ assert(peer.exchange(b.last.frame,reply,true,++at));
+ assert(h.backupRx.offer({reply,at,B})&&h.offerCompletion(B,{b.last.ticket,b.last.generation,B,false,TxEvidence::LocalReady}));
+ assert(tick(at,true)&&app.backupMissionState()==BackupMissionControl::State::Accepted&&!app.missionAuthorized());
  assert(!app.requestStop(17,at));
  assert(app.requestStop(20,at)&&tick(at,true));
  at+=3000;assert(tick(at,true));assert(service.tick(h,B,gate,&Driver::send,&b,at));
