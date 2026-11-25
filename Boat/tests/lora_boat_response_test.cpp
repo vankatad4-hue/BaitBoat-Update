@@ -163,7 +163,8 @@ static void integratedOwnerCycle(){
  assert(missionComplete==1&&!missionWanted&&!ordinaryTx.pending()&&budget.usedMs(1620)==100);
  // Expired stopped evidence cannot become fresh merely by waiting.
  assert(statuses.offer(sample,2000));tick(2301);assert(!statuses.pending()&&d.writes==4);
- assert(cycle.resetSession(0));assert(!statuses.pending()&&!acks.pending());
+ // Epoch zero intentionally disables the application generation.
+ assert(!cycle.resetSession(0));assert(!bus.activeGeneration()&&!statuses.pending()&&!acks.pending());
 }
 int main(){
  workerRetention();
