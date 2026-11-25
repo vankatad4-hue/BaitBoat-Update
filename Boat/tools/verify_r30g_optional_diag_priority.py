@@ -55,8 +55,14 @@ assert "sendMissionFeedback(controller_.status()" in update
 remote=read("Remote/source/boat_radio.cpp")
 assert "frame.payload[0]==radio_r30f::SUBTYPE ||" in remote
 assert "frame.payload[0]==flytec_time::SUBTYPE" in remote
-assert remote.index("frame.payload[0]==radio_r30f::SUBTYPE")<remote.index(
-    "g_linkManager.reportValidRx(link,true,now);")
+# Captured RX path: verify authentication, payload dispatch, informational
+# subtype early return and only then link freshness at the original capture.
+guard=remote.index("if(!g_session.established()||frame.sessionEpoch!=g_sessionEpoch||!radio_frameVerify(frame,g_authKey))return;")
+dispatch=remote.index("if(!dispatchValidatedPayload(link,frame,capturedAt))return;",guard)
+skip=remote.index("frame.payload[0]==radio_r30f::SUBTYPE ||",dispatch)
+skip_return=remote.index("frame.payload[0]==flytec_time::SUBTYPE))return;",skip)
+report=remote.index("g_linkManager.reportValidRx(link,true,capturedAt);",skip_return)
+assert guard<dispatch<skip<skip_return<report
 tel=read("Remote/source/boat_telemetry.cpp")
 assert "if(!primary||!radio_r30f::validate(d))return false;" in tel
 assert "s.diagnosticFresh=" in tel

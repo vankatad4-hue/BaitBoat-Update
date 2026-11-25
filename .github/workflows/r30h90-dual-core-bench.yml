@@ -7,6 +7,18 @@ on:
       - 'Remote/platformio.ini'
       - '**/source/dual_core_bench.cpp'
       - 'Remote/source/remote_i2c_integrated_bench.cpp'
+      - 'Remote/source/remote_authenticated_mock_bench.cpp'
+      - 'Remote/source/remote_authenticated_mock_app.h'
+      - 'Remote/source/remote_mock_peer.h'
+      - 'Remote/source/remote_async_*.h'
+      - 'Remote/source/remote_mission_*.h'
+      - 'Remote/source/remote_neutral_evidence.h'
+      - 'Remote/source/mission_*.h'
+      - 'Remote/source/mission_protocol.cpp'
+      - 'Remote/source/radio_protocol.*'
+      - 'Remote/source/radio_command_codec.*'
+      - 'Remote/source/radio_payload_codec.*'
+      - 'Remote/source/radio_ack_tracker.*'
       - 'Remote/source/remote_i2c_*.h'
       - 'Remote/source/*phy*.h'
       - 'Remote/source/radio_worker.h'
@@ -31,6 +43,8 @@ jobs:
             environment: remote_dual_core_bench
           - directory: Remote
             environment: remote_i2c_integrated_bench
+          - directory: Remote
+            environment: remote_authenticated_mock_bench
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

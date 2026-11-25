@@ -10,6 +10,10 @@ on:
       - 'Boat/source/boat_r30h18_stop_ack_outbox.h'
       - 'Boat/source/boat_r30h19_status_outbox.h'
       - 'Boat/source/boat_dual_radio_port*'
+      - 'Boat/source/boat_neutral_receipt.h'
+      - 'Boat/source/mission_neutral_wire.h'
+      - 'Boat/source/mission_stick.h'
+      - 'Boat/source/radio_protocol.h'
       - 'Boat/source/nrf24_link*'
       - 'Boat/source/e22_uart*'
       - 'Boat/platformio.ini'
@@ -36,3 +40,6 @@ jobs:
 
       - name: Compile full application with dormant endpoints
         run: pio run -d Boat -e boat_r30h121_endpoint_compile
+
+      - name: Compile gated legacy Boat neutral receipt (no upload)
+        run: pio run -d Boat -e boat_r30h124w4_neutral_receipt_compile
