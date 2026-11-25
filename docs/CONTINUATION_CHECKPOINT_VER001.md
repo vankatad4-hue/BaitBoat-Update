@@ -1355,3 +1355,19 @@ Correct branch: `platformio-unified-r30h20`; W7 source [19af764](https://github.
 6. Verify both PlatformIO targets, host/lifecycle/inventory/bench/ZIP checks, then neutral retry and temporary override.
 
 Physical LoRa timing and hardware tests NOT_RUN. Production Legacy-only, physical workers/upload locked, Boat VER014 / Remote VER028 unchanged. Sonar unselected. Append future updates BELOW this entry.
+
+---
+
+## Active continuation — R30H-124W8.2 (2026-11-25)
+
+Exact W7 19af764, W8.1 b0bf2bd and documentation 234b4af combined CI status lookups returned empty lists. W7/W8 CI UNVERIFIED, not PASS; prior W6 evidence remains above.
+
+- [a939cfb](https://github.com/vankatad4-hue/BaitBoat-Update/commit/a939cfbd27ed24bcd4cb548de22b6d6ec7c5942b): backup mission ledger separates immutable 250 ms admission TTL from 2100 ms completion allowance (2 s E22 driver watchdog plus provisional 100 ms polling margin). Maximum observation 2350 ms; absolute mission deadline 12 s unchanged.
+- [e21d451](https://github.com/vankatad4-hue/BaitBoat-Update/commit/e21d45115884e3e8a7faed5fb5adb94308853d44): async TX slot uses the same allowance exclusively for backup MISSION_CONTROL. Worker admission TTL, generation gate, primary/STOP/heartbeat lifetimes and 3 s backup pacing unchanged. LocalReady is not peer execution.
+- [c9eeab5](https://github.com/vankatad4-hue/BaitBoat-Update/commit/c9eeab53a843d5ce18f98065189465a73094e136): existing W7 lifecycle regression extended for delayed 2 s local completion, early authenticated PAUSE feedback, pending ticket exclusion, post-completion pacing and STOP revocation. All three source/test blobs verified by readback; CI execution NOT_RUN/UNVERIFIED.
+- Additional W6 controller timeout/feedback tests not committed (repository rule validation and read timeouts). Retry; add unadmitted-expiry coverage.
+
+### Next — R30H-124W8.3
+Verify exact W7/W8.2 CI runs and finish missing regressions. Bind fresh authenticated backup STATUS and mission feedback to mock application, preserving primary high-water, Unknown outcome and STOP/session/failsafe revocation. Enable only backup PAUSE/CANCEL; run authenticated end-to-end tests and implement validated primary recovery without automatic motion/rearm. Verify both PlatformIO targets and remaining CI, then neutral retry and temporary override.
+
+W8 IN_PROGRESS; physical timing NOT_RUN. Completion allowance provisional. Production Legacy-only; workers/upload locked; Boat VER014 / Remote VER028 unchanged. Future updates append below.
