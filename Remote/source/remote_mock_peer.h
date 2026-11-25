@@ -14,6 +14,9 @@ public:
  explicit RemoteMockPeer(SessionHmac mac):mac_(mac){}
  const uint8_t* root()const{return root_;}
  void mockPrimaryUnavailable(bool unavailable){primaryUnavailable_=unavailable;}
+ // Fault injection only: status battery is a synthetic percentage.
+ void mockBattery(uint8_t percent){battery_=percent;}
+ void mockSafetyReturn(bool active){safetyReturn_=active;if(active&&missionId_){phase_=MC_RETURNING;lease_.reset();}}
  bool exchange(const RadioFrame& f,RadioFrame& response,bool backup,uint32_t now){
   const uint8_t flags=backup?RADIO_FLAG_BACKUP_LINK:0;
   if(f.sourceId!=1||f.destinationId!=2||f.flags!=flags)return false;
@@ -57,7 +60,8 @@ public:
    if(q.request==lastRequest_){if(q.op!=lastOp_)return false;}
    else{
     bool ok=false;
-    if(q.op==MCTRL_CANCEL){phase_=MC_ABORTED;lease_.reset();ok=true;}
+    if(safetyReturn_||battery_<=20||battery_>100){/* ordinary mission control cannot interrupt a safety return */}
+    else if(q.op==MCTRL_CANCEL){phase_=MC_ABORTED;lease_.reset();ok=true;}
     else if(!stopped_){
      if(q.op==MCTRL_START&&phase_==MC_PREPARED&&uint32_t(now-stageAt_)<10000U&&lease_.neutral(missionId_,now)){phase_=MC_OUTBOUND;ok=true;}
      else if(q.op==MCTRL_PAUSE&&phase_==MC_OUTBOUND){phase_=MC_PAUSED;lease_.reset();ok=true;}
@@ -99,7 +103,9 @@ public:
   if(!session_.established())return false;
   radio_frameInit(f,RADIO_MSG_TELEMETRY,2,1,++sequence_,0,now,1);
   f.flags=backup?RADIO_FLAG_BACKUP_LINK:0;f.payload[0]=1;
-  f.payload[1]=MODE_MANUAL;f.payload[2]=stopped_?1:0;f.payload[3]=stopped_?0:1;f.payload[4]=80;
+  f.payload[1]=MODE_MANUAL;f.payload[2]=stopped_?1:0;f.payload[3]=stopped_?0:1;
+  if(safetyReturn_)f.payload[3]|=0x20U;
+  f.payload[4]=battery_;
   return radio_frameSeal(f,key_);
  }
  uint16_t lastStop()const{return lastStop_;}
@@ -117,6 +123,6 @@ private:
  MissionStickLease lease_;uint16_t missionId_=0,lastRequest_=0;uint32_t stageAt_=0;
  MissionControlPhase phase_=MC_IDLE;MissionControlOp lastOp_=MCTRL_CANCEL;MissionControlResult lastResult_=MC_STATUS;
  SessionHmac mac_;SessionHandshake session_;RadioSessionCounter rx_;MissionAssembler mission_;
- uint8_t root_[32]{42},key_[32]{};uint16_t sequence_=0,lastStop_=0;bool stopped_=false,primaryUnavailable_=false;unsigned mockReleases_=0;
+ uint8_t root_[32]{42},key_[32]{};uint16_t sequence_=0,lastStop_=0;bool stopped_=false,primaryUnavailable_=false,safetyReturn_=false;uint8_t battery_=80;unsigned mockReleases_=0;
 };
 }
