@@ -48,6 +48,10 @@ on:
       - 'Remote/source/remote_clear_gate.h'
       - 'Remote/source/radio_ack_tracker.cpp'
       - 'Remote/tests/r30h124r_ack_deadline.cpp'
+      - 'Remote/source/remote_async_mission_upload.h'
+      - 'Remote/source/mission_protocol.h'
+      - 'Remote/source/mission_protocol.cpp'
+      - 'Remote/tests/r30h124s_mission_upload.cpp'
       - 'Remote/tests/r30h124q_clear_gate.cpp'
       - 'Remote/tests/r30h124q_authenticated_ordinary.cpp'
       - 'Remote/tests/r30h124p_ordinary_intent.cpp'
@@ -171,3 +175,6 @@ jobs:
 
           g++ -std=c++17 -Wall -Wextra -Werror -IRemote/source Remote/source/radio_ack_tracker.cpp Remote/tests/r30h124r_ack_deadline.cpp -o /tmp/ack_deadline
           timeout 10s /tmp/ack_deadline
+
+          g++ -std=c++17 -Wall -Wextra -Werror -IRemote/source Remote/source/mission_protocol.cpp Remote/tests/r30h124s_mission_upload.cpp -o /tmp/async_mission_upload
+          timeout 10s /tmp/async_mission_upload

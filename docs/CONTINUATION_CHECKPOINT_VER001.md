@@ -1,3 +1,12 @@
+## Active continuation — R30H-124S (2026-11-25)
+
+Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged; production Legacy-only, worker activation/upload locked.
+
+- Baseline 8f43ec1 readback verified, combined CI statuses empty. Local clone still DNS failure, PlatformIO absent. Full Q/R/J/F/G/H/I/P/O integrated Remote verification remains NOT_RUN/UNVERIFIED.
+- Added isolated Core 1 AsyncMissionUpload scheduler for existing single selected target + Home six-op preparation protocol. Due inspection does not charge retries; queued reservation counts conservatively (not proof of RF). Immutable 9 s preparation deadline, 500 ms retry gap, 3 reservations per opcode, provisional 100 ms local TX lifetime. Correlates ticket/generation/sequence/epoch/transaction/time/lifetime. Authenticated primary ACK must match opcode, transaction, epoch, fresh capture and original deadline; peer ACK may precede local completion, next opcode waits for slot drain. Fail on lost authority; caller must revoke actual transport before reusing the slot. No new live permissions.
+- LOCAL PASS: g++ -std=c++17 -Wall -Wextra -Werror mission_protocol.cpp r30h124s_mission_upload.cpp, exit 0 under 10s. Exact real dependencies mission_protocol.h d0077f6727f9ec975d5c2fe95927bab4879999a4, mission_protocol.cpp 651ea8faf239fd41e19f3f3b09668b94be2aae4f. New scheduler 4f0f01b68e31cc6e43657feaf656cb30647321b4 and test 06560854548b2c53b1a5029fcb41c08864db1c0d (verify committed hashes). Real MissionAssembler accepts all six packets and digest matches, busy/early/wrong ACK, stale completion, reservation exhaustion, revoked/expired work, wrap checked. No RTOS/PHY/HMAC test in this suite; authenticatedPrimary is caller-supplied.
+- Next R30H-124T: verify outstanding integrated suites; add scoped primary preparation transport admission while STOP latched and independently confirmed stationary/safe, without broadening general critical gate or overriding STOP. Bind preparation scheduler to centralized completion and authenticated mission ACK with real codec and mock peer. Need explicit prepared-plan handoff/expiry and cancellation uncertainty, then control START/PAUSE/RESUME/CANCEL scheduler, feedback and neutral override. No physical activation.
+
 ## Active continuation — R30H-124R (2026-11-25)
 
 Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged; production Legacy-only, worker activation/upload locked.
