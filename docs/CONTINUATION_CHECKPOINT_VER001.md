@@ -1509,3 +1509,52 @@ Corrected pass-1 CI verified: PlatformIO Boat+Remote 45658604629 PASS; Boat host
 - Tree counts verified: 1263 tracked blobs (1286 before pass 1); Boat/source 146, Remote/source 165 = 311 tracked directory files (334 before pass 1); 301 actual .h/.cpp/.c/.ino files. Milestone-named firmware source paths 66 -> 37; 29 old milestone names removed in pass 2. No test case intentionally removed. Historical documentation, release artifacts, hardware configuration and namespace/compile macro identifiers retained.
 
 Next cleanup pass: verify exact 338529b CI, fix regressions before more moves. Rename remaining 37 milestone-based source paths in dependency-aware batches using full snapshot/audit; consolidate remaining small safety/telemetry modules where appropriate. Plan canonical Common source and compatible standalone ZIP staging before eliminating endpoint mirrors. Do not remove test-only or physical-commissioning guards merely to reduce count. Continue W8.5c only after source cleanup validation; W8.4f still pending. Production Legacy-only, upload/worker locks retained, physical NOT_RUN, nRF24 primary, 10 s both-radio-loss RTH, Boat VER014 / Remote VER028 unchanged. Append future progress below.
+
+---
+
+## Source consolidation pass 3 — before R30H-124W8.5c (2026-11-25)
+
+Pass 2 exact-revision 338529b CI now verified: PlatformIO Boat/Remote 45660194000 PASS, mock targets 45660194107 PASS, dual-core bench 45660193984 PASS, Boat host 45660193816 PASS, lifecycle 45660193864 PASS, inventory 45660193785 PASS, packaging 45660193853 PASS. Downloaded complete e7eaa3ba source snapshot from artifact 15044049753, verified its SHA-256 055cbf525e998869e828751ce84afe5b22df9f0eba9aa8766f949e26e18c587a and all 1263 manifest entries.
+
+- [0ee4630](https://github.com/vankatad4-hue/BaitBoat-Update/commit/0ee4630833773a67ed44ee670572f11af7fbc2c1): all remaining 37 milestone-named firmware source paths renamed or merged. STOP ACK outbox, STATUS outbox and primary ordinary TX budget consolidated into boat_stop_delivery.h; Remote STOP retry and correlated ACK/status confirmation consolidated into remote_stop_delivery.h. Preserve existing classes, namespaces, timing, commissioning gates and behaviour. 24 other paths pure blob-preserving renames, 8 renamed headers with internal include updates. Update 95 existing code/test/build/active README/master-status files, plus assembly integration CSV source references; 167 changed paths total (37 removed, 34 added, 96 modified). Historical milestone docs retained for traceability; use mapping below for their old names. No tests intentionally removed.
+- Complete local tree SHA calculated from all tracked paths and Git blob bytes: 7ae94b623a9d894a86ec649fe7573844a712ea9b, matches published Git tree exactly. Atomic fast-forward, no force. Final recursive tree: 1260 tracked files; Boat/source 144, Remote/source 164; 308 source-directory files vs 334 originally, including 298 actual firmware code files. 66 -> 0 milestone-named firmware source paths. Inventory still shows 144 milestone-named test paths, 36 byte-identical cross-endpoint groups, one explicitly review-only tracker sensor profile example, zero retired-name references in audited active code/build files.
+- Local strict workflow regression coverage: Remote host 38/38 run steps PASS; complete lifecycle host workflow PASS; module-only hardware workflow 6/6 PASS; Boat host 91/91 run steps PASS across initial run and restart at step 73 after fixing assembly CSV's three stale source references. Static inventory, PlatformIO source layout, radio preflight, unified project audit PASS. No physical acceptance; no local PlatformIO target compiler.
+- Exact Pass 3 CI initiated: PlatformIO [45661604915](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45661604915), lifecycle [45661604960](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45661604960), Remote host 45661604991, mock target 45661604951, dual-core bench 45661605067, ZIP 45661604999, queued at inspection. No latest CI PASS claimed until execution completes.
+
+### Pass 3 source filename crosswalk
+
+| Retired basename | Current basename |
+|---|---|
+| boat_r30h18_stop_ack_outbox.h, boat_r30h19_status_outbox.h, boat_r30h21_primary_tx_budget.h | boat_stop_delivery.h |
+| r30h15_primary_stop_retry.h, r30h17_stop_confirmation_gate.h | remote_stop_delivery.h |
+| boat_common_bus_feedback_r30c.h | boat_common_bus_feedback.h |
+| boat_common_bus_readonly_port_r30d.h | boat_common_bus_readonly_port.h |
+| boat_pin_assignments_r30h32.h | boat_pin_assignments.h |
+| boat_r23_gpio_connection_contract.h | boat_gpio_connection_contract.h |
+| boat_r29_shared_bus_contract.h | boat_shared_bus_contract.h |
+| boat_r30e_fault_status.h | boat_fault_status.h |
+| boat_r30g_optional_diag_budget.h | boat_optional_diagnostic_budget.h |
+| boat_r30h26_output_off_feedback_guard.h | boat_output_off_feedback_guard.h |
+| boat_r30h27_feedback_provenance_audit.h | boat_feedback_provenance_audit.h |
+| boat_r30h2_local_trace.h | boat_local_stop_trace.h |
+| boat_r30h30_software_output_boundary.h | boat_software_output_boundary.h |
+| boat_r30h9_marker_config.h | boat_diagnostic_marker_config.h |
+| boat_shared_supply_fault_guard_r30b.h | boat_shared_supply_fault_guard.h |
+| ekm014_logical_interface_r16.h | ekm014_logical_interface.h |
+| ina226_voltage_candidate_r26.h | ina226_voltage_candidate.h |
+| ina231_acquisition_r28.h | ina231_acquisition.h |
+| ina231_arduino_wire_r28.h | ina231_arduino_wire.h |
+| ina231_voltage_contract_r27.h | ina231_voltage_contract.h |
+| mcp23017_joint_boot_audit_r24.h | mcp23017_joint_boot_audit.h |
+| premade_module_output_r15.h | premade_module_output.h |
+| r30h10_gpio_test_profile.h | gpio_test_profile.h (both endpoints, distinct contents) |
+| r30h6_utc_marker_policy.h | utc_marker_policy.h (both endpoints) |
+| r30h9_marker_contract.h | diagnostic_marker_contract.h (both endpoints) |
+| r30h12_i2c_wire_budget.h | i2c_wire_budget.h |
+| r30h3_stop_trace.h | remote_stop_trace.h |
+| r30h7_utc_clock_ui.h | utc_clock_ui.h |
+| remote_pin_assignments_r30h32.h | remote_pin_assignments.h |
+| remote_r30h9_marker_config.h | remote_diagnostic_marker_config.h |
+| sc16is750_fifo_budget_r30h.h | sc16is750_fifo_budget.h |
+
+Next: verify 0ee4630 CI. Source filename cleanup objective complete. Common canonical source consolidation remains optional further structural pass (36 exact mirror groups); requires packaging/staging plan that keeps each Boat/Remote ZIP independently buildable, updates include search paths/host tests/Arduino reference, and preserves matching protocol files. Test filenames remain historical and can be renamed by function in a separate dependency-aware pass; do not delete evidence or test cases. After CI, resume R30H-124W8.5c adaptive LoRa ownership/UART integration, with W8.4f ordering and real Boat recovery pending. nRF24 primary, 10-second both-radio-loss RTH, software-only safety, production Legacy-only, physical NOT_RUN, workers/upload locked, Boat VER014 / Remote VER028 unchanged. Append future progress below.
