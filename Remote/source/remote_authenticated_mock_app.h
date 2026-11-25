@@ -28,6 +28,10 @@ public:
  bool backupConfirmed()const{return established()&&control_.backupConfirmed();}
  bool primaryFault()const{return primaryFault_;}
  bool backupFault()const{return backupFault_;}
+ // Authenticated backup snapshot, not a primary movement permission.
+ static constexpr uint32_t BackupStatusAge=6500U;
+ bool backupStatusFresh(uint32_t now)const{return established()&&!backupFault_&&backupStatusSeen_&&uint32_t(now-backupStatusAt_)<BackupStatusAge;}
+ bool backupStatus(uint32_t now,RadioDecodedPayload& out)const{if(!backupStatusFresh(now))return false;out=backupStatus_;return true;}
  bool requestStop(uint16_t id,uint32_t now){
   if(!established()||!id)return false;
   if(id==stopId_)return control_.hasStopIntent(id)&&!rearmed_&&!clear_.pending()&&!missionLocked();
@@ -238,7 +242,7 @@ private:
   const bool a=control_.invalidate(now);
   const bool b=handshake_.reset(now,defer);
   radioSession_wipe(key_,32);sequence_=stopId_=0;ack_.reset(0);
-  clear_.reset();clearTicket_=0;ordinary_.intent().reset();rearmed_=false;primaryStatusSeen_=false;inputValid_=inputNeutral_=false;
+  clear_.reset();clearTicket_=0;ordinary_.intent().reset();rearmed_=false;primaryStatusSeen_=backupStatusSeen_=false;backupStatusAt_=0;backupStatus_=RadioDecodedPayload{};inputValid_=inputNeutral_=false;
   if(a&&b){mission_.upload().resetAfterSession();missionControl_.resetAfterSession();}
   missionClear_=missionAuthorized_=false;
   preparedStatusSeen_=false;preparedStatusId_=0;preparedStatusAt_=0;
@@ -300,6 +304,8 @@ private:
     if(link==PhyLink::Primary){
      primaryStatus_=decoded;primaryStatusAt_=rx.receivedMs;primaryStatusSeen_=true;
      clear_.status(1,true,decoded.stopState==0,primarySafe()&&(decoded.safetyFlags&7U)==1U,rx.receivedMs,now);
+    }else{
+     backupStatus_=decoded;backupStatusAt_=rx.receivedMs;backupStatusSeen_=true;
     }
    }
   }
@@ -307,7 +313,8 @@ private:
  RemoteRadioOwner& owner_;RadioFrameHandoff& handoff_;RemoteAsyncTx& tx_;
  SessionHandshake session_;RemoteAsyncHandshake handshake_;RemoteAsyncControl control_;
  RemoteClearGate clear_;RemoteAsyncOrdinary<RemoteAsyncTx> ordinary_;RemoteMissionPrepareTx<RemoteAsyncTx> mission_;RemoteMissionControlTx<RemoteAsyncTx> missionControl_;
- RadioDecodedPayload primaryStatus_{};uint32_t primaryStatusAt_=0,clearTicket_=0;
+ RadioDecodedPayload primaryStatus_{},backupStatus_{};uint32_t primaryStatusAt_=0,backupStatusAt_=0,clearTicket_=0;
+ bool backupStatusSeen_=false;
  uint32_t preparedStatusAt_=0;uint16_t preparedStatusId_=0;bool preparedStatusSeen_=false;
  bool primaryStatusSeen_=false,inputValid_=false,inputNeutral_=false,rearmed_=false;
  RadioAckTracker ack_;RadioSessionCounter primary_,backup_,cross_;
