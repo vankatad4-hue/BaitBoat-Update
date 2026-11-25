@@ -1,6 +1,8 @@
 #pragma once
 #include "remote_async_mission_control.h"
 #include "mission_stick.h"
+#include "mission_neutral_wire.h"
+#include "remote_neutral_evidence.h"
 #include "radio_protocol.h"
 namespace flytec_rtos {
 inline bool scopedMissionFrame(const RadioFrame& f){
@@ -23,6 +25,16 @@ public:
  explicit RemoteMissionControlTx(Tx& tx):tx_(tx){}
  AsyncMissionControl& control(){return control_;}
  const AsyncMissionControl& control()const{return control_;}
+ bool neutralFresh(uint8_t epoch,uint32_t now,bool localNeutral)const{
+  return neutralEvidence_.fresh(control_.transaction(),epoch,tx_.generation(),now,localNeutral);
+ }
+ bool observeNeutralReceipt(const RadioFrame& f,uint32_t captured,uint32_t now,bool authenticatedPrimary){
+  uint16_t id=0,sequence=0;
+  if(f.type!=RADIO_MSG_MISSION_NEUTRAL_ACK||f.sourceId!=2||f.destinationId!=1||f.flags||
+     !missionNeutralDecode(f.payload,id,sequence)||id!=f.commandId||id!=control_.transaction())return false;
+  return neutralEvidence_.receipt(id,sequence,f.sessionEpoch,tx_.generation(),captured,now,authenticatedPrimary);
+ }
+ void invalidateNeutral(){neutralEvidence_.reset();}
  bool service(uint32_t now,const MissionControlAuthority& a,bool gap,uint8_t epoch,uint16_t& seq,uint16_t rekeyAt,const uint8_t key[32]){
   using L=typename Tx::Link;using Q=typename Tx::Submit;using S=AsyncMissionControl::State;
   if(!control_.maintain(now,a))return false;
@@ -53,7 +65,7 @@ public:
   ++seq;uint32_t ticket=0;const auto result=tx_.submitMission(f,now,NeutralLifetime,now,ticket,a.missionAuthority);
   if(result==Q::Busy)return true;
   if(result!=Q::Queued)return false;
-  neutralTicket_=ticket;neutralGeneration_=tx_.generation();neutralSequence_=seq;neutralEpoch_=epoch;neutralAt_=now;neutralOffered_=true;return true;
+  neutralTicket_=ticket;neutralGeneration_=tx_.generation();neutralSequence_=seq;neutralEpoch_=epoch;neutralAt_=now;neutralOffered_=true;return neutralEvidence_.offered(control_.transaction(),seq,epoch,neutralGeneration_,now);
  }
  bool observeCompletion(const typename Tx::Result& c){
   using L=typename Tx::Link;using K=typename Tx::Kind;
@@ -65,15 +77,15 @@ public:
      c.commandId!=control_.transaction()||c.createdMs!=neutralAt_||c.lifetimeMs!=NeutralLifetime)return false;
   neutralTicket_=0;return true; // no peer lease claim
  }
- void transportRevoked(){neutralTicket_=0;neutralOffered_=false;control_.transportRevoked();}
- void resetAfterSession(){neutralTicket_=0;neutralOffered_=false;control_.resetAfterSession();}
+ void transportRevoked(){neutralTicket_=0;neutralOffered_=false;neutralEvidence_.reset();control_.transportRevoked();}
+ void resetAfterSession(){neutralTicket_=0;neutralOffered_=false;neutralEvidence_.reset();control_.resetAfterSession();}
 private:
  static constexpr uint32_t NeutralLifetime=50U;
  static bool neutralAllowed(const MissionControlAuthority& a){
   return a.session&&a.primaryFresh&&a.missionAuthority&&a.stopReleased&&a.neutralLocal&&a.stationary&&
    a.actuatorReady&&a.batteryOk&&!a.failsafe;
  }
- Tx& tx_;AsyncMissionControl control_;
+ Tx& tx_;AsyncMissionControl control_;RemoteNeutralEvidence neutralEvidence_;
  uint32_t neutralTicket_=0,neutralGeneration_=0,neutralAt_=0;uint16_t neutralSequence_=0;uint8_t neutralEpoch_=0;
  bool neutralOffered_=false;
 };

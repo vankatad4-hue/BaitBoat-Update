@@ -14,7 +14,7 @@ namespace flytec_rtos {
 class RemoteAuthenticatedMockApp {
 public:
  RemoteAuthenticatedMockApp(RemoteRadioOwner& owner,RadioFrameHandoff& handoff,RemoteAsyncTx& tx):
-  owner_(owner),handoff_(handoff),tx_(tx),handshake_(owner,tx,session_),control_(owner,tx),ordinary_(tx),mission_(tx){}
+  owner_(owner),handoff_(handoff),tx_(tx),handshake_(owner,tx,session_),control_(owner,tx),ordinary_(tx),mission_(tx),missionControl_(tx){}
  RemoteAuthenticatedMockApp(const RemoteAuthenticatedMockApp&)=delete;
  RemoteAuthenticatedMockApp& operator=(const RemoteAuthenticatedMockApp&)=delete;
  bool initialize(const uint8_t root[32],SessionHmac mac){
@@ -36,27 +36,32 @@ public:
   if(!control_.requestStop(c,now))return false;
   clear_.reset();clearTicket_=0;ordinary_.intent().transportRevoked();rearmed_=false;
   if(missionLocked())mission_.upload().transportRevoked();
+  missionControl_.transportRevoked();missionClear_=missionAuthorized_=false;
   if(!ack_.begin(id,CMD_EMERGENCY_STOP,MODE_MANUAL,now,15000U)){reset(now);return false;}
   stopId_=id;return true;
  }
  // Explicit simulated input, never a substitute for real calibrated sticks.
- void mockInput(bool valid,bool neutral){if(owner_.worker()){inputValid_=valid;inputNeutral_=neutral;}}
+ void mockInput(bool valid,bool neutral){if(owner_.worker()){inputValid_=valid;inputNeutral_=neutral;if(!valid||!neutral)missionControl_.invalidateNeutral();}}
  bool rearmed()const{return established()&&rearmed_;}
  bool commandAck(uint16_t id,RadioCommandAckRecord& out)const{return owner_.worker()&&ack_.get(id,out);}
- bool requestClear(uint16_t id,uint32_t now){
+ bool requestClear(uint16_t id,uint32_t now){return requestClearInternal(id,now,false);}
+ bool requestMissionClear(uint16_t id,uint32_t now){return requestClearInternal(id,now,true);}
+private:
+ bool requestClearInternal(uint16_t id,uint32_t now,bool mission){
   RadioCommandAckRecord old{};
-  if(!established()||!id||rearmed_||missionLocked()||!control_.confirmed()||!control_.ordinaryGap(now)||
+  if(!established()||!id||rearmed_||(mission?(!missionHandedOff()||missionAuthorized_||uint32_t(now-mission_.upload().started())>=9000U):missionLocked())||!control_.confirmed()||!control_.ordinaryGap(now)||
      !primaryStatusSeen_||primaryStatus_.stopState!=1||ack_.get(id,old)||sequence_>=RadioSessionCounter::REKEY_AT-1)return false;
   const auto auth=clearAuth(now);
   if(!clear_.begin(id,1,now,true,auth))return false;
   BoatCommand cmd{};cmd.type=CMD_CLEAR_STOP;cmd.mode=MODE_MANUAL;cmd.commandId=id;cmd.sequence=++sequence_;cmd.createdAtMs=now;
   RadioFrame f{};
   if(!radio_encodeCommand(cmd,1,2,1,f,key_)){clear_.reset();return false;}
-  const auto result=tx_.submitClear(f,now,100U,now,clearTicket_,true);
+  const auto result=mission?tx_.submitMissionClear(mission_.upload().transaction(),f,now,100U,now,clearTicket_,true):tx_.submitClear(f,now,100U,now,clearTicket_,true);
   if(result!=RemoteAsyncTx::Submit::Queued){clear_.reset();return false;}
   if(!ack_.begin(id,CMD_CLEAR_STOP,MODE_MANUAL,now,RemoteClearGate::Deadline)){inhibit(now);return false;}
-  return true;
+  missionClear_=mission;return true;
  }
+public:
  bool requestOrdinary(const BoatCommand& cmd,uint32_t now){
   if(!rearmed()||clear_.pending()||missionLocked())return false;
   RadioCommandAckRecord old{};
@@ -71,11 +76,22 @@ public:
  bool missionPrepared(uint32_t now)const{return owner_.worker()&&missionSafe(now)&&mission_.upload().prepared(now);}
  // Explicit handoff binds the transaction to future control; no START or CLEAR.
  bool acceptPreparedHandoff(uint32_t now){
-  return owner_.worker()&&missionSafe(now)&&preparedStatusSeen_&&
-   mission_.upload().handoff(preparedStatusId_,1,preparedStatusAt_,now,true);
+  if(!owner_.worker()||!missionSafe(now)||!preparedStatusSeen_||
+     !mission_.upload().handoff(preparedStatusId_,1,preparedStatusAt_,now,true))return false;
+  if(!tx_.handoffMission(preparedStatusId_,true)||
+     !missionControl_.control().bind(preparedStatusId_,1,mission_.upload().started(),preparedStatusAt_,now,true)){
+   inhibit(now);return false;
+  }
+  return true;
  }
  bool requestMissionCancel(uint32_t now){
-  return owner_.worker()&&mission_.upload().beginCancel(now,missionSafe(now));
+  return owner_.worker()&&!missionClear_&&!missionAuthorized_&&mission_.upload().beginCancel(now,missionSafe(now));
+ }
+ bool missionAuthorized()const{return established()&&missionAuthorized_;}
+ bool missionNeutral(uint32_t now)const{return missionControl_.neutralFresh(1,now,inputValid_&&inputNeutral_);}
+ MissionControlPhase missionPhase()const{return missionControl_.control().phase();}
+ bool requestMissionControl(MissionControlOp op,uint32_t now){
+  return missionAuthorized()&&missionControl_.control().request(op,now,missionAuthority(now));
  }
  bool missionHandedOff()const{return mission_.upload().state()==AsyncMissionUpload::State::HandedOff;}
  bool missionCancelled()const{return mission_.upload().state()==AsyncMissionUpload::State::Cancelled&&!mission_.upload().inFlight();}
@@ -91,13 +107,18 @@ public:
   if((session_.established()&&sequence_>=RadioSessionCounter::REKEY_AT-1)||session_.timeout(now)){
    if(!reset(now))return false;
   }
+  if(missionAuthorized_&&(!missionAuthority(now).primaryFresh||
+     !missionAuthority(now).stopReleased||!missionAuthority(now).actuatorReady||
+     !missionControl_.control().maintain(now,missionAuthority(now)))){
+   if(!inhibit(now))return reset(now);
+  }
   consume(PhyLink::Primary,now);consume(PhyLink::Backup,now);
   if(!initialized_)return false;
   // Fail closed before draining results when authority was withdrawn.
-  if((missionActive()||mission_.upload().inFlight())&&!mission_.upload().maintain(now,missionSafe(now))){if(!inhibit(now))return reset(now);}
+  if(!missionClear_&&!missionAuthorized_&&(missionActive()||mission_.upload().inFlight())&&!mission_.upload().maintain(now,missionSafe(now))){if(!inhibit(now))return reset(now);}
   if(mission_.upload().state()==AsyncMissionUpload::State::Failed&&mission_.upload().inFlight()){if(!inhibit(now))return reset(now);}
   if(clear_.pending()||clear_.state()==RemoteClearGate::State::Failed){
-   if(!clear_.maintain(now,clearAuth(now))&&!inhibit(now))return reset(now);
+   if((!clear_.maintain(now,clearAuth(now))||(missionClear_&&uint32_t(now-mission_.upload().started())>=9000U))&&!inhibit(now))return reset(now);
   }
   if(rearmed_&&!ordinaryAuth(now).actuatorReady){if(!inhibit(now))return reset(now);}
   if(ordinary_.intent().state()==OrdinaryIntent::State::InFlight&&!ordinary_.intent().stillAllowed(ordinaryAuth(now),now)){
@@ -109,7 +130,7 @@ public:
       [&](const RemoteAsyncTx::Result& c,uint32_t at){
        if(clearTicket_&&c.ticket==clearTicket_&&c.commandId==clear_.id()&&c.link==PhyLink::Primary&&c.epoch==1&&c.messageType==RADIO_MSG_ACTION){clearTicket_=0;return true;}
        return ordinary_.observeCompletion(c,at);
-      },[&](const RemoteAsyncTx::Result& c,uint32_t){return mission_.observeCompletion(c);}))return reset(now);
+      },[&](const RemoteAsyncTx::Result& c,uint32_t){return c.messageType==RADIO_MSG_MISSION_PREPARE?mission_.observeCompletion(c):missionControl_.observeCompletion(c);}))return reset(now);
   if(!session_.established()){
    if(!handshake_.active()&&!handshake_.start(nonce,now,SessionHandshake::windowFor(!backupFault_)))return false;
    return handshake_.tick(now,!primaryFault_,!backupFault_,root_,true);
@@ -122,14 +143,31 @@ public:
    if(!inhibit(now))return reset(now);
   }
   if(clear_.ready(now,clearAuth(now))&&primaryStatus_.stopState==0&&(primaryStatus_.safetyFlags&1U)){
-   if(!control_.rearmAfterClear(true,now))return reset(now);
-   clear_.reset();clearTicket_=0;rearmed_=true;
+   if(missionClear_){
+    if(!tx_.pending(PhyLink::Primary)&&!clearTicket_){
+     if(!control_.confirmMissionClear(mission_.upload().transaction(),clear_.id(),true))return reset(now);
+     clear_.reset();missionClear_=false;missionAuthorized_=true;
+    }
+   }else{
+    if(!control_.rearmAfterClear(true,now))return reset(now);
+    clear_.reset();clearTicket_=0;rearmed_=true;
+   }
   }
   const uint8_t flags=uint8_t(1U|(!primaryFault_?2U:0U)|(!backupFault_?4U:0U)|(control_.confirmed()?8U:0U));
   if(!control_.tick(now,!primaryFault_,!backupFault_,flags,sequence_,RadioSessionCounter::REKEY_AT,key_,true))
    return reset(now);
-  if(missionActive()&&!mission_.service(now,missionSafe(now),control_.ordinaryGap(now),1,sequence_,RadioSessionCounter::REKEY_AT,key_)){
+  if(!missionClear_&&!missionAuthorized_&&missionActive()&&!mission_.service(now,missionSafe(now),control_.ordinaryGap(now),1,sequence_,RadioSessionCounter::REKEY_AT,key_)){
    if(!inhibit(now))return reset(now);
+  }
+  if(missionAuthorized_){
+   const auto a=missionAuthority(now);
+   if(!missionControl_.service(now,a,control_.ordinaryGap(now),1,sequence_,RadioSessionCounter::REKEY_AT,key_)){
+    if(!inhibit(now))return reset(now);
+   }else if(a.neutralLocal&&!a.neutralLease&&a.stationary&&
+     (missionPhase()==MC_PREPARED||missionPhase()==MC_PAUSED||missionPhase()==MC_OVERRIDE_NEUTRAL)&&
+     control_.ordinaryGap(now)){
+    if(!missionControl_.sendNeutral(now,a,true,1,sequence_,RadioSessionCounter::REKEY_AT,key_)&&!inhibit(now))return reset(now);
+   }
   }
   if(rearmed_){
    const auto previous=ordinary_.intent().state();
@@ -150,6 +188,16 @@ public:
   reset(now);radioSession_wipe(root_,32);initialized_=false;mac_=nullptr;
  }
 private:
+ MissionControlAuthority missionAuthority(uint32_t now)const{
+  MissionControlAuthority a{};
+  a.session=established();a.primaryFresh=primaryStatusFresh(now);a.missionAuthority=missionAuthorized_;
+  a.stopReleased=primaryStatus_.stopState==0;a.neutralLocal=inputValid_&&inputNeutral_;
+  a.neutralLease=missionNeutral(now);a.stationary=(primaryStatus_.safetyFlags&6U)==0;
+  a.batteryOk=primaryStatus_.batteryPercent>20&&primaryStatus_.batteryPercent<=100;
+  a.failsafe=(primaryStatus_.safetyFlags&0xE0U)!=0;
+  a.actuatorReady=a.session&&a.primaryFresh&&a.stopReleased&&a.batteryOk&&!a.failsafe&&(primaryStatus_.safetyFlags&1U);
+  return a;
+ }
  bool missionActive()const{
   const auto s=mission_.upload().state();return s==AsyncMissionUpload::State::Active||s==AsyncMissionUpload::State::Prepared||s==AsyncMissionUpload::State::HandedOff||s==AsyncMissionUpload::State::Canceling;
  }
@@ -174,7 +222,8 @@ private:
  }
  bool inhibit(uint32_t now){
   const bool ok=control_.inhibitOrdinary(now);
-  if(ok){ordinary_.intent().transportRevoked();if(missionLocked())mission_.upload().transportRevoked();}
+  if(ok){ordinary_.intent().transportRevoked();if(missionLocked())mission_.upload().transportRevoked();missionControl_.transportRevoked();}
+  missionClear_=missionAuthorized_=false;
   clear_.reset();clearTicket_=0;rearmed_=false;
   return ok;
  }
@@ -184,7 +233,8 @@ private:
   const bool b=handshake_.reset(now,defer);
   radioSession_wipe(key_,32);sequence_=stopId_=0;ack_.reset(0);
   clear_.reset();clearTicket_=0;ordinary_.intent().reset();rearmed_=false;primaryStatusSeen_=false;inputValid_=inputNeutral_=false;
-  if(a&&b)mission_.upload().resetAfterSession();
+  if(a&&b){mission_.upload().resetAfterSession();missionControl_.resetAfterSession();}
+  missionClear_=missionAuthorized_=false;
   preparedStatusSeen_=false;preparedStatusId_=0;preparedStatusAt_=0;
   cross_.resetAfterHandshake();primary_.resetAfterHandshake();backup_.resetAfterHandshake();
   return a&&b;
@@ -205,11 +255,17 @@ private:
     continue;
    }
    if(!session_.established()||f.sessionEpoch!=1||!radio_frameVerify(f,key_))continue;
+   if(f.type==RADIO_MSG_MISSION_NEUTRAL_ACK){
+    if(link!=PhyLink::Primary||!missionAuthorized_||!primary_.accept(f.sequence)||!cross_.accept(f.sequence))continue;
+    missionControl_.observeNeutralReceipt(f,rx.receivedMs,now,true);continue;
+   }
    if(f.type==RADIO_MSG_MISSION_FEEDBACK){
     MissionControlFeedback feedback{};
     if(link!=PhyLink::Primary||!missionFeedbackDecode(f.payload,feedback)||feedback.transaction!=f.commandId||
-       feedback.transaction!=mission_.upload().transaction()||feedback.result!=MC_STATUS)continue;
+       feedback.transaction!=mission_.upload().transaction())continue;
     if(!primary_.accept(f.sequence)||!cross_.accept(f.sequence))continue;
+    if(missionHandedOff())missionControl_.control().observe(feedback,1,rx.receivedMs,now,true);
+    if(feedback.result!=MC_STATUS)continue;
     preparedStatusSeen_=feedback.phase==MC_PREPARED;
     preparedStatusId_=feedback.transaction;preparedStatusAt_=rx.receivedMs;continue;
    }
@@ -244,13 +300,14 @@ private:
  }
  RemoteRadioOwner& owner_;RadioFrameHandoff& handoff_;RemoteAsyncTx& tx_;
  SessionHandshake session_;RemoteAsyncHandshake handshake_;RemoteAsyncControl control_;
- RemoteClearGate clear_;RemoteAsyncOrdinary<RemoteAsyncTx> ordinary_;RemoteMissionPrepareTx<RemoteAsyncTx> mission_;
+ RemoteClearGate clear_;RemoteAsyncOrdinary<RemoteAsyncTx> ordinary_;RemoteMissionPrepareTx<RemoteAsyncTx> mission_;RemoteMissionControlTx<RemoteAsyncTx> missionControl_;
  RadioDecodedPayload primaryStatus_{};uint32_t primaryStatusAt_=0,clearTicket_=0;
  uint32_t preparedStatusAt_=0;uint16_t preparedStatusId_=0;bool preparedStatusSeen_=false;
  bool primaryStatusSeen_=false,inputValid_=false,inputNeutral_=false,rearmed_=false;
  RadioAckTracker ack_;RadioSessionCounter primary_,backup_,cross_;
  uint8_t root_[32]{},key_[32]{};SessionHmac mac_=nullptr;
  uint16_t sequence_=0,stopId_=0;
+ bool missionClear_=false,missionAuthorized_=false;
  bool initialized_=false,primaryFault_=false,backupFault_=false;
 };
 }

@@ -55,6 +55,9 @@ on:
       - 'Remote/source/remote_async_mission_control.h'
       - 'Remote/source/remote_mission_tx_scope.h'
       - 'Remote/source/remote_mission_control_tx.h'
+      - 'Remote/source/mission_neutral_wire.h'
+      - 'Remote/source/remote_neutral_evidence.h'
+      - 'Remote/tests/r30h124w2_neutral_receipt.cpp'
       - 'Remote/tests/r30h124w_mission_scope.cpp'
       - 'Remote/tests/r30h124w_scope_generation.cpp'
       - 'Remote/tests/r30h124w_scoped_transport.cpp'
@@ -211,3 +214,6 @@ jobs:
           timeout 10s /tmp/mission_scope_generation
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -Itests/r30h20_stubs -IRemote/source Remote/source/mission_protocol.cpp Remote/tests/r30h124w_scoped_transport.cpp -o /tmp/mission_scoped_transport
           timeout 10s /tmp/mission_scoped_transport
+
+          g++ -std=c++17 -Wall -Wextra -Werror -Itests/r30h20_stubs -IRemote/source Remote/source/radio_protocol.cpp Remote/tests/r30h124w2_neutral_receipt.cpp -lcrypto -o /tmp/neutral_receipt
+          timeout 10s /tmp/neutral_receipt
