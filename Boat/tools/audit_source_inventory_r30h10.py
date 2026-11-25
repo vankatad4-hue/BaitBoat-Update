@@ -81,6 +81,48 @@ def check_guards():
         failing=[str(i+1) for i,ok in enumerate(required) if not ok]
         raise RuntimeError('active-source invariant(s) failed at guard index: '+', '.join(failing))
 
+# Milestone labels belong in Git history and test descriptions, not new
+# application filenames. Report dependency references before any bulk rename.
+MILESTONE = re.compile(r'(?:^|_)r\d+[a-z]*(?:\d+[a-z]*)?(?:_|\.)', re.I)
+RETIRED_NAMES = (
+    'lora_airtime_policy.h', 'e22_adaptive_admission.h', 'e22_uart_profile.h',
+    'remote_primary_recovery_gate.h', 'remote_recovery_probe_wire.h',
+    'r30h124w84_recovery_gate.cpp', 'r30h124w84_backup_timeout.cpp',
+    'r30h124w85_airtime.cpp', 'r30h124w85b_admission.cpp',
+)
+
+def cleanup_inventory(src):
+    # Include tests, build scripts and workflow paths, not historical docs.
+    # Textual hits are review candidates; generated includes still need review.
+    code = set(src)
+    for end in ('Boat', 'Remote'):
+        for folder in ('tests', 'hardware_test', 'tools'):
+            code.update(p for p in (ROOT / end / folder).rglob('*')
+                        if p.is_file() and p.suffix in EXT | {'.py', '.sh', '.ps1', '.ini'})
+        code.add(ROOT / end / 'platformio.ini')
+    code.update(p for p in (ROOT / 'tests').rglob('*') if p.is_file() and p.suffix in EXT)
+    code.update(p for p in (ROOT / 'tools').rglob('*.py') if p.is_file())
+    code.update((ROOT / '.github/workflows').glob('*.yml'))
+    code.update((ROOT / '.github/workflows').glob('*.yaml'))
+    code.discard(pathlib.Path(__file__).resolve())
+    contents = {rel(p): p.read_text(encoding='utf-8') for p in sorted(code)}
+    milestone = [p for p in src if MILESTONE.search(p.name)]
+    references = {rel(p): [name for name, text in contents.items()
+                            if name != rel(p) and p.name in text]
+                  for p in milestone}
+    retired_hits = {name: [path for path, text in contents.items() if name in text]
+                    for name in RETIRED_NAMES}
+    retired_hits = {name: paths for name, paths in retired_hits.items() if paths}
+    if retired_hits:
+        raise RuntimeError('retired source/test filename still referenced: ' + json.dumps(retired_hits))
+    return {
+        'milestone_named_sources': references,
+        'milestone_named_source_count': len(milestone),
+        'milestone_named_test_paths': sorted(rel(p) for p in code
+            if '/tests/' in '/' + rel(p) and MILESTONE.search(p.name)),
+        'retired_filename_references': retired_hits,
+    }
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--json', type=pathlib.Path, required=True)
@@ -108,6 +150,7 @@ def main():
     report = {
         'evidence': 'STATIC_SOURCE_ONLY_NOT_PHYSICAL',
         'source_files': len(src),
+        **cleanup_inventory(src),
         'active_compile_roots': len(roots),
         'reachable_files': len(used),
         'externally_consumed_configuration_headers': sorted(external_config),
