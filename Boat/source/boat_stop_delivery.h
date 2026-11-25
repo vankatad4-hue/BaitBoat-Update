@@ -141,3 +141,48 @@ inline bool ordinarySlotFree(const PrimaryTxConditions &s) {
            !s.stopAckPending && !s.statusPending;
 }
 } // namespace boat_r30h21
+
+// Dormant worker-only producer. Cadence bounds new reservations, not RF
+// transmissions. No modification to legacy scheduling or airtime approval.
+namespace boat_r30h19 {
+class BackupStatusCadence {
+ bool offered_=false,stopped_=false;
+ uint32_t at_=0;
+ static bool valid(const RadioDecodedPayload& s){
+  return s.kind==RADIO_PAYLOAD_STATUS&&s.stopState<=2U&&s.boatMode<=4U&&
+   !(s.safetyFlags&0x80U)&&(s.batteryPercent<=100U||s.batteryPercent==255U);
+ }
+ static bool same(const RadioDecodedPayload& a,const RadioDecodedPayload& b){
+  return a.boatMode==b.boatMode&&a.stopState==b.stopState&&
+   a.safetyFlags==b.safetyFlags&&a.batteryPercent==b.batteryPercent;
+ }
+public:
+ static constexpr uint32_t INTERVAL_MS=3000U;
+ void reset(){offered_=stopped_=false;at_=0;}
+ bool offer(StatusOutbox& box,const RadioDecodedPayload& sample,uint32_t sampledAt,uint32_t now,
+            bool trusted,bool tracking,bool correlatedMission){
+  if(!trusted||!valid(sample)||uint32_t(now-sampledAt)>StatusOutbox::MAX_STATUS_AGE_MS){
+   if(box.pending())box.reset();
+   return false;
+  }
+  const bool stopped=sample.stopState==1U;
+  const bool newStop=stopped&&!stopped_;
+  // Preserve a newly observed STOP transition until it can be reserved.
+  if(!stopped)stopped_=false;
+  if(correlatedMission&&!stopped){if(box.pending())box.reset();return false;}
+  if(box.pending()){
+   if(tracking){if(!same(box.status(),sample))box.reset();return false;}
+   const bool ok=box.offer(sample,sampledAt);
+   if(ok)stopped_=stopped;
+   return ok;
+  }
+  if(tracking)return false;
+  if(offered_&&!newStop&&uint32_t(now-at_)<INTERVAL_MS)return false;
+  if(!box.offer(sample,sampledAt))return false;
+  offered_=true;stopped_=stopped;at_=now;return true;
+ }
+ void suppressNonStopped(StatusOutbox& box,bool correlatedMission){
+  if(correlatedMission&&box.pending()&&box.status().stopState!=1U)box.reset();
+ }
+};
+}

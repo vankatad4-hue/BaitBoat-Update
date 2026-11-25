@@ -58,8 +58,35 @@ static void workerRetention(){
  assert(bus.submit(ordinary,11,false,&initial,20));select(TxPriority::Heartbeat);run(11);
  blocked=false;run(12);assert(calls==6&&bus.poll(admitted)&&admitted);
 }
+static void backupStatusCadence(){
+ boat_r30h19::StatusOutbox box;boat_r30h19::BackupStatusCadence cadence;
+ RadioDecodedPayload s{};s.kind=RADIO_PAYLOAD_STATUS;s.batteryPercent=80;s.safetyFlags=1;
+ assert(cadence.offer(box,s,UINT32_MAX-5,UINT32_MAX-5,true,false,false));
+ auto rev=box.revision();
+ assert(cadence.offer(box,s,0,0,true,false,false)&&box.revision()!=rev);
+ rev=box.revision();
+ assert(!cadence.offer(box,s,1,1,true,true,false)&&box.revision()==rev);
+ assert(!cadence.offer(box,s,2,2,true,true,true)&&!box.pending());
+ assert(!cadence.offer(box,s,3,3,true,false,false));
+ s.stopState=1;
+ assert(cadence.offer(box,s,4,4,true,false,true));rev=box.revision();
+ cadence.suppressNonStopped(box,true);assert(box.pending()&&box.revision()==rev);
+ s.batteryPercent=15;
+ assert(!cadence.offer(box,s,5,5,true,true,true)&&!box.pending());
+ assert(!cadence.offer(box,s,6,6,true,false,false));
+ assert(!cadence.offer(box,s,6,3004,true,false,false));
+ assert(cadence.offer(box,s,3004,3004,true,false,false));
+ assert(!cadence.offer(box,s,3005,3005,false,false,false)&&!box.pending());
+ cadence.reset();s.stopState=0;
+ assert(!cadence.offer(box,s,3006,3006,true,false,true));
+ assert(cadence.offer(box,s,3007,3007,true,false,false));
+ cadence.suppressNonStopped(box,true);assert(!box.pending());
+ s.batteryPercent=200;
+ assert(!cadence.offer(box,s,6008,6008,true,false,false)&&!box.pending());
+}
 int main(){
  workerRetention();
+ backupStatusCadence();
  using T=LoRaAirtimePolicy::Traffic;
  uint8_t key[32]={7};uint16_t seq=0;
  auto verify=[&](const RadioFrame& f){return radio_frameVerify(f,key);};

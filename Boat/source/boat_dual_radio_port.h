@@ -168,6 +168,9 @@ private:
     flytec_r30h123::StopAckService<RadioFrame,boat_r30h18::BackupStopAckOutbox> asyncBackupAck_{asyncBackupOwner_,backupStopAck_,flytec_r30h121::AckLink::Backup};
 #endif
     boat_r30h19::StatusOutbox backupStatusOutbox_;
+#if BOAT_R30H121_ENDPOINT_COMPILE
+    boat_r30h19::BackupStatusCadence asyncBackupStatusCadence_;
+#endif
     boat_r30h19::StatusOutbox statusOutbox_; // Latest real status, never synthesized
 #if BOAT_R30H121_ENDPOINT_COMPILE
     flytec_r30h123::StatusService<RadioFrame> asyncPrimaryStatus_{asyncPrimaryOwner_,statusOutbox_};

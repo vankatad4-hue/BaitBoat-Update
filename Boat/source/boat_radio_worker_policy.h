@@ -224,20 +224,20 @@ public:
   priority_.service(busy,enabled,[&](TxPriority selected){
    if(selected==TxPriority::Stop){app_.stepStop(now,age,[&](const typename flytec_r30h118::Transport<Frame>::Request &r){
     return choosePriority(priority_.snapshot())==TxPriority::Stop?
-      flytec_r30h118::admissionResult(appAdmit(r)):A::Deferred;
+      flytec_r30h118::admissionResult(appAdmit(r)):A::Rejected;
    });return true;}
    if(!appClear||!hsClear)return false;
    app_.stepOrdinary(now,age,true,[&](const typename flytec_r30h118::Transport<Frame>::Request &r){
     // A stale advisory STOP mask must never admit an ordinary request.
     if(r.stop)return A::Rejected;
-    if(choosePriority(priority_.snapshot())!=selected)return A::Deferred;
+    if(choosePriority(priority_.snapshot())!=selected)return A::Rejected;
     return flytec_r30h118::admissionResult(appAdmit(r));
    });
    return true;
   },[&](){if(!appClear||!hsClear)return false;
   return handshake_.step(now,age,true,policy,[&](const typename HandshakeLane<Frame>::Request &r){
    return choosePriority(priority_.snapshot())==TxPriority::Handshake?
-     flytec_r30h118::admissionResult(hsAdmit(r)):A::Deferred;
+     flytec_r30h118::admissionResult(hsAdmit(r)):A::Rejected;
   });});
  }
 };

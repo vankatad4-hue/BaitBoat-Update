@@ -37,9 +37,17 @@ bool BoatDualRadioPort::sendHardwareTelemetry(const RadioDecodedPayload &status)
 }
 bool BoatDualRadioPort::sendHardwareTelemetry(const RadioDecodedPayload &status,uint32_t sampledAt){
  const uint32_t now=millis();
- if(sessionReady()&&backupFresh(now)&&status.kind==RADIO_PAYLOAD_STATUS){
-  if(status.stopState==1U)backupStatusOutbox_.offer(status,now);
-  else backupStatusOutbox_.reset();
+ if(status.kind==RADIO_PAYLOAD_STATUS){
+#if BOAT_R30H121_ENDPOINT_COMPILE
+  if(BOAT_R30H121_PHYSICAL_OWNER&&runtimeOwner_.worker()){
+   asyncBackupStatusCadence_.offer(backupStatusOutbox_,status,sampledAt,now,
+     sessionReady()&&backupFresh(now),asyncBackupStatus_.pending(),pendingBackupMissionFeedbackValid_);
+  }else
+#endif
+  if(sessionReady()&&backupFresh(now)){
+   if(status.stopState==1U)backupStatusOutbox_.offer(status,now);
+   else backupStatusOutbox_.reset();
+  }
  }
  if(!sessionReady()||!primaryFresh(now)){
   optionalDiagnostics_.discard();return false;
@@ -607,6 +615,7 @@ void BoatDualRadioPort::completeAsyncApplication(ManagedLink link,const flytec_r
 }
 bool BoatDualRadioPort::resetAsyncSession(uint8_t epoch){
  asyncPrimaryTx_.reset();asyncBackupTx_.reset();asyncTelemetry_.reset();
+ asyncBackupStatusCadence_.reset();
  const bool p=asyncPrimaryCycle_.resetSession(epoch);
  const bool b=asyncBackupCycle_.resetSession(epoch);
  return p&&b;
@@ -711,8 +720,12 @@ void BoatDualRadioPort::serviceAsyncOwner(ManagedLink link,uint32_t now,bool lin
   if(backup)asyncBackupTx_.cancel(asyncBackupOwner_);
   else{asyncPrimaryTx_.cancel(asyncPrimaryOwner_);asyncTelemetry_.reset();optionalDiagnostics_.discard();}
  }
- if(backup)asyncBackupCycle_.step(now,12000U,12000U,sessionReady(),linkTrusted,buildAck,buildStatus,verify,result,hsResult,ordinary);
- else asyncPrimaryCycle_.step(now,2500U,2500U,sessionReady(),linkTrusted,buildAck,buildStatus,verify,result,hsResult,ordinary);
+ if(backup){
+  // STOP ACK and stopped evidence lead; correlated mission feedback
+  // must not be blocked by non-stopped periodic snapshots.
+  asyncBackupStatusCadence_.suppressNonStopped(backupStatusOutbox_,pendingBackupMissionFeedbackValid_);
+  asyncBackupCycle_.step(now,12000U,12000U,sessionReady(),linkTrusted,buildAck,buildStatus,verify,result,hsResult,ordinary);
+ }else asyncPrimaryCycle_.step(now,2500U,2500U,sessionReady(),linkTrusted,buildAck,buildStatus,verify,result,hsResult,ordinary);
 }
 unsigned BoatDualRadioPort::drainAsyncRx(ManagedLink link,uint32_t now){
  // Deliberately unreachable until the legacy transmit boundary is migrated.
