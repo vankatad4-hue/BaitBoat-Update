@@ -7,6 +7,7 @@
 #include "remote_mission_tx_scope.h"
 #include "remote_mission_control_tx.h"
 #include "remote_backup_mission_control.h"
+#include "remote_recovery_probe_wire.h"
 // R30H-124F experimental Core 1 application seam. Sole generation owner.
 // Frames must already be authenticated/sealed by the application. Never
 // interpret queue admission, nRF ACK or E22 local readiness as Boat STOP.
@@ -94,6 +95,14 @@ public:
      (q.op!=MCTRL_PAUSE&&q.op!=MCTRL_CANCEL)||ttl>BackupMissionControl::TxLifetime)return Submit::Denied;
   return submitImpl(PhyLink::Backup,f,created,ttl,now,ticket,false,false,true);
  }
+ // Explicit, primary-only read-only recovery admission. STOP can revoke it.
+ Submit submitRecoveryProbe(const RadioFrame& f,uint32_t now,uint32_t& ticket,bool approved){
+  ticket=0;uint16_t sequence=0;
+  if(!owner_.worker()||!approved||!gate_.stopped()||f.type!=RADIO_MSG_LINK_PROBE||
+     f.sourceId!=1||f.destinationId!=2||f.flags||f.commandId||
+     !recoveryProbeDecode(f.payload,RecoveryProbeKind::Challenge,sequence)||sequence!=f.sequence)return Submit::Denied;
+  return submitImpl(PhyLink::Primary,f,now,100U,now,ticket,false,false,false,true);
+ }
  Submit submit(PhyLink link,const RadioFrame& f,uint32_t created,uint32_t ttl,uint32_t now,uint32_t& ticket){
   return submitImpl(link,f,created,ttl,now,ticket,false);
  }
@@ -149,7 +158,7 @@ public:
   return result;
  }
 private:
- Submit submitImpl(PhyLink link,const RadioFrame& f,uint32_t created,uint32_t ttl,uint32_t now,uint32_t& ticket,bool clear,bool prepare=false,bool mission=false){
+ Submit submitImpl(PhyLink link,const RadioFrame& f,uint32_t created,uint32_t ttl,uint32_t now,uint32_t& ticket,bool clear,bool prepare=false,bool mission=false,bool recovery=false){
   ticket=0;
   if(!owner_.worker()||!active_||!validLink(link)||f.sessionEpoch!=epoch_||
      !radioLinkFlagMatches(f.flags,link==PhyLink::Backup))return Submit::Denied;
@@ -164,7 +173,8 @@ private:
   if(f.type==RADIO_MSG_ACTION&&f.payload[0]==CMD_CLEAR_STOP&&!clear)return Submit::Denied;
   if(f.type==RADIO_MSG_MISSION_PREPARE&&!prepare)return Submit::Denied;
   if((f.type==RADIO_MSG_MISSION_CONTROL||f.type==RADIO_MSG_MISSION_STICKS)&&!mission)return Submit::Denied;
-  const bool critical=stop||safeHeartbeat||handshake||clear||prepare||mission;
+  if(f.type==RADIO_MSG_LINK_PROBE&&!recovery)return Submit::Denied;
+  const bool critical=stop||safeHeartbeat||handshake||clear||prepare||mission||recovery;
   if(gate_.stopped()&&!critical)return Submit::Denied;
   if(handoff_.fault(link)||nextTicket_==UINT32_MAX)return Submit::Fault;
   auto& s=slot(link);
@@ -222,7 +232,7 @@ private:
   if(stop)return Kind::Stop;
   switch(f.type){
    case RADIO_MSG_SESSION_HELLO:case RADIO_MSG_SESSION_PROOF:return Kind::Handshake;
-   case RADIO_MSG_HEARTBEAT:return Kind::Heartbeat;
+   case RADIO_MSG_HEARTBEAT:case RADIO_MSG_LINK_PROBE:return Kind::Heartbeat; // owner routes by messageType
    case RADIO_MSG_ACTION:case RADIO_MSG_CONTROL:return Kind::Ordinary;
    case RADIO_MSG_MISSION_PREPARE:case RADIO_MSG_MISSION_CONTROL:case RADIO_MSG_MISSION_STICKS:return Kind::Mission;
    default:return Kind::Unsupported;
