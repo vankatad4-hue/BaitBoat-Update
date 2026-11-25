@@ -1,7 +1,7 @@
 #pragma once
 #include "nrf24_link.h"
 #include "e22_uart_board_port.h"
-#include "r30h118_phy_adapters.h"
+#include "boat_radio_phy.h"
 #include "r30h120_phy_service.h"
 namespace flytec_r30h120 {
 // Construct and call only inside the physical worker task.

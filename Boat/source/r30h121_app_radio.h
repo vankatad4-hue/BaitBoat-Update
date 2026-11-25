@@ -1,6 +1,6 @@
 #pragma once
-#include "r30h118_transport.h"
-#include "r30h118_phy_events.h"
+#include "boat_radio_transport.h"
+#include "boat_radio_phy.h"
 #include "r30h120_handshake_lane.h"
 namespace flytec_r30h121 {
 using namespace flytec_r30h118;

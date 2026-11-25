@@ -1,4 +1,4 @@
-#include "r30h118_phy_adapters.h"
+#include "boat_radio_phy.h"
 #include <cassert>
 using namespace flytec_r30h118;
 struct Nrf {

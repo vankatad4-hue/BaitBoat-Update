@@ -1,7 +1,7 @@
 #pragma once
-#include "r30h118_transport.h"
+#include "boat_radio_transport.h"
 #include <atomic>
-#include "r30h118_phy_events.h"
+#include "boat_radio_phy.h"
 namespace flytec_r30h120 {
 // Owner-side priority selection: no lower class may bypass pending safety.
 // A busy PHY call already underway cannot be preempted.

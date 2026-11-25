@@ -1,11 +1,9 @@
 #if defined(FLYTEC_R30H118_DUAL_MOCK)
 #include <Arduino.h>
-#include "r30h118_phy_adapters.h"
-#include "r30h118_transport.h"
+#include "boat_radio_phy.h"
+#include "boat_radio_transport.h"
 #include "r30h120_phy_service.h"
 #include "r30h120_lifecycle.h"
-#include "r30h118_stop_retry.h"
-#include "r30h118_outcome_gate.h"
 using namespace flytec_r30h118;
 namespace {
 struct Nrf {

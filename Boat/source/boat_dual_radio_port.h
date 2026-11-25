@@ -34,17 +34,14 @@ static_assert(BOAT_R30H9_MARKER_GPIO == -1 && BOAT_R30H9_GPIO_OUTPUT_SIGNED == 0
 #include "radio_session_platform.h"
 #include "boat_session_recovery.h"
 #include "boat_handshake_reply.h"
-#include "r30h123_runtime_owner.h"
+#include "boat_radio_owner.h"
 
 // R30H-121E: compile-only application endpoint seam; never starts a PHY task.
 #ifndef BOAT_R30H121_ENDPOINT_COMPILE
 #define BOAT_R30H121_ENDPOINT_COMPILE 0
 #endif
 #if BOAT_R30H121_ENDPOINT_COMPILE
-#include "r30h123_owner_cycle.h"
-#include "r30h123_owner_rx.h"
-#include "r30h123_ordinary_tx.h"
-#include "r30h123_telemetry_slots.h"
+#include "boat_radio_services.h"
 #include "r30h120_physical_task.h"
 #endif
 
