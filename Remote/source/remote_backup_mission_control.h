@@ -14,6 +14,10 @@ class BackupMissionControl {
 public:
  enum class State:uint8_t{Unbound,Idle,Pending,Accepted,Rejected,Unknown};
  static constexpr uint32_t Deadline=12000U,Gap=3000U,TxLifetime=250U;
+ // Admission remains 250 ms. Allow the E22's 2 s local TX watchdog plus
+ // 100 ms polling/dispatch margin after the latest possible admission.
+ // This is a provisional software observation budget, not RF proof.
+ static constexpr uint32_t CompletionGrace=2100U;
  State state()const{return state_;}
  uint16_t transaction()const{return transaction_;}
  uint16_t requestHighWater()const{return high_;}
@@ -33,7 +37,7 @@ public:
       (attempts_>=3&&!inFlight()&&uint32_t(now-offeredAt_)>=Gap)))state_=State::Unknown;
   // Local reservation expiry cannot erase an already authenticated peer result.
   // Keep the ticket until correlated completion/revocation; it still blocks new work.
-  if(state_==State::Pending&&inFlight()&&uint32_t(now-offeredAt_)>=ttl_)state_=State::Unknown;
+  if(state_==State::Pending&&inFlight()&&uint32_t(now-offeredAt_)>=ttl_+CompletionGrace)state_=State::Unknown;
   return state_!=State::Unknown;
  }
  uint32_t lifetime(uint32_t now)const{
