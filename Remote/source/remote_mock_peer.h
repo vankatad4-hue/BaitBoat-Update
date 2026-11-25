@@ -6,6 +6,7 @@
 #include "mission_control_wire.h"
 #include "mission_stick.h"
 #include "mission_neutral_wire.h"
+#include "remote_recovery_probe_wire.h"
 // Test-only Boat peer. No hardware, motor outputs, GPIO, provisioned keys.
 namespace flytec_rtos {
 class RemoteMockPeer {
@@ -25,6 +26,13 @@ public:
    memcpy(response.payload,p.payload,8);response.flags=flags;return radio_frameSeal(response,root_);
   }
   if(!session_.established()||f.sessionEpoch!=1||!radio_frameVerify(f,key_)||!rx_.accept(f.sequence))return false;
+  // Recovery probes are read-only and primary-only, after HMAC and replay checks.
+  if(f.type==RADIO_MSG_LINK_PROBE){
+   uint16_t echoed=0;
+   if(backup||f.commandId||!recoveryProbeDecode(f.payload,RecoveryProbeKind::Challenge,echoed)||echoed!=f.sequence)return false;
+   radio_frameInit(response,RADIO_MSG_LINK_PROBE,2,1,++sequence_,0,now,1);
+   return recoveryProbeEncode(RecoveryProbeKind::Echo,echoed,response.payload)&&radio_frameSeal(response,key_);
+  }
   if(f.type==RADIO_MSG_MISSION_PREPARE){
    const uint16_t id=uint16_t(f.payload[1])|(uint16_t(f.payload[2])<<8);
    if(backup||!id||id!=f.commandId||f.payload[0]<MISSION_BEGIN||f.payload[0]>MISSION_CANCEL)return false;
