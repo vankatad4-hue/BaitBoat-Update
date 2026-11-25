@@ -75,6 +75,7 @@ on:
       - 'Boat/source/lora_link_policy.h'
       - 'Remote/tests/lora_adaptive_admission_test.cpp'
       - 'Remote/tests/lora_owner_priority_test.cpp'
+      - 'Remote/tests/lora_uart_transition_test.cpp'
       - 'Remote/tests/r30h124w_mission_scope.cpp'
       - 'Remote/tests/r30h124w_scope_generation.cpp'
       - 'Remote/tests/r30h124w_scoped_transport.cpp'
@@ -265,3 +266,5 @@ jobs:
           timeout 10s /tmp/lora_admission_boat
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -Itests/r30h20_stubs -IRemote/source Remote/source/radio_protocol.cpp Remote/source/radio_command_codec.cpp Remote/tests/lora_owner_priority_test.cpp -lcrypto -o /tmp/lora_owner_priority
           timeout 10s /tmp/lora_owner_priority
+          g++ -std=c++17 -Wall -Wextra -Werror -ICommon/source Remote/tests/lora_uart_transition_test.cpp -o /tmp/lora_uart_transition
+          timeout 10s /tmp/lora_uart_transition

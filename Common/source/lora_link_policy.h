@@ -169,3 +169,99 @@ static_assert(E22UartProfile::frameWireMs(115200)==3,"32-byte UART candidate");
 static_assert((E22UartProfile::BaselineReg0&0x1f)==(E22UartProfile::CandidateReg0&0x1f),"Only UART baud bits change");
 }
 #endif
+
+#ifndef FLYTEC_E22_UART_TRANSITION_SHARED_H
+#define FLYTEC_E22_UART_TRANSITION_SHARED_H
+// Commissioning-only state machine. The port must implement bounded operations
+// and prove isolation, exclusive ownership and complete UART drain. No API in
+// this class grants application TX permission, including on successful rollback.
+namespace flytec_rtos {
+struct E22CommissioningPermit {
+ bool exactModule=false,offlineOwner=false,rfProfileApproved=false,hostRatesVerified=false;
+ bool isolatedAndDrained=false;
+ bool valid()const{return exactModule&&offlineOwner&&rfProfileApproved&&hostRatesVerified&&isolatedAndDrained;}
+};
+// Exact integer divisor only, for audited crystal and divide-by-one MCR.
+inline uint16_t sc16CommissioningDivisor(uint32_t crystal,uint32_t baud){
+ if(baud!=E22UartProfile::ConfigBaud&&baud!=E22UartProfile::CandidateBaud)return 0;
+ const uint32_t den=16U*baud;
+ if(!crystal||crystal%den||crystal/den>65535U)return 0;
+ return uint16_t(crystal/den);
+}
+class E22UartTransition {
+public:
+ enum class State:uint8_t{Idle,ConfigMode,ConfigBaud,ReadBefore,WriteTemporary,ReadAfter,RuntimeBaud,NormalMode,VerifyRx,VerifiedLocked,FaultLocked};
+ static constexpr uint32_t StepLimit=500U,TotalLimit=5000U;
+ E22UartTransition()=default;
+ E22UartTransition(const E22UartTransition&)=delete;
+ E22UartTransition& operator=(const E22UartTransition&)=delete;
+ State state()const{return state_;}
+ uint32_t verifiedBaud()const{return state_==State::VerifiedLocked?targetBaud_:0U;}
+ // Explicit offline recovery is allowed after a failed transition or reboot.
+ // It never writes a blind fallback: both baseline and candidate full profiles
+ // must be recognized by the independent pre-write readback.
+ template<class Port> bool begin(Port& p,const E22CommissioningPermit& permit,uint32_t now,bool recoverBaseline=false){
+  if(state_!=State::Idle&&(!recoverBaseline||(state_!=State::FaultLocked&&state_!=State::VerifiedLocked)))return false;
+  if(!permit.valid()||!p.lockedAndIsolated())return false;
+  targetBaud_=recoverBaseline?E22UartProfile::BaselineBaud:E22UartProfile::CandidateBaud;
+  port_=&p;recovering_=recoverBaseline;started_=now;state_=State::ConfigMode;return true;
+ }
+ // One bounded commissioning operation per call; never run from flight loop.
+ // exchangeExact must verify complete response length, drained transmitter,
+ // absence of extra bytes, and a fresh bounded reply (not a cached echo).
+ template<class Port> bool step(Port& p,uint32_t now){
+  if(state_==State::Idle||state_==State::FaultLocked||state_==State::VerifiedLocked)return false;
+  if(port_!=&p||uint32_t(now-started_)>=TotalLimit||!p.lockedAndIsolated())return fail();
+  const uint8_t target=targetBaud_==E22UartProfile::CandidateBaud?E22UartProfile::CandidateReg0:E22UartProfile::BaselineReg0;
+  switch(state_){
+   case State::ConfigMode:
+    if(!p.modeVerified(true,StepLimit))return fail();
+    state_=State::ConfigBaud;break;
+   case State::ConfigBaud:
+    if(!p.baudVerified(E22UartProfile::ConfigBaud,StepLimit))return fail();
+    state_=State::ReadBefore;break;
+   case State::ReadBefore:{
+    uint8_t response[12]{};
+    if(!readProfile(p,response)||(!matches(response,E22UartProfile::BaselineReg0)&&
+       !(recovering_&&matches(response,E22UartProfile::CandidateReg0))))return fail();
+    state_=response[6]==target?State::ReadAfter:State::WriteTemporary;break;
+   }
+   case State::WriteTemporary:{
+    // C2: volatile UART register only; never touch RF settings or flash.
+    const uint8_t cmd[]={0xC2,0x03,0x01,target};uint8_t response[4]{};
+    if(!p.exchangeExact(cmd,sizeof(cmd),response,sizeof(response),StepLimit)||
+       response[0]!=0xC1||response[1]!=0x03||response[2]!=0x01||response[3]!=target)return fail();
+    state_=State::ReadAfter;break;
+   }
+   case State::ReadAfter:{
+    uint8_t response[12]{};if(!readProfile(p,response)||!matches(response,target))return fail();
+    state_=State::RuntimeBaud;break;
+   }
+   case State::RuntimeBaud:
+    if(!p.baudVerified(targetBaud_,StepLimit))return fail();
+    state_=State::NormalMode;break;
+   case State::NormalMode:
+    if(!p.modeVerified(false,StepLimit))return fail();
+    state_=State::VerifyRx;break;
+   case State::VerifyRx:
+    // Fixture/peer receive evidence only; no outgoing test RF frame here.
+    if(!p.receiveFixtureVerified(targetBaud_,StepLimit))return fail();
+    state_=State::VerifiedLocked;break;
+   default:return fail();
+  }
+  return p.lockedAndIsolated()?true:fail();
+ }
+private:
+ template<class Port> static bool readProfile(Port& p,uint8_t (&out)[12]){
+  const uint8_t cmd[]={0xC1,0x00,0x09};return p.exchangeExact(cmd,sizeof(cmd),out,sizeof(out),StepLimit);
+ }
+ static bool matches(const uint8_t (&r)[12],uint8_t reg0){
+  const uint8_t expected[]={0xC1,0x00,0x09,0x00,0x00,0x00,reg0,0xC3,0x12,0x00,0x00,0x00};
+  for(unsigned i=0;i<sizeof(expected);++i)if(r[i]!=expected[i])return false;
+  return true;
+ }
+ bool fail(){state_=State::FaultLocked;return false;}
+ State state_=State::Idle;uint32_t started_=0,targetBaud_=0;bool recovering_=false;const void* port_=nullptr;
+};
+}
+#endif // FLYTEC_E22_UART_TRANSITION_SHARED_H
