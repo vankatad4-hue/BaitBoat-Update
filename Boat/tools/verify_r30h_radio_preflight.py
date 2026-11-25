@@ -20,12 +20,14 @@ REQUIRED = (
     "Remote/source/radio_hw_config.h",
     "Remote/source/e22_uart_link.cpp",
     "Remote/source/e22_uart_link.h",
+    "Remote/source/lora_link_policy.h",
     "Boat/source/boat_radio_hw_config.h",
     "Boat/source/boat_dual_radio_port.cpp",
     "Boat/source/boat_dual_radio_port.h",
     "Boat/source/boat_r30h2_local_trace.h",
     "Boat/source/e22_uart_link.cpp",
     "Boat/source/e22_uart_link.h",
+    "Boat/source/lora_link_policy.h",
     "Boat/source/firmware/Flytec_Boat.ino",
     "Boat/source/tracker_gnss.h",
     "Boat/source/gnss_utc_sync.h",
@@ -169,9 +171,18 @@ def verify(source):
             errors.append(f"Boat/Remote E22 {key} differs or is malformed")
         elif a[1:3] != [0, 9] or a[6:9] != [0x67, 0xC3, 0x12]:
             errors.append(f"E22 {key} provisional 9600/62.5k/868.125 profile drift")
-    for code in (source["Boat/source/e22_uart_link.h"], source["Remote/source/e22_uart_link.h"]):
-        if "EST_AIRTIME_MS=25" not in code:
-            errors.append("E22 provisional airtime constant changed; re-audit regulatory budget")
+    # Shared profile is now canonical within each standalone endpoint package.
+    # Verify both the alias and the unchanged provisional numerical budget.
+    for endpoint in ("Boat", "Remote"):
+        header = f"{endpoint}/source/e22_uart_link.h"
+        profile = f"{endpoint}/source/lora_link_policy.h"
+        need(header, '#include "lora_link_policy.h"')
+        need(header, "EST_AIRTIME_MS=flytec_rtos::LoRaAirtimeProfile::BaselinePacket;")
+        need(header, "MAX_AIRTIME_PER_HOUR_MS=flytec_rtos::LoRaAirtimeProfile::BaselineHour;")
+        need(profile, "BaselineHour=36000U,BaselinePacket=25U,BaselineGap=3000U;")
+        need(profile, "bool commissioned=false;")
+    if source["Boat/source/lora_link_policy.h"] != source["Remote/source/lora_link_policy.h"]:
+        errors.append("Boat/Remote LoRa policy copies differ")
     worksheet = list(csv.DictReader(io.StringIO(source["Boat/docs/BOAT_R30H_1_RF_MODULE_SIGNOFF.csv"])))
     if len(worksheet) != 22 or len({r["Gate_ID"] for r in worksheet}) != 22:
         errors.append("R30H-1 physical signoff must retain 22 unique items")
