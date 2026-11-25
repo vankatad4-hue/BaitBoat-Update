@@ -72,6 +72,11 @@ on:
       - 'Remote/tests/r30h124w85_airtime.cpp'
       - 'Remote/source/lora_airtime_policy.h'
       - 'Boat/source/lora_airtime_policy.h'
+      - 'Boat/source/e22_adaptive_admission.h'
+      - 'Remote/source/e22_adaptive_admission.h'
+      - 'Boat/source/e22_uart_profile.h'
+      - 'Remote/source/e22_uart_profile.h'
+      - 'Remote/tests/r30h124w85b_admission.cpp'
       - 'Remote/tests/r30h124w_mission_scope.cpp'
       - 'Remote/tests/r30h124w_scope_generation.cpp'
       - 'Remote/tests/r30h124w_scoped_transport.cpp'
@@ -254,3 +259,9 @@ jobs:
           timeout 10s /tmp/lora_airtime_remote
           g++ -std=c++17 -Wall -Wextra -Werror -IBoat/source Remote/tests/r30h124w85_airtime.cpp -o /tmp/lora_airtime_boat
           timeout 10s /tmp/lora_airtime_boat
+          cmp Boat/source/e22_adaptive_admission.h Remote/source/e22_adaptive_admission.h
+          cmp Boat/source/e22_uart_profile.h Remote/source/e22_uart_profile.h
+          g++ -std=c++17 -Wall -Wextra -Werror -IRemote/source Remote/tests/r30h124w85b_admission.cpp -o /tmp/lora_admission_remote
+          timeout 10s /tmp/lora_admission_remote
+          g++ -std=c++17 -Wall -Wextra -Werror -IBoat/source Remote/tests/r30h124w85b_admission.cpp -o /tmp/lora_admission_boat
+          timeout 10s /tmp/lora_admission_boat
