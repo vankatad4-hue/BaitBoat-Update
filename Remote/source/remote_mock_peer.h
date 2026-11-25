@@ -12,6 +12,7 @@ class RemoteMockPeer {
 public:
  explicit RemoteMockPeer(SessionHmac mac):mac_(mac){}
  const uint8_t* root()const{return root_;}
+ void mockPrimaryUnavailable(bool unavailable){primaryUnavailable_=unavailable;}
  bool exchange(const RadioFrame& f,RadioFrame& response,bool backup,uint32_t now){
   const uint8_t flags=backup?RADIO_FLAG_BACKUP_LINK:0;
   if(f.sourceId!=1||f.destinationId!=2||f.flags!=flags)return false;
@@ -43,7 +44,8 @@ public:
   }
   if(f.type==RADIO_MSG_MISSION_CONTROL){
    MissionControlRequest q{};
-   if(backup||!missionControlDecode(f.payload,q)||q.transaction!=missionId_||f.commandId!=missionId_||q.request<lastRequest_)return false;
+   if(!missionControlDecode(f.payload,q)||!missionId_||q.transaction!=missionId_||f.commandId!=missionId_||q.request<lastRequest_)return false;
+   if(backup&&(!primaryUnavailable_||(q.op!=MCTRL_PAUSE&&q.op!=MCTRL_CANCEL)))return false;
    if(q.request==lastRequest_){if(q.op!=lastOp_)return false;}
    else{
     bool ok=false;
@@ -56,6 +58,7 @@ public:
     lastRequest_=q.request;lastOp_=q.op;lastResult_=ok?MC_ACCEPTED:MC_REJECTED;
    }
    radio_frameInit(response,RADIO_MSG_MISSION_FEEDBACK,2,1,++sequence_,missionId_,now,1);
+   response.flags=flags;
    return missionFeedbackEncode({missionId_,phase_,uint8_t(q.op),q.request,lastResult_},response.payload)&&radio_frameSeal(response,key_);
   }
   if(f.type==RADIO_MSG_ACTION&&f.payload[0]==CMD_EMERGENCY_STOP){
@@ -93,10 +96,11 @@ public:
  }
  uint16_t lastStop()const{return lastStop_;}
  unsigned mockReleases()const{return mockReleases_;}
- bool missionStatus(RadioFrame& f,uint32_t now){
+ bool missionStatus(RadioFrame& f,uint32_t now,bool backup=false){
   if(!missionId_)return false;
   if(phase_==MC_PREPARED&&uint32_t(now-stageAt_)>=10000U)phase_=MC_ABORTED;
   radio_frameInit(f,RADIO_MSG_MISSION_FEEDBACK,2,1,++sequence_,missionId_,now,1);
+  f.flags=backup?RADIO_FLAG_BACKUP_LINK:0;
   return missionFeedbackEncode({missionId_,phase_,0,0,MC_STATUS},f.payload)&&radio_frameSeal(f,key_);
  }
  bool prepared(MissionPlan& out,uint32_t now)const{return mission_.getPrepared(out,now);}
@@ -105,6 +109,6 @@ private:
  MissionStickLease lease_;uint16_t missionId_=0,lastRequest_=0;uint32_t stageAt_=0;
  MissionControlPhase phase_=MC_IDLE;MissionControlOp lastOp_=MCTRL_CANCEL;MissionControlResult lastResult_=MC_STATUS;
  SessionHmac mac_;SessionHandshake session_;RadioSessionCounter rx_;MissionAssembler mission_;
- uint8_t root_[32]{42},key_[32]{};uint16_t sequence_=0,lastStop_=0;bool stopped_=false;unsigned mockReleases_=0;
+ uint8_t root_[32]{42},key_[32]{};uint16_t sequence_=0,lastStop_=0;bool stopped_=false,primaryUnavailable_=false;unsigned mockReleases_=0;
 };
 }
