@@ -15,6 +15,7 @@ public:
  // Zero or unapproved evidence disables all transmissions through this seam.
  E22AdaptiveAdmission(Driver& d,LoRaAirtimePolicy& policy,uint32_t tailMs,bool approved):
   driver_(d),policy_(policy),tailMs_(tailMs),approved_(approved&&tailMs&&tailMs<60000U){}
+ bool belongsTo(const Driver& d)const{return &driver_==&d;}
  E22AdaptiveAdmission(const E22AdaptiveAdmission&)=delete;
  E22AdaptiveAdmission& operator=(const E22AdaptiveAdmission&)=delete;
  template<class Frame> Result start(const Frame& frame,Traffic traffic,uint32_t now){
