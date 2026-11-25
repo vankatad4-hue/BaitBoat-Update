@@ -14,9 +14,13 @@ public:
   if(!matches(epoch,generation)||!sequence||sequence<=high_)return false;
   expire(now);if(pending_)return false;high_=sequence;offeredAt_=now;pending_=true;return true;
  }
+ bool awaiting(uint32_t now)const{return pending_&&uint32_t(now-offeredAt_)<ReplyAge;}
+ bool matchesEcho(uint16_t echoed,uint32_t captured,uint32_t now,uint8_t epoch,uint32_t generation)const{
+  return matches(epoch,generation)&&awaiting(now)&&echoed==high_&&
+   uint32_t(now-captured)<100U&&uint32_t(captured-offeredAt_)<ReplyAge;
+ }
  bool observe(uint16_t echoed,uint32_t captured,uint32_t now,uint8_t epoch,uint32_t generation,bool authenticatedPrimary){
-  if(!authenticatedPrimary||!matches(epoch,generation)||!pending_||echoed!=high_||
-     uint32_t(now-captured)>=100U||uint32_t(captured-offeredAt_)>=ReplyAge||uint32_t(now-offeredAt_)>=ReplyAge)return false;
+  if(!authenticatedPrimary||!matchesEcho(echoed,captured,now,epoch,generation))return false;
   pending_=false;expire(now);
   if(!count_)first_=now;
   if(count_<255)++count_;
