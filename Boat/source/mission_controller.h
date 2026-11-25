@@ -33,7 +33,12 @@ public:
    ack={r.transaction,phase_,lastOp_,lastRequest_,lastResult_};return true;
   }
   bool accepted=false;
-  if(r.op==MCTRL_CANCEL&&!in.batteryLow){engine_.abort();phase_=MC_ABORTED;accepted=true;}
+  // Discrete mission PAUSE/CANCEL must not defeat a local safety diversion.
+  // Emergency STOP remains a separate authenticated action, not this path.
+  if((r.op==MCTRL_PAUSE||r.op==MCTRL_CANCEL)&&(in.batteryLow||in.autonomousRth||diverted_)){
+   accepted=false;
+  }
+  else if(r.op==MCTRL_CANCEL){engine_.abort();phase_=MC_ABORTED;accepted=true;}
   else if(appReady&&!in.stopActive&&(in.primaryFresh||
           (r.op==MCTRL_PAUSE&&in.backupFresh))){
    switch(r.op){

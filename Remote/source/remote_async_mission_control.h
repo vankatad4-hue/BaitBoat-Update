@@ -16,6 +16,7 @@ public:
  State state()const{return state_;}
  bool inFlight()const{return ticket_!=0;}
  uint16_t transaction()const{return transaction_;}
+ uint16_t requestHighWater()const{return nextId_;} // includes ambiguous/reserved IDs
  MissionControlPhase phase()const{return phase_;}
  uint8_t reservations()const{return attempts_;}
  bool fresh(uint32_t now)const{return seen_&&uint32_t(now-at_)<StatusAge;}
