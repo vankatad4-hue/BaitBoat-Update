@@ -1,5 +1,6 @@
 #pragma once
 #include "remote_async_tx.h"
+#include "lora_airtime_policy.h"
 #include "remote_backup_mission_control.h"
 #include "radio_command_codec.h"
 #include "r30h17_stop_confirmation_gate.h"
@@ -11,8 +12,8 @@ namespace flytec_rtos {
 class RemoteAsyncControl {
 public:
  static constexpr uint32_t PrimaryLifetime=2500U, BackupLifetime=15000U;
- static constexpr uint32_t PrimaryGap=150U, BackupGap=3000U;
- static constexpr uint32_t PrimaryHeartbeat=100U, BackupHeartbeat=3000U;
+ static constexpr uint32_t PrimaryGap=150U, BackupGap=LoRaAirtimeProfile::BaselineGap;
+ static constexpr uint32_t PrimaryHeartbeat=100U, BackupHeartbeat=LoRaAirtimeProfile::BaselineGap;
  static constexpr unsigned PrimaryBudget=8U;
  RemoteAsyncControl(RemoteRadioOwner& owner,RemoteAsyncTx& tx):owner_(owner),tx_(tx){}
  RemoteAsyncControl(const RemoteAsyncControl&)=delete;
