@@ -26,7 +26,8 @@ public:
   return true;
  }
  bool tick(uint32_t now,bool primaryFault=false,bool backupFault=false){
-  if(!owner_.worker()||retired_)return false;
+  if(!remoteI2cAllowed()||retired_)return false;
+  if(!owner_.worker()){requestStop();return false;}
   if((primaryFault||handoff_.fault(PhyLink::Primary))&&
      (backupFault||handoff_.fault(PhyLink::Backup))){
    requestStop();return false;
@@ -36,15 +37,16 @@ public:
  }
  bool permit()const{return owner_.worker()&&!retired_&&runtime_.permit();}
  void requestStop(){
-  if(!owner_.worker()||retired_)return;
+  if(!remoteI2cAllowed()||!attempted_)return;
   retireApplication();runtime_.requestStop();
  }
  bool exited()const{return runtime_.exited();}
 private:
  static void retireThunk(void* p){static_cast<RemoteExclusiveRuntime*>(p)->retireApplication();}
  void retireApplication(){
-  if(retired_||!owner_.worker())return;
+  if(retired_)return;
   retired_=true;
+  if(!owner_.worker())return; // externally revoked; still stop worker in requestStop
   revoke_(context_); // revoke TX/session and application authority first
   owner_.retire();
  }

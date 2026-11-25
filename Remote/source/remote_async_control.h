@@ -69,6 +69,28 @@ public:
   if(!tx_.cancelStop(stopId_)){invalidate(now);return false;}
   primary_=Pending{};backup_=Pending{};confirmed_=true;return true;
  }
+ // The application must supply independently validated CLEAR_STOP evidence.
+ // Rollover revokes pending heartbeat reservations; retain backup pacing.
+ bool rearmAfterClear(bool authorized,uint32_t now){
+  if(!owner_.worker()||!active_||!confirmed_||!authorized)return false;
+  if(backup_.ticket)markBackup(now);
+  if(!tx_.rearm(true))return false;
+  primary_=Pending{};backup_=Pending{};stopId_=0;confirmed_=false;backupConfirmed_=false;
+  primaryGate_.reset();backupGate_.reset();lastPrimary_=now-PrimaryHeartbeat;return true;
+ }
+ bool inhibitOrdinary(uint32_t now){
+  if(!owner_.worker()||!active_)return false;
+  if(backup_.ticket)markBackup(now);
+  const bool ok=tx_.inhibitSessionTraffic();
+  primary_=Pending{};backup_=Pending{};stopId_=0;confirmed_=backupConfirmed_=false;
+  primaryGate_.reset();backupGate_.reset();lastPrimary_=now-PrimaryHeartbeat;
+  if(!ok)active_=false;
+  return ok;
+ }
+ bool ordinaryGap(uint32_t now)const{
+  return owner_.worker()&&active_&&(!stopId_||confirmed_)&&!primary_.ticket&&
+   !tx_.pending(PhyLink::Primary)&&uint32_t(now-lastPrimary_)<PrimaryHeartbeat;
+ }
  bool backupConfirmed()const{return owner_.worker()&&active_&&backupConfirmed_;}
  bool confirmed()const{return owner_.worker()&&active_&&confirmed_;}
  unsigned primaryReservations()const{return owner_.worker()?attempts_:0;}

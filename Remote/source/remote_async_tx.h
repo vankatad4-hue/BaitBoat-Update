@@ -65,7 +65,33 @@ public:
   if(!gate_.rearm(generation_+1,true))return false;
   ++generation_;stopId_=0;clearSlots();return true;
  }
+ // Keep the authenticated session for heartbeat/STOP, revoke both old TX
+ // generations. This intentionally cancels backup work too; the owner must
+ // preserve its conservative cooldown. No automatic rearm.
+ bool inhibitSessionTraffic(){
+  if(!owner_.worker()||!active_||!epoch_)return false;
+  stopId_=0;clearSlots();
+  if(!advanceStop()){active_=false;return false;}
+  return true;
+ }
  Submit submit(PhyLink link,const RadioFrame& f,uint32_t created,uint32_t ttl,uint32_t now,uint32_t& ticket){
+  return submitImpl(link,f,created,ttl,now,ticket,false);
+ }
+ // One explicitly authorized, primary-only clear request per stopped
+ // generation. Critical admission is scoped to this immutable zero-motion
+ // frame; normal submit cannot bypass STOP or submit CLEAR_STOP.
+ Submit submitClear(const RadioFrame& f,uint32_t created,uint32_t ttl,uint32_t now,uint32_t& ticket,bool approved){
+  ticket=0;
+  if(!owner_.worker()||!approved||!gate_.stopped()||stopId_||clearUsed_||
+     f.type!=RADIO_MSG_ACTION||f.sourceId!=1||f.destinationId!=2||!f.sequence||!f.commandId||
+     f.payload[0]!=CMD_CLEAR_STOP||ttl>100U)return Submit::Denied;
+  for(unsigned i=1;i<8;++i)if(f.payload[i])return Submit::Denied;
+  const auto result=submitImpl(PhyLink::Primary,f,created,ttl,now,ticket,true);
+  if(result==Submit::Queued)clearUsed_=true;
+  return result;
+ }
+private:
+ Submit submitImpl(PhyLink link,const RadioFrame& f,uint32_t created,uint32_t ttl,uint32_t now,uint32_t& ticket,bool clear){
   ticket=0;
   if(!owner_.worker()||!active_||!validLink(link)||f.sessionEpoch!=epoch_||
      !radioLinkFlagMatches(f.flags,link==PhyLink::Backup))return Submit::Denied;
@@ -77,7 +103,8 @@ public:
   const bool stop=f.type==RADIO_MSG_ACTION&&f.payload[0]==CMD_EMERGENCY_STOP;
   if(stop&&(!stopId_||f.commandId!=stopId_||!gate_.stopped()))return Submit::Denied;
   const bool safeHeartbeat=f.type==RADIO_MSG_HEARTBEAT&&f.commandId==0;
-  const bool critical=stop||safeHeartbeat||handshake;
+  if(f.type==RADIO_MSG_ACTION&&f.payload[0]==CMD_CLEAR_STOP&&!clear)return Submit::Denied;
+  const bool critical=stop||safeHeartbeat||handshake||clear;
   if(gate_.stopped()&&!critical)return Submit::Denied;
   if(handoff_.fault(link)||nextTicket_==UINT32_MAX)return Submit::Fault;
   auto& s=slot(link);
@@ -90,6 +117,7 @@ public:
   if(!queued)return Submit::Fault;
   s.used=true;s.request=r;s.stop=stop;ticket=r.ticket;return Submit::Queued;
  }
+public:
  uint32_t generation()const{return owner_.worker()?generation_:0;}
  bool pending(PhyLink link)const{return owner_.worker()&&validLink(link)&&(link==PhyLink::Primary?primary_.used:backup_.used);}
  bool linkFault(PhyLink link)const{return !owner_.worker()||!validLink(link)||handoff_.fault(link);}
@@ -117,7 +145,7 @@ private:
  struct Slot{TxRequest request{};bool used=false,stop=false;};
  static bool validLink(PhyLink l){return l==PhyLink::Primary||l==PhyLink::Backup;}
  Slot& slot(PhyLink l){return l==PhyLink::Primary?primary_:backup_;}
- void clearSlots(){primary_=Slot{};backup_=Slot{};}
+ void clearSlots(){primary_=Slot{};backup_=Slot{};clearUsed_=false;}
  bool advanceStop(){
   if(generation_==UINT32_MAX){gate_.latchStop(generation_);return false;}
   if(!gate_.latchStop(generation_+1))return false;
@@ -146,6 +174,6 @@ private:
  RemoteRadioOwner& owner_;RadioFrameHandoff& handoff_;TxGenerationGate& gate_;
  Slot primary_,backup_;
  uint32_t generation_=0,nextTicket_=0;
- uint16_t stopId_=0;uint8_t epoch_=0;bool active_=false;
+ uint16_t stopId_=0;uint8_t epoch_=0;bool active_=false,clearUsed_=false;
 };
 }

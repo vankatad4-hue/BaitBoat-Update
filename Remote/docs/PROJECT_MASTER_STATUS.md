@@ -905,3 +905,14 @@ Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged. Physi
 - Resume R30H-124Q: implement scoped primary CLEAR_STOP/rearm and primary-only in-flight authority revocation with STOP/heartbeat coordination; bind producer to authenticated mock, real codec and ACK tracker; run full F/G/H/J/O/P tests and PlatformIO. Then migrate mission transactions. Preserve production activation lock and no hardware changes.
 
 - Local test follow-up: all four new code/test files match the committed blob SHA-1, and both tests passed again with retrieved repository declaration headers (boat_commands.h, radio_protocol.h and Arduino host stub hashes matched; manually copied boat_state.h hash did not match, so this is not a byte-exact full dependency test). Mock encoder/transport remain in use. CI status empty; no target or integrated runtime PASS claimed.
+
+## Active continuation — R30H-124Q (2026-11-25)
+
+Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged; physical worker activation/upload locked; production remains Legacy-only.
+
+- Scoped primary CLEAR_STOP admission only once per stopped generation, zero-motion authenticated frame supplied by owner, 100 ms TX TTL. Normal submit cannot bypass STOP. Re-arm requires matching primary EXECUTED CLEAR_STOP ACK and strictly later fresh released safe STATUS, neutral stationary authorization and 1500 ms deadline. No local completion grants movement.
+- Inhibit ordinary traffic on loss of authority using global generation revocation (also cancels backup reservations; cooldown preserved); authenticated heartbeat/STOP session can remain. Isolated mock now binds ordinary producer, real codec and ACK tracker, simulates explicit neutral input and simulated release execution. No live joystick, actual motors, or production permission. Actual Boat SET_MODE(MANUAL) currently rejected by its application; mock deliberately reports rejection. Production integration deferred.
+- Exclusive Remote runtime requests stop if its application owner retired externally; worker join remains separate.
+- Local clear-gate regression PASS with g++ C++17 -Wall -Wextra -Werror and timeout 10s; header blob 61f076add6ca419395efd1ae7f8ace747c817c0c, test b76d06ff22404fadf19e8e4d61e0488c7121b0b5 (readback verify). New full authenticated ordinary regression added; NOT_RUN. Existing full F/G/H/J/O/P integration and target builds remain unverified; direct Git DNS failure reproduced, no PlatformIO installed. All other physical tests NOT_RUN.
+- Next R30H-124R: run integrated Q/J/F/G/H/I regressions and fix failures; test revocation on primary loss with backup healthy, heartbeat deadline and late clear completion; bind real application authorization/neutral and lifecycle without enabling workers, clarify manual-mode semantics, then migrate mission TX.
+
