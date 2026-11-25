@@ -78,6 +78,13 @@ public:
   primary_=Pending{};backup_=Pending{};stopId_=0;confirmed_=false;backupConfirmed_=false;
   primaryGate_.reset();backupGate_.reset();lastPrimary_=now-PrimaryHeartbeat;return true;
  }
+ // Mission-only authorization: the normal transport latch remains closed.
+ // Caller has independently validated EXECUTED CLEAR and fresh released STATUS.
+ bool confirmMissionClear(uint16_t transaction,uint16_t command,bool authorized){
+  if(!owner_.worker()||!active_||!confirmed_||!authorized||!tx_.confirmMissionClear(transaction,command,true))return false;
+  stopId_=0;confirmed_=false;backupConfirmed_=false;primaryGate_.reset();backupGate_.reset();
+  return true; // outstanding heartbeat tickets and backup spacing unchanged
+ }
  bool inhibitOrdinary(uint32_t now){
   if(!owner_.worker()||!active_)return false;
   if(backup_.ticket)markBackup(now);

@@ -53,6 +53,11 @@ on:
       - 'Remote/tests/r30h124t_prepare_tx.cpp'
       - 'Remote/tests/r30h124u_handoff.cpp'
       - 'Remote/source/remote_async_mission_control.h'
+      - 'Remote/source/remote_mission_tx_scope.h'
+      - 'Remote/source/remote_mission_control_tx.h'
+      - 'Remote/tests/r30h124w_mission_scope.cpp'
+      - 'Remote/tests/r30h124w_scope_generation.cpp'
+      - 'Remote/tests/r30h124w_scoped_transport.cpp'
       - 'Remote/tests/r30h124v_mission_control.cpp'
       - 'Remote/tests/r30h124v_boat_controller.cpp'
       - 'Boat/source/mission_controller.h'
@@ -199,3 +204,10 @@ jobs:
           timeout 10s /tmp/async_mission_control
           g++ -std=c++17 -Wall -Wextra -Werror -IBoat/source -IRemote/source Boat/source/mission_protocol.cpp Remote/tests/r30h124v_boat_controller.cpp -o /tmp/mission_control_boat
           timeout 10s /tmp/mission_control_boat
+
+          g++ -std=c++17 -Wall -Wextra -Werror -IRemote/source Remote/tests/r30h124w_mission_scope.cpp -o /tmp/mission_scope
+          timeout 10s /tmp/mission_scope
+          g++ -std=c++17 -Wall -Wextra -Werror -IRemote/source Remote/tests/r30h124w_scope_generation.cpp -o /tmp/mission_scope_generation
+          timeout 10s /tmp/mission_scope_generation
+          g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -Itests/r30h20_stubs -IRemote/source Remote/source/mission_protocol.cpp Remote/tests/r30h124w_scoped_transport.cpp -o /tmp/mission_scoped_transport
+          timeout 10s /tmp/mission_scoped_transport
