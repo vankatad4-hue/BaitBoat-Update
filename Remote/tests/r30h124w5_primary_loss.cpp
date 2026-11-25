@@ -101,5 +101,22 @@ int main(){
  assert(peer.status(status,true,++at)&&h.backupRx.offer({status,at,B})&&tick(at,true));
  assert(app.backupConfirmed()&&!app.confirmed()&&!app.missionAuthorized()&&gate.stopped());
  assert(peer.lastStop()==20&&peer.mockReleases()==0&&!app.rearmed());
+ // W8.4b: recover the primary transport only, preserving STOP and the
+ // old motion interlock. A local nRF ACK alone is never recovery evidence.
+ peer.mockPrimaryUnavailable(false);
+ at+=1;assert(tick(at,false)&&app.primaryFault());
+ poll(at);if(d.last.frame.type!=RADIO_MSG_LINK_PROBE)poll(at);
+ assert(d.last.frame.type==RADIO_MSG_LINK_PROBE);
+ RadioFrame echo{};assert(peer.exchange(d.last.frame,echo,false,++at));
+ assert(h.offerCompletion(P,{d.last.ticket,d.last.generation,P,true,TxEvidence::NrfAck}));
+ assert(tick(at,false)&&app.primaryFault()); // drop first authenticated echo
+ at+=500;assert(tick(at,false));poll(at);
+ assert(d.last.frame.type==RADIO_MSG_LINK_PROBE);
+ for(unsigned i=0;i<3;++i){
+  deliver(++at);assert(tick(at,false));
+  if(i<2){assert(app.primaryFault());at+=499;assert(tick(at,false));poll(at);assert(d.last.frame.type==RADIO_MSG_LINK_PROBE);}
+ }
+ assert(!app.primaryFault()&&!app.rearmed()&&!app.missionAuthorized()&&!app.backupMissionBound()&&gate.stopped());
+ assert(peer.lastStop()==20&&peer.mockReleases()==0&&!app.requestOrdinary(ordinary,at));
  assert(!app.tick(++at,123,true,true)&&!app.established()&&gate.stopped());
 }
