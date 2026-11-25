@@ -43,6 +43,10 @@ on:
       - 'Remote/tests/r30h124_runtime.cpp'
       - 'Remote/source/remote_async_tx.h'
       - 'Remote/source/remote_tx_router.h'
+      - 'Remote/source/remote_ordinary_intent.h'
+      - 'Remote/source/remote_async_ordinary.h'
+      - 'Remote/tests/r30h124p_ordinary_intent.cpp'
+      - 'Remote/tests/r30h124p_ordinary_producer.cpp'
       - 'Remote/tests/r30h124o_tx_router.cpp'
       - 'Remote/tests/r30h124f_async_tx.cpp'
       - 'Remote/source/remote_async_control.h'
@@ -149,3 +153,8 @@ jobs:
 
           g++ -std=c++17 -Wall -Wextra -Werror -IRemote/source Remote/tests/r30h124o_tx_router.cpp -o /tmp/remote_tx_router
           timeout 10s /tmp/remote_tx_router
+
+          g++ -std=c++17 -Wall -Wextra -Werror -Itests/r30h20_stubs -IRemote/source Remote/tests/r30h124p_ordinary_intent.cpp -o /tmp/ordinary_intent
+          timeout 10s /tmp/ordinary_intent
+          g++ -std=c++17 -Wall -Wextra -Werror -Itests/r30h20_stubs -IRemote/source Remote/tests/r30h124p_ordinary_producer.cpp -o /tmp/ordinary_producer
+          timeout 10s /tmp/ordinary_producer

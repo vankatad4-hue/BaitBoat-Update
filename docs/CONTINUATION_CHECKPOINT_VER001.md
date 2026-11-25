@@ -1,3 +1,13 @@
+## Active continuation — R30H-124P (2026-11-25)
+
+Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged. Physical workers/upload disabled; production remains Legacy-only.
+
+- Baseline bbcee9c verified by connector; direct git ls-remote still fails DNS and PlatformIO unavailable in local container. Full F/G/H/J/O integration CI and target compilation remain unverified.
+- Added primary-only ordinary intent ledger and experimental producer: explicit authorization snapshot, independent STOP/rearm authority, manual-mode request, bounded manual motor values, individual hopper/hook release, replace only unsent motor sample, preserve original creation timestamp and provisional 50 ms motor/100 ms discrete TX TTL, correlate generation/ticket/sequence/epoch/ID/time/lifetime. No combined release, backup ordinary TX, automatic retry, CLEAR_STOP, autonomous mode or mission TX. Local transport evidence never peer execution.
+- Added RemoteAsyncTx owner-only generation getter. Producer runs only after critical scheduler and requires caller-provided gap. In-flight authorization withdrawal returns false requiring real transport revocation; it is not yet wired to live application or mock runtime. STOP/rearm and selective revocation must be coordinated before binding. No widened permissions.
+- LOCAL PASS: both new portable tests compiled and executed with g++ C++17 -Wall -Wextra -Werror, minimal hand-written command/frame ABI stubs and simulated encoder/transport. Actual repository header/codec, FreeRTOS and full app integration not tested by these runs. Lifecycle CI entries use real repository headers. No claim of full firmware or RF verification.
+- Resume R30H-124Q: implement scoped primary CLEAR_STOP/rearm and primary-only in-flight authority revocation with STOP/heartbeat coordination; bind producer to authenticated mock, real codec and ACK tracker; run full F/G/H/J/O/P tests and PlatformIO. Then migrate mission transactions. Preserve production activation lock and no hardware changes.
+
 ## Active continuation — R30H-124O (2026-11-24, pause for tomorrow)
 
 Branch `platformio-unified-r30h20`. Boat VER014 / Remote VER028 unchanged. Physical workers and upload locked; production remains Legacy-only.

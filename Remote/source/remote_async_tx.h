@@ -90,6 +90,7 @@ public:
   if(!queued)return Submit::Fault;
   s.used=true;s.request=r;s.stop=stop;ticket=r.ticket;return Submit::Queued;
  }
+ uint32_t generation()const{return owner_.worker()?generation_:0;}
  bool pending(PhyLink link)const{return owner_.worker()&&validLink(link)&&(link==PhyLink::Primary?primary_.used:backup_.used);}
  bool linkFault(PhyLink link)const{return !owner_.worker()||!validLink(link)||handoff_.fault(link);}
  // Bounded drain. A late, duplicate, wrong-link or previous-generation
