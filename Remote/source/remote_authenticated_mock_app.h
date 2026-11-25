@@ -138,8 +138,9 @@ public:
   // stale/unsafe STATUS retires the entire generation before new admission.
   if(backupScope_&&(backupFault_||
      (backupEvidenceSeen_&&!backupSafety(now))||
-     (!backupEvidenceSeen_&&uint32_t(now-backupTransferAt_)>=BackupStatusAge)||
-     (backupPhaseSeen_&&uint32_t(now-backupPhaseAt_)>=BackupStatusAge)||
+     ((!backupEvidenceSeen_||!backupPhaseSeen_)&&uint32_t(now-backupTransferAt_)>=BackupStatusAge)||
+     (backupPhaseSeen_&&(uint32_t(now-backupPhaseAt_)>=BackupStatusAge||backupPhase_==MC_RETURNING||backupPhase_==MC_RELEASING||
+       backupPhase_==MC_OVERRIDE_ACTIVE||backupPhase_==MC_OVERRIDE_NEUTRAL||backupPhase_==MC_MANUAL_REQUESTED))||
      !backupMission_.maintain(now,backupAuthority(now)))){
    if(!inhibit(now))return reset(now);
   }
