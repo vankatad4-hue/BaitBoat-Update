@@ -121,12 +121,31 @@ int main(){
  assert(tick(at,false)&&app.primaryFault()); // tampered echo and local ACK
  at+=500;assert(tick(at,false));poll(at);
  assert(d.last.frame.type==RADIO_MSG_LINK_PROBE);
+ // New STOP revokes a probe already admitted to the mock PHY.
+ const auto oldProbe=d.last;
+ const auto oldGeneration=tx.generation();
+ RadioFrame lateEcho{};assert(peer.exchange(oldProbe.frame,lateEcho,false,++at));
+ assert(app.requestStop(21,at)&&tx.generation()!=oldGeneration&&tick(at,false));
+ poll(at);assert(d.last.frame.type==RADIO_MSG_ACTION&&d.last.frame.commandId==21&&d.last.frame.payload[0]==CMD_EMERGENCY_STOP);
+ assert(h.primaryRx.offer({lateEcho,at,P}));
+ assert(h.offerCompletion(P,{oldProbe.ticket,oldProbe.generation,P,true,TxEvidence::NrfAck}));
+ deliver(++at);assert(tick(at,false)&&app.primaryFault()&&!app.rearmed());
+ assert(peer.status(status,false,++at)&&h.primaryRx.offer({status,at,P}));
+ assert(tick(at,false)&&app.confirmed()&&app.primaryFault()&&gate.stopped());
+ poll(at);assert(d.last.frame.type==RADIO_MSG_LINK_PROBE);
+ // Reassert a physical fault before the echo; old proof must be discarded.
+ assert(peer.exchange(d.last.frame,echo,false,++at));
+ assert(h.primaryRx.offer({echo,at,P}));
+ assert(h.offerCompletion(P,{d.last.ticket,d.last.generation,P,true,TxEvidence::NrfAck}));
+ assert(tick(at,true)&&app.primaryFault());
+ assert(tick(++at,false)&&app.primaryFault());poll(at);
+ assert(d.last.frame.type==RADIO_MSG_LINK_PROBE);
  for(unsigned i=0;i<3;++i){
   deliver(++at);assert(tick(at,false));
   if(i<2){assert(app.primaryFault());at+=499;assert(tick(at,false));poll(at);assert(d.last.frame.type==RADIO_MSG_LINK_PROBE);}
  }
  assert(!app.primaryFault()&&!app.rearmed()&&!app.missionAuthorized()&&!app.backupMissionBound()&&gate.stopped());
- assert(peer.lastStop()==20&&peer.mockReleases()==0&&!app.requestOrdinary(ordinary,at));
+ assert(peer.lastStop()==21&&peer.mockReleases()==0&&!app.requestOrdinary(ordinary,at));
  assert(app.lastBackupMissionFeedback(historical)&&historical.request==4&&historical.phase==MC_ABORTED&&historical.result==MC_ACCEPTED);
  assert(!app.tick(++at,123,true,true)&&!app.established()&&gate.stopped());
  assert(!app.lastBackupMissionFeedback(historical));
