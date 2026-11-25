@@ -64,6 +64,7 @@ on:
       - 'Remote/tests/r30h124w5_primary_loss.cpp'
       - 'Remote/source/remote_backup_mission_control.h'
       - 'Remote/source/remote_primary_recovery_gate.h'
+      - 'Remote/source/remote_recovery_probe_wire.h'
       - 'Remote/tests/r30h124w6_backup_controller.cpp'
       - 'Remote/tests/r30h124w7_backup_transport.cpp'
       - 'Remote/tests/r30h124w84_recovery_gate.cpp'
