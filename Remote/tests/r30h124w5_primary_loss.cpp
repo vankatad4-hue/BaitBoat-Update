@@ -101,11 +101,17 @@ int main(){
  // Unsafe authenticated snapshot cannot be hidden by a newer healthy
  // snapshot in the same drain. Scope revocation must advance generation.
  const auto unsafeGeneration=tx.generation();
+ // A faster authenticated primary echo overtakes a lower-sequence backup
+ // safety warning. The old warning may revoke, never restore permission.
+ assert(tick(++at,false)&&app.primaryFault());poll(at);
+ assert(d.last.frame.type==RADIO_MSG_LINK_PROBE);
  peer.mockBattery(15);
  assert(peer.status(status,true,++at)&&h.backupRx.offer({status,at,B}));
+ deliver(++at);
  peer.mockBattery(80);
  assert(peer.status(status,true,++at)&&h.backupRx.offer({status,at,B}));
- assert(tick(at,true)&&!app.backupMissionBound()&&tx.generation()!=unsafeGeneration);
+ assert(tick(at,false)&&!app.backupMissionBound()&&tx.generation()!=unsafeGeneration);
+ assert(tick(++at,true));poll(at); // drain any newly revoked/restricted probe
  assert(!app.requestBackupMissionControl(MCTRL_CANCEL,at));
  assert(!app.requestStop(17,at));
  assert(app.requestStop(20,at)&&tick(at,true));
