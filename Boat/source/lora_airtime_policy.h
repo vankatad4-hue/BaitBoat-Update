@@ -1,11 +1,15 @@
 #pragma once
+#ifndef FLYTEC_LORA_AIRTIME_POLICY_SHARED_H
+#define FLYTEC_LORA_AIRTIME_POLICY_SHARED_H
 #include <stdint.h>
 namespace flytec_rtos {
 // Experimental owner-only policy. No physical radio enabling or legal approval.
 // Charge before any possible UART/RF write; do not refund ambiguous attempts.
 struct LoRaAirtimeProfile {
- uint32_t hourlyMs=36000U, reserveMs=3600U, packetMs=25U;
- uint32_t normalGapMs=3000U, urgentGapMs=500U;
+ static constexpr uint32_t BaselineHour=36000U,BaselinePacket=25U,BaselineGap=3000U;
+ static constexpr uint32_t CandidateReserve=3600U,CandidateUrgentGap=500U;
+ uint32_t hourlyMs=BaselineHour, reserveMs=CandidateReserve, packetMs=BaselinePacket;
+ uint32_t normalGapMs=BaselineGap, urgentGapMs=CandidateUrgentGap;
  bool commissioned=false;
 };
 class LoRaAirtimePolicy {
@@ -67,3 +71,5 @@ private:
  uint32_t bootAt_=0,lastPossible_=0;bool configured_=false,quiet_=false,sent_=false,outstanding_=false;
 };
 }
+
+#endif // FLYTEC_LORA_AIRTIME_POLICY_SHARED_H
