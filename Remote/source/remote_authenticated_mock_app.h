@@ -375,6 +375,7 @@ private:
     if(link==PhyLink::Primary&&primaryFault_&&recoveryAllowed_&&!f.commandId&&
        !backupMission_.inFlight()&&backupMission_.state()!=BackupMissionControl::State::Pending&&
        recoveryProbeDecode(f.payload,RecoveryProbeKind::Echo,echoed)&&
+       recovery_.matchesEcho(echoed,rx.receivedMs,now,1,tx_.generation())&&
        primary_.accept(f.sequence)&&cross_.accept(f.sequence))
      recovery_.observe(echoed,rx.receivedMs,now,1,tx_.generation(),true);
     continue;
