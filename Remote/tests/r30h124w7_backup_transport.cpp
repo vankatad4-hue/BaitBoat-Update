@@ -53,21 +53,27 @@ int main(){
  Driver backup;assert(service.tick(h,B,gate,&Driver::send,&backup,3008)&&backup.starts==1);
  assert(backup.last.frame.flags==RADIO_FLAG_BACKUP_LINK&&radio_frameVerify(backup.last.frame,key));
  MissionControlRequest q{};assert(missionControlDecode(backup.last.frame.payload,q)&&q.op==MCTRL_PAUSE&&q.request==2);
- assert(h.offerCompletion(B,{backup.last.ticket,backup.last.generation,B,false,TxEvidence::LocalReady}));
- assert(tx.take(B,3045,result)&&ctl.observeBackupMissionCompletion(ledger,result,3045));
- assert(ledger.state()==BackupMissionControl::State::Pending);
+ // A valid LoRa completion may arrive after the 250 ms admission limit.
+ assert(backup.last.lifetimeMs==250U);
+ assert(!tx.take(B,3258,result)&&tx.pending(B)&&ledger.maintain(3258,a));
  MissionControlFeedback ack{9,MC_PAUSED,MCTRL_PAUSE,2,MC_ACCEPTED};
- assert(ledger.observe(ack,1,tx.generation(),3050,3050,true,a));
- assert(ledger.request(MCTRL_CANCEL,3051,a));
- assert(ctl.serviceBackupMission(ledger,a,6044,seq,RadioSessionCounter::REKEY_AT,key)&&!tx.pending(B));
- assert(ctl.serviceBackupMission(ledger,a,6045,seq,RadioSessionCounter::REKEY_AT,key)&&tx.pending(B));
- backup.ready=false;assert(service.tick(h,B,gate,&Driver::send,&backup,6045));
+ // Authenticated feedback may precede local completion; no new request yet.
+ assert(ledger.observe(ack,1,tx.generation(),3300,3300,true,a));
+ assert(!ledger.request(MCTRL_CANCEL,3301,a)&&ledger.inFlight());
+ assert(h.offerCompletion(B,{backup.last.ticket,backup.last.generation,B,false,TxEvidence::LocalReady}));
+ assert(tx.take(B,5008,result)&&result.outcome==A::Outcome::LocalReady);
+ assert(ctl.observeBackupMissionCompletion(ledger,result,5008));
+ assert(ledger.state()==BackupMissionControl::State::Accepted&&!ledger.inFlight());
+ assert(ledger.request(MCTRL_CANCEL,5009,a));
+ assert(ctl.serviceBackupMission(ledger,a,8007,seq,RadioSessionCounter::REKEY_AT,key)&&!tx.pending(B));
+ assert(ctl.serviceBackupMission(ledger,a,8008,seq,RadioSessionCounter::REKEY_AT,key)&&tx.pending(B));
+ backup.ready=false;assert(service.tick(h,B,gate,&Driver::send,&backup,8008));
  const auto before=backup.starts;
  BoatCommand stop{};stop.commandId=22;stop.type=CMD_EMERGENCY_STOP;stop.mode=MODE_MANUAL;
- assert(ctl.requestStop(stop,6046));ledger.transportRevoked();
- backup.ready=true;assert(service.tick(h,B,gate,&Driver::send,&backup,6047)&&backup.starts==before);
- assert(tx.submitBackupMission(f2,6047,250,6047,t,true)==A::Submit::Denied);
- assert(ctl.tick(9046,false,true,1,seq,RadioSessionCounter::REKEY_AT,key,true));
- assert(service.tick(h,B,gate,&Driver::send,&backup,9046)&&backup.starts==before+1);
+ assert(ctl.requestStop(stop,8009));ledger.transportRevoked();
+ backup.ready=true;assert(service.tick(h,B,gate,&Driver::send,&backup,8010)&&backup.starts==before);
+ assert(tx.submitBackupMission(f2,8010,250,8010,t,true)==A::Submit::Denied);
+ assert(ctl.tick(11009,false,true,1,seq,RadioSessionCounter::REKEY_AT,key,true));
+ assert(service.tick(h,B,gate,&Driver::send,&backup,11009)&&backup.starts==before+1);
  assert(backup.last.frame.type==RADIO_MSG_ACTION&&backup.last.frame.payload[0]==CMD_EMERGENCY_STOP&&backup.last.frame.commandId==22);
 }
