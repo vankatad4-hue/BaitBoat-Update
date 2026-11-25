@@ -8,6 +8,7 @@
 #include "mission_wire.h"
 #include "mission_control_wire.h"
 #include "remote_mission_prepare_tx.h"
+#include "remote_primary_recovery_gate.h"
 // R30H-124J: authenticated application composition for isolated mock runtime.
 // Isolated mock only. No physical driver, real joystick, or mission authority.
 namespace flytec_rtos {
@@ -47,7 +48,7 @@ public:
   if(!control_.requestStop(c,now))return false;
   clear_.reset();clearTicket_=0;ordinary_.intent().transportRevoked();rearmed_=false;
   if(missionLocked())mission_.upload().transportRevoked();
-  missionControl_.transportRevoked();revokeBackupMission();missionClear_=missionAuthorized_=false;
+  missionControl_.transportRevoked();revokeBackupMission();resetRecovery();missionClear_=missionAuthorized_=false;
   if(!ack_.begin(id,CMD_EMERGENCY_STOP,MODE_MANUAL,now,15000U)){reset(now);return false;}
   stopId_=id;return true;
  }
@@ -114,7 +115,10 @@ public:
  bool cancelMissionLocal(uint32_t now){return owner_.worker()&&missionLocked()&&inhibit(now);}
  bool tick(uint32_t now,uint64_t nonce,bool primaryFault,bool backupFault){
   if(!owner_.worker()||!initialized_)return false;
-  primaryFault_|=primaryFault||tx_.linkFault(PhyLink::Primary);
+  const bool primaryUnavailableNow=primaryFault||tx_.linkFault(PhyLink::Primary);
+  primaryFault_|=primaryUnavailableNow;
+  recoveryAllowed_=primaryFault_&&!primaryUnavailableNow;
+  if(!recoveryAllowed_){recovery_.reset();recoveryGeneration_=0;}
   backupFault_|=backupFault||tx_.linkFault(PhyLink::Backup);
   if(primaryFault_&&backupFault_){retire(now);return false;}
   if((session_.established()&&sequence_>=RadioSessionCounter::REKEY_AT-1)||session_.timeout(now)){
@@ -156,7 +160,13 @@ public:
   }
   if(!routeRemoteTx(tx_,now,
       [&](const RemoteAsyncTx::Result& c,uint32_t at){return handshake_.observeCompletion(c,at);},
-      [&](const RemoteAsyncTx::Result& c,uint32_t at){return control_.observeCompletion(c,at);},
+      [&](const RemoteAsyncTx::Result& c,uint32_t at){
+       if(c.messageType==RADIO_MSG_LINK_PROBE){
+        if(!probeTicket_||c.ticket!=probeTicket_||c.link!=PhyLink::Primary||c.epoch!=1||c.sequence!=probeSequence_||c.generation!=tx_.generation())return false;
+        probeTicket_=0;return true; // neither local ACK nor failure qualifies recovery
+       }
+       return control_.observeCompletion(c,at);
+      },
       [&](const RemoteAsyncTx::Result& c,uint32_t at){
        if(clearTicket_&&c.ticket==clearTicket_&&c.commandId==clear_.id()&&c.link==PhyLink::Primary&&c.epoch==1&&c.messageType==RADIO_MSG_ACTION){clearTicket_=0;return true;}
        return ordinary_.observeCompletion(c,at);
@@ -172,7 +182,7 @@ public:
   // Do not allow a busy ordinary/CLEAR slot to delay primary heartbeat.
   // The shared generation revocation keeps the STOP latch closed and
   // preserves backup cooldown; already admitted RF is not retractable.
-  if(control_.ordinaryBlockingHeartbeat(now)){
+  if(!primaryFault_&&control_.ordinaryBlockingHeartbeat(now)){
    if(!inhibit(now))return reset(now);
   }
   if(clear_.ready(now,clearAuth(now))&&primaryStatus_.stopState==0&&(primaryStatus_.safetyFlags&1U)){
@@ -191,6 +201,7 @@ public:
   if(backupScope_&&!control_.serviceBackupMission(backupMission_,backupAuthority(now),now,sequence_,RadioSessionCounter::REKEY_AT,key_)){
    if(!inhibit(now))return reset(now);
   }
+  if(recoveryAllowed_&&!servicePrimaryRecovery(now))return reset(now);
   const uint8_t flags=uint8_t(1U|(!primaryFault_?2U:0U)|(!backupFault_?4U:0U)|(control_.confirmed()?8U:0U));
   if(!control_.tick(now,!primaryFault_,!backupFault_,flags,sequence_,RadioSessionCounter::REKEY_AT,key_,true))
    return reset(now);
@@ -226,6 +237,35 @@ public:
   reset(now);radioSession_wipe(root_,32);initialized_=false;mac_=nullptr;
  }
 private:
+ void resetRecovery(){recovery_.reset();recoveryGeneration_=0;probeTicket_=0;probeSequence_=0;}
+ bool servicePrimaryRecovery(uint32_t now){
+  if(!established()||!primaryFault_||tx_.linkFault(PhyLink::Primary))return false;
+  const auto generation=tx_.generation();
+  if(recoveryGeneration_!=generation){
+   if(!recovery_.begin(1,generation))return false;
+   recoveryGeneration_=generation;lastProbeAt_=now-500U;
+  }
+  recovery_.expire(now);
+  // Never revoke an ambiguous PAUSE/CANCEL just because primary returns.
+  if(recovery_.ready(now,1,generation)&&!probeTicket_&&!tx_.pending(PhyLink::Primary)&&
+     !backupMission_.inFlight()&&backupMission_.state()!=BackupMissionControl::State::Pending){
+   // Preserve any existing STOP intent/ACK tracker; otherwise revoke the old
+   // backup scope and retain the historical peer phase without resuming it.
+   if(!control_.hasStopIntent(stopId_)&&!inhibit(now))return false;
+   primaryFault_=false;primaryStatusSeen_=false;recoveryAllowed_=false;resetRecovery();
+   return true;
+  }
+  if(probeTicket_||tx_.pending(PhyLink::Primary)||uint32_t(now-lastProbeAt_)<500U)return true;
+  if(sequence_>=RadioSessionCounter::REKEY_AT-1)return false;
+  RadioFrame f{};radio_frameInit(f,RADIO_MSG_LINK_PROBE,1,2,uint16_t(sequence_+1),0,now,1);
+  if(!recoveryProbeEncode(RecoveryProbeKind::Challenge,f.sequence,f.payload)||!radio_frameSeal(f,key_))return false;
+  ++sequence_;uint32_t ticket=0;
+  const auto result=tx_.submitRecoveryProbe(f,now,ticket,true);
+  if(result==RemoteAsyncTx::Submit::Busy)return true;
+  if(result!=RemoteAsyncTx::Submit::Queued)return false;
+  probeTicket_=ticket;probeSequence_=f.sequence;lastProbeAt_=now;
+  return recovery_.offer(f.sequence,now,1,generation);
+ }
  bool backupSafety(uint32_t now)const{
   return backupEvidenceSeen_&&backupStatusFresh(now)&&backupStatus_.stopState==0&&
    backupStatus_.batteryPercent>20&&backupStatus_.batteryPercent<=100&&
@@ -244,7 +284,7 @@ private:
   if(!id||!control_.transferMissionToBackup(id,now,true))return false;
   missionControl_.transportRevoked();mission_.upload().transportRevoked();ordinary_.intent().transportRevoked();
   missionClear_=missionAuthorized_=false;clear_.reset();clearTicket_=0;rearmed_=false;
-  backupTransferAt_=now;backupEvidenceSeen_=backupPhaseSeen_=false;
+  resetRecovery();backupTransferAt_=now;backupEvidenceSeen_=backupPhaseSeen_=false;
   backupScope_=backupMission_.bind(id,1,tx_.generation(),high,true);
   return backupScope_;
  }
@@ -284,7 +324,7 @@ private:
  bool inhibit(uint32_t now){
   const bool ok=control_.inhibitOrdinary(now);
   if(ok){ordinary_.intent().transportRevoked();if(missionLocked())mission_.upload().transportRevoked();missionControl_.transportRevoked();}
-  revokeBackupMission();missionClear_=missionAuthorized_=false;
+  revokeBackupMission();resetRecovery();missionClear_=missionAuthorized_=false;
   clear_.reset();clearTicket_=0;rearmed_=false;
   return ok;
  }
@@ -295,7 +335,7 @@ private:
   radioSession_wipe(key_,32);sequence_=stopId_=0;ack_.reset(0);
   clear_.reset();clearTicket_=0;ordinary_.intent().reset();rearmed_=false;primaryStatusSeen_=backupStatusSeen_=false;backupStatusAt_=0;backupStatus_=RadioDecodedPayload{};inputValid_=inputNeutral_=false;
   if(a&&b){mission_.upload().resetAfterSession();missionControl_.resetAfterSession();backupMission_.resetAfterSession();}
-  backupScope_=backupEvidenceSeen_=backupPhaseSeen_=false;
+  backupScope_=backupEvidenceSeen_=backupPhaseSeen_=false;resetRecovery();recoveryAllowed_=false;
   missionClear_=missionAuthorized_=false;
   preparedStatusSeen_=false;preparedStatusId_=0;preparedStatusAt_=0;
   cross_.resetAfterHandshake();primary_.resetAfterHandshake();backup_.resetAfterHandshake();
@@ -305,8 +345,9 @@ private:
   auto& queue=link==PhyLink::Primary?handoff_.primaryRx:handoff_.backupRx;
   RxFrame rx{};
   for(unsigned i=0;i<4&&queue.take(rx);++i){
-   if(rx.link!=link||(link==PhyLink::Primary?primaryFault_:backupFault_)||!remoteRxFresh(now,rx.receivedMs))continue;
+   if(rx.link!=link||!remoteRxFresh(now,rx.receivedMs))continue;
    const RadioFrame& f=rx.frame;
+   if(link==PhyLink::Backup?backupFault_:(primaryFault_&&(!recoveryAllowed_||f.type!=RADIO_MSG_LINK_PROBE)))continue;
    if(f.sourceId!=2||f.destinationId!=1||!radioLinkFlagMatches(f.flags,link==PhyLink::Backup))continue;
    if(f.type>=RADIO_MSG_SESSION_HELLO&&f.type<=RADIO_MSG_SESSION_CONFIRM){
     if(handshake_.receive(link,f,rx.receivedMs,now,root_,mac_)&&session_.established()){
@@ -317,6 +358,14 @@ private:
     continue;
    }
    if(!session_.established()||f.sessionEpoch!=1||!radio_frameVerify(f,key_))continue;
+   if(f.type==RADIO_MSG_LINK_PROBE){
+    uint16_t echoed=0;
+    if(link==PhyLink::Primary&&primaryFault_&&recoveryAllowed_&&!f.commandId&&
+       recoveryProbeDecode(f.payload,RecoveryProbeKind::Echo,echoed)&&
+       primary_.accept(f.sequence)&&cross_.accept(f.sequence))
+     recovery_.observe(echoed,rx.receivedMs,now,1,tx_.generation(),true);
+    continue;
+   }
    if(f.type==RADIO_MSG_MISSION_NEUTRAL_ACK){
     if(link!=PhyLink::Primary||!missionAuthorized_||!primary_.accept(f.sequence)||!cross_.accept(f.sequence))continue;
     missionControl_.observeNeutralReceipt(f,rx.receivedMs,now,true);continue;
@@ -377,6 +426,9 @@ private:
  RemoteClearGate clear_;RemoteAsyncOrdinary<RemoteAsyncTx> ordinary_;RemoteMissionPrepareTx<RemoteAsyncTx> mission_;RemoteMissionControlTx<RemoteAsyncTx> missionControl_;
  RadioDecodedPayload primaryStatus_{},backupStatus_{};uint32_t primaryStatusAt_=0,backupStatusAt_=0,clearTicket_=0;
  bool backupStatusSeen_=false;
+ PrimaryRecoveryGate recovery_;
+ uint32_t recoveryGeneration_=0,probeTicket_=0,lastProbeAt_=0;
+ uint16_t probeSequence_=0;bool recoveryAllowed_=false;
  BackupMissionControl backupMission_;
  MissionControlPhase backupPhase_=MC_IDLE;
  uint32_t backupTransferAt_=0,backupPhaseAt_=0;
