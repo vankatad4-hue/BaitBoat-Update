@@ -1,4 +1,4 @@
-#include "remote_primary_recovery_gate.h"
+#include "remote_primary_recovery.h"
 #include <cassert>
 using flytec_rtos::PrimaryRecoveryGate;
 int main(){

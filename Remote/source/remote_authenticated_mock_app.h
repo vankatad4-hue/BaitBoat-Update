@@ -8,7 +8,7 @@
 #include "mission_wire.h"
 #include "mission_control_wire.h"
 #include "remote_mission_prepare_tx.h"
-#include "remote_primary_recovery_gate.h"
+#include "remote_primary_recovery.h"
 // R30H-124J: authenticated application composition for isolated mock runtime.
 // Isolated mock only. No physical driver, real joystick, or mission authority.
 namespace flytec_rtos {

@@ -7,7 +7,7 @@
 #include "remote_mission_tx_scope.h"
 #include "remote_mission_control_tx.h"
 #include "remote_backup_mission_control.h"
-#include "remote_recovery_probe_wire.h"
+#include "remote_primary_recovery.h"
 // R30H-124F experimental Core 1 application seam. Sole generation owner.
 // Frames must already be authenticated/sealed by the application. Never
 // interpret queue admission, nRF ACK or E22 local readiness as Boat STOP.

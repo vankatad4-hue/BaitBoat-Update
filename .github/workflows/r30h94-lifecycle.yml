@@ -63,12 +63,11 @@ on:
       - 'Remote/tests/r30h124w3_authenticated_control.cpp'
       - 'Remote/tests/r30h124w5_primary_loss.cpp'
       - 'Remote/source/remote_backup_mission_control.h'
-      - 'Remote/source/remote_primary_recovery_gate.h'
-      - 'Remote/source/remote_recovery_probe_wire.h'
+      - 'Remote/source/remote_primary_recovery.h'
       - 'Remote/tests/r30h124w6_backup_controller.cpp'
       - 'Remote/tests/r30h124w7_backup_transport.cpp'
-      - 'Remote/tests/r30h124w84_recovery_gate.cpp'
-      - 'Remote/tests/r30h124w84_backup_timeout.cpp'
+      - 'Remote/tests/primary_recovery_gate_test.cpp'
+      - 'Remote/tests/backup_mission_timeout_test.cpp'
       - 'Remote/tests/lora_airtime_policy_test.cpp'
       - 'Remote/source/lora_link_policy.h'
       - 'Boat/source/lora_link_policy.h'
@@ -246,9 +245,9 @@ jobs:
 
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -Itests/r30h20_stubs -IRemote/source Remote/source/radio_protocol.cpp Remote/source/radio_command_codec.cpp Remote/source/mission_protocol.cpp Remote/tests/r30h124w7_backup_transport.cpp -lcrypto -o /tmp/backup_mission_transport
           timeout 10s /tmp/backup_mission_transport
-          g++ -std=c++17 -Wall -Wextra -Werror -IRemote/source Remote/tests/r30h124w84_recovery_gate.cpp -o /tmp/primary_recovery_gate
+          g++ -std=c++17 -Wall -Wextra -Werror -IRemote/source Remote/tests/primary_recovery_gate_test.cpp -o /tmp/primary_recovery_gate
           timeout 10s /tmp/primary_recovery_gate
-          g++ -std=c++17 -Wall -Wextra -Werror -IRemote/source Remote/tests/r30h124w84_backup_timeout.cpp -o /tmp/backup_timeout
+          g++ -std=c++17 -Wall -Wextra -Werror -IRemote/source Remote/tests/backup_mission_timeout_test.cpp -o /tmp/backup_timeout
           timeout 10s /tmp/backup_timeout
           cmp Boat/source/lora_link_policy.h Remote/source/lora_link_policy.h
           g++ -std=c++17 -Wall -Wextra -Werror -IRemote/source Remote/tests/lora_airtime_policy_test.cpp -o /tmp/lora_airtime_remote

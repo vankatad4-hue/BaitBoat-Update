@@ -6,7 +6,7 @@
 #include "mission_control_wire.h"
 #include "mission_stick.h"
 #include "mission_neutral_wire.h"
-#include "remote_recovery_probe_wire.h"
+#include "remote_primary_recovery.h"
 // Test-only Boat peer. No hardware, motor outputs, GPIO, provisioned keys.
 namespace flytec_rtos {
 class RemoteMockPeer {
