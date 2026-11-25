@@ -57,7 +57,7 @@ public:
  void close(){bus_.invalidate(0);}
  template<class Policy> bool submit(const Frame &f,uint32_t now,Policy permitted,flytec_r30h118::Ticket *ticket=nullptr){
   if(f.sessionEpoch!=0||f.sequence!=0||f.commandId!=0||!permitted(f))return false;
-  return bus_.submit(f,now,false,ticket);
+  return bus_.submit(f,now,false,ticket,0,false,flytec_r30h118::ReplyClass::Routine);
  }
  // Application session rollover deliberately does not close this lane.
  uint32_t activeGeneration()const{return bus_.activeGeneration();}

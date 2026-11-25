@@ -13,6 +13,7 @@ template<class Frame> class AppRadio {
  Ticket ticket_{};
  uint32_t submittedAt_=0,submittedAge_=0;
  Frame stopFrame_{};
+ ReplyClass stopClass_=ReplyClass::Unclassified;
  uint32_t stopAt_=0;
  uint32_t stopRetryAge_=100;
  bool stopRetry_=false;
@@ -48,10 +49,10 @@ public:
  bool feedbackReady()const{return bus_.feedbackEnabled()&&!stopRetry_&&!terminalPending()&&state_!=TxState::Queued&&state_!=TxState::Admitted;}
  bool ordinaryReady()const{return bus_.ordinaryEnabled()&&feedbackReady();}
  bool terminalPending()const{return !terminalTaken_&&ticket_.serial&&state_!=TxState::Idle&&state_!=TxState::Queued&&state_!=TxState::Admitted;}
- bool submit(const Frame &frame,uint32_t now,bool stop,uint32_t requestAge=0,bool outboundFeedback=false){
+ bool submit(const Frame &frame,uint32_t now,bool stop,uint32_t requestAge=0,bool outboundFeedback=false,ReplyClass reply=ReplyClass::Unclassified){
   if(state_==TxState::Queued||state_==TxState::Admitted||(!stop&&terminalPending()))return false;
   Ticket next{};
-  if(!bus_.submit(frame,now,stop,&next,requestAge,outboundFeedback))return false;
+  if(!bus_.submit(frame,now,stop,&next,requestAge,outboundFeedback,reply))return false;
   if(stop)preserveSuperseded();
   ticket_=next;terminalTaken_=false;submittedAt_=now;submittedAge_=requestAge;admissionSeen_=admitted_=outcomeSeen_=false;state_=TxState::Queued;return true;
  }
@@ -69,16 +70,16 @@ public:
   // old ticket cannot be admitted, and the STOP latch remains unchanged.
   bus_.invalidate(retainedEpoch);state_=TxState::Uncertain;return true;
  }
- bool preemptStop(const Frame &frame,uint32_t now,uint8_t epoch,uint32_t retryAge=100){
+ bool preemptStop(const Frame &frame,uint32_t now,uint8_t epoch,uint32_t retryAge=100,ReplyClass reply=ReplyClass::Unclassified){
   preserveSuperseded();bus_.latchStop();stopRetry_=false;if(!bus_.invalidate(epoch)){state_=TxState::Uncertain;return false;}
-  state_=TxState::Uncertain;stopFrame_=frame;stopAt_=now;stopRetryAge_=retryAge;stopRetry_=true;
+  state_=TxState::Uncertain;stopFrame_=frame;stopClass_=reply;stopAt_=now;stopRetryAge_=retryAge;stopRetry_=true;
   return serviceStop(now,stopRetryAge_);
  }
  // Owner retains a saturated STOP request with its original timestamp.
  bool serviceStop(uint32_t now,uint32_t maxAge){
   if(!stopRetry_)return false;
   if(!maxAge||uint32_t(now-stopAt_)>=maxAge){stopRetry_=false;bus_.invalidate(0);return false;}
-  if(!submit(stopFrame_,stopAt_,true,stopRetryAge_))return false;
+  if(!submit(stopFrame_,stopAt_,true,stopRetryAge_,false,stopClass_))return false;
   stopRetry_=false;return true;
  }
  bool serviceStop(uint32_t now){return serviceStop(now,stopRetryAge_);}

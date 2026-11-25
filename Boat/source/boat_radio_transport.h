@@ -79,9 +79,10 @@ public:
 namespace flytec_r30h118 {
 // Prototype only: one owner and one worker per instance. No physical driver.
 // STOP classification is the trusted application owner's responsibility.
+enum class ReplyClass:uint8_t {Unclassified,Routine,Mission,StopAck,Status};
 template<class Frame> class Transport {
 public:
- struct Request { Ticket ticket; Frame frame; uint32_t queuedAt; bool stop; uint32_t maxAge=0; };
+ struct Request { Ticket ticket; Frame frame; uint32_t queuedAt; bool stop; uint32_t maxAge=0; ReplyClass reply=ReplyClass::Unclassified; };
  struct Result { Ticket ticket; bool admitted; };
 private:
  CompletionGate owner_;
@@ -105,13 +106,13 @@ public:
  // Owner calls only after authenticated application rearm authorization.
  bool rearm(uint8_t epoch){if(!invalidate(epoch))return false;stopLatched_=false;return true;}
  uint32_t activeGeneration()const{return owner_.activeGeneration();}
- bool submit(const Frame &frame,uint32_t now,bool stop,Ticket *submitted=nullptr,uint32_t requestAge=0,bool outboundFeedback=false){
+ bool submit(const Frame &frame,uint32_t now,bool stop,Ticket *submitted=nullptr,uint32_t requestAge=0,bool outboundFeedback=false,ReplyClass reply=ReplyClass::Unclassified){
   // Only the Boat owner may explicitly classify read-only outbound feedback.
   // This exception never clears the latch or authorizes inbound movement.
   if(!stop&&stopLatched_&&!outboundFeedback)return false;
   Ticket t;
   if(!owner_.issue(t))return false;
-  Request r{t,frame,now,stop,requestAge};
+  Request r{t,frame,now,stop,requestAge,reply};
   if(stop?stop_.push(r):ordinary_.push(r)){if(submitted)*submitted=t;return true;}
   owner_.consume(t);return false;
  }

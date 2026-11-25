@@ -93,6 +93,8 @@ template<class Health> bool healthyFresh(const Health &h,uint32_t now,uint32_t m
 }
 
 #include "e22_tx_state.h"
+#include "lora_link_policy.h"
+#include "mission_control_wire.h"
 namespace flytec_r30h118 {
 template<class Frame,class Driver> class NrfAdapter {
  Driver &driver_; PhyPump<Frame> pump_; bool active_=false;
@@ -113,11 +115,61 @@ public:
   pump_.publishHealth({now,driver_.ready(),driver_.ready(),!driver_.ready(),driver_.txPending()});
  }
 };
+// Ticket metadata is local to the authenticated Boat owner. Wire checks
+// are a second boundary, not a replacement for owner HMAC verification.
+template<class Frame> bool classifyBackupReply(const typename Transport<Frame>::Request& r,
+ flytec_rtos::LoRaAirtimePolicy::Traffic& out){
+ using T=flytec_rtos::LoRaAirtimePolicy::Traffic;
+ const auto& f=r.frame;const auto* p=f.payload;
+ if(!r.ticket.generation||!r.ticket.serial||!r.ticket.epoch||f.sourceId!=2||f.destinationId!=1||f.flags!=1)return false;
+ if(r.ticket.domain==TicketDomain::Handshake){
+  if(r.reply!=ReplyClass::Routine||r.stop||f.sessionEpoch||f.sequence||f.commandId||(f.type!=11U&&f.type!=13U))return false;
+  out=T::Routine;return true;
+ }
+ if(r.ticket.domain!=TicketDomain::Application||f.sessionEpoch!=r.ticket.epoch||!f.sequence)return false;
+ switch(r.reply){
+ case ReplyClass::StopAck:
+  if(!r.stop||f.type!=5U||!f.commandId||p[0]||p[1]>7||p[2]!=1U||mcGet16(p+3)!=f.commandId||p[5]>2||(p[6]&0xf0U)||p[7])return false;
+  out=T::Emergency;return true;
+ case ReplyClass::Status:
+  if(f.type!=3U||f.commandId||p[0]!=1U||p[1]>4||p[2]>2||(p[3]&0x80U)||(p[4]>100&&p[4]!=255)||p[7]||r.stop!=(p[2]==1U))return false;
+  // Only stopped evidence may consume the STOP reserve; non-stopped
+  // safety warnings get urgent pacing but never consume that reserve.
+  out=r.stop?T::Emergency:(p[2]!=0||p[4]<=20||p[4]>100||(p[3]&0x60U)||!(p[3]&1U))?T::Mission:T::Routine;return true;
+ case ReplyClass::Mission:{
+  MissionControlFeedback m{};
+  if(r.stop||f.type!=15U||!missionFeedbackDecode(p,m)||f.commandId!=m.transaction)return false;
+  if(m.result!=MC_STATUS&&m.op!=MCTRL_PAUSE&&m.op!=MCTRL_CANCEL)return false;
+  out=m.result==MC_STATUS?T::Routine:T::Mission;return true;
+ }
+ case ReplyClass::Routine:
+  if(r.stop||f.type!=1U||f.commandId||(p[0]&0xf0U))return false;
+  for(unsigned i=2;i<8;++i)if(p[i])return false;
+  out=T::Routine;return true;
+ default:return false;
+ }
+}
 template<class Frame,class Driver> class E22Adapter {
  Driver &driver_; PhyPump<Frame> pump_; bool active_=false;
+ using Adaptive=flytec_rtos::E22AdaptiveAdmission<Driver>;
+ Adaptive* adaptive_=nullptr;bool adaptiveFault_=false;
 public:
  E22Adapter(Driver &d,PhyEvents<Frame>& e):driver_(d),pump_(e){}
+ // Opt-in mock/commissioning seam. Raw admission cannot bypass the budget.
+ E22Adapter(Driver &d,PhyEvents<Frame>& e,Adaptive& admission):driver_(d),pump_(e),adaptive_(&admission),adaptiveFault_(!admission.belongsTo(d)){}
+ bool admitReply(const typename Transport<Frame>::Request& r,uint32_t now){
+  using T=flytec_rtos::LoRaAirtimePolicy::Traffic;using R=typename Adaptive::Result;
+  T traffic=T::Routine;
+  if(!adaptive_||adaptiveFault_||!pump_.canAdmit(r.ticket,r.stop)||!classifyBackupReply<Frame>(r,traffic))return false;
+  const auto result=adaptive_->start(r.frame,traffic,now);
+  if(result==R::Fault){adaptiveFault_=true;return false;}
+  if(result!=R::Accepted)return false;
+  active_=pump_.track(r.ticket,r.stop);
+  if(!active_)adaptiveFault_=true;
+  return active_;
+ }
  bool admit(const Ticket &t,const Frame &f,uint32_t now,bool stop=false){
+  if(adaptive_)return false;
   if(!pump_.canAdmit(t,stop)||!driver_.ready()||!t.generation||!t.serial||!t.epoch)return false;
   using A=typename Driver::Admission;
   const auto result=driver_.trySendFrame(f,now);
@@ -127,13 +179,20 @@ public:
  }
  void poll(uint32_t now){
   driver_.update();
-  if(active_&&!driver_.txPending()){
+  if(active_&&adaptive_){
+   const auto result=adaptive_->poll(now);
+   if(result!=Adaptive::Poll::Pending){
+    const bool ok=result==Adaptive::Poll::LocalComplete;
+    if(!ok)adaptiveFault_=true;
+    pump_.terminal(ok?PhyOutcome::LocalComplete:PhyOutcome::Uncertain,now);active_=false;
+   }
+  }else if(active_&&!driver_.txPending()){
    using O=flytec_rtos::E22TxState::Outcome;
    pump_.terminal(driver_.txOutcome()==O::LocalReady&&!driver_.transportFault()?PhyOutcome::LocalComplete:PhyOutcome::Uncertain,now);active_=false;
   }
   pump_.flushOutcome();
   pump_.pollRx(now,[&](Frame &f){return driver_.receiveFrame(f);});
-  pump_.publishHealth({now,driver_.configured(),driver_.ready(),driver_.transportFault(),driver_.txPending()});
+  pump_.publishHealth({now,driver_.configured()&&!adaptiveFault_,driver_.ready()&&(!adaptive_||!active_)&&!adaptiveFault_,driver_.transportFault()||adaptiveFault_,driver_.txPending()||(adaptive_&&active_)});
  }
 };
 }

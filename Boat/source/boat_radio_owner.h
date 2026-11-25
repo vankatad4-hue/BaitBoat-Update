@@ -53,7 +53,7 @@ public:
     ((f.type==5U||f.type==9U||f.type==15U)&&p==TxPriority::Mission)||
     (f.type==3U&&(p==TxPriority::Telemetry||p==TxPriority::Diagnostic));
   if(!shape||!epoch_||f.sessionEpoch!=epoch_||!f.sequence||!age||!verify(f)||!app_.feedbackReady())return false;
-  if(!app_.submit(f,now,false,age,true))return false;
+  if(!app_.submit(f,now,false,age,true,p==TxPriority::Mission?ReplyClass::Mission:ReplyClass::Routine))return false;
   appClass_=p;publish();return true;
  }
  // STOP-class reply may preempt queued ordinary work; never revokes active RF.
@@ -62,13 +62,13 @@ public:
   if(!epoch_||f.sessionEpoch!=epoch_||!f.sequence||!age||!verify(f))return false;
   priority_.publish(priorityBit(TxPriority::Stop));
   appClass_=TxPriority::Stop;
-  const bool ok=app_.preemptStop(f,now,epoch_,age);publish();return ok;
+  const bool ok=app_.preemptStop(f,now,epoch_,age,ReplyClass::StopAck);publish();return ok;
  }
  // STOP feedback may use the reserved lane even while ordinary TX is
  // latched. Unlike a STOP ACK, it never preempts other queued work.
  template<class Verify> bool submitStatus(const Frame& f,uint32_t now,uint32_t age,bool stopped,Verify verify){
   if(!epoch_||f.sessionEpoch!=epoch_||!f.sequence||!age||!verify(f)||app_.stopRetryPending()||app_.terminalPending())return false;
-  if(!app_.submit(f,now,stopped,age,true))return false;
+  if(!app_.submit(f,now,stopped,age,true,ReplyClass::Status))return false;
   appClass_=stopped?TxPriority::Stop:TxPriority::Safety;publish();return true;
  }
  bool revokeStatus(const Ticket& t){

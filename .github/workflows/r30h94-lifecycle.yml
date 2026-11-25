@@ -29,6 +29,9 @@ on:
       - 'Boat/source/boat_session_recovery.h'
       - 'Boat/source/boat_handshake_reply.h'
       - 'Boat/source/boat_radio_transport.h'
+      - 'Boat/source/boat_radio_application.h'
+      - 'Boat/source/boat_radio_phy.h'
+      - 'Boat/tests/lora_boat_response_test.cpp'
       - 'Boat/source/boat_radio_worker_policy.h'
       - 'Boat/source/boat_radio_owner.h'
       - 'Boat/source/boat_stop_delivery.h'
@@ -268,6 +271,8 @@ jobs:
           timeout 10s /tmp/lora_admission_boat
           g++ -std=c++17 -pthread -Wall -Wextra -Werror -IRemote/tests/stubs -IBoat/tests/r30h73_freertos_mock -Itests/r30h20_stubs -IRemote/source Remote/source/radio_protocol.cpp Remote/source/radio_command_codec.cpp Remote/tests/lora_owner_priority_test.cpp -lcrypto -o /tmp/lora_owner_priority
           timeout 10s /tmp/lora_owner_priority
+          g++ -std=c++17 -Wall -Wextra -Werror -IBoat/source -Itests/r30h20_stubs -IRemote/tests/stubs Boat/source/radio_protocol.cpp Boat/source/radio_payload_codec.cpp Boat/tests/lora_boat_response_test.cpp -lcrypto -o /tmp/lora_boat_response
+          timeout 10s /tmp/lora_boat_response
           g++ -std=c++17 -Wall -Wextra -Werror -ICommon/source Remote/tests/lora_uart_transition_test.cpp -o /tmp/lora_uart_transition
           timeout 10s /tmp/lora_uart_transition
           g++ -std=c++17 -Wall -Wextra -Werror -ICommon/source -IRemote/source Remote/tests/lora_host_commissioning_test.cpp -o /tmp/lora_host_commissioning
