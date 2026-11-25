@@ -1,4 +1,5 @@
 #include "e22_adaptive_admission.h"
+#include "e22_uart_profile.h"
 #include <cassert>
 using namespace flytec_rtos;
 struct Driver{
@@ -14,6 +15,9 @@ struct Driver{
  Admission trySendFrame(int,uint32_t){++calls;if(next==Admission::Accepted)outcome=Outcome::Pending;return next;}
 };
 int main(){
+ assert(!E22UartProfile::fastPermitted(true,true,true,false,true));
+ assert(E22UartProfile::fastPermitted(true,true,true,true,true));
+ assert(!E22UartProfile::frameWireMs(0));
  using Adapter=E22AdaptiveAdmission<Driver>;using R=Adapter::Result;using P=Adapter::Poll;using T=Adapter::Traffic;
  LoRaAirtimeProfile cfg;cfg.commissioned=true;cfg.hourlyMs=100;cfg.reserveMs=25;cfg.packetMs=25;
  LoRaAirtimePolicy policy;assert(policy.configure(cfg,0,true));Driver driver;
