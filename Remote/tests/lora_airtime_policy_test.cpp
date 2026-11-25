@@ -1,4 +1,4 @@
-#include "lora_airtime_policy.h"
+#include "lora_link_policy.h"
 #include <cassert>
 using namespace flytec_rtos;
 int main(){

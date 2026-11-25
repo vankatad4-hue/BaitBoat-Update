@@ -1,6 +1,6 @@
 #pragma once
 #include "mission_control_wire.h"
-#include "lora_airtime_policy.h"
+#include "lora_link_policy.h"
 #include <stdint.h>
 namespace flytec_rtos {
 // Dormant backup-only request ledger. No TX ownership or implicit failover.

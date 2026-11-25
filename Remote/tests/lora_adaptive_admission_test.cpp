@@ -1,5 +1,4 @@
-#include "e22_adaptive_admission.h"
-#include "e22_uart_profile.h"
+#include "lora_link_policy.h"
 #include <cassert>
 using namespace flytec_rtos;
 struct Driver{

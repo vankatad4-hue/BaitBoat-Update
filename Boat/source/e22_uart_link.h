@@ -3,7 +3,7 @@
 #include <Stream.h>
 #include "radio_protocol.h"
 #include "e22_tx_state.h"
-#include "lora_airtime_policy.h"
+#include "lora_link_policy.h"
 
 typedef void (*E22SetModeFn)(bool m0,bool m1,void *context);
 typedef bool (*E22AuxReadyFn)(void *context);

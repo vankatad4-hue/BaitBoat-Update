@@ -1,5 +1,5 @@
 #pragma once
-#include "lora_airtime_policy.h"
+#include "lora_link_policy.h"
 #include "remote_async_tx.h"
 #include "radio_handshake.h"
 // Experimental Core 1 root-key handshake. Caller supplies provisioned root,

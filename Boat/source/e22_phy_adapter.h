@@ -2,7 +2,7 @@
 #include "bounded_tx_service.h"
 #include "bounded_rx_service.h"
 #include "e22_tx_state.h"
-#include "e22_adaptive_admission.h"
+#include "lora_link_policy.h"
 // Dormant: single PHY owner. LocalReady is NOT RF delivery or peer ACK.
 // Driver initialization, bus ownership and RF signoff remain external.
 namespace flytec_rtos {

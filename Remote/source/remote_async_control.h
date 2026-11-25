@@ -1,6 +1,6 @@
 #pragma once
 #include "remote_async_tx.h"
-#include "lora_airtime_policy.h"
+#include "lora_link_policy.h"
 #include "remote_backup_mission_control.h"
 #include "radio_command_codec.h"
 #include "r30h17_stop_confirmation_gate.h"
