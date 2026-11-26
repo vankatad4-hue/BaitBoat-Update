@@ -49,11 +49,49 @@ public:
 private:
  uint32_t since_=0,last_=0;bool tracking_=false;
 };
+// Shared conservative rolling ledger for one transmitter. Charges are
+// grouped for at most 60 s from the first admission, and expire only a full
+// hour after the most recent possible end in that group. Never age out an
+// active/uncertain charge. All callers are on the exclusive radio owner.
+class LoRaRollingLedger {
+public:
+ static constexpr uint32_t Window=3600000U,Bucket=60000U;
+ LoRaRollingLedger()=default;
+ LoRaRollingLedger(const LoRaRollingLedger&)=delete;
+ LoRaRollingLedger& operator=(const LoRaRollingLedger&)=delete;
+ bool pending()const{return active_!=nullptr;}
+ uint32_t usedMs(uint32_t now){
+  uint32_t total=0;
+  for(auto& e:entries_){
+   if(e.valid && &e!=active_&&uint32_t(now-e.last)>=Window)e.valid=false;
+   if(e.valid)total+=e.ms;
+  }
+  return total;
+ }
+ bool reserve(uint32_t now,uint32_t charge,uint32_t cap){
+  if(active_||!charge||cap>Window||charge>cap)return false;
+  const uint32_t used=usedMs(now);
+  if(used>cap||charge>cap-used)return false;
+  Entry* slot=nullptr;
+  for(auto& e:entries_)if(e.valid&&uint32_t(now-e.first)<Bucket){slot=&e;break;}
+  if(!slot)for(auto& e:entries_)if(!e.valid){slot=&e;break;}
+  if(!slot)return false;
+  if(!slot->valid){slot->valid=true;slot->first=now;slot->ms=0;}
+  slot->last=now;slot->ms+=charge;active_=slot;return true;
+ }
+ bool finish(uint32_t now){
+  if(!active_)return false;
+  active_->last=now;active_=nullptr;return true;
+ }
+private:
+ struct Entry{uint32_t first=0,last=0,ms=0;bool valid=false;};
+ Entry entries_[62]{};Entry* active_=nullptr;
+};
 class LoRaAirtimePolicy {
 public:
  enum class Traffic:uint8_t{Routine,Mission,Emergency};
  enum class Decision:uint8_t{Allowed,Uncommissioned,Invalid,Busy,DutyLimited};
- static constexpr uint32_t Window=3600000U, Bucket=60000U;
+ static constexpr uint32_t Window=LoRaRollingLedger::Window, Bucket=LoRaRollingLedger::Bucket;
  // A fresh object needs trusted prior-hour history or a full quiet hour.
  // No in-place reconfiguration can erase prior charges.
  bool configure(const LoRaAirtimeProfile& p,uint32_t now,bool priorHourQuiet){
@@ -64,13 +102,13 @@ public:
   profile_=p;configured_=true;bootAt_=now;quiet_=priorHourQuiet;return true;
  }
  bool configureAfterQuiet(const LoRaAirtimeProfile& p,uint32_t now,LoRaQuietRestart& proof){
-  return proof.consume(now)&&configure(p,now,true);
+  return !configured_&&proof.ready(now)&&configure(p,now,true)&&proof.consume(now);
  }
  Decision inspect(Traffic t,uint32_t now,bool phyReady){
   if(!configured_||(!quiet_&&uint32_t(now-bootAt_)<Window))return Decision::Uncommissioned;
   quiet_=true;
   if(t!=Traffic::Routine&&t!=Traffic::Mission&&t!=Traffic::Emergency)return Decision::Invalid;
-  if(!phyReady||outstanding_)return Decision::Busy;
+  if(!phyReady||ledger_.pending())return Decision::Busy;
   const uint32_t gap=t==Traffic::Routine?profile_.normalGapMs:profile_.urgentGapMs;
   if(sent_&&uint32_t(now-lastPossible_)<gap)return Decision::Busy;
   const uint32_t cap=t==Traffic::Emergency?profile_.hourlyMs:profile_.hourlyMs-profile_.reserveMs;
@@ -80,35 +118,24 @@ public:
  }
  Decision reserve(Traffic t,uint32_t now,bool phyReady){
   const auto decision=inspect(t,now,phyReady);if(decision!=Decision::Allowed)return decision;
-  Entry* slot=nullptr;
-  for(auto& e:entries_)if(e.valid&&uint32_t(now-e.first)<Bucket){slot=&e;break;}
-  if(!slot)for(auto& e:entries_)if(!e.valid){slot=&e;break;}
-  if(!slot)return Decision::DutyLimited;
-  if(!slot->valid){slot->valid=true;slot->first=now;slot->ms=0;}
-  slot->last=now;slot->ms+=profile_.packetMs;active_=slot;outstanding_=true;sent_=true;lastPossible_=now;
+  const uint32_t cap=t==Traffic::Emergency?profile_.hourlyMs:profile_.hourlyMs-profile_.reserveMs;
+  if(!ledger_.reserve(now,profile_.packetMs,cap))return Decision::DutyLimited;
+  sent_=true;lastPossible_=now;
   return Decision::Allowed;
  }
  // Call only after local completion or a bounded uncertain final RF end.
  // Keep the charge alive from this conservative end timestamp, not admission.
  bool finish(uint32_t now){
-  if(!outstanding_||!active_)return false;
-  active_->last=now;lastPossible_=now;active_=nullptr;outstanding_=false;return true;
+  if(!ledger_.finish(now))return false;
+  lastPossible_=now;return true;
  }
- uint32_t usedMs(uint32_t now){
-  uint32_t total=0;
-  for(auto& e:entries_){
-   if(e.valid && &e!=active_&&uint32_t(now-e.last)>=Window)e.valid=false;
-   if(e.valid)total+=e.ms;
-  }
-  return total;
- }
+ uint32_t usedMs(uint32_t now){return ledger_.usedMs(now);}
  LoRaAirtimePolicy()=default;
  LoRaAirtimePolicy(const LoRaAirtimePolicy&)=delete;
  LoRaAirtimePolicy& operator=(const LoRaAirtimePolicy&)=delete;
 private:
- struct Entry{uint32_t first=0,last=0,ms=0;bool valid=false;};
- Entry entries_[62]{};Entry* active_=nullptr;LoRaAirtimeProfile profile_{};
- uint32_t bootAt_=0,lastPossible_=0;bool configured_=false,quiet_=false,sent_=false,outstanding_=false;
+ LoRaRollingLedger ledger_;LoRaAirtimeProfile profile_{};
+ uint32_t bootAt_=0,lastPossible_=0;bool configured_=false,quiet_=false,sent_=false;
 };
 }
 

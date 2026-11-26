@@ -9,19 +9,7 @@ E22UartLink::E22UartLink(Stream &uart,E22SetModeFn mode,E22AuxReadyFn aux,E22Res
  : uart_(uart),modeFn_(mode),auxFn_(aux),resetFn_(reset),context_(ctx),capacityFn_(capacityFn),configured_(false),
    auxReadyNow_(false),rxIndex_(0),rxHead_(0),rxTail_(0),rxQueueCount_(0),
    txCount_(0),rxCount_(0),rejectedDutyCount_(0) {
-    memset(rxBuffer_,0,sizeof(rxBuffer_)); memset(rxQueue_,0,sizeof(rxQueue_)); clearBuckets();
-}
-void E22UartLink::clearBuckets(){for(auto &b:buckets_){b.minuteStamp=0;b.airtimeMs=0;b.valid=false;}}
-uint32_t E22UartLink::usedAirtimeMs(uint32_t now){
-    const uint32_t currentMinute=now/60000U; uint32_t total=0;
-    for(auto &b:buckets_) if(b.valid && (currentMinute-b.minuteStamp)<60U) total+=b.airtimeMs;
-    return total;
-}
-bool E22UartLink::dutyAllows(uint32_t now){return usedAirtimeMs(now)+EST_AIRTIME_MS<=MAX_AIRTIME_PER_HOUR_MS;}
-void E22UartLink::recordAirtime(uint32_t now,uint32_t ms){
-    const uint32_t minute=now/60000U; auto &b=buckets_[minute%60U];
-    if(!b.valid || b.minuteStamp!=minute){b.minuteStamp=minute;b.airtimeMs=0;b.valid=true;}
-    uint32_t sum=(uint32_t)b.airtimeMs+ms; b.airtimeMs=(sum>65535U)?65535U:(uint16_t)sum;
+    memset(rxBuffer_,0,sizeof(rxBuffer_)); memset(rxQueue_,0,sizeof(rxQueue_));
 }
 bool E22UartLink::configCommand(const uint8_t *cmd,size_t length,const uint8_t *expected,size_t expectedLen,uint32_t timeout){
     while(uart_.available()) uart_.read();
@@ -37,6 +25,9 @@ bool E22UartLink::configCommand(const uint8_t *cmd,size_t length,const uint8_t *
     return memcmp(response,expected,expectedLen)==0;
 }
 bool E22UartLink::configureEU868TestProfile(){
+    // Do not reset the UART TX state while a possible transmission is
+    // outstanding/uncertain. Reconfiguration must not erase its charge.
+    if(airtime_.pending()||txState_.fault())return false;
     configured_=false;
     txState_.reset();rxIndex_=rxHead_=rxTail_=rxQueueCount_=0;
     if(!modeFn_ || !auxFn_) return false;
@@ -56,7 +47,12 @@ bool E22UartLink::configureEU868TestProfile(){
 }
 void E22UartLink::update(){
     auxReadyNow_=auxFn_?auxFn_(context_):false;
-    txState_.poll(millis(),auxReadyNow_);
+    const uint32_t now=millis();
+    txState_.poll(now,auxReadyNow_);
+    // LocalReady is NOT a measured RF end. Legacy is still RF-locked;
+    // the future adaptive driver binding adds the commissioned tail.
+    if(airtime_.pending()&&txState_.outcome()==flytec_rtos::E22TxState::Outcome::LocalReady)
+        airtime_.finish(now);
     if(txState_.fault()){configured_=false;rxIndex_=rxHead_=rxTail_=rxQueueCount_=0;return;}
     if(!configured_)return;
     uint8_t processed=0;
@@ -86,12 +82,14 @@ E22UartLink::Admission E22UartLink::trySendFrame(const RadioFrame &frame,uint32_
     if(txState_.fault())return Admission::Uncertain;
     if(!configured_)return Admission::Unavailable;
     if(!auxReadyNow_ || txState_.pending())return Admission::Busy;
-    if(!dutyAllows(now)){++rejectedDutyCount_;return Admission::DutyLimited;}
     if(frame.magic[0]!=RADIO_FRAME_MAGIC0 || frame.magic[1]!=RADIO_FRAME_MAGIC1)return Admission::Invalid;
     if(capacityFn_ && capacityFn_(context_)<sizeof(frame))return Admission::Busy;
+    // Charge before a possible write; ambiguous writes are never refunded.
+    if(!airtime_.reserve(now,EST_AIRTIME_MS,MAX_AIRTIME_PER_HOUR_MS)){
+        if(rejectedDutyCount_!=UINT32_MAX)++rejectedDutyCount_;
+        return Admission::DutyLimited;
+    }
     const size_t n=uart_.write((const uint8_t*)&frame,sizeof(frame));
-    // Even a reported zero write can be ambiguous on a failed bridge transaction.
-    recordAirtime(now,EST_AIRTIME_MS);
     if(n!=sizeof(frame)){
         txState_.uncertain();configured_=false;rxIndex_=rxHead_=rxTail_=rxQueueCount_=0;
         return Admission::Uncertain;

@@ -51,13 +51,11 @@ private:
     uint8_t rxIndex_;
     RadioFrame rxQueue_[4];
     uint8_t rxHead_,rxTail_,rxQueueCount_;
-    struct AirtimeBucket { uint32_t minuteStamp; uint16_t airtimeMs; bool valid; };
-    AirtimeBucket buckets_[60];
+    // Legacy accounting uses the same rolling implementation as the
+    // adaptive policy. It remains provisional until measured RF-tail and
+    // cold-start isolation are bound to one exclusive physical owner.
+    flytec_rtos::LoRaRollingLedger airtime_;
     uint32_t txCount_,rxCount_,rejectedDutyCount_;
-    void clearBuckets();
-    uint32_t usedAirtimeMs(uint32_t nowMs);
-    bool dutyAllows(uint32_t nowMs);
-    void recordAirtime(uint32_t nowMs,uint32_t airtimeMs);
     bool configCommand(const uint8_t *command,size_t length,const uint8_t *expected,size_t expectedLength,uint32_t timeoutMs);
     void parserByte(uint8_t value);
 };
