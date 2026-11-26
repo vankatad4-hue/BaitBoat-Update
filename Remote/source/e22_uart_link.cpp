@@ -27,7 +27,7 @@ bool E22UartLink::configCommand(const uint8_t *cmd,size_t length,const uint8_t *
 bool E22UartLink::configureEU868TestProfile(){
     // Do not reset the UART TX state while a possible transmission is
     // outstanding/uncertain. Reconfiguration must not erase its charge.
-    if(airtime_.pending()||txState_.fault())return false;
+    if(airtime_.pending()||txState_.pending()||txState_.fault()||managedTxActive_)return false;
     configured_=false;
     txState_.reset();rxIndex_=rxHead_=rxTail_=rxQueueCount_=0;
     if(!modeFn_ || !auxFn_) return false;
@@ -79,16 +79,34 @@ bool E22UartLink::sendFrame(const RadioFrame &frame,uint32_t now){
     return trySendFrame(frame,now)==Admission::Accepted;
 }
 E22UartLink::Admission E22UartLink::trySendFrame(const RadioFrame &frame,uint32_t now){
+    return trySendFrameImpl(frame,now,false);
+}
+bool E22UartLink::bindManagedAdmission(){
+    if(managedAdmissionBound_||txState_.pending()||txState_.fault()||airtime_.hasCharges())return false;
+    managedAdmissionBound_=true;
+    return true;
+}
+E22UartLink::Admission E22UartLink::trySendFrameManaged(const RadioFrame &frame,uint32_t now){
+    if(!managedAdmissionBound_)return Admission::Unavailable;
+    return trySendFrameImpl(frame,now,true);
+}
+void E22UartLink::finishManagedAdmission(){
+    if(managedAdmissionBound_&&managedTxActive_&&!txState_.pending()&&!txState_.fault())managedTxActive_=false;
+}
+E22UartLink::Admission E22UartLink::trySendFrameImpl(const RadioFrame &frame,uint32_t now,bool managed){
+    if(managedAdmissionBound_!=managed)return Admission::Unavailable;
     if(txState_.fault())return Admission::Uncertain;
     if(!configured_)return Admission::Unavailable;
     if(!auxReadyNow_ || txState_.pending())return Admission::Busy;
     if(frame.magic[0]!=RADIO_FRAME_MAGIC0 || frame.magic[1]!=RADIO_FRAME_MAGIC1)return Admission::Invalid;
     if(capacityFn_ && capacityFn_(context_)<sizeof(frame))return Admission::Busy;
-    // Charge before a possible write; ambiguous writes are never refunded.
-    if(!airtime_.reserve(now,EST_AIRTIME_MS,MAX_AIRTIME_PER_HOUR_MS)){
-        if(rejectedDutyCount_!=UINT32_MAX)++rejectedDutyCount_;
-        return Admission::DutyLimited;
-    }
+    if(!managed){
+        // Charge before a possible write; ambiguous writes are never refunded.
+        if(!airtime_.reserve(now,EST_AIRTIME_MS,MAX_AIRTIME_PER_HOUR_MS)){
+            if(rejectedDutyCount_!=UINT32_MAX)++rejectedDutyCount_;
+            return Admission::DutyLimited;
+        }
+    }else managedTxActive_=true; // held through the manager's RF-tail guard
     const size_t n=uart_.write((const uint8_t*)&frame,sizeof(frame));
     if(n!=sizeof(frame)){
         txState_.uncertain();configured_=false;rxIndex_=rxHead_=rxTail_=rxQueueCount_=0;

@@ -13,6 +13,13 @@ class PhysicalWorker {
  NRF24Link nrf_;
  HardwareSerial serial_{1};
  E22UartBoardPort e22_{serial_,UART_NUM_1};
+ const flytec_rtos::LoRaAirtimeProfile e22Profile_;
+ const uint32_t e22TailMs_;
+ const bool e22AirtimeEvidenceSigned_;
+ flytec_rtos::LoRaAirtimePolicy e22Airtime_;
+ flytec_rtos::LoRaQuietRestart e22QuietRestart_;
+ flytec_rtos::E22AdaptiveAdmission<E22UartBoardPort> e22Admission_;
+ bool e22AirtimeConfigured_=false;
  flytec_r30h118::NrfAdapter<RadioFrame,NRF24Link> na_;
  flytec_r30h118::E22Adapter<RadioFrame,E22UartBoardPort> ea_;
  PhyService<RadioFrame> ns_,es_;
@@ -23,8 +30,12 @@ class PhysicalWorker {
  bool nrfInitialized_=false,e22Initialized_=false,started_=false,closed_=false;
 public:
  PhysicalWorker(int ce,int csn,SPIClass *spi,uint8_t channel,int sck,int miso,int mosi,
-                Bus &nb,Bus &eb,Events &ne,Events &ee):
- nrf_(ce,csn,spi,channel,sck,miso,mosi),na_(nrf_,ne),ea_(e22_,ee),ns_(nb),es_(eb){}
+                Bus &nb,Bus &eb,Events &ne,Events &ee,
+                const flytec_rtos::LoRaAirtimeProfile &profile,uint32_t tailMs,bool airtimeEvidenceSigned):
+ nrf_(ce,csn,spi,channel,sck,miso,mosi),e22Profile_(profile),e22TailMs_(tailMs),
+ e22AirtimeEvidenceSigned_(airtimeEvidenceSigned),
+ e22Admission_(e22_,e22Airtime_,tailMs,airtimeEvidenceSigned&&profile.commissioned),
+ na_(nrf_,ne),ea_(e22_,ee,e22Admission_),ns_(nb),es_(eb){}
  // Bind worker-local services before begin; their lifetime must cover this worker.
  bool bindShared(SharedPhyService<RadioFrame>& primary,SharedPhyService<RadioFrame>& backup,uint8_t boat,uint8_t remote){
   if(started_||closed_||sharedNrf_||sharedE22_||&primary==&backup||!boat||!remote||boat==remote)return false;
@@ -44,17 +55,26 @@ public:
   if(!started_||closed_)return;
   if(nrfInitialized_)na_.poll(now);
   if(e22Initialized_)ea_.poll(now);
+  if(e22Initialized_&&!e22AirtimeConfigured_){
+   const bool quiet=e22_.configured()&&!e22_.txPending()&&!e22_.transportFault();
+   e22QuietRestart_.observe(now,quiet);
+   if(quiet&&e22AirtimeEvidenceSigned_&&e22Profile_.commissioned&&
+      e22TailMs_>0U&&e22TailMs_<60000U&&e22QuietRestart_.ready(now))
+    e22AirtimeConfigured_=e22Airtime_.configureAfterQuiet(e22Profile_,now,e22QuietRestart_);
+  }
   if(sharedNrf_&&sharedE22_){
    auto primaryAdmit=[&](const Bus::Request &r){return na_.admit(r.ticket,r.frame,r.stop);};
-   auto backupAdmit=[&](const Bus::Request &r){return ea_.admit(r.ticket,r.frame,now,r.stop);};
+   auto backupAdmit=[&](const Bus::Request &r){return ea_.tryAdmitReply(r,now);};
    sharedNrf_->step(now,age,nrfInitialized_&&nrf_.txPending(),enabled&&nrfInitialized_&&nrf_.ready(),
     [&](const RadioFrame &f){return boatReplyShape(f,boatId_,remoteId_,false);},primaryAdmit,primaryAdmit);
-   sharedE22_->step(now,age,e22Initialized_&&e22_.txPending(),enabled&&e22Initialized_&&e22_.ready(),
+   sharedE22_->step(now,age,e22Initialized_&&e22_.txPending(),
+    enabled&&e22Initialized_&&e22AirtimeConfigured_&&e22_.ready(),
     [&](const RadioFrame &f){return boatReplyShape(f,boatId_,remoteId_,true);},backupAdmit,backupAdmit);
    return;
   }
   ns_.step(now,age,enabled&&nrfInitialized_,[&](const Bus::Request &r){return na_.admit(r.ticket,r.frame,r.stop);});
-  es_.step(now,age,enabled&&e22Initialized_,[&](const Bus::Request &r){return ea_.admit(r.ticket,r.frame,now,r.stop);});
+  es_.step(now,age,enabled&&e22Initialized_&&e22AirtimeConfigured_,
+   [&](const Bus::Request &r){return ea_.admit(r.ticket,r.frame,now,r.stop);});
  }
  // Software closure only. Caller invalidates tickets before shutdown.
  // No claim of RF quiescence or completed application ACK.
@@ -75,7 +95,13 @@ class PhysicalTask {
  using Bus=flytec_r30h118::Transport<RadioFrame>;
  using Events=flytec_r30h118::PhyEvents<RadioFrame>;
 public:
- struct Config {int ce,csn; SPIClass *spi; uint8_t channel; int sck,miso,mosi; E22BoardPins pins; bool primary,backup;};
+ struct Config {
+  int ce,csn; SPIClass *spi; uint8_t channel; int sck,miso,mosi;
+  E22BoardPins pins; bool primary,backup;
+  flytec_rtos::LoRaAirtimeProfile backupAirtimeProfile;
+  uint32_t backupRfTailMs;
+  bool backupAirtimeEvidenceSigned;
+ };
 private:
  Config cfg_;
  Bus &nb_,&eb_; Events &ne_,&ee_;
@@ -94,7 +120,9 @@ private:
    SharedPriority unusedNP,unusedEP;
    SharedPhyService<RadioFrame> ns(nb_,nh_?*nh_:unusedN,np_?*np_:unusedNP);
    SharedPhyService<RadioFrame> es(eb_,eh_?*eh_:unusedE,ep_?*ep_:unusedEP);
-   PhysicalWorker w(cfg_.ce,cfg_.csn,cfg_.spi,cfg_.channel,cfg_.sck,cfg_.miso,cfg_.mosi,nb_,eb_,ne_,ee_);
+   PhysicalWorker w(cfg_.ce,cfg_.csn,cfg_.spi,cfg_.channel,cfg_.sck,cfg_.miso,cfg_.mosi,
+                    nb_,eb_,ne_,ee_,cfg_.backupAirtimeProfile,cfg_.backupRfTailMs,
+                    cfg_.backupAirtimeEvidenceSigned);
    const bool bound=!nh_||w.bindShared(ns,es,boatId_,remoteId_);
    const bool ok=bound&&life_.phase()==Phase::Starting&&w.begin(true,cfg_.primary,cfg_.pins,cfg_.backup);
    if(ok&&life_.ready()){

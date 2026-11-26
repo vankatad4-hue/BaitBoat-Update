@@ -27,6 +27,19 @@ Branch: `platformio-unified-r30h20`. Official Boat VER014 / Remote VER028.
 
 Review was targeted at active entry points, transport adapters, control paths and source inventory; not a fresh line-by-line audit of every tracked file.
 
+## R30H-124W8 follow-up — cooperative-loop status correction (2026-11-26)
+
+The Remote calibration row above is a historical snapshot and is superseded: `joystick_calibrateCentre()` now starts the `CentreSampler` and returns; `joystick_update()` services samples cooperatively. `Remote/tests/r30h117_centre_sampler_test.cpp` already covers interval, stability, unsafe-state, overflow and wrap behavior, and the Remote host workflow runs it.
+
+Current remaining loop-latency audit:
+
+- `joystick_adc.cpp` still performs sequential ADS1115 conversion polling. Its loop condition is bounded by 8 ms per channel, for four channels, plus I2C and other call overhead. No target timing measurement exists, so this is a source bound, not an observed worst-case duration.
+- The main loop services Boat radio before joystick and display. Map tile loading now uses a cooperative single-reader API, with 4 KiB reads and at most one tile operation per renderer update. The unused synchronous `offlineMap_readTile()` wrapper has been removed to prevent reintroduction of an unbounded full-tile read through that API.
+- Map import copies 4 KiB chunks at 25 ms pacing. SD call durations, synchronous manifest/coverage validation, display service gaps and end-to-end radio-to-next-poll delay remain unmeasured on target.
+- Keep Wire, SD, LVGL and physical adapters under the existing single loop owner. Measure worst-case ADC, SD and full-loop timing on the target before deciding whether ADC conversion needs a cooperative state machine or any work should migrate to another core.
+
+The new `Remote/tests/test_r30h116_cooperative_loop_contract.py` source-contract regression is part of the Remote host workflow. Local Python result: 3 tests PASS. This is source-shape verification only; no Remote target compile or physical timing run was performed for this follow-up.
+
 ## Small consistency fixes saved before pause
 
 - Boat `boat_dual_radio_port.cpp` 41fbc12: revoke E22 availability and authenticated RX freshness on sticky local transport fault; discard backup non-emergency queue entries and pending feedback.

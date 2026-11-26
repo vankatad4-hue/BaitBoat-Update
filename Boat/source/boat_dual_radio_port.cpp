@@ -1,5 +1,6 @@
 #include "boat_dual_radio_port.h"
 #include "radio_payload_codec.h"
+#include "recovery_probe_wire.h"
 #include <string.h>
 
 
@@ -561,6 +562,12 @@ bool BoatDualRadioPort::queueAsyncApplication(ManagedLink link,const RadioFrame 
   case RADIO_MSG_HEARTBEAT:
    if(!radio_decodeHeartbeatPayload(frame.payload,decoded))return false;
    priority=TxPriority::Heartbeat;break;
+  case RADIO_MSG_LINK_PROBE:{
+   uint16_t echoed=0;
+   if(backup||frame.flags||frame.commandId||
+      !flytec_rtos::recoveryProbeDecode(frame.payload,flytec_rtos::RecoveryProbeKind::Echo,echoed)||!echoed)return false;
+   priority=TxPriority::Heartbeat;break;
+  }
   case RADIO_MSG_ACK:
    if(!radio_decodeAckPayload(frame.payload,decoded)||decoded.commandType==CMD_EMERGENCY_STOP||decoded.commandId!=frame.commandId)return false;
    priority=TxPriority::Mission;break;
@@ -796,7 +803,7 @@ void BoatDualRadioPort::receiveCaptured(ManagedLink link,const RadioFrame &f,uin
    return;
  }
  if(!sessionStarted_||f.sessionEpoch!=sessionEpoch_||!radio_frameVerify(f,key_))return;
- if(f.type!=RADIO_MSG_HEARTBEAT&&f.type!=RADIO_MSG_CONTROL&&f.type!=RADIO_MSG_ACTION&&f.type!=RADIO_MSG_MISSION_PREPARE&&f.type!=RADIO_MSG_MISSION_CONTROL&&f.type!=RADIO_MSG_MISSION_STICKS)return;
+ if(f.type!=RADIO_MSG_HEARTBEAT&&f.type!=RADIO_MSG_CONTROL&&f.type!=RADIO_MSG_ACTION&&f.type!=RADIO_MSG_LINK_PROBE&&f.type!=RADIO_MSG_MISSION_PREPARE&&f.type!=RADIO_MSG_MISSION_CONTROL&&f.type!=RADIO_MSG_MISSION_STICKS)return;
  RadioSessionCounter &linkGuard=link==LINK_NRF_PRIMARY?primarySeqGuard_:backupSeqGuard_;
  if(!linkGuard.accept(f.sequence))return;
  // Conservative scheduling: even a later rejected authenticated control
@@ -808,6 +815,22 @@ void BoatDualRadioPort::receiveCaptured(ManagedLink link,const RadioFrame &f,uin
  if(f.type==RADIO_MSG_HEARTBEAT){
    RadioDecodedPayload heartbeat{};if(!radio_decodeHeartbeatPayload(f.payload,heartbeat))return;
  }else if(!crossSequenceAccepted&&!(f.type==RADIO_MSG_ACTION&&f.payload[0]==CMD_EMERGENCY_STOP))return;
+ if(f.type==RADIO_MSG_LINK_PROBE){
+#if BOAT_R30H121_ENDPOINT_COMPILE
+  uint16_t challenged=0;
+  if(link!=LINK_NRF_PRIMARY||!BOAT_R30H121_PHYSICAL_OWNER||!runtimeOwner_.worker()||
+     !sessionReady()||primaryFresh(now)||uint32_t(now-capturedAt)>=100U||
+     f.flags||f.commandId||!crossSequenceAccepted||
+     !flytec_rtos::recoveryProbeDecode(f.payload,flytec_rtos::RecoveryProbeKind::Challenge,challenged)||
+     challenged!=f.sequence)return;
+  RadioFrame echo{};
+  radio_frameInit(echo,RADIO_MSG_LINK_PROBE,BOAT_ID,REMOTE_ID,++txSequence_,0,now,sessionEpoch_);
+  if(flytec_rtos::recoveryProbeEncode(flytec_rtos::RecoveryProbeKind::Echo,challenged,echo.payload)&&
+     radio_frameSeal(echo,key_))sendFrame(LINK_NRF_PRIMARY,echo);
+#endif
+  // This read-only recovery probe is never link freshness or movement authority.
+  return;
+ }
  bool &rxValid=link==LINK_NRF_PRIMARY?lastNrfRxValid_:lastBackupRxValid_;
  uint32_t &lastRx=link==LINK_NRF_PRIMARY?lastNrfRxMs_:lastBackupRxMs_;
  if(f.type==RADIO_MSG_HEARTBEAT){

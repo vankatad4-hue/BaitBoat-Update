@@ -9,6 +9,8 @@ on:
       - 'Common/**'
       - 'Remote/source/**'
       - 'Remote/tests/**'
+      - 'Boat/tests/test_r30h124w8_recovery_probe_contract.py'
+      - 'Boat/source/boat_dual_radio_port.cpp'
       - 'tests/r30h20_**'
       - 'tests/r30h22_**'
       - 'tests/r30h20_stubs/**'
@@ -31,6 +33,8 @@ on:
       - 'Common/**'
       - 'Remote/source/**'
       - 'Remote/tests/**'
+      - 'Boat/tests/test_r30h124w8_recovery_probe_contract.py'
+      - 'Boat/source/boat_dual_radio_port.cpp'
       - 'tests/r30h20_**'
       - 'tests/r30h22_**'
       - 'tests/r30h20_stubs/**'
@@ -62,6 +66,12 @@ jobs:
         run: |
           g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror Remote/tests/r30h117_centre_sampler_test.cpp -o /tmp/r30h117_centre
           /tmp/r30h117_centre
+          python3 -m unittest Remote/tests/test_r30h116_cooperative_loop_contract.py -v
+      - name: R30H-124W8.5c.2 Remote E22 managed admission regression
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -Itests/r30h117_stubs -IRemote/source \
+            Remote/source/e22_uart_link.cpp tests/r30h117_e22_test.cpp -o /tmp/remote_e22_managed
+          /tmp/remote_e22_managed
       - name: R30H-61 bounded mailbox FIFO and overflow host test
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror Remote/tests/transport_mailbox_test.cpp -o /tmp/remote_transport_mailbox_test
@@ -264,6 +274,12 @@ jobs:
           /tmp/remote_dual_radio_r62
       - name: R30H-44 E22 STOP / mission / heartbeat priority and retry source contract
         run: python3 -m unittest Remote/tests/test_r30h44_lora_mission_priority.py -v
+      - name: R30H-124W8.5c.2 shared LoRa rolling airtime ledger regression
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror Remote/tests/lora_airtime_policy_test.cpp -o /tmp/remote_lora_airtime_policy
+          /tmp/remote_lora_airtime_policy
+      - name: R30H-124W8 recovery probe production endpoint contract
+        run: python3 -m unittest Boat/tests/test_r30h124w8_recovery_probe_contract.py -v
       - name: R30H-43 LoRa mission feedback dispatch source contract
         run: python3 -m unittest Remote/tests/test_r30h43_lora_mission_feedback.py -v
       - name: R63 Remote backup LoRa command policy decoding

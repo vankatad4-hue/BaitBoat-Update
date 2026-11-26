@@ -60,6 +60,7 @@ public:
  LoRaRollingLedger(const LoRaRollingLedger&)=delete;
  LoRaRollingLedger& operator=(const LoRaRollingLedger&)=delete;
  bool pending()const{return active_!=nullptr;}
+ bool hasCharges()const{for(const auto& e:entries_)if(e.valid&&e.ms)return true;return false;}
  uint32_t usedMs(uint32_t now){
   uint32_t total=0;
   for(auto& e:entries_){
@@ -102,8 +103,11 @@ public:
   profile_=p;configured_=true;bootAt_=now;quiet_=priorHourQuiet;return true;
  }
  bool configureAfterQuiet(const LoRaAirtimeProfile& p,uint32_t now,LoRaQuietRestart& proof){
-  return !configured_&&proof.ready(now)&&configure(p,now,true)&&proof.consume(now);
+  if(configured_||!proof.ready(now)||!configure(p,now,true))return false;
+  if(!proof.consume(now)){configured_=false;quiet_=false;profile_=LoRaAirtimeProfile{};return false;}
+  quietProofConsumed_=true;return true;
  }
+ bool managedReady()const{return configured_&&quietProofConsumed_;}
  Decision inspect(Traffic t,uint32_t now,bool phyReady){
   if(!configured_||(!quiet_&&uint32_t(now-bootAt_)<Window))return Decision::Uncommissioned;
   quiet_=true;
@@ -135,7 +139,7 @@ public:
  LoRaAirtimePolicy& operator=(const LoRaAirtimePolicy&)=delete;
 private:
  LoRaRollingLedger ledger_;LoRaAirtimeProfile profile_{};
- uint32_t bootAt_=0,lastPossible_=0;bool configured_=false,quiet_=false,sent_=false;
+ uint32_t bootAt_=0,lastPossible_=0;bool configured_=false,quiet_=false,sent_=false,quietProofConsumed_=false;
 };
 }
 
@@ -148,6 +152,23 @@ namespace flytec_rtos {
 // policy per transmitting device; no direct driver bypass while active.
 // Traffic comes from the authenticated application, not received RF bytes.
 template<class Driver> class E22AdaptiveAdmission {
+ enum class Binding:uint8_t{UnmanagedDriver,Bound,Rejected};
+ template<class D> static auto bindManaged(D& d,int)->decltype(d.bindManagedAdmission(),Binding()){
+  return d.bindManagedAdmission()?Binding::Bound:Binding::Rejected;
+ }
+ template<class D> static Binding bindManaged(D&,long){return Binding::UnmanagedDriver;}
+ template<class D,class Frame> static auto sendFrame(D& d,const Frame& f,uint32_t now,bool managed,int)
+  ->decltype(d.trySendFrameManaged(f,now)){
+  return managed?d.trySendFrameManaged(f,now):d.trySendFrame(f,now);
+ }
+ template<class D,class Frame> static auto sendFrame(D& d,const Frame& f,uint32_t now,bool,long)
+  ->decltype(d.trySendFrame(f,now)){
+  return d.trySendFrame(f,now);
+ }
+ template<class D> static auto finishManaged(D& d,int)->decltype(d.finishManagedAdmission(),void()){
+  d.finishManagedAdmission();
+ }
+ template<class D> static void finishManaged(D&,long){}
 public:
  using Traffic=LoRaAirtimePolicy::Traffic;
  enum class Result:uint8_t{Accepted,Busy,DutyLimited,Denied,NoWrite,Fault};
@@ -155,13 +176,15 @@ public:
  // tailMs must bound possible remaining RF airtime AFTER local readiness.
  // Zero or unapproved evidence disables all transmissions through this seam.
  E22AdaptiveAdmission(Driver& d,LoRaAirtimePolicy& policy,uint32_t tailMs,bool approved):
-  driver_(d),policy_(policy),tailMs_(tailMs),approved_(approved&&tailMs&&tailMs<60000U){}
+  driver_(d),policy_(policy),tailMs_(tailMs),approved_(approved&&tailMs&&tailMs<60000U),
+  binding_(bindManaged(d,0)){}
  bool belongsTo(const Driver& d)const{return &driver_==&d;}
  E22AdaptiveAdmission(const E22AdaptiveAdmission&)=delete;
  E22AdaptiveAdmission& operator=(const E22AdaptiveAdmission&)=delete;
  template<class Frame> Result start(const Frame& frame,Traffic traffic,uint32_t now){
   if(fault_||driver_.transportFault())return Result::Fault;
-  if(!approved_)return Result::Denied;
+  if(!approved_||binding_==Binding::Rejected||
+     (binding_==Binding::Bound&&!policy_.managedReady()))return Result::Denied;
   if(active_||!driver_.ready())return Result::Busy;
   const auto d=policy_.reserve(traffic,now,true);
   using D=LoRaAirtimePolicy::Decision;
@@ -170,7 +193,7 @@ public:
   if(d!=D::Allowed)return Result::Denied;
   // Charge before possible write. Ambiguous attempts are never refunded.
   using A=typename Driver::Admission;
-  const auto result=driver_.trySendFrame(frame,now);
+  const auto result=sendFrame(driver_,frame,now,binding_==Binding::Bound,0);
   if(result==A::Accepted){active_=true;tailStarted_=false;return Result::Accepted;}
   if(result==A::Uncertain||driver_.transportFault()){fault_=true;return Result::Fault;}
   // Known pre-write rejection: retain conservative charge; owner must retire
@@ -189,10 +212,11 @@ public:
   if(!tailStarted_){tailStarted_=true;tailAt_=now;}
   if(uint32_t(now-tailAt_)<tailMs_)return Poll::Pending;
   if(!policy_.finish(now)){fault_=true;return Poll::Fault;}
+  if(binding_==Binding::Bound)finishManaged(driver_,0);
   active_=false;tailStarted_=false;return Poll::LocalComplete;
  }
 private:
- Driver& driver_;LoRaAirtimePolicy& policy_;const uint32_t tailMs_;const bool approved_;
+ Driver& driver_;LoRaAirtimePolicy& policy_;const uint32_t tailMs_;const bool approved_;const Binding binding_;
  uint32_t tailAt_=0;bool active_=false,tailStarted_=false,fault_=false;
 };
 }

@@ -1,6 +1,7 @@
 #pragma once
 // Consolidated Boat radio component; original types and owner contracts retained.
 #include "boat_radio_application.h"
+#include "recovery_probe_wire.h"
 namespace flytec_r30h123 {
 using namespace flytec_r30h118;
 using namespace flytec_r30h120;
@@ -49,7 +50,11 @@ public:
  // Boat-originated, authenticated feedback only. Never use this path for
  // a Remote command. Numeric types are the fixed radio protocol wire ABI.
  template<class Verify> bool submitFeedback(const Frame& f,uint32_t now,TxPriority p,uint32_t age,Verify verify){
+  uint16_t echoedProbe=0;
+  const bool recoveryEcho=f.type==6U&&p==TxPriority::Heartbeat&&!f.flags&&!f.commandId&&
+   flytec_rtos::recoveryProbeDecode(f.payload,flytec_rtos::RecoveryProbeKind::Echo,echoedProbe)&&echoedProbe!=0;
   const bool shape=(f.type==1U&&p==TxPriority::Heartbeat)||
+    recoveryEcho||
     ((f.type==5U||f.type==9U||f.type==15U)&&p==TxPriority::Mission)||
     (f.type==3U&&(p==TxPriority::Telemetry||p==TxPriority::Diagnostic));
   if(!shape||!epoch_||f.sessionEpoch!=epoch_||!f.sequence||!age||!verify(f)||!app_.feedbackReady())return false;

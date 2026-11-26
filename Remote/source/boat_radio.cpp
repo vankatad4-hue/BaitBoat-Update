@@ -9,6 +9,7 @@
 #include "boat_telemetry.h"
 #include "boat_state.h"
 #include "radio_protocol.h"
+#include "recovery_probe_wire.h"
 #include "mission_wire.h"
 #include "mission_control_client.h"
 #include "mission_stick.h"
@@ -495,7 +496,11 @@ static void validateInboundCaptured(ManagedLink link,const RadioFrame &frame,uin
     }
     if(!g_session.established()||frame.sessionEpoch!=g_sessionEpoch||!radio_frameVerify(frame,g_authKey))return;
     if(frame.type!=RADIO_MSG_HEARTBEAT&&frame.type!=RADIO_MSG_TELEMETRY&&frame.type!=RADIO_MSG_ACK&&frame.type!=RADIO_MSG_LINK_PROBE&&frame.type!=RADIO_MSG_MISSION_ACK&&frame.type!=RADIO_MSG_MISSION_FEEDBACK)return;
-    if(frame.type==RADIO_MSG_LINK_PROBE&&!payloadBytesZero(frame.payload,0,7))return;
+    if(frame.type==RADIO_MSG_LINK_PROBE&&!payloadBytesZero(frame.payload,0,7)){
+        uint16_t echoed=0;
+        if(link!=LINK_NRF_PRIMARY||
+           !flytec_rtos::recoveryProbeDecode(frame.payload,flytec_rtos::RecoveryProbeKind::Echo,echoed)||!echoed)return;
+    }
     RadioSessionCounter &guard=link==LINK_NRF_PRIMARY?g_boatPrimarySequenceGuard:g_boatBackupSequenceGuard;
     if(!guard.accept(frame.sequence))return;
     const bool cross=g_boatSequenceGuard.accept(frame.sequence);

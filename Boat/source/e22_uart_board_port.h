@@ -73,6 +73,10 @@ public:
  bool txPending()const{return link_.txPending();}
  flytec_rtos::E22TxState::Outcome txOutcome()const{return link_.txOutcome();}
 private:
+ template<class Driver> friend class flytec_rtos::E22AdaptiveAdmission;
+ bool bindManagedAdmission(){return link_.bindManagedAdmission();}
+ Admission trySendFrameManaged(const RadioFrame& f,uint32_t ms){return active_?link_.trySendFrameManaged(f,ms):Admission::Unavailable;}
+ void finishManagedAdmission(){link_.finishManagedAdmission();}
  friend class flytec_rtos::E22OfflinePort<E22UartBoardPort>;
  void commissioningLatchFault(){commissioningFault_=true;}
  uint32_t commissioningNow()const{return millis();}

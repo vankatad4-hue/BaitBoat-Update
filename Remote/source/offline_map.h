@@ -24,16 +24,12 @@ bool offlineMap_hasMapData();
 bool offlineMap_getAttribution(char *buffer, size_t bufferSize);
 void offlineMap_getCoverageStats(uint16_t &planned,uint16_t &present,uint16_t &missing);
 
-// Load one raw RGB565 tile into PSRAM. Caller must release it with offlineMap_freeTile().
-// Tile path: /maps/street/<z>/<x>/<y>.rgb565 or /maps/satellite/<z>/<x>/<y>.rgb565
-uint16_t *offlineMap_readTile(OfflineMapStyle style, uint8_t zoom, uint32_t tileX, uint32_t tileY);
-
 // Cooperative single-reader API: step returns -1 error, 0 pending, 1 transferred buffer.
 bool offlineMap_startTile(OfflineMapStyle style,uint8_t zoom,uint32_t x,uint32_t y);
 int offlineMap_stepTile(uint16_t *&completed);
 void offlineMap_cancelTile();
 
-// Release a tile buffer allocated by offlineMap_readTile().
+// Release a tile buffer returned by offlineMap_stepTile().
 void offlineMap_freeTile(uint16_t *pixels);
 
 // Validate the staged manifest/index before publishing its slot; restore via offlineMap_begin.

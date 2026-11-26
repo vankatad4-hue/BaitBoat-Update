@@ -9,6 +9,7 @@ typedef void (*E22SetModeFn)(bool m0,bool m1,void *context);
 typedef bool (*E22AuxReadyFn)(void *context);
 typedef size_t (*E22TxCapacityFn)(void *context);
 typedef void (*E22ResetFn)(bool released,void *context);
+class E22UartBoardPort;
 
 class E22UartLink {
 public:
@@ -34,6 +35,12 @@ public:
     // Owner-task diagnostic only: full queue observations, not lost frames.
     uint32_t rxFullPollCount() const { return rxFullPollCount_; }
 private:
+    template<class Driver> friend class flytec_rtos::E22AdaptiveAdmission;
+    friend class E22UartBoardPort;
+    bool bindManagedAdmission();
+    Admission trySendFrameManaged(const RadioFrame &frame,uint32_t nowMs);
+    void finishManagedAdmission();
+    Admission trySendFrameImpl(const RadioFrame &frame,uint32_t nowMs,bool managed);
     uint32_t rxFullPollCount_=0;
     static constexpr uint32_t EST_AIRTIME_MS=flytec_rtos::LoRaAirtimeProfile::BaselinePacket; // UNVERIFIED estimate; RF TX locked until actual airtime is measured
     static constexpr uint32_t MAX_AIRTIME_PER_HOUR_MS=flytec_rtos::LoRaAirtimeProfile::BaselineHour; // PROVISIONAL 1% policy; actual EU band conditions need signoff
@@ -55,6 +62,7 @@ private:
     // adaptive policy. It remains provisional until measured RF-tail and
     // cold-start isolation are bound to one exclusive physical owner.
     flytec_rtos::LoRaRollingLedger airtime_;
+    bool managedAdmissionBound_=false,managedTxActive_=false;
     uint32_t txCount_,rxCount_,rejectedDutyCount_;
     bool configCommand(const uint8_t *command,size_t length,const uint8_t *expected,size_t expectedLength,uint32_t timeoutMs);
     void parserByte(uint8_t value);

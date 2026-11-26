@@ -22,6 +22,7 @@ out/ui-font/
 **/__pycache__/
 **/.pytest_cache/
 .venv/
+.platformio/
 
 # Generated from canonical Common/source; edit the canonical file, not copies.
 /Boat/source/bounded_rx_service.h
@@ -56,6 +57,7 @@ out/ui-font/
 /Boat/source/radio_utc_time_v1.h
 /Boat/source/radio_watchdog.h
 /Boat/source/radio_worker.h
+/Boat/source/recovery_probe_wire.h
 /Boat/source/transport_mailbox.h
 /Boat/source/transport_task_queue.h
 /Boat/source/tx_generation_gate.h
@@ -92,6 +94,7 @@ out/ui-font/
 /Remote/source/radio_utc_time_v1.h
 /Remote/source/radio_watchdog.h
 /Remote/source/radio_worker.h
+/Remote/source/recovery_probe_wire.h
 /Remote/source/transport_mailbox.h
 /Remote/source/transport_task_queue.h
 /Remote/source/tx_generation_gate.h

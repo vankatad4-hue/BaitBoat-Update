@@ -90,6 +90,23 @@ jobs:
           /tmp/r30h117_e22
       - name: R30H-65 opt-in core-0 probe isolation contract
         run: python3 -m unittest discover -s Boat/tests -p test_r30h65_core0_probe.py -v
+      - name: R30H-124W8 recovery probe wire and endpoint contract
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -ICommon/source \
+            Boat/tests/recovery_probe_wire_test.cpp -o /tmp/boat_recovery_probe_wire
+          /tmp/boat_recovery_probe_wire
+          python3 -m unittest Boat/tests/test_r30h124w8_recovery_probe_contract.py -v
+      - name: R30H-124W8 one-hour quiet restart and E22 admission gate
+        run: |
+          g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -ICommon/source \
+            Boat/tests/lora_quiet_restart_test.cpp -o /tmp/boat_lora_quiet_restart
+          /tmp/boat_lora_quiet_restart
+          python3 -m unittest Boat/tests/test_r30h124w8_worker_airtime_contract.py -v
+      - name: R30H-124W8 Boat owner tagged Echo admission
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -Itests/r30h20_stubs -ICommon/source -IBoat/source \
+            Boat/tests/recovery_probe_owner_test.cpp -o /tmp/boat_recovery_probe_owner
+          /tmp/boat_recovery_probe_owner
       - name: R30H-63 target core affinity instrumentation contract
         run: python3 -m unittest discover -s Boat/tests -p test_r30h63_core_affinity.py -v
       - name: R30H-62 cross-endpoint FreeRTOS handoff source contract

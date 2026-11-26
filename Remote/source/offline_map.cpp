@@ -109,13 +109,6 @@ int offlineMap_stepTile(uint16_t *&completed){
     if(tileInput.available()){offlineMap_cancelTile();return -1;}
     tileInput.close();completed=tileBuffer;tileBuffer=nullptr;tileOffset=0;return 1;
 }
-uint16_t *offlineMap_readTile(OfflineMapStyle style,uint8_t zoom,uint32_t x,uint32_t y){
-    if(!offlineMap_startTile(style,zoom,x,y))return nullptr;
-    uint16_t *result=nullptr;
-    while(offlineMap_stepTile(result)==0){}
-    return result;
-}
-
 // Release a tile buffer after the renderer no longer references it.
 void offlineMap_freeTile(uint16_t *pixels)
 {
