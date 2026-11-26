@@ -276,7 +276,8 @@ jobs:
         run: python3 -m unittest Remote/tests/test_r30h44_lora_mission_priority.py -v
       - name: R30H-124W8.5c.2 shared LoRa rolling airtime ledger regression
         run: |
-          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror Remote/tests/lora_airtime_policy_test.cpp -o /tmp/remote_lora_airtime_policy
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -ICommon/source \
+            Remote/tests/lora_airtime_policy_test.cpp -o /tmp/remote_lora_airtime_policy
           /tmp/remote_lora_airtime_policy
       - name: R30H-124W8 recovery probe production endpoint contract
         run: python3 -m unittest Boat/tests/test_r30h124w8_recovery_probe_contract.py -v

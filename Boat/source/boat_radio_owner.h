@@ -15,6 +15,11 @@ template<class Frame> class OwnerLink {
  TxPriority appClass_=TxPriority::None;
  uint8_t epoch_=0;
  static uint8_t priorityBit(TxPriority p){return p==TxPriority::None?0:static_cast<uint8_t>(1U<<static_cast<unsigned>(p));}
+ template<class F> static auto recoveryEcho(const F& f,uint16_t& echoed,int)->decltype(f.payload,bool()){
+  return f.type==6U&&!f.flags&&!f.commandId&&
+   flytec_rtos::recoveryProbeDecode(f.payload,flytec_rtos::RecoveryProbeKind::Echo,echoed)&&echoed!=0;
+ }
+ template<class F> static bool recoveryEcho(const F&,uint16_t&,long){return false;}
  void publish(){
   const bool appPending=app_.state()==TxState::Queued||app_.state()==TxState::Admitted;
   uint8_t mask=appPending?priorityBit(appClass_):0;
@@ -51,10 +56,9 @@ public:
  // a Remote command. Numeric types are the fixed radio protocol wire ABI.
  template<class Verify> bool submitFeedback(const Frame& f,uint32_t now,TxPriority p,uint32_t age,Verify verify){
   uint16_t echoedProbe=0;
-  const bool recoveryEcho=f.type==6U&&p==TxPriority::Heartbeat&&!f.flags&&!f.commandId&&
-   flytec_rtos::recoveryProbeDecode(f.payload,flytec_rtos::RecoveryProbeKind::Echo,echoedProbe)&&echoedProbe!=0;
+  const bool taggedRecoveryEcho=p==TxPriority::Heartbeat&&recoveryEcho(f,echoedProbe,0);
   const bool shape=(f.type==1U&&p==TxPriority::Heartbeat)||
-    recoveryEcho||
+    taggedRecoveryEcho||
     ((f.type==5U||f.type==9U||f.type==15U)&&p==TxPriority::Mission)||
     (f.type==3U&&(p==TxPriority::Telemetry||p==TxPriority::Diagnostic));
   if(!shape||!epoch_||f.sessionEpoch!=epoch_||!f.sequence||!age||!verify(f)||!app_.feedbackReady())return false;

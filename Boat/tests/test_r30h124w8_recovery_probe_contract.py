@@ -47,13 +47,15 @@ class TestRecoveryProbeProductionContract(unittest.TestCase):
             self.assertIn(term, branch)
 
         owner = (ROOT / "Boat/source/boat_radio_owner.h").read_text()
+        self.assertIn("decltype(f.payload,bool())", owner)
+        self.assertIn("recoveryProbeDecode(f.payload,flytec_rtos::RecoveryProbeKind::Echo,echoed)", owner)
+        self.assertIn("static bool recoveryEcho(const F&,uint16_t&,long){return false;}", owner)
         start = owner.index("bool submitFeedback(")
         end = owner.index("// STOP-class reply", start)
         feedback = owner[start:end]
         for term in (
-            "f.type==6U&&p==TxPriority::Heartbeat&&!f.flags&&!f.commandId",
-            "RecoveryProbeKind::Echo",
-            "recoveryEcho||",
+            "p==TxPriority::Heartbeat&&recoveryEcho(f,echoedProbe,0)",
+            "taggedRecoveryEcho||",
         ):
             self.assertIn(term, feedback)
 
