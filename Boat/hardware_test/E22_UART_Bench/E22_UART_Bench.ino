@@ -1,4 +1,6 @@
 // Boat E22 bench-only RF test. No motors, solenoids, or actuator commands.
+// On a fresh checkout, run `python Common/stage.py` before opening this sketch;
+// it materializes the ignored endpoint copy of the canonical Common driver.
 #include <Arduino.h>
 #include <HardwareSerial.h>
 #include "../../source/e22_uart_link.h"

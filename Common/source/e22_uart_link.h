@@ -13,16 +13,24 @@ class E22UartBoardPort;
 
 class E22UartLink {
 public:
+    // Attach a UART plus mode/AUX/reset callbacks; no hardware access occurs here.
     E22UartLink(Stream &uart,E22SetModeFn modeFn,E22AuxReadyFn auxFn,E22ResetFn resetFn,void *context,E22TxCapacityFn capacityFn=nullptr);
-    bool configureEU868TestProfile(); // blocking setup-only readback/config
+    // Blocking setup-only profile write/readback. Never call from a service loop.
+    bool configureEU868TestProfile();
     // Owner only: revoke admission and mark outstanding UART TX uncertain.
     void shutdownLocal(){disableAdmission();if(txState_.pending())txState_.uncertain();}
-    void disableAdmission(){configured_=false;rxIndex_=rxHead_=rxTail_=rxQueueCount_=0;} // owner only; does not stop RF
-    void update();                    // non-blocking RX/TX-state poll
+    // Close local admission and clear queued RX; this does not stop RF already in flight.
+    void disableAdmission(){configured_=false;rxIndex_=rxHead_=rxTail_=rxQueueCount_=0;}
+    // Non-blocking AUX/TX-state poll plus bounded RX parsing.
+    void update();
+    // Compatibility wrapper; use trySendFrame() when the result class matters.
     bool sendFrame(const RadioFrame &frame,uint32_t nowMs);
     enum class Admission:uint8_t { Accepted, Busy, DutyLimited, Invalid, Unavailable, Uncertain };
-    Admission trySendFrame(const RadioFrame &frame,uint32_t nowMs); // no implicit poll; Stream write may block
-    bool receiveFrame(RadioFrame &frame); // pure software dequeue
+    // No implicit poll. Stream::write may block; call only from the radio owner.
+    Admission trySendFrame(const RadioFrame &frame,uint32_t nowMs);
+    // Dequeue a frame already checked for marker and CRC; does not authenticate it.
+    bool receiveFrame(RadioFrame &frame);
+    // Driver state observed by the owning task; ready() also requires current AUX.
     bool txPending()const{return txState_.pending();}
     flytec_rtos::E22TxState::Outcome txOutcome()const{return txState_.outcome();}
     bool configured()const{return configured_;}

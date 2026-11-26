@@ -50,6 +50,15 @@ class TestR30HPreflight(unittest.TestCase):
         self.hostile("Remote/source/e22_uart_link.cpp",
                      "0x67,0xC3,0x12", "0x67,0xC3,0x13")
 
+    def test_fail_if_canonical_e22_profile_changes(self):
+        self.hostile("Common/source/e22_uart_link.cpp",
+                     "0x67,0xC3,0x12", "0x67,0xC3,0x13")
+
+    def test_fail_if_staged_command_codec_drifts(self):
+        self.hostile("Remote/source/radio_command_codec.cpp",
+                     "if (cmd.type == CMD_EMERGENCY_STOP) return true;",
+                     "if (cmd.type == CMD_EMERGENCY_STOP) return false;")
+
     def test_fail_if_r30h3_phys_latency_fabricated(self):
         self.hostile("Boat/docs/BOAT_R30H_3_STOP_RF_ACCEPTANCE.csv",
                      "NOT_RUN,,,,", "PASS,100,200,unverified,")

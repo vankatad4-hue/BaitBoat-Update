@@ -111,10 +111,14 @@ class CommonClockTests(unittest.TestCase):
 
     def test_unclaimed_hardware_evidence_is_not_permitted(self):
         rows=self.read(HEADER + edge(100,"STOP_BUTTON_EDGE","REMOTE","RISING",origin="EXTERNAL_ANALYZER"))
-        errors=api.validate_manifest(manifest("HARDWARE_OBSERVATION"),pathlib.Path("/dev/null"),rows)
-        self.assertTrue(any("SHA256" in x for x in errors))
-        self.assertTrue(any("VM/VH" in x for x in errors))
-        self.assertTrue(any("sample rate" in x for x in errors))
+        # An existing temporary file keeps the SHA check portable across Windows and POSIX.
+        with tempfile.TemporaryDirectory() as tmp:
+            capture=pathlib.Path(tmp)/"unclaimed.csv"
+            capture.write_text(HEADER, encoding="utf-8")
+            errors=api.validate_manifest(manifest("HARDWARE_OBSERVATION"),capture,rows)
+            self.assertTrue(any("SHA256" in x for x in errors))
+            self.assertTrue(any("VM/VH" in x for x in errors))
+            self.assertTrue(any("sample rate" in x for x in errors))
 
     def test_full_hardware_metadata_still_returns_review_required_not_pass(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -2,6 +2,26 @@
 
 These tests use a host C++ compiler and small Arduino/frame stubs. They do **not** validate cryptography or radio hardware.
 
+## Shared E22 UART driver and command codec
+
+Boat and Remote build the same implementation from `Common/source/e22_uart_link.cpp`.
+Before running an endpoint-path command from a fresh checkout, stage the canonical
+Common files; the command then compiles the generated endpoint copy with host stubs:
+
+```sh
+python Common/stage.py
+g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror \
+  -Itests/r30h117_stubs -IBoat/source \
+  Boat/source/e22_uart_link.cpp tests/r30h117_e22_test.cpp \
+  -o /tmp/boat_e22_test
+/tmp/boat_e22_test
+```
+
+`-std=c++17` selects the language level, `-I` adds the Arduino/Stream test stubs
+and staged header, and `-Werror` promotes compiler warnings to failures. This
+checks the driver's software admission and fault paths; it does not transmit RF
+or establish measured airtime.
+
 ## Payload codec/encoder
 
 ```sh

@@ -1,4 +1,6 @@
 // E22 + SC16IS750 bench-only RF test. No motor/solenoid command protocol.
+// On a fresh checkout, run `python Common/stage.py` before opening this sketch;
+// it materializes the ignored endpoint copy of the canonical Common driver.
 #include <Arduino.h>
 #include <Wire.h>
 #include "../../source/sc16is750_bridge.h"

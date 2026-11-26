@@ -1,16 +1,21 @@
 #include "e22_uart_link.h"
 #include <string.h>
 
+// Fixed configuration-mode transaction for the current provisional profile.
+// Keep the write and readback bytes identical so both endpoints share one source.
 static const uint8_t E22_WRITE_CMD[12]={0xC0,0x00,0x09,0x00,0x00,0x00,0x67,0xC3,0x12,0x00,0x00,0x00};
 static const uint8_t E22_WRITE_ACK[12]={0xC1,0x00,0x09,0x00,0x00,0x00,0x67,0xC3,0x12,0x00,0x00,0x00};
 static const uint8_t E22_READ_CMD[3]={0xC1,0x00,0x09};
 
+// Store the endpoint's UART callbacks and start with no accepted TX or RX state.
 E22UartLink::E22UartLink(Stream &uart,E22SetModeFn mode,E22AuxReadyFn aux,E22ResetFn reset,void *ctx,E22TxCapacityFn capacityFn)
  : uart_(uart),modeFn_(mode),auxFn_(aux),resetFn_(reset),context_(ctx),capacityFn_(capacityFn),configured_(false),
    auxReadyNow_(false),rxIndex_(0),rxHead_(0),rxTail_(0),rxQueueCount_(0),
    txCount_(0),rxCount_(0),rejectedDutyCount_(0) {
     memset(rxBuffer_,0,sizeof(rxBuffer_)); memset(rxQueue_,0,sizeof(rxQueue_));
 }
+// Send one setup command, drain stale bytes, then compare the bounded reply.
+// This function is blocking and is only valid during explicit setup/commissioning.
 bool E22UartLink::configCommand(const uint8_t *cmd,size_t length,const uint8_t *expected,size_t expectedLen,uint32_t timeout){
     while(uart_.available()) uart_.read();
     if(uart_.write(cmd,length)!=length) return false;
@@ -24,6 +29,8 @@ bool E22UartLink::configCommand(const uint8_t *cmd,size_t length,const uint8_t *
     if(n!=expectedLen) return false;
     return memcmp(response,expected,expectedLen)==0;
 }
+// Switch to config mode, write and read back the provisional radio profile,
+// then always request transparent mode before returning to the application.
 bool E22UartLink::configureEU868TestProfile(){
     // Do not reset the UART TX state while a possible transmission is
     // outstanding/uncertain. Reconfiguration must not erase its charge.
@@ -45,6 +52,8 @@ bool E22UartLink::configureEU868TestProfile(){
     auxReadyNow_=configured_;
     return configured_;
 }
+// Poll AUX/TX state and consume at most 32 UART bytes per call. This keeps RX
+// work bounded so the owner can service its watchdog and primary radio too.
 void E22UartLink::update(){
     auxReadyNow_=auxFn_?auxFn_(context_):false;
     const uint32_t now=millis();
@@ -55,6 +64,8 @@ void E22UartLink::update(){
         airtime_.finish(now);
     if(txState_.fault()){configured_=false;rxIndex_=rxHead_=rxTail_=rxQueueCount_=0;return;}
     if(!configured_)return;
+    // Bound UART work per tick: a busy backup link must not starve the
+    // independent watchdog service, motor lease or primary nRF poll.
     uint8_t processed=0;
     while(processed<32U && rxQueueCount_<4U && uart_.available()){
         const int value=uart_.read();if(value<0)break;
@@ -62,6 +73,8 @@ void E22UartLink::update(){
     }
     if(rxQueueCount_==4U && rxFullPollCount_!=UINT32_MAX) ++rxFullPollCount_;
 }
+// Resynchronize on the frame marker, validate CRC, and enqueue only whole frames.
+// Queue overflow drops the newest frame and is exposed by rxFullPollCount().
 void E22UartLink::parserByte(uint8_t v){
     if(rxIndex_==0){if(v==RADIO_FRAME_MAGIC0) rxBuffer_[rxIndex_++]=v;return;}
     if(rxIndex_==1){if(v==RADIO_FRAME_MAGIC1) rxBuffer_[rxIndex_++]=v;else {rxIndex_=(v==RADIO_FRAME_MAGIC0)?1:0;}return;}
@@ -74,25 +87,33 @@ void E22UartLink::parserByte(uint8_t v){
         }
     }
 }
+// Legacy boolean wrapper; the owner must call update() separately to poll RX/AUX.
 bool E22UartLink::sendFrame(const RadioFrame &frame,uint32_t now){
     // Owner schedules update explicitly; admission never consumes RX bytes.
     return trySendFrame(frame,now)==Admission::Accepted;
 }
+// Detailed legacy admission result; use the managed seam after exclusive binding.
 E22UartLink::Admission E22UartLink::trySendFrame(const RadioFrame &frame,uint32_t now){
     return trySendFrameImpl(frame,now,false);
 }
+// Bind exactly one adaptive airtime manager, and only before prior charges,
+// active TX, or a transport fault can be lost by switching accounting models.
 bool E22UartLink::bindManagedAdmission(){
     if(managedAdmissionBound_||txState_.pending()||txState_.fault()||airtime_.hasCharges())return false;
     managedAdmissionBound_=true;
     return true;
 }
+// Private manager-only write entry. Direct writes are denied after binding.
 E22UartLink::Admission E22UartLink::trySendFrameManaged(const RadioFrame &frame,uint32_t now){
     if(!managedAdmissionBound_)return Admission::Unavailable;
     return trySendFrameImpl(frame,now,true);
 }
+// Release the driver-side TX latch only after the manager's RF-tail guard ends.
 void E22UartLink::finishManagedAdmission(){
     if(managedAdmissionBound_&&managedTxActive_&&!txState_.pending()&&!txState_.fault())managedTxActive_=false;
 }
+// Validate all local no-write conditions before charging; then charge legacy
+// airtime or latch managed TX before the UART write can become ambiguous.
 E22UartLink::Admission E22UartLink::trySendFrameImpl(const RadioFrame &frame,uint32_t now,bool managed){
     if(managedAdmissionBound_!=managed)return Admission::Unavailable;
     if(txState_.fault())return Admission::Uncertain;
@@ -115,6 +136,7 @@ E22UartLink::Admission E22UartLink::trySendFrameImpl(const RadioFrame &frame,uin
     ++txCount_;txState_.accepted(millis());
     return Admission::Accepted;
 }
+// Remove one complete software-validated frame from the bounded RX queue.
 bool E22UartLink::receiveFrame(RadioFrame &frame){
     if(!configured_||rxQueueCount_==0) return false;
     frame=rxQueue_[rxHead_];rxHead_=(uint8_t)((rxHead_+1U)%4U);--rxQueueCount_;return true;

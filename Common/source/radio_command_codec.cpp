@@ -1,10 +1,13 @@
 #include "radio_command_codec.h"
 
+// Constrain decoded steering values to the application command range.
 static int16_t clampMotor(int16_t v) {
     if (v > 1000) return 1000;
     if (v < -1000) return -1000;
     return v;
 }
+// Restrict backup-link commands to fail-safe/navigation actions; Boat still
+// applies its local STOP, neutral, and physical interlocks after decoding.
 static bool backupAllowed(const BoatCommand &cmd) {
     if (cmd.type == CMD_EMERGENCY_STOP) return true;
     if (cmd.type == CMD_SET_MODE) return cmd.mode == MODE_RETURN_HOME || cmd.mode == MODE_AUTOPILOT;
@@ -14,6 +17,7 @@ static bool backupAllowed(const BoatCommand &cmd) {
            cmd.type == CMD_RELEASE_HOOK_LEFT || cmd.type == CMD_RELEASE_HOOK_RIGHT;
 }
 
+// Serialize the command payload and authenticate the complete frame.
 bool radio_encodeCommand(const BoatCommand &cmd, uint8_t src, uint8_t dst,
                         uint8_t epoch, RadioFrame &f, const uint8_t key[32]) {
     const RadioMessageType type = (cmd.type == CMD_MANUAL_MOTORS) ? RADIO_MSG_CONTROL : RADIO_MSG_ACTION;
@@ -29,14 +33,15 @@ bool radio_encodeCommand(const BoatCommand &cmd, uint8_t src, uint8_t dst,
     return radio_frameSeal(f,key);
 }
 
+// Authenticate and validate a received command before filling the output.
+// Freshness uses the receiver's capture/queue clock, never the sender's millis().
 bool radio_decodeCommand(const RadioFrame &f, uint8_t expectedSrc, uint8_t expectedDst,
                         uint32_t nowMs, uint16_t maxAgeMs, bool backup,
                         BoatCommand &out, const uint8_t key[32]) {
     if (!radio_frameVerify(f,key)) return false;
     if (f.sourceId != expectedSrc || f.destinationId != expectedDst) return false;
-    // Sender and receiver millis() clocks are not synchronized; timestamp age
-    // cannot be compared across devices. Freshness is enforced by sequence,
-    // local receive watchdog, and command queue age. Keep parameter for API.
+    // Sender and receiver uptime are independent. Freshness is session/sequence
+    // checked by receive dispatch; execution must use local queue age.
     (void)maxAgeMs;
     if (f.type != RADIO_MSG_CONTROL && f.type != RADIO_MSG_ACTION) return false;
     if (f.payload[7] != 0 || f.payload[6] > 1) return false;
@@ -64,6 +69,8 @@ bool radio_decodeCommand(const RadioFrame &f, uint8_t expectedSrc, uint8_t expec
     return true;
 }
 
+// Accept only forward sequence movement within an epoch; epoch changes require
+// an explicit caller-authorized reset so replayed sessions remain rejected.
 bool RadioSequenceGuard::accept(uint8_t epoch, uint16_t sequence, bool allowEpochReset) {
     if (!initialized_) { initialized_=true; epoch_=epoch; lastSequence_=sequence; return true; }
     if (epoch != epoch_) {

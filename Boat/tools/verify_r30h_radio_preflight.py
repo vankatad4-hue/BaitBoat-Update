@@ -12,6 +12,9 @@ import re
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 REQUIRED = (
+    "Common/source/e22_uart_link.cpp",
+    "Common/source/radio_command_codec.cpp",
+    "Common/source/radio_key_store.h",
     "Remote/source/sc16is750_bridge.cpp",
     "Remote/source/sc16is750_fifo_budget.h",
     "Remote/source/boat_radio.cpp",
@@ -20,6 +23,8 @@ REQUIRED = (
     "Remote/source/radio_hw_config.h",
     "Remote/source/e22_uart_link.cpp",
     "Remote/source/e22_uart_link.h",
+    "Remote/source/radio_command_codec.cpp",
+    "Remote/source/radio_key_store.h",
     "Remote/source/lora_link_policy.h",
     "Boat/source/boat_radio_hw_config.h",
     "Boat/source/boat_dual_radio_port.cpp",
@@ -27,6 +32,8 @@ REQUIRED = (
     "Boat/source/boat_local_stop_trace.h",
     "Boat/source/e22_uart_link.cpp",
     "Boat/source/e22_uart_link.h",
+    "Boat/source/radio_command_codec.cpp",
+    "Boat/source/radio_key_store.h",
     "Boat/source/lora_link_policy.h",
     "Boat/source/firmware/Flytec_Boat.ino",
     "Boat/source/tracker_gnss.h",
@@ -162,13 +169,18 @@ def verify(source):
             return [int(v.strip(), 0) for v in m.group(1).split(",")]
         except ValueError:
             return None
-    boat_e22 = source["Boat/source/e22_uart_link.cpp"]
-    remote_e22 = source["Remote/source/e22_uart_link.cpp"]
+    common_e22 = source["Common/source/e22_uart_link.cpp"]
+    for endpoint in ("Boat", "Remote"):
+        staged_e22 = source[f"{endpoint}/source/e22_uart_link.cpp"]
+        if staged_e22 != common_e22:
+            errors.append(f"{endpoint} staged E22 driver differs from Common/source")
+        staged_command_codec = source[f"{endpoint}/source/radio_command_codec.cpp"]
+        if staged_command_codec != source["Common/source/radio_command_codec.cpp"]:
+            errors.append(f"{endpoint} staged command codec differs from Common/source")
     for key in ("E22_WRITE_CMD", "E22_WRITE_ACK"):
-        a = code_bytes(boat_e22, key)
-        b2 = code_bytes(remote_e22, key)
-        if not a or len(a) != 12 or a != b2:
-            errors.append(f"Boat/Remote E22 {key} differs or is malformed")
+        a = code_bytes(common_e22, key)
+        if not a or len(a) != 12:
+            errors.append(f"Common E22 {key} is missing or malformed")
         elif a[1:3] != [0, 9] or a[6:9] != [0x67, 0xC3, 0x12]:
             errors.append(f"E22 {key} provisional 9600/62.5k/868.125 profile drift")
     # Shared profile is now canonical within each standalone endpoint package.

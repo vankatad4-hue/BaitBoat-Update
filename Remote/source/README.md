@@ -25,6 +25,9 @@ Active Remote hardware decisions are in [Remote README](../README.md) and [Remot
 - `boat_state.*` / `boat_telemetry.*`: Boat status, telemetry freshness and safety-state application.
 - `boat_ui.cpp`: main Boat telemetry screen; separate Boat-battery indicator with green/yellow/red color and warning text.
 - `boat_radio.cpp`: authenticated primary/backup radio control and mission preparation gate.
+- `Common/source/e22_uart_link.cpp` and `e22_uart_link.h`: canonical E22 UART driver for both endpoints. Run `python Common/stage.py` to generate ignored endpoint build copies; edit only the Common files.
+- `Common/source/radio_command_codec.cpp` and `.h`: canonical command frame encoder/decoder and sequence guard shared by Boat and Remote; staged into each endpoint by the same command.
+- `Common/source/radio_key_store.h`: canonical key-store interface shared by both endpoints and generated into each endpoint by the staging command.
 - `mission_ui.cpp`: Bulgarian mission controls; blocks preparation when Boat battery telemetry is stale or charge estimate is red.
 - `map_renderer.*`, `lake_storage.*`, `mission_storage.*`: SD-backed offline maps and up to 16 saved waypoints.
 

@@ -207,6 +207,8 @@ int SC16IS750Bridge::read() {
 size_t SC16IS750Bridge::readFifo(uint8_t *data,size_t length) {
     if(!flytec_rtos::remoteI2cAllowed())return 0;
     size_t total=0;
+    // Keep each I2C transfer within Wire's 16-byte budget; stop on a short read
+    // rather than spinning or returning bytes that were not received.
     while(total<length) {
         const size_t chunk=(length-total>16)?16:length-total;
         wire_.beginTransmission(address_);
@@ -222,6 +224,8 @@ size_t SC16IS750Bridge::writeFifo(const uint8_t *data,size_t length) {
     if(commissioningLocked_)return 0;
     if(!flytec_rtos::remoteI2cAllowed())return 0;
     size_t total=0;
+    // Re-read free capacity per chunk and stop when the FIFO or bus cannot
+    // accept more data. Each transfer stays within the Wire buffer limit.
     while(total<length) {
         uint8_t level=0;
         if(!readReg(REG_TXLVL,level)) break;
@@ -245,6 +249,7 @@ size_t SC16IS750Bridge::write(const uint8_t *buffer,size_t size) { return writeF
 void SC16IS750Bridge::flush() {
     if(commissioningLocked_)return;
     const uint32_t start=millis();
+    // Setup/owner wait is capped at 100 ms and exits early when TXLVL is empty.
     while(millis()-start<100) {
         uint8_t level=0;
         // Drain only when every slot is free, not when TX FIFO is FULL.

@@ -32,7 +32,7 @@ class TestWorkerAirtimeCommissioningContract(unittest.TestCase):
 
     def test_managed_e22_binding_blocks_direct_writes_without_double_charging(self):
         policy = (ROOT / "Common/source/lora_link_policy.h").read_text()
-        driver = (ROOT / "Boat/source/e22_uart_link.cpp").read_text()
+        driver = (ROOT / "Common/source/e22_uart_link.cpp").read_text()
         header = (ROOT / "Common/source/e22_uart_link.h").read_text()
         board = (ROOT / "Boat/source/e22_uart_board_port.h").read_text()
         self.assertIn("if(!approved_||binding_==Binding::Rejected||", policy)

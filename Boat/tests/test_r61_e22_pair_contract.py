@@ -1,5 +1,7 @@
-"""Static, fail-closed drift test for the existing E22 UART radio pair.
-Run from repository root: python -m unittest Boat/tests/test_r61_e22_pair_contract.py
+"""Static, fail-closed drift test for the shared E22 UART implementation.
+From repository root, stage source then run:
+  python Common/stage.py
+  python -m unittest Boat/tests/test_r61_e22_pair_contract.py
 This does NOT establish RF or regulatory compliance.
 """
 from pathlib import Path
@@ -18,18 +20,31 @@ def config_array(source, name):
         raise AssertionError(f"Missing {name} E22 config constant")
     return bytes(int(x.strip(), 0) for x in match.group(1).split(",") if x.strip())
 
-class E22PairContract(unittest.TestCase):
-    def test_identical_uart_configuration(self):
-        remote = read("Remote/source/e22_uart_link.cpp")
-        boat = read("Boat/source/e22_uart_link.cpp")
+class SharedEndpointSourceContract(unittest.TestCase):
+    def test_endpoint_copies_are_staged_from_one_canonical_driver(self):
+        canonical = read("Common/source/e22_uart_link.cpp")
+        self.assertEqual(read("Boat/source/e22_uart_link.cpp"), canonical)
+        self.assertEqual(read("Remote/source/e22_uart_link.cpp"), canonical)
+
+    def test_shared_uart_configuration(self):
+        canonical = read("Common/source/e22_uart_link.cpp")
         for name, expected in {
             "E22_WRITE_CMD": bytes.fromhex("C0 00 09 00 00 00 67 C3 12 00 00 00"),
             "E22_WRITE_ACK": bytes.fromhex("C1 00 09 00 00 00 67 C3 12 00 00 00"),
             "E22_READ_CMD": bytes.fromhex("C1 00 09"),
         }.items():
             with self.subTest(name=name):
-                self.assertEqual(config_array(remote, name), expected)
-                self.assertEqual(config_array(boat, name), expected)
+                self.assertEqual(config_array(canonical, name), expected)
+
+    def test_command_codec_copies_are_staged_from_common(self):
+        canonical = read("Common/source/radio_command_codec.cpp")
+        self.assertEqual(read("Boat/source/radio_command_codec.cpp"), canonical)
+        self.assertEqual(read("Remote/source/radio_command_codec.cpp"), canonical)
+
+    def test_radio_key_store_interface_is_staged_from_common(self):
+        canonical = read("Common/source/radio_key_store.h")
+        self.assertEqual(read("Boat/source/radio_key_store.h"), canonical)
+        self.assertEqual(read("Remote/source/radio_key_store.h"), canonical)
 
     def test_rx_capacity_guard_and_diagnostic(self):
         # Source contract only; executable Stream mock coverage remains required.

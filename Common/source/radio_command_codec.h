@@ -18,6 +18,7 @@ class RadioSequenceGuard {
 public:
     RadioSequenceGuard() : initialized_(false), epoch_(0), lastSequence_(0) {}
     void reset() { initialized_=false; epoch_=0; lastSequence_=0; }
+    // Return true only for a new forward sequence; epoch changes are denied unless authorized.
     bool accept(uint8_t epoch, uint16_t sequence, bool allowEpochReset=false);
 private:
     bool initialized_;
