@@ -1,26 +1,2 @@
-#pragma once
-#include <Arduino.h>
-#include "boat_state.h"
-#include "radio_payload_codec.h"
-struct BoatTelemetry {
- float batteryVoltage;int batteryPercent;float latitude,longitude,heading,speed;
- bool gpsConnected;uint8_t gpsFixType,gpsSatellites;float gpsAccuracyMeters;
- bool radioConnected,autopilotActive,motorsActive;uint32_t receivedAtMs;
- bool statusValid,statusPrimary;uint8_t reportedMode,stopState,safetyFlags;uint32_t statusReceivedAtMs;
- bool batteryVoltageValid,batteryPercentValid;uint32_t batteryReceivedAtMs,batteryPercentReceivedAtMs;uint16_t batteryMillivolts;
- bool latitudeRecordValid,longitudeRecordValid,coordinatePairValid;uint8_t latitudeSample,longitudeSample;
- uint32_t latitudeReceivedAtMs,longitudeReceivedAtMs,coordinatePairReceivedAtMs;
- bool navigationValid;uint8_t navigationStatus,waypointIndex,navigationSample;uint32_t navigationReceivedAtMs;
- bool weatherValid=false;int16_t temperatureCentiC=0;uint32_t pressurePa=0,weatherReceivedAtMs=0;
- // R30F optional authenticated PRIMARY-LINK fault information. This is
- // UNVERIFIED diagnostic data, never a substitute for physical STOP status.
- bool diagnosticValid=false,diagnosticPrimary=false;
- uint8_t diagnosticReason=0,diagnosticSequence=0;
- uint16_t diagnosticFlags=0,diagnosticMillivolts=0xffffU;
- uint32_t diagnosticReceivedAtMs=0;
- bool sonarSummaryValid;uint16_t sonarDepthCm,sonarRangeCm;uint8_t sonarHealth,sonarAlarmFlags,sonarSample;uint32_t sonarReceivedAtMs;
-};
-extern BoatTelemetry telemetry;
-void telemetryInit();void telemetryUpdate(const BoatTelemetry &newData);
-bool telemetryApplyRadioPayload(const RadioDecodedPayload &payload,bool primaryLink,uint32_t nowMs);
-void telemetryApplyToBoatState(BoatState &state,uint32_t nowMs);
+1ëa¡Ñ1qêmŠ‰ËŠwµéº¶×¥zg­¯(mµ©•§r«×œ…ªõÑÈZ¯]¢{Ş	©ç¢×(÷«µªàºg§¶‰]
+«Â+a½©nyú+EêeiÇ­¢Ü©y,¬µé‚…ªÂjyèµÊ'½êí½©nzÚ-Ê—’ÊË^˜(Z¬Jë¢´­®)àšë-mç±iËeÊ‰Şr«iË^®Z'€ÁÉ…µ„½¹”4(¥¹±Õ‘”€ñÉ‘Õ¥¹¼¹ ø4(¥¹±Õ‘”€‰‰½…Ñ}ÍÑ…Ñ”¹ ˆ4(¥¹±Õ‘”€‰É…‘¥½}Á…å±½…‘}½‘•Œ¹ ˆ4)ÍÑÉÕĞ	½…ÑQ•±•µ•ÑÉäì4(™±½…Ğ‰…ÑÑ•ÉåY½±Ñ…”í¥¹Ğ‰…ÑÑ•ÉåA•É•¹Ğí™±½…Ğ±…Ñ¥ÑÕ‘”±±½¹¥ÑÕ‘”±¡•…‘¥¹œ±ÍÁ••ì4(‰½½°ÁÍ½¹¹•Ñ•íÕ¥¹Ğá}ĞÁÍ¥áQåÁ”±ÁÍM…Ñ•±±¥Ñ•Ìí™±½…ĞÁÍÕÉ…å5•Ñ•ÉÌì4(‰½½°É…‘¥½½¹¹•Ñ•±…ÕÑ½Á¥±½ÑÑ¥Ù”±µ½Ñ½ÉÍÑ¥Ù”íÕ¥¹ĞÌÉ}ĞÉ••¥Ù•‘Ñ5Ìì4(‰½½°ÍÑ…ÑÕÍY…±¥±ÍÑ…ÑÕÍAÉ¥µ…ÉäíÕ¥¹Ğá}ĞÉ•Á½ÉÑ•‘5½‘”±ÍÑ½ÁMÑ…Ñ”±Í…™•Ñå±…ÌíÕ¥¹ĞÌÉ}ĞÍÑ…ÑÕÍI••¥Ù•‘Ñ5Ìì4(‰½½°‰…ÑÑ•ÉåY½±Ñ…•Y…±¥±‰…ÑÑ•ÉåA•É•¹ÑY…±¥íÕ¥¹ĞÌÉ}Ğ‰…ÑÑ•ÉåI••¥Ù•‘Ñ5Ì±‰…ÑÑ•ÉåA•É•¹ÑI••¥Ù•‘Ñ5ÌíÕ¥¹ĞÄÙ}Ğ‰…ÑÑ•Éå5¥±±¥Ù½±ÑÌì4(‰½½°±…Ñ¥ÑÕ‘•I•½É‘Y…±¥±±½¹¥ÑÕ‘•I•½É‘Y…±¥±½½É‘¥¹…Ñ•A…¥ÉY…±¥íÕ¥¹Ğá}Ğ±…Ñ¥ÑÕ‘•M…µÁ±”±±½¹¥ÑÕ‘•M…µÁ±”ì4(Õ¥¹ĞÌÉ}Ğ±…Ñ¥ÑÕ‘•I••¥Ù•‘Ñ5Ì±±½¹¥ÑÕ‘•I••¥Ù•‘Ñ5Ì±½½É‘¥¹…Ñ•A…¥ÉI••¥Ù•‘Ñ5Ìì4(‰½½°¹…Ù¥…Ñ¥½¹Y…±¥íÕ¥¹Ğá}Ğ¹…Ù¥…Ñ¥½¹MÑ…ÑÕÌ±İ…åÁ½¥¹Ñ%¹‘•à±¹…Ù¥…Ñ¥½¹M…µÁ±”íÕ¥¹ĞÌÉ}Ğ¹…Ù¥…Ñ¥½¹I••¥Ù•‘Ñ5Ìì4(‰½½°İ•…Ñ¡•ÉY…±¥õ™…±Í”í¥¹ĞÄÙ}ĞÑ•µÁ•É…ÑÕÉ••¹Ñ¥ôÀíÕ¥¹ĞÌÉ}ĞÁÉ•ÍÍÕÉ•A„ôÀ±İ•…Ñ¡•ÉI••¥Ù•‘Ñ5ÌôÀì4(‰½½°İ…Ñ•ÉQ•µÁ•É…ÑÕÉ•Y…±¥õ™…±Í”í¥¹ĞÄÙ}Ğİ…Ñ•ÉQ•µÁ•É…ÑÕÉ••¹Ñ¥ôÀíÕ¥¹Ğá}Ğİ…Ñ•ÉQ•µÁ•É…ÑÕÉ•M…µÁ±”ôÀíÕ¥¹ĞÌÉ}Ğİ…Ñ•ÉQ•µÁ•É…ÑÕÉ•I••¥Ù•‘Ñ5ÌôÀì4(€¼¼HÌÁ½ÁÑ¥½¹…°…ÕÑ¡•¹Ñ¥…Ñ•AI%5Idµ1%9,™…Õ±Ğ¥¹™½Éµ…Ñ¥½¸¸Q¡¥Ì¥Ì4(€¼¼U9YI%%‘¥…¹½ÍÑ¥Œ‘…Ñ„°¹•Ù•È„ÍÕ‰ÍÑ¥ÑÕÑ”™½ÈÁ¡åÍ¥…°MQ=@ÍÑ…ÑÕÌ¸4(‰½½°‘¥…¹½ÍÑ¥Y…±¥õ™…±Í”±‘¥…¹½ÍÑ¥AÉ¥µ…Éäõ™…±Í”ì4(Õ¥¹Ğá}Ğ‘¥…¹½ÍÑ¥I•…Í½¸ôÀ±‘¥…¹½ÍÑ¥M•ÅÕ•¹”ôÀì4(Õ¥¹ĞÄÙ}Ğ‘¥…¹½ÍÑ¥±…ÌôÀ±‘¥…¹½ÍÑ¥5¥±±¥Ù½±ÑÌôÁá™™™™Tì4(Õ¥¹ĞÌÉ}Ğ‘¥…¹½ÍÑ¥I••¥Ù•‘Ñ5ÌôÀì4(‰½½°Í½¹…ÉMÕµµ…ÉåY…±¥íÕ¥¹ĞÄÙ}ĞÍ½¹…É•ÁÑ¡´±Í½¹…ÉI…¹•´íÕ¥¹Ğá}ĞÍ½¹…É!•…±Ñ ±Í½¹…É±…Éµ±…Ì±Í½¹…ÉM…µÁ±”íÕ¥¹ĞÌÉ}ĞÍ½¹…ÉI••¥Ù•‘Ñ5Ìì4)ôì4)•áÑ•É¸	½…ÑQ•±•µ•ÑÉäÑ•±•µ•ÑÉäì4)Ù½¥Ñ•±•µ•ÑÉå%¹¥Ğ ¤íÙ½¥Ñ•±•µ•ÑÉåUÁ‘…Ñ”¡½¹ÍĞ	½…ÑQ•±•µ•ÑÉä€™¹•İ…Ñ„¤ì4)‰½½°Ñ•±•µ•ÑÉåÁÁ±åI…‘¥½A…å±½…¡½¹ÍĞI…‘¥½•½‘•‘A…å±½…€™Á…å±½…±‰½½°ÁÉ¥µ…Éå1¥¹¬±Õ¥¹ĞÌÉ}Ğ¹½İ5Ì¤ì4)Ù½¥Ñ•±•µ•ÑÉåÁÁ±åQ½	½…ÑMÑ…Ñ”¡	½…ÑMÑ…Ñ”€™ÍÑ…Ñ”±Õ¥¹ĞÌÉ}Ğ¹½İ5Ì¤ì4

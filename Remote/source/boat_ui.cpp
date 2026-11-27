@@ -1,986 +1,10 @@
-
-#include "boat_ui.h"
-#include <Arduino.h>
-#include "boat_state.h"
-#include "joystick_calibration_ui.h"
-#include "settings_ui.h"
-#include "lake_ui.h"
-#include "lake_storage.h"
-#include "joystick.h"
-#include "boat_radio.h"
-#include "utc_clock_ui.h"
-#include "boat_commands.h"
-#include "boat_telemetry.h"
-#include "release_button_guard.h"
-#include "mission_ui.h"
-#include "map_renderer.h"
-#include "map_source.h"
-#include "ui_sd_status.h"
-#include "map_manager_ui.h"
-#include <math.h>
-// --------------------------------------------------
-// SCREEN DIMENSIONS
-// --------------------------------------------------
-
-static const int SCREEN_WIDTH  = 800;
-static const int SCREEN_HEIGHT = 480;
-
-static const int HEADER_HEIGHT = 46;
-static const int FOOTER_HEIGHT = 100;
-
-// --------------------------------------------------
-// LVGL OBJECTS
-// --------------------------------------------------
-
-static lv_obj_t *mainScreen;       // Main screen object.
-static lv_obj_t *headerPanel;      // Top status bar.
-static lv_obj_t *contentPanel;     // Main display area.
-static lv_obj_t *footerPanel;      // Bottom control bar.
-
-static lv_obj_t *mapPanel;         // Map display panel.
-static lv_obj_t *sonarPanel;       // Sonar display panel.
-
-static lv_obj_t *connectionLabel;  // Radio status.
-static lv_obj_t *utcClockLabel;     // GPS UTC only, estimated; NOT STOP clock.
-static lv_obj_t *batteryLabel;     // Battery information.
-static lv_obj_t *weatherLabel;
-static lv_obj_t *modeLabel;        // Operating mode.
-
-static lv_obj_t *mapTitle;         // Map panel title.
-static lv_obj_t *gpsMapStatusLabel; // GPS fix / offline-map status.
-static lv_obj_t *gpsCoordinatesLabel; // Latest boat latitude and longitude.
-static lv_obj_t *gpsDetailsLabel;  // Satellite count, accuracy and heading.
-static lv_obj_t *mapViewport;
-static lv_obj_t *mapZoomLabel;
-static lv_obj_t *mapSourceLabel;
-static lv_obj_t *sonarTitle;       // Sonar panel title.
-
-static lv_obj_t *stopButton;       // Emergency stop button.
-static lv_obj_t *inputStatusLabel;  // Live joystick read/calibration state in footer.
-static lv_obj_t *safetyStatusLabel; // Live STOP/interlock state in footer.
-static lv_obj_t *diagnosticStatusLabel; // R30F unverified Boat diagnostics; NEVER a safety permission.
-
-// R30F read-only reported fault. None of these reason codes establishes
-// independent electrical safety or changes the actual STOP/interlock UI.
-static const char *diagnosticReasonBulgarian(uint8_t code){
- switch(code){
-  case 1:return "–ù–Ø–ú–ê –ß–ï–¢–ï–¶";
-  case 2:return "–ì–†–ï–®–ö–ê –í–•–û–î";
-  case 3:return "–õ–ò–ü–°–í–ê –ò–ó–¢–û–ß–ù–ò–ö";
-  case 4:return "–î–£–ë–õ–ò–†–ê–ù –ò–ó–¢–û–ß–ù–ò–ö";
-  case 5:return "–°–¢–ê–†–ò –ö–û–ù–¢–ê–ö–¢–ò";
-  case 6:return "–°–¢–ê–†–ê –ë–ê–¢–ï–†–ò–Ø";
-  case 7:return "–ù–ï–í–ê–õ–ò–î–ù–ê –ë–ê–¢.";
-  case 8:return "STOP –ö–û–ù–¢–ê–ö–¢";
-  case 9:return "WATCHDOG";
-  case 10:return "–û–ë–© –ü–†–ï–ö–™–°–í–ê–ß";
-  case 11:return "–õ–ò–ú–ò–¢–ï–† –ë–û–ë–ò–ù–ò";
-  case 12:return "–¢–û–ö –ë–û–ë–ò–ù–ò";
-  case 13:return "–¢–û–ö –î–í–ò–ì–ê–¢–ï–õ–ò";
-  case 14:return "–ù–ï–ü–£–°–ö–ê–ù–ê –í –£–ü–û–¢–†.";
-  default:return "–ù–ï–ü–û–ó–ù–ê–¢ –ö–û–î";
- }
-}
-static bool mapExpanded = false;   // Map full-screen state.
-static bool sonarExpanded = false; // Sonar full-screen state.
-static bool mapManagerActive = false; // Avoid map reads while import replaces SD files.
-
-static StopCallback stopCallback = nullptr;
-
-// --------------------------------------------------
-// COLOURS
-// --------------------------------------------------
-
-static const lv_color_t COLOR_BACKGROUND =
-    lv_color_hex(0x081522);
-
-static const lv_color_t COLOR_PANEL =
-    lv_color_hex(0x10243A);
-
-static const lv_color_t COLOR_TEXT =
-    lv_color_hex(0xFFFFFF);
-
-static const lv_color_t COLOR_RED =
-    lv_color_hex(0xD91E2B);
-
-static const lv_color_t COLOR_GREEN =
-    lv_color_hex(0x20C979);
-static const lv_color_t COLOR_YELLOW =
-    lv_color_hex(0xF2C94C);
-static const lv_color_t COLOR_MUTED =
-    lv_color_hex(0x94A3B8);
-
-// --------------------------------------------------
-// HELPER: CREATE A LABEL
-// --------------------------------------------------
-
-static lv_obj_t *createLabel(
-    lv_obj_t *parent,
-    const char *text,
-    int x,
-    int y)
-{
-    // Create a new LVGL label.
-    lv_obj_t *label = lv_label_create(parent);
-
-    // Set the displayed text.
-    lv_label_set_text(label, text);
-
-    // Set the label position.
-    lv_obj_set_pos(label, x, y);
-
-    // Set the text colour.
-    lv_obj_set_style_text_color(
-        label,
-        COLOR_TEXT,
-        LV_PART_MAIN
-    );
-
-    // Return the created label.
-    return label;
-}
-
-// --------------------------------------------------
-// HELPER: CREATE A PANEL
-// --------------------------------------------------
-
-static lv_obj_t *createPanel(
-    lv_obj_t *parent,
-    int x,
-    int y,
-    int width,
-    int height)
-{
-    // Create a new panel object.
-    lv_obj_t *panel = lv_obj_create(parent);
-
-    // Set the panel position.
-    lv_obj_set_pos(panel, x, y);
-
-    // Set the panel dimensions.
-    lv_obj_set_size(panel, width, height);
-
-    // Set the background colour.
-    lv_obj_set_style_bg_color(
-        panel,
-        COLOR_PANEL,
-        LV_PART_MAIN
-    );
-
-    // Remove the border.
-    lv_obj_set_style_border_width(
-        panel,
-        0,
-        LV_PART_MAIN
-    );
-
-    // Set rounded corners.
-    lv_obj_set_style_radius(
-        panel,
-        8,
-        LV_PART_MAIN
-    );
-
-    // Remove internal padding.
-    lv_obj_set_style_pad_all(
-        panel,
-        0,
-        LV_PART_MAIN
-    );
-
-    // Add a restrained blue outline for panel separation.
-    lv_obj_set_style_border_width(panel, 1, LV_PART_MAIN);
-    lv_obj_set_style_border_color(panel, lv_color_hex(0x2366A4), LV_PART_MAIN);
-
-    // Return the panel.
-    return panel;
-}
-
-// Apply the shared high-contrast touch-button style.
-static void styleTouchButton(lv_obj_t *button, lv_color_t fill)
-{
-    lv_obj_set_style_bg_color(button, fill, LV_PART_MAIN);
-    lv_obj_set_style_text_color(button, COLOR_TEXT, LV_PART_MAIN);
-    lv_obj_set_style_radius(button, 8, LV_PART_MAIN);
-    lv_obj_set_style_border_width(button, 1, LV_PART_MAIN);
-    lv_obj_set_style_border_color(button, lv_color_hex(0x347FC0), LV_PART_MAIN);
-}
-
-// --------------------------------------------------
-// MAP PANEL TOUCH EVENT
-// --------------------------------------------------
-
-static void mapTouchEvent(lv_event_t *event)
-{
-    // Only react to a completed touch.
-    if (lv_event_get_code(event) == LV_EVENT_CLICKED)
-    {
-        // Expand or restore the map.
-        toggleMapPanel();
-    }
-}
-
-// --------------------------------------------------
-// SONAR PANEL TOUCH EVENT
-// --------------------------------------------------
-
-static void sonarTouchEvent(lv_event_t *event)
-{
-    // Only react to a completed touch.
-    if (lv_event_get_code(event) == LV_EVENT_CLICKED)
-    {
-        // Expand or restore the sonar.
-        toggleSonarPanel();
-    }
-}
-
-// --------------------------------------------------
-// EMERGENCY STOP EVENT
-// --------------------------------------------------
-
-static void stopTouchEvent(lv_event_t *event)
-{
-    // Check whether the STOP button was pressed.
-    if (lv_event_get_code(event) == LV_EVENT_CLICKED)
-    {
-        // Stop both motors in the displayed state.
-        boatState.motorLeftActive = false;
-        boatState.motorRightActive = false;
-
-        // Mark the emergency stop as active.
-        boatState.emergencyStop = true;
-        boatState.emergencyStopConfirmed = false;
-
-        // Call the registered safety handler.
-        if (stopCallback != nullptr)
-        {
-            stopCallback();
-        }
-
-        // Refresh the display.
-        updateBoatScreen(boatState);
-    }
-}
-
-// --------------------------------------------------
-// CREATE HEADER
-// --------------------------------------------------
-
-static void createHeader()
-{
-    // Create the top status panel.
-    headerPanel = createPanel(
-        mainScreen,
-        0,
-        0,
-        SCREEN_WIDTH,
-        HEADER_HEIGHT
-    );
-
-    // Display radio connection status.
-    connectionLabel = createLabel(
-        headerPanel,
-        "–†–ê–î–ò–û: --",
-        12,
-        25
-    );
-    utcClockLabel = createLabel(
-        headerPanel,
-        "GPS UTC: --:--:--",
-        12,
-        1
-    );
-    lv_obj_set_style_text_color(utcClockLabel,COLOR_MUTED,LV_PART_MAIN);
-
-    // Display boat battery information.
-    batteryLabel = createLabel(
-        headerPanel,
-        "–ë–ê–¢–ï–†–ò–Ø: --%",
-        280,
-        17
-    );
-
-    // Display operating mode.
-    modeLabel = createLabel(
-        headerPanel,
-        "–†–ï–ñ–ò–ú: –†–™–ß–ï–ù",
-        535,
-        17
-    );
-
-    // Add a gear button to open remote settings.
-    lv_obj_t *settingsButton = lv_button_create(headerPanel);
-    styleTouchButton(settingsButton, lv_color_hex(0x174F92));
-    lv_obj_set_size(settingsButton, 100, 36);
-    lv_obj_align(settingsButton, LV_ALIGN_RIGHT_MID, -8, 0);
-    lv_obj_t *settingsText = lv_label_create(settingsButton);
-    lv_label_set_text(settingsText, "–ù–ê–°–¢–†–û–ô–ö–ò");
-    lv_obj_center(settingsText);
-    lv_obj_add_event_cb(settingsButton, [](lv_event_t *event) {
-        if (lv_event_get_code(event) == LV_EVENT_CLICKED)
-            settingsUI_open(mainScreen);
-    }, LV_EVENT_CLICKED, nullptr);
-}
-
-// --------------------------------------------------
-// CREATE MAP PANEL
-// --------------------------------------------------
-
-static void mapZoomInEvent(lv_event_t *event){if(lv_event_get_code(event)==LV_EVENT_CLICKED){mapRenderer_zoomIn();if(mapZoomLabel){char z[8];snprintf(z,sizeof(z),"Z%u",(unsigned)mapRenderer_getZoom());lv_label_set_text(mapZoomLabel,z);}}}
-static void mapZoomOutEvent(lv_event_t *event){if(lv_event_get_code(event)==LV_EVENT_CLICKED){mapRenderer_zoomOut();if(mapZoomLabel){char z[8];snprintf(z,sizeof(z),"Z%u",(unsigned)mapRenderer_getZoom());lv_label_set_text(mapZoomLabel,z);}}}
-static void mapSourceCycleEvent(lv_event_t *event)
-{
-    if (lv_event_get_code(event) != LV_EVENT_CLICKED) return;
-    const MapSourceMode mode = mapSource_nextMode();
-    if (mapSourceLabel) lv_label_set_text(mapSourceLabel, mapSource_modeLabel(mode));
-    updateBoatScreen(boatState);
-}
-static void mapManagerOpenEvent(lv_event_t *event){if(lv_event_get_code(event)!=LV_EVENT_CLICKED)return;const bool gpsFresh=boatState.gpsValid&&(uint32_t)(millis()-boatState.gpsLastUpdateMs)<=2000U;mapManagerActive=true;lv_obj_add_flag(headerPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(contentPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(footerPanel,LV_OBJ_FLAG_HIDDEN);mapManagerUI_open(mainScreen,boatState.latitude,boatState.longitude,gpsFresh,[]{mapManagerActive=false;lv_obj_remove_flag(headerPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_remove_flag(contentPanel,LV_OBJ_FLAG_HIDDEN);lv_obj_remove_flag(footerPanel,LV_OBJ_FLAG_HIDDEN);updateBoatScreen(boatState);});}
-void boatUI_refreshLakeLabel();
-static void createMapPanel()
-{
-    mapPanel=createPanel(contentPanel,5,5,385,315);
-    lv_obj_t *lakeButton=lv_button_create(mapPanel);styleTouchButton(lakeButton,lv_color_hex(0x174F92));
-    lv_obj_set_size(lakeButton,163,28);lv_obj_set_pos(lakeButton,8,4);
-    mapTitle=lv_label_create(lakeButton);lv_obj_set_width(mapTitle,153);lv_label_set_long_mode(mapTitle,LV_LABEL_LONG_DOT);lv_obj_center(mapTitle);
-    lv_obj_add_event_cb(lakeButton,[](lv_event_t *){lakeUI_open(mainScreen);},LV_EVENT_CLICKED,nullptr);
-    boatUI_refreshLakeLabel();
-    lv_obj_t *sourceButton=lv_button_create(mapPanel);styleTouchButton(sourceButton, lv_color_hex(0x174F92));
-    lv_obj_set_size(sourceButton,86,28);lv_obj_set_pos(sourceButton,285,4);
-    mapSourceLabel=lv_label_create(sourceButton);lv_label_set_text(mapSourceLabel,mapSource_modeLabel(mapSource_getMode()));lv_obj_center(mapSourceLabel);
-    lv_obj_add_event_cb(sourceButton,mapSourceCycleEvent,LV_EVENT_CLICKED,nullptr);
-    lv_obj_t *manager=lv_button_create(mapPanel);styleTouchButton(manager, lv_color_hex(0x174F92));lv_obj_set_size(manager,92,28);lv_obj_set_pos(manager,180,4);lv_label_set_text(lv_label_create(manager),"–£–ü–†–ê–í–õ–ï–ù–ò–ï");lv_obj_center(lv_obj_get_child(manager,0));lv_obj_add_event_cb(manager,mapManagerOpenEvent,LV_EVENT_CLICKED,nullptr);
-    gpsCoordinatesLabel=createLabel(mapPanel,"–®–ò–†: --.------  –î–™–õ: --.------",10,31);
-    gpsMapStatusLabel=createLabel(mapPanel,"GPS: –ù–Ø–ú–ê FIX | SD: –ü–†–û–í–ï–†–ö–ê",10,53);
-    lv_obj_set_width(gpsMapStatusLabel,365);lv_label_set_long_mode(gpsMapStatusLabel,LV_LABEL_LONG_DOT);
-    mapViewport=lv_obj_create(mapPanel);
-    lv_obj_set_pos(mapViewport,8,78);lv_obj_set_size(mapViewport,369,190);
-    lv_obj_set_style_border_width(mapViewport,0,LV_PART_MAIN);lv_obj_set_style_pad_all(mapViewport,0,LV_PART_MAIN);
-    lv_obj_set_style_bg_color(mapViewport,lv_color_hex(0x263746),LV_PART_MAIN);lv_obj_set_style_clip_corner(mapViewport,true,LV_PART_MAIN);
-    lv_obj_clear_flag(mapViewport,LV_OBJ_FLAG_SCROLLABLE);mapRenderer_create(mapViewport);
-    lv_obj_t *zoomOut=lv_button_create(mapPanel);styleTouchButton(zoomOut, lv_color_hex(0x174F92));lv_obj_set_size(zoomOut,42,32);lv_obj_set_pos(zoomOut,8,270);
-    lv_label_set_text(lv_label_create(zoomOut),"-");lv_obj_center(lv_obj_get_child(zoomOut,0));lv_obj_add_event_cb(zoomOut,mapZoomOutEvent,LV_EVENT_CLICKED,nullptr);
-    lv_obj_t *zoomIn=lv_button_create(mapPanel);styleTouchButton(zoomIn, lv_color_hex(0x174F92));lv_obj_set_size(zoomIn,42,32);lv_obj_set_pos(zoomIn,54,270);
-    lv_label_set_text(lv_label_create(zoomIn),"+");lv_obj_center(lv_obj_get_child(zoomIn,0));lv_obj_add_event_cb(zoomIn,mapZoomInEvent,LV_EVENT_CLICKED,nullptr);
-    mapZoomLabel=createLabel(mapPanel,"Z15",104,278);lv_obj_add_flag(mapZoomLabel,LV_OBJ_FLAG_CLICKABLE);lv_obj_add_event_cb(mapZoomLabel,[](lv_event_t*){mapRenderer_recenter();},LV_EVENT_CLICKED,nullptr);gpsDetailsLabel=createLabel(mapPanel,"SAT: --  ACC: --m  –ö–£–†–°: --",160,278);
-    lv_obj_add_flag(mapPanel,LV_OBJ_FLAG_CLICKABLE);lv_obj_add_event_cb(mapPanel,mapTouchEvent,LV_EVENT_CLICKED,nullptr);
-}
-
-// --------------------------------------------------
-// CREATE SONAR PANEL
-// --------------------------------------------------
-
-// Static visual-only echogram prototype. Every arch is marked DEMO; no sonar
-// measurements are fabricated or connected to boat telemetry.
-static lv_obj_t *sonarPlot = nullptr;
-static lv_obj_t *sonarStatus = nullptr;
-
-static void sonarLine(lv_obj_t *parent, const lv_point_precise_t *pts, uint16_t n,
-                      lv_color_t color, uint8_t width)
-{
-    lv_obj_t *line = lv_line_create(parent);
-    lv_line_set_points(line, pts, n);
-    lv_obj_set_style_line_color(line, color, LV_PART_MAIN);
-    lv_obj_set_style_line_width(line, width, LV_PART_MAIN);
-    lv_obj_set_style_line_rounded(line, true, LV_PART_MAIN);
-}
-
-static void drawSonarPlot(uint16_t width, uint16_t height)
-{
-    if (!sonarPlot) return;
-    while (lv_obj_get_child_count(sonarPlot) > 0)
-        lv_obj_delete(lv_obj_get_child(sonarPlot, 0));
-    // LVGL 9.6 lv_point_precise_t stores integer pixel coordinates in this
-    // configuration. Never use floating-point list initialization here:
-    // Arduino and PlatformIO must compile the very same drawing code.
-    if (width < 2 || height < 2) return;
-    const int32_t w = static_cast<int32_t>(width) - 1;
-    const int32_t h = static_cast<int32_t>(height) - 1;
-    const lv_color_t grid=lv_color_hex(0x244258);
-    static lv_point_precise_t hp[5][2],vp[5][2];
-    for(int i=0;i<=4;i++){
-        int y=(h*i)/4, x=(w*i)/4;
-        hp[i][0]={0,y};hp[i][1]={w,y};
-        vp[i][0]={x,0};vp[i][1]={x,h};
-        sonarLine(sonarPlot,hp[i],2,grid,1);sonarLine(sonarPlot,vp[i],2,grid,1);
-    }
-    // Illustrative arcs scaled to the current viewport; DEMO label remains visible.
-    static lv_point_precise_t archA[7],archB[7],bottom[7];
-    const int ax[]={10,18,28,38,48,58,68}, ay[]={68,58,46,40,46,58,70};
-    const int bx[]={50,58,66,74,82,90,96}, by[]={88,78,68,62,68,78,88};
-    const int fx[]={2,18,34,50,66,82,98}, fy[]={96,94,97,93,96,94,97};
-    for(int i=0;i<7;i++){
-        archA[i]={w*ax[i]/100,h*ay[i]/100};
-        archB[i]={w*bx[i]/100,h*by[i]/100};
-        bottom[i]={w*fx[i]/100,h*fy[i]/100};
-    }
-    sonarLine(sonarPlot,archA,7,lv_color_hex(0x35E3B0),2);
-    sonarLine(sonarPlot,archB,7,lv_color_hex(0xF5C84C),2);
-    sonarLine(sonarPlot,bottom,7,lv_color_hex(0xE67E45),2);
-}
-
-static void createSonarPanel()
-{
-    sonarPanel = createPanel(contentPanel, 400, 5, 385, 315);
-    sonarTitle = createLabel(sonarPanel, "–°–û–ù–ê–† ‚Ä¢ CHIRP", 12, 8);
-    weatherLabel=createLabel(sonarPanel,"–í–†–ï–ú–ï: --.-¬∞C  ---- hPa",150,8);
-    createLabel(sonarPanel, "–î–™–õ–ë–û–ß–ò–ù–ê  --.- m", 12, 30);
-    sonarPlot = lv_obj_create(sonarPanel);
-    lv_obj_set_pos(sonarPlot, 42, 52); lv_obj_set_size(sonarPlot, 330, 210);
-    lv_obj_set_style_bg_color(sonarPlot, lv_color_hex(0x06101B), LV_PART_MAIN);
-    lv_obj_set_style_border_width(sonarPlot, 1, LV_PART_MAIN);
-    lv_obj_set_style_border_color(sonarPlot, lv_color_hex(0x28618A), LV_PART_MAIN);
-    lv_obj_set_style_pad_all(sonarPlot, 0, LV_PART_MAIN);
-    lv_obj_clear_flag(sonarPlot, LV_OBJ_FLAG_SCROLLABLE);
-    drawSonarPlot(330,210);
-    createLabel(sonarPanel,"0",8,52); createLabel(sonarPanel,"5",8,103);
-    createLabel(sonarPanel,"10",4,155); createLabel(sonarPanel,"15",4,207);
-    createLabel(sonarPanel,"DEMO ‚Ä¢ –ù–ï –ï –†–ï–ê–õ–ï–ù –°–û–ù–ê–†",12,270);
-    sonarStatus=createLabel(sonarPanel,"–ú–û–î–£–õ / –î–ê–ù–ù–ò: –ù–ï –ï –°–í–™–†–ó–ê–ù",12,289);
-    lv_obj_add_flag(sonarPanel, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(sonarPanel, sonarTouchEvent, LV_EVENT_CLICKED, nullptr);
-}
-
-// Touchscreen mode controls share the same command path as physical keys.
-static void touchManualEvent(lv_event_t *event)
-{
-    if (lv_event_get_code(event)==LV_EVENT_CLICKED) boatCommands_setMode(MODE_MANUAL);
-}
-static void touchAutopilotEvent(lv_event_t *event)
-{
-    if (lv_event_get_code(event)==LV_EVENT_CLICKED) boatCommands_setMode(MODE_AUTOPILOT);
-}
-static void touchReturnEvent(lv_event_t *event)
-{
-    if (lv_event_get_code(event)==LV_EVENT_CLICKED) boatCommands_setMode(MODE_RETURN_HOME);
-}
-static void openMissionEvent(lv_event_t *event)
-{
-    if (lv_event_get_code(event)==LV_EVENT_CLICKED) missionUI_open(mainScreen);
-}
-
-// Open the joystick calibration screen.
-static void openJoystickCalibrationEvent(lv_event_t *event)
-{
-    // Respond only to a completed button click.
-    if (lv_event_get_code(event) != LV_EVENT_CLICKED)
-    {
-        return;
-    }
-
-    // Open calibration and remember the main screen.
-    joystickCalibrationUI_open(mainScreen);
-}
-
-
-// --------------------------------------------------
-// CREATE FOOTER
-// --------------------------------------------------
-
-static void createFooter()
-{
-    // Create the bottom control panel.
-    footerPanel = createPanel(
-        mainScreen,
-        0,
-        SCREEN_HEIGHT - FOOTER_HEIGHT,
-        SCREEN_WIDTH,
-        FOOTER_HEIGHT
-    );
-
-    // Create the emergency STOP button.
-    stopButton = lv_button_create(footerPanel);
-    styleTouchButton(stopButton, COLOR_RED);
-
-    // Set the STOP button size.
-    lv_obj_set_size(stopButton, 210, 46);
-
-    // Position the STOP button on the right.
-    lv_obj_set_pos(stopButton, 570, 47);
-
-    // Set the STOP button background colour.
-    lv_obj_set_style_bg_color(
-        stopButton,
-        COLOR_RED,
-        LV_PART_MAIN
-    );
-
-    // Create the STOP button text.
-    lv_obj_t *stopLabel = lv_label_create(stopButton);
-
-    // Set the button text.
-    lv_label_set_text(stopLabel, "–°–¢–û–ü");
-
-    // Centre the text.
-    lv_obj_center(stopLabel);
-
-    // Register the emergency stop event.
-    lv_obj_add_event_cb(
-        stopButton,
-        stopTouchEvent,
-        LV_EVENT_CLICKED,
-        nullptr
-    );
-
-    // Compact touchscreen mode controls. Boat-side command policy remains authoritative.
-    lv_obj_t *manualButton = lv_button_create(footerPanel);
-    styleTouchButton(manualButton, lv_color_hex(0x174F92));
-    lv_obj_set_size(manualButton, 105, 44); lv_obj_set_pos(manualButton, 10, 47);
-    lv_label_set_text(lv_label_create(manualButton), "–†–™–ß–ù–û"); lv_obj_center(lv_obj_get_child(manualButton,0));
-    lv_obj_add_event_cb(manualButton,touchManualEvent,LV_EVENT_CLICKED,nullptr);
-    lv_obj_t *autoButton = lv_button_create(footerPanel);
-    styleTouchButton(autoButton, lv_color_hex(0x174F92));
-    lv_obj_set_size(autoButton, 118, 44); lv_obj_set_pos(autoButton, 120, 47);
-    lv_label_set_text(lv_label_create(autoButton), "–ê–í–¢–û–ü–ò–õ–û–¢"); lv_obj_center(lv_obj_get_child(autoButton,0));
-    lv_obj_add_event_cb(autoButton,touchAutopilotEvent,LV_EVENT_CLICKED,nullptr);
-    lv_obj_t *returnButton = lv_button_create(footerPanel);
-    styleTouchButton(returnButton, lv_color_hex(0x174F92));
-    lv_obj_set_size(returnButton, 110, 44); lv_obj_set_pos(returnButton, 248, 47);
-    lv_label_set_text(lv_label_create(returnButton), "–ö–™–ú –î–û–ú–ê"); lv_obj_center(lv_obj_get_child(returnButton,0));
-    lv_obj_add_event_cb(returnButton,touchReturnEvent,LV_EVENT_CLICKED,nullptr);
-    lv_obj_t *missionButton = lv_button_create(footerPanel);
-    styleTouchButton(missionButton, lv_color_hex(0x174F92));
-    lv_obj_set_size(missionButton, 100, 44); lv_obj_set_pos(missionButton, 365, 47);
-    lv_label_set_text(lv_label_create(missionButton), "–ú–ò–°–ò–Ø"); lv_obj_center(lv_obj_get_child(missionButton,0));
-    lv_obj_add_event_cb(missionButton,openMissionEvent,LV_EVENT_CLICKED,nullptr);
-
-    // Show live input validity and calibration status, not a generic reminder.
-    inputStatusLabel = createLabel(footerPanel, "–°–¢–ò–ö–û–í–ï: –ù–ï–°–™–ü–†–û–í–ï–†–ï–ù–ò", 15, 4);
-    lv_obj_set_width(inputStatusLabel, 380);
-    lv_label_set_long_mode(inputStatusLabel, LV_LABEL_LONG_DOT);
-    safetyStatusLabel = createLabel(footerPanel, "STOP: –ù–ï–ò–ó–í–ï–°–¢–ù–û", 410, 4);
-    lv_obj_set_width(safetyStatusLabel, 380);
-    lv_label_set_long_mode(safetyStatusLabel, LV_LABEL_LONG_DOT);
-    // R30F separate line never replaces the STOP/low-battery alert.
-    diagnosticStatusLabel = createLabel(footerPanel,
-        "–î–ò–ê–ì–ù.: –ù–Ø–ú–ê –î–ê–ù–ù–ò (–ù–ï–ü–û–¢–í.)", 410, 24);
-    lv_obj_set_width(diagnosticStatusLabel, 380);
-    lv_label_set_long_mode(diagnosticStatusLabel, LV_LABEL_LONG_DOT);
-    lv_obj_set_style_text_color(diagnosticStatusLabel,COLOR_MUTED,LV_PART_MAIN);
-    // Create a button for joystick calibration.
-lv_obj_t *sticksButton = lv_button_create(footerPanel);
-styleTouchButton(sticksButton, lv_color_hex(0x174F92));
-
-// Set its size.
-lv_obj_set_size(sticksButton, 80, 42);
-
-// Position in the footer row, before STOP.
-lv_obj_set_pos(sticksButton, 470, 47);
-
-// Create the button label.
-lv_obj_t *sticksLabel = lv_label_create(sticksButton);
-
-// Set its text.
-lv_label_set_text(sticksLabel, "–ö–ê–õ–ò–ë–†.");
-
-// Centre the text.
-lv_obj_center(sticksLabel);
-
-// Register the button event.
-lv_obj_add_event_cb(
-    sticksButton,
-    openJoystickCalibrationEvent,
-    LV_EVENT_CLICKED,
-    nullptr
-);
-}
-
-// --------------------------------------------------
-// INITIALISE THE COMPLETE SCREEN
-// --------------------------------------------------
-
-void createBoatScreen()
-{
-    mapSource_begin();
-
-    // Get the active LVGL screen.
-    mainScreen = lv_screen_active();
-
-    // Set the main background colour.
-    lv_obj_set_style_bg_color(
-        mainScreen,
-        COLOR_BACKGROUND,
-        LV_PART_MAIN
-    );
-
-    // Remove the main screen scrolling behaviour.
-    lv_obj_remove_flag(
-        mainScreen,
-        LV_OBJ_FLAG_SCROLLABLE
-    );
-
-    // Create the top status bar.
-    createHeader();
-
-    // Create the main content container.
-    contentPanel = createPanel(
-        mainScreen,
-        5,
-        HEADER_HEIGHT + 3,
-        790,
-        325
-    );
-
-    // Create the map panel.
-    createMapPanel();
-
-    // Create the sonar panel.
-    createSonarPanel();
-
-    // Create the bottom control bar.
-    createFooter();
-
-    // Display initial boat information.
-    updateBoatScreen(boatState);
-}
-
-// --------------------------------------------------
-// EXPAND OR RESTORE MAP
-// --------------------------------------------------
-
-void toggleMapPanel()
-{
-    // Switch the expanded state.
-    mapExpanded = !mapExpanded;
-
-    // Hide sonar while map is expanded.
-    if (mapExpanded)
-    {
-        sonarExpanded = false;
-
-        // Hide the sonar panel.
-        lv_obj_add_flag(
-            sonarPanel,
-            LV_OBJ_FLAG_HIDDEN
-        );
-
-        // Expand map to fill the content area.
-        lv_obj_set_pos(mapPanel, 5, 5);
-
-        lv_obj_set_size(mapPanel, 780, 315);
-        lv_obj_set_size(mapViewport, 760, 220);
-    }
-    else
-    {
-        // Restore the original map dimensions.
-        lv_obj_set_pos(mapPanel, 5, 5);
-
-        lv_obj_set_size(mapPanel, 385, 315);
-        lv_obj_set_size(mapViewport, 369, 190);
-
-        // Show sonar again.
-        lv_obj_remove_flag(
-            sonarPanel,
-            LV_OBJ_FLAG_HIDDEN
-        );
-    }
-}
-
-// --------------------------------------------------
-// EXPAND OR RESTORE SONAR
-// --------------------------------------------------
-
-void toggleSonarPanel()
-{
-    // Switch the expanded state.
-    sonarExpanded = !sonarExpanded;
-
-    // Hide map while sonar is expanded.
-    if (sonarExpanded)
-    {
-        mapExpanded = false;
-
-        // Hide the map panel.
-        lv_obj_add_flag(
-            mapPanel,
-            LV_OBJ_FLAG_HIDDEN
-        );
-
-        // Expand sonar to fill the content area.
-        lv_obj_set_pos(sonarPanel, 5, 5);
-
-        lv_obj_set_size(sonarPanel, 780, 315);
-        lv_obj_set_size(sonarPlot, 720, 220);
-        drawSonarPlot(720,220);
-    }
-    else
-    {
-        // Restore the original sonar dimensions.
-        lv_obj_set_pos(sonarPanel, 400, 5);
-
-        lv_obj_set_size(sonarPanel, 385, 315);
-        lv_obj_set_size(sonarPlot, 330, 210);
-        drawSonarPlot(330,210);
-
-        // Show map again.
-        lv_obj_remove_flag(
-            mapPanel,
-            LV_OBJ_FLAG_HIDDEN
-        );
-    }
-}
-
-// --------------------------------------------------
-// UPDATE DISPLAYED BOAT INFORMATION
-// --------------------------------------------------
-
-static void updateMapMissionMarkers(const BoatState &state)
-{
-    MapRendererWaypoint points[16]={};
-    for(uint8_t i=0;i<16;i++){float lat=0,lon=0;bool bait=false,hook=false;points[i].valid=missionUI_getWaypoint(i,&lat,&lon,&bait,&hook);points[i].lat=lat;points[i].lon=lon;points[i].bait=bait;points[i].hook=hook;}
-    float hlat=0,hlon=0;bool hv=missionUI_getHome(&hlat,&hlon);
-    bool fresh=state.gpsValid&&(uint32_t)(millis()-state.gpsLastUpdateMs)<=2000U;
-    mapRenderer_update(fresh,state.latitude,state.longitude,state.heading,hv,hlat,hlon,points,(uint8_t)missionUI_getSelectedIndex(),state.mode==MODE_RETURN_HOME);
-    if(mapZoomLabel){char z[8];snprintf(z,sizeof(z),"Z%u",(unsigned)mapRenderer_getZoom());lv_label_set_text(mapZoomLabel,z);}
-}
-
-void updateBoatScreen(const BoatState &state)
-{
-    if(weatherLabel){
-      char w[80];
-      if(state.weatherValid)snprintf(w,sizeof(w),"–í–†–ï–ú–ï: %.1f¬∞C  %.1f hPa",state.temperatureCentiC/100.0f,state.pressurePa/100.0f);
-      else snprintf(w,sizeof(w),"–í–†–ï–ú–ï: --.-¬∞C  ---- hPa");
-      lv_label_set_text(weatherLabel,w);
-    }
-    // Update the GPS coordinate display only when telemetry reports a valid fix.
-    if (state.gpsValid)
-    {
-        char coordinateText[80];
-        snprintf(
-            coordinateText,
-            sizeof(coordinateText),
-            "–®–ò–†: %.6f   –î–™–õ: %.6f",
-            state.latitude,
-            state.longitude
-        );
-        lv_label_set_text(gpsCoordinatesLabel, coordinateText);
-
-        char mapStatusText[96];
-        const char *mapStorageText = flytec_ui::sdStorageStatus(state.sdCardReady, state.offlineMapReady);
-        const MapSourceMode sourceMode = mapSource_getMode();
-        const char *sourceText = (sourceMode == MAP_SOURCE_ONLINE && !mapSource_onlineAvailable()) ? "ONLINE –ù–ï –ï –ù–ê–õ–ò–ß–ï–ù ‚Äî –ë–ï–ó –ö–ê–†–¢–ê" : (sourceMode == MAP_SOURCE_AUTO ? "AUTO / SD" : "OFFLINE / SD");
-        snprintf(mapStatusText, sizeof(mapStatusText), "GPS: –ò–ú–ê FIX  |  %s  |  %s", mapStorageText, sourceText);
-        lv_label_set_text(gpsMapStatusLabel, mapStatusText);
-
-        char gpsDetailsText[80];
-        snprintf(
-            gpsDetailsText,
-            sizeof(gpsDetailsText),
-            "SAT: %u   ACC: %.1f m   –ö–£–†–°: %.0f¬∞",
-            static_cast<unsigned>(state.gpsSatellites),
-            state.gpsAccuracyMeters,
-            state.heading
-        );
-        lv_label_set_text(gpsDetailsLabel, gpsDetailsText);
-    }
-    else
-    {
-        lv_label_set_text(gpsCoordinatesLabel, "–®–ò–†: --.------   –î–™–õ: --.------");
-        const char *mapStorageText = flytec_ui::sdStorageStatus(state.sdCardReady, state.offlineMapReady);
-        const MapSourceMode sourceMode = mapSource_getMode();
-        const char *sourceText = (sourceMode == MAP_SOURCE_ONLINE && !mapSource_onlineAvailable()) ? "ONLINE –ù–ï –ï –ù–ê–õ–ò–ß–ï–ù ‚Äî –ë–ï–ó –ö–ê–†–¢–ê" : (sourceMode == MAP_SOURCE_AUTO ? "AUTO / SD" : "OFFLINE / SD");
-        char mapStatusText[120];
-        snprintf(mapStatusText, sizeof(mapStatusText), "GPS: –ù–Ø–ú–ê FIX  |  %s  |  %s", mapStorageText, sourceText);
-        lv_label_set_text(gpsMapStatusLabel, mapStatusText);
-        lv_label_set_text(gpsDetailsLabel, "SAT: --   ACC: -- m   –ö–£–†–°: --¬∞");
-    }
-
-    missionUI_initStorage();
-    
-    // Map Manager copies into the active SD folder; pause hidden-map reads during import.
-    if (!mapManagerActive) updateMapMissionMarkers(state);
-
-    // Show selected link and failover state.
-    const char *radioText = "–†–ê–î–ò–û: –ù–Ø–ú–ê";
-    switch (state.radioLinkState)
-    {
-        case RADIO_UI_PRIMARY: radioText = "–†–ê–î–ò–û: NRF24"; break;
-        case RADIO_UI_DEGRADED: radioText = "–†–ê–î–ò–û: –°–õ–ê–ë–ê –í–†–™–ó–ö–ê"; break;
-        case RADIO_UI_BACKUP: radioText = "–†–ê–î–ò–û: –†–ï–ó–ï–†–í–ù–û LORA"; break;
-        case RADIO_UI_NO_LINK: radioText = "–†–ê–î–ò–û: –ù–Ø–ú–ê –í–†–™–ó–ö–ê"; break;
-        case RADIO_UI_RECOVERY: radioText = "–†–ê–î–ò–û: –í–™–ó–°–¢–ê–ù–û–í–Ø–í–ê"; break;
-        default: radioText = "–†–ê–î–ò–û: –ò–ó–ö–õ–Æ–ß–ï–ù–û"; break;
-    }
-    lv_label_set_text(connectionLabel, radioText);
-    // Read-only UTC, even on Backup: never confuse HMAC UTC clock display
-    // with PPS / shared analyzer timing or physical STOP acceptance.
-    if(utcClockLabel){
-        const auto quality=boatRadio_utcQuality();
-        char timeText[48]{};
-        const bool coarse=flytec_r30h7::formatUtc(quality,timeText,sizeof(timeText));
-        lv_label_set_text(utcClockLabel,timeText);
-        lv_obj_set_style_text_color(utcClockLabel,
-            coarse?COLOR_TEXT:COLOR_MUTED,LV_PART_MAIN);
-    }
-
-    // Boat battery is independent of the Remote's own battery. Percentage is
-    // voltage-estimated by the Boat; never show stale or invented values.
-    const uint32_t batteryNow=millis();
-    const bool percentFresh=telemetry.batteryPercentValid&&
-        (uint32_t)(batteryNow-telemetry.batteryPercentReceivedAtMs)<=1500U;
-    const bool voltageFresh=telemetry.batteryVoltageValid&&
-        (uint32_t)(batteryNow-telemetry.batteryReceivedAtMs)<=1500U;
-    char batteryText[48];
-    lv_color_t batteryColor=COLOR_MUTED;
-    if(percentFresh){
-        if(voltageFresh)snprintf(batteryText,sizeof(batteryText),"–õ–û–î–ö–ê: %.1fV %d%%",telemetry.batteryVoltage,telemetry.batteryPercent);
-        else snprintf(batteryText,sizeof(batteryText),"–õ–û–î–ö–ê: %d%%",telemetry.batteryPercent);
-        if(state.criticalBattery||state.lowBattery||telemetry.batteryPercent<=20)batteryColor=COLOR_RED;
-        else if(telemetry.batteryPercent<=50)batteryColor=COLOR_YELLOW;
-        else batteryColor=COLOR_GREEN;
-    }else snprintf(batteryText,sizeof(batteryText),"–õ–û–î–ö–ê: --");
-    lv_label_set_text(batteryLabel,batteryText);
-    lv_obj_set_style_text_color(batteryLabel,batteryColor,LV_PART_MAIN);
-
-    // Update operating mode.
-    switch (state.mode)
-    {
-        case MODE_MANUAL:
-            lv_label_set_text(
-                modeLabel,
-                "–†–ï–ñ–ò–ú: –†–™–ß–ï–ù"
-            );
-            break;
-
-        case MODE_AUTOPILOT:
-            lv_label_set_text(
-                modeLabel,
-                "–†–ï–ñ–ò–ú: –ê–í–¢–û–ü–ò–õ–û–¢"
-            );
-            break;
-
-        case MODE_RETURN_HOME:
-            lv_label_set_text(
-                modeLabel,
-                "–†–ï–ñ–ò–ú: –ö–™–ú –î–û–ú–ê"
-            );
-            break;
-    }
-
-    // Refresh the live input and safety status footer.
-    const JoystickSnapshot input = joystick_getSnapshot();
-    char inputText[112];
-    if (!input.readingsValid) snprintf(inputText,sizeof(inputText),"–°–¢–ò–ö–û–í–ï: ADC –ì–†–ï–®–ö–ê / –ù–Ø–ú–ê –î–ê–ù–ù–ò");
-    else if (!input.calibrationValid) snprintf(inputText,sizeof(inputText),"–°–¢–ò–ö–û–í–ï: –ö–ê–õ–ò–ë–†–ò–†–ê–ô  RAW %d/%d %d/%d",input.raw.leftX,input.raw.leftY,input.raw.rightX,input.raw.rightY);
-    else snprintf(inputText,sizeof(inputText),"–°–¢–ò–ö–û–í–ï L %d,%d  R %d,%d  %s",input.values.leftX,input.values.leftY,input.values.rightX,input.values.rightY,input.neutral?"–ù–ï–£–¢–†–ê–õ–ù–ò":"–ê–ö–¢–ò–í–ù–ò");
-    if (inputStatusLabel) lv_label_set_text(inputStatusLabel,inputText);
-    char safetyText[128];
-    const char *stopText = boatRadio_backupStopConfirmed() && !state.emergencyStopConfirmed ? "LoRa STOP" : state.emergencyStop ? (state.emergencyStopConfirmed ? "–ü–û–¢–í–™–†–î–ò" : "–ó–ê–ö–õ–Æ–ß–ï–ù?") : (state.emergencyStopConfirmed ? "–ò–ó–ß–ò–°–¢–ï–ù" : "UNKNOWN");
-    const bool batteryMid=percentFresh&&telemetry.batteryPercent<=50&&!state.lowBattery;
-    const char *healthText = batteryMid ? "–°–†–ï–î–ù–ê –ë–ê–¢. ‚Äî –ó–ê–†–ï–î–ò" :
-        (state.failsafeActive ? "–ê–í–ê–†. –†–ï–ñ–ò–ú" : (state.actuatorSafetyReady ? "–ì–û–¢–û–í–û" : "–ë–õ–û–ö–ò–†–ê–ù–û"));
-    // A red voltage by itself does not prove that RTH has actually started.
-    // Keep the operator action visible in every red-battery state.
-    if(state.criticalBattery) snprintf(safetyText,sizeof(safetyText),"–ö–†–ò–¢–ò–ß–ù–ê –ë–ê–¢–ï–†–ò–Ø ‚Äî STOP!");
-    else if(state.lowBattery&&state.mode==MODE_RETURN_HOME)
-        snprintf(safetyText,sizeof(safetyText),"–ù–ò–°–ö–ê –ë–ê–¢. ‚Äî RTH; –ó–ê–†–ï–î–ò/–°–ú–ï–ù–ò");
-    else if(state.lowBattery)
-        snprintf(safetyText,sizeof(safetyText),"–ù–ò–°–ö–ê –ë–ê–¢. ‚Äî –ó–ê–†–ï–î–ò/–°–ú–ï–ù–ò");
-    else snprintf(safetyText,sizeof(safetyText),"STOP:%s %s ACK:%u",stopText,healthText,(unsigned)boatRadio_pendingCommandAcks());
-    if (safetyStatusLabel) {
-        lv_label_set_text(safetyStatusLabel,safetyText);
-        lv_obj_set_style_text_color(safetyStatusLabel,
-            (state.lowBattery||state.criticalBattery) ? COLOR_RED : (batteryMid ? COLOR_YELLOW : COLOR_MUTED),
-            LV_PART_MAIN);
-    }
-
-    // Diagnostic messages are authenticated but never a substitute for
-    // independently commissioned physical contacts or STOP confirmation.
-    if(diagnosticStatusLabel){
-        char diagnosticText[96];
-        if(state.diagnosticFresh)
-            snprintf(diagnosticText,sizeof(diagnosticText),
-                "–î–ò–ê–ì–ù.: –ù–ï–ü–û–¢–í. / %s",
-                diagnosticReasonBulgarian(state.diagnosticReason));
-        else snprintf(diagnosticText,sizeof(diagnosticText),
-                "–î–ò–ê–ì–ù.: –ù–Ø–ú–ê –î–ê–ù–ù–ò (–ù–ï–ü–û–¢–í.)");
-        lv_label_set_text(diagnosticStatusLabel,diagnosticText);
-        lv_obj_set_style_text_color(diagnosticStatusLabel,
-             state.diagnosticFresh&&state.diagnosticReason>=8&&
-             state.diagnosticReason<=13?COLOR_RED:COLOR_MUTED,LV_PART_MAIN);
-    }
-
-    // Change STOP button text when emergency stop is active.
-    if (state.emergencyStop)
-    {
-        lv_label_set_text(
-            lv_obj_get_child(stopButton, 0),
-            "–°–¢–û–ü –ê–ö–¢–ò–í–ï–ù"
-        );
-    }
-    else
-    {
-        lv_label_set_text(
-            lv_obj_get_child(stopButton, 0),
-            "STOP"
-        );
-    }
-}
-
-// --------------------------------------------------
-// REGISTER EMERGENCY STOP CALLBACK
-// --------------------------------------------------
-
-void boatUI_setStopCallback(StopCallback callback)
-{
-    // Store the safety callback.
-    stopCallback = callback;
-}
-
-void boatUI_refreshLakeLabel(){if(mapTitle){char name[LAKE_NAME_BYTES],caption[64];lakeStorage_getName(lakeStorage_active(),name,sizeof(name));snprintf(caption,sizeof(caption),"%02u %s",(unsigned)lakeStorage_active()+1,name);lv_label_set_text(mapTitle,caption);}}
-
-static lv_obj_t *releaseStatusScreen=nullptr;
-static lv_obj_t *releaseStatusText=nullptr;
-static lv_timer_t *releaseStatusTimer=nullptr;
-static void updateReleaseStatus(lv_timer_t *){
- if(!releaseStatusText)return;
- char s[300];snprintf(s,sizeof(s),"STOP: %s\n–†–ê–î–ò–û: %s\n–ë–õ–û–ö–ò–†–û–í–ö–ê: %s\n–ü–û–¢–í–™–†–ñ–î–ï–ù–ò–ï: %u",
- boatState.emergencyStopConfirmed?(boatState.emergencyStop?"–ê–ö–¢–ò–í–ï–ù":"–û–°–í–û–ë–û–î–ï–ù"):(boatRadio_backupStopConfirmed()?"–ü–û–¢–í–™–†–î–ï–ù (LoRa)":"–ù–ï–ü–û–¢–í–™–†–î–ï–ù"),
- boatState.radioConnected?"–°–í–™–†–ó–ê–ù–û":"–ù–Ø–ú–ê",
- boatState.actuatorSafetyReady?"–ì–û–¢–û–í–û":"–ë–õ–û–ö–ò–†–ê–ù–û",(unsigned)releaseGuard_state());
- lv_label_set_text(releaseStatusText,s);
-}
-static bool closeReleaseStatus(){
- if(!releaseStatusScreen||lv_screen_active()!=releaseStatusScreen)return false;
- if(releaseStatusTimer){lv_timer_delete(releaseStatusTimer);releaseStatusTimer=nullptr;}
- lv_obj_t *old=releaseStatusScreen;releaseStatusScreen=nullptr;releaseStatusText=nullptr;
- lv_screen_load(mainScreen);lv_obj_delete_async(old);return true;
-}
-static void openReleaseStatus(){
- if(releaseStatusScreen)return;
- releaseStatusScreen=lv_obj_create(nullptr);
- lv_obj_set_style_bg_color(releaseStatusScreen,lv_color_hex(0x081522),LV_PART_MAIN);
- lv_obj_set_style_text_color(releaseStatusScreen,lv_color_hex(0xFFFFFF),LV_PART_MAIN);
- createLabel(releaseStatusScreen,"–°–™–°–¢–û–Ø–ù–ò–ï –ù–ê –ó–ê–•–†–ê–ù–ö–ê –ò –ö–£–ö–ò",16,18);
- releaseStatusText=createLabel(releaseStatusScreen,"",16,75);
- lv_obj_t *b=lv_button_create(releaseStatusScreen);lv_obj_set_pos(b,610,415);lv_obj_set_size(b,170,46);
- lv_label_set_text(lv_label_create(b),"–ù–ê–ó–ê–î");lv_obj_center(lv_obj_get_child(b,0));
- lv_obj_add_event_cb(b,[](lv_event_t*){closeReleaseStatus();},LV_EVENT_CLICKED,nullptr);
- updateReleaseStatus(nullptr);releaseStatusTimer=lv_timer_create(updateReleaseStatus,250,nullptr);
- lv_screen_load(releaseStatusScreen);
-}
-void boatUI_physicalAction(uint8_t id){
- if(!mainScreen)return;
- if(id==14){
-  releaseGuard_cancel();
-  if(closeReleaseStatus()||lakeUI_close()||missionUI_close()||settingsUI_close())return;
-  if(joystickCalibrationUI_isOpen()){joystickCalibrationUI_close();return;}
-  if(mapManagerActive){mapManagerUI_close();return;}
-  if(mapExpanded)toggleMapPanel();else if(sonarExpanded)toggleSonarPanel();
-  return;
- }
- if(id==15){if(missionUI_isOpen())missionUI_close();return;}
- if(missionUI_isOpen()){
-  if(id==3)missionUI_saveCurrent();else if(id==4)missionUI_selectNext();return;
- }
- if(lv_screen_active()!=mainScreen||mapManagerActive)return;
- switch(id){
-  case 3:missionUI_open(mainScreen);missionUI_saveCurrent();break;
-  case 4:missionUI_open(mainScreen);missionUI_selectNext();break;
-  case 5:if(sonarExpanded)toggleSonarPanel();toggleMapPanel();break;
-  case 6:if(mapExpanded)toggleMapPanel();toggleSonarPanel();break;
-  case 7:settingsUI_open(mainScreen);break;
-  case 12:case 13:openReleaseStatus();break;
-  default:break;
- }
-}
+1Îa°—1qÍmäâÀäwµÍÍ‹{ˆËj€¢römµ©ïßr´◊úÖ™ı—»ZØ]¢{ﬁ	©Á¢◊(û˜´µ™‡∫gß∂â]
+´¬+aΩ©ny˙+EÍei«≠¢‹©y,¨µÈÇÖ™¬jyËµ 'ΩÍÌΩ©nz⁄- óí À^ò(Z¨JÎ¢¥≠Æ)‡öÎ-mÁ±iÀe âﬁr´iÀ^ÆZ'Ä4(ç•πç±’ëîÄââΩÖ—}’§π†à4(ç•πç±’ëîÄÒ…ë’•πºπ†¯4(ç•πç±’ëîÄââΩÖ—}Õ—Ö—îπ†à4(ç•πç±’ëîÄâ©ΩÂÕ—•ç≠}çÖ±•â…Ö—•Ωπ}’§π†à4(ç•πç±’ëîÄâÕï——•πùÕ}’§π†à4(ç•πç±’ëîÄâ±Ö≠ï}’§π†à4(ç•πç±’ëîÄâ±Ö≠ï}Õ—Ω…Öùîπ†à4(ç•πç±’ëîÄâ©ΩÂÕ—•ç¨π†à4(ç•πç±’ëîÄââΩÖ—}…Öë•ºπ†à4(ç•πç±’ëîÄâ’—ç}ç±Ωç≠}’§π†à4(ç•πç±’ëîÄââΩÖ—}çΩµµÖπëÃπ†à4(ç•πç±’ëîÄââΩÖ—}—ï±ïµï—…‰π†à4(ç•πç±’ëîÄâ…ï±ïÖÕï}â’——Ωπ}ù’Ö…êπ†à4(ç•πç±’ëîÄâµ•ÕÕ•Ωπ}’§π†à4(ç•πç±’ëîÄâµÖ¡}…ïπëï…ï»π†à4(ç•πç±’ëîÄâµÖ¡}ÕΩ’…çîπ†à4(ç•πç±’ëîÄâ’•}Õë}Õ—Ö—’Ãπ†à4(ç•πç±’ëîÄâµÖ¡}µÖπÖùï…}’§π†à4(ç•πç±’ëîÄÒµÖ—†π†¯4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(ººÅMI8Å%59M%=9L4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(4)Õ—Ö—•åÅçΩπÕ–Å•π–ÅMI9}]%Q ÄÄÙÄ‡¿¿Ï4)Õ—Ö—•åÅçΩπÕ–Å•π–ÅMI9}!%!PÄÙÄ–‡¿Ï4(4)Õ—Ö—•åÅçΩπÕ–Å•π–Å!I}!%!PÄÙÄ–ÿÏ4)Õ—Ö—•åÅçΩπÕ–Å•π–Å==QI}!%!PÄÙÄƒ¿¿Ï4(4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(ººÅ1Y0Å=	)QL4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©µÖ•πMç…ïï∏ÏÄÄÄÄÄÄÄººÅ5Ö•∏ÅÕç…ïï∏ÅΩâ©ïç–∏4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©°ïÖëï…AÖπï∞ÏÄÄÄÄÄÄººÅQΩ¿ÅÕ—Ö—’ÃÅâÖ»∏4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©çΩπ—ïπ—AÖπï∞ÏÄÄÄÄÄººÅ5Ö•∏Åë•Õ¡±Ö‰ÅÖ…ïÑ∏4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©ôΩΩ—ï…AÖπï∞ÏÄÄÄÄÄÄººÅ	Ω——Ω¥ÅçΩπ—…Ω∞ÅâÖ»∏4(4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©µÖ¡AÖπï∞ÏÄÄÄÄÄÄÄÄÄººÅ5Ö¿Åë•Õ¡±Ö‰Å¡Öπï∞∏4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©ÕΩπÖ…AÖπï∞ÏÄÄÄÄÄÄÄººÅMΩπÖ»Åë•Õ¡±Ö‰Å¡Öπï∞∏4(4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©çΩππïç—•Ωπ1Öâï∞ÏÄÄººÅIÖë•ºÅÕ—Ö—’Ã∏4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©’—ç±Ωç≠1Öâï∞ÏÄÄÄÄÄººÅALÅUQÅΩπ±‰∞ÅïÕ—•µÖ—ïêÏÅ9=PÅMQ=@Åç±Ωç¨∏4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©âÖ——ï…Â1Öâï∞ÏÄÄÄÄÄººÅ	Ö——ï…‰Å•πôΩ…µÖ—•Ω∏∏4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©›ïÖ—°ï…1Öâï∞Ï4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©ÕΩπÖ…ï¡—°1Öâï∞Ï4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©›Ö—ï…Qïµ¡ï…Ö—’…ï1Öâï∞Ï4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©µΩëï1Öâï∞ÏÄÄÄÄÄÄÄÄººÅ=¡ï…Ö—•πúÅµΩëî∏4(4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©µÖ¡Q•—±îÏÄÄÄÄÄÄÄÄÄººÅ5Ö¿Å¡Öπï∞Å—•—±î∏4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©ù¡Õ5Ö¡M—Ö—’Õ1Öâï∞ÏÄººÅALÅô•‡ÄºÅΩôô±•πîµµÖ¿ÅÕ—Ö—’Ã∏4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©ù¡ÕΩΩ…ë•πÖ—ïÕ1Öâï∞ÏÄººÅ1Ö—ïÕ–ÅâΩÖ–Å±Ö—•—’ëîÅÖπêÅ±Ωπù•—’ëî∏4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©ù¡Õï—Ö•±Õ1Öâï∞ÏÄÄººÅMÖ—ï±±•—îÅçΩ’π–∞ÅÖçç’…Öç‰ÅÖπêÅ°ïÖë•πú∏4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©µÖ¡Y•ï›¡Ω…–Ï4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©µÖ¡iΩΩµ1Öâï∞Ï4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©µÖ¡MΩ’…çï1Öâï∞Ï4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©ÕΩπÖ…Q•—±îÏÄÄÄÄÄÄÄººÅMΩπÖ»Å¡Öπï∞Å—•—±î∏4(4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©Õ—Ω¡	’——Ω∏ÏÄÄÄÄÄÄÄººÅµï…ùïπç‰ÅÕ—Ω¿Åâ’——Ω∏∏4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©•π¡’—M—Ö—’Õ1Öâï∞ÏÄÄººÅ1•ŸîÅ©ΩÂÕ—•ç¨Å…ïÖêΩçÖ±•â…Ö—•Ω∏ÅÕ—Ö—îÅ•∏ÅôΩΩ—ï»∏4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©ÕÖôï—ÂM—Ö—’Õ1Öâï∞ÏÄººÅ1•ŸîÅMQ=@Ω•π—ï…±Ωç¨ÅÕ—Ö—îÅ•∏ÅôΩΩ—ï»∏4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©ë•ÖùπΩÕ—•çM—Ö—’Õ1Öâï∞ÏÄººÅHÃ¡Å’πŸï…•ô•ïêÅ	ΩÖ–Åë•ÖùπΩÕ—•çÃÏÅ9YHÅÑÅÕÖôï—‰Å¡ï…µ•ÕÕ•Ω∏∏4(4(ººÅHÃ¡Å…ïÖêµΩπ±‰Å…ï¡Ω…—ïêÅôÖ’±–∏Å9ΩπîÅΩòÅ—°ïÕîÅ…ïÖÕΩ∏ÅçΩëïÃÅïÕ—Öâ±•Õ°ïÃ4(ººÅ•πëï¡ïπëïπ–Åï±ïç—…•çÖ∞ÅÕÖôï—‰ÅΩ»Åç°ÖπùïÃÅ—°îÅÖç—’Ö∞ÅMQ=@Ω•π—ï…±Ωç¨ÅU$∏4)Õ—Ö—•åÅçΩπÕ–Åç°Ö»Ä©ë•ÖùπΩÕ—•çIïÖÕΩπ	’±ùÖ…•Ö∏°’•π–·}–ÅçΩëî•Ï4(ÅÕ›•—ç†°çΩëî•Ï4(ÄÅçÖÕîÄƒÈ…ï—’…∏ÄãBwBøBsB@ÉBüBWBãBWBòàÏ4(ÄÅçÖÕîÄ»È…ï—’…∏ÄãBOBÉBWB£BkB@ÉBKBóB{BPàÏ4(ÄÅçÖÕîÄÃÈ…ï—’…∏ÄãBoBcBBáBKB@ÉBcB_BãB{BüBwBcBhàÏ4(ÄÅçÖÕîÄ–È…ï—’…∏ÄãBSBèBGBoBcBÉBCBtÉBcB_BãB{BüBwBcBhàÏ4(ÄÅçÖÕîÄ‘È…ï—’…∏ÄãBáBãBCBÉB`ÉBkB{BwBãBCBkBãB`àÏ4(ÄÅçÖÕîÄÿÈ…ï—’…∏ÄãBáBãBCBÉB@ÉBGBCBãBWBÉBcBºàÏ4(ÄÅçÖÕîÄ‹È…ï—’…∏ÄãBwBWBKBCBoBcBSBwB@ÉBGBCBà∏àÏ4(ÄÅçÖÕîÄ‡È…ï—’…∏ÄâMQ=@ÉBkB{BwBãBCBkBààÏ4(ÄÅçÖÕîÄ‰È…ï—’…∏Äâ]Q!=àÏ4(ÄÅçÖÕîÄƒ¿È…ï—’…∏ÄãB{BGB§ÉBBÉBWBkB´BáBKBCBúàÏ4(ÄÅçÖÕîÄƒƒÈ…ï—’…∏ÄãBoBcBsBcBãBWBÄÉBGB{BGBcBwB`àÏ4(ÄÅçÖÕîÄƒ»È…ï—’…∏ÄãBãB{BhÉBGB{BGBcBwB`àÏ4(ÄÅçÖÕîÄƒÃÈ…ï—’…∏ÄãBãB{BhÉBSBKBcBOBCBãBWBoB`àÏ4(ÄÅçÖÕîÄƒ–È…ï—’…∏ÄãBwBWBBèBáBkBCBwB@ÉBHÉBèBB{BãBÄ∏àÏ4(ÄÅëïôÖ’±–È…ï—’…∏ÄãBwBWBB{B_BwBCBàÉBkB{BPàÏ4(ÅÙ4)Ù4)Õ—Ö—•åÅâΩΩ∞ÅµÖ¡·¡ÖπëïêÄÙÅôÖ±ÕîÏÄÄÄººÅ5Ö¿Åô’±∞µÕç…ïï∏ÅÕ—Ö—î∏4)Õ—Ö—•åÅâΩΩ∞ÅÕΩπÖ…·¡ÖπëïêÄÙÅôÖ±ÕîÏÄººÅMΩπÖ»Åô’±∞µÕç…ïï∏ÅÕ—Ö—î∏4)Õ—Ö—•åÅâΩΩ∞ÅµÖ¡5ÖπÖùï…ç—•ŸîÄÙÅôÖ±ÕîÏÄººÅŸΩ•êÅµÖ¿Å…ïÖëÃÅ›°•±îÅ•µ¡Ω…–Å…ï¡±ÖçïÃÅMÅô•±ïÃ∏4(4)Õ—Ö—•åÅM—Ω¡Ö±±âÖç¨ÅÕ—Ω¡Ö±±âÖç¨ÄÙÅπ’±±¡—»Ï4(4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(ººÅ=1=UIL4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(4)Õ—Ö—•åÅçΩπÕ–Å±Ÿ}çΩ±Ω…}–Å=1=I}	-I=U9ÄÙ4(ÄÄÄÅ±Ÿ}çΩ±Ω…}°ï‡†¡‡¿‡ƒ‘»»§Ï4(4)Õ—Ö—•åÅçΩπÕ–Å±Ÿ}çΩ±Ω…}–Å=1=I}A90ÄÙ4(ÄÄÄÅ±Ÿ}çΩ±Ω…}°ï‡†¡‡ƒ¿»–Õ§Ï4(4)Õ—Ö—•åÅçΩπÕ–Å±Ÿ}çΩ±Ω…}–Å=1=I}QaPÄÙ4(ÄÄÄÅ±Ÿ}çΩ±Ω…}°ï‡†¡·§Ï4(4)Õ—Ö—•åÅçΩπÕ–Å±Ÿ}çΩ±Ω…}–Å=1=I}IÄÙ4(ÄÄÄÅ±Ÿ}çΩ±Ω…}°ï‡†¡·‰≈…§Ï4(4)Õ—Ö—•åÅçΩπÕ–Å±Ÿ}çΩ±Ω…}–Å=1=I}I8ÄÙ4(ÄÄÄÅ±Ÿ}çΩ±Ω…}°ï‡†¡‡»¡‰‹‰§Ï4)Õ—Ö—•åÅçΩπÕ–Å±Ÿ}çΩ±Ω…}–Å=1=I}e11=\ÄÙ4(ÄÄÄÅ±Ÿ}çΩ±Ω…}°ï‡†¡·…‰—§Ï4)Õ—Ö—•åÅçΩπÕ–Å±Ÿ}çΩ±Ω…}–Å=1=I}5UQÄÙ4(ÄÄÄÅ±Ÿ}çΩ±Ω…}°ï‡†¡‡‰—Õ‡§Ï4(4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(ººÅ!1AHËÅIQÅÅ1	04(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©ç…ïÖ—ï1Öâï∞†4(ÄÄÄÅ±Ÿ}Ωâ©}–Ä©¡Ö…ïπ–∞4(ÄÄÄÅçΩπÕ–Åç°Ö»Ä©—ï·–∞4(ÄÄÄÅ•π–Å‡∞4(ÄÄÄÅ•π–Å‰§4)Ï4(ÄÄÄÄººÅ…ïÖ—îÅÑÅπï‹Å1Y0Å±Öâï∞∏4(ÄÄÄÅ±Ÿ}Ωâ©}–Ä©±Öâï∞ÄÙÅ±Ÿ}±Öâï±}ç…ïÖ—î°¡Ö…ïπ–§Ï4(4(ÄÄÄÄººÅMï–Å—°îÅë•Õ¡±ÖÂïêÅ—ï·–∏4(ÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°±Öâï∞∞Å—ï·–§Ï4(4(ÄÄÄÄººÅMï–Å—°îÅ±Öâï∞Å¡ΩÕ•—•Ω∏∏4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}¡ΩÃ°±Öâï∞∞Å‡∞Å‰§Ï4(4(ÄÄÄÄººÅMï–Å—°îÅ—ï·–ÅçΩ±Ω’»∏4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}—ï·—}çΩ±Ω»†4(ÄÄÄÄÄÄÄÅ±Öâï∞∞4(ÄÄÄÄÄÄÄÅ=1=I}QaP∞4(ÄÄÄÄÄÄÄÅ1Y}AIQ}5%84(ÄÄÄÄ§Ï4(4(ÄÄÄÄººÅIï—’…∏Å—°îÅç…ïÖ—ïêÅ±Öâï∞∏4(ÄÄÄÅ…ï—’…∏Å±Öâï∞Ï4)Ù4(4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(ººÅ!1AHËÅIQÅÅA904(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©ç…ïÖ—ïAÖπï∞†4(ÄÄÄÅ±Ÿ}Ωâ©}–Ä©¡Ö…ïπ–∞4(ÄÄÄÅ•π–Å‡∞4(ÄÄÄÅ•π–Å‰∞4(ÄÄÄÅ•π–Å›•ë—†∞4(ÄÄÄÅ•π–Å°ï•ù°–§4)Ï4(ÄÄÄÄººÅ…ïÖ—îÅÑÅπï‹Å¡Öπï∞ÅΩâ©ïç–∏4(ÄÄÄÅ±Ÿ}Ωâ©}–Ä©¡Öπï∞ÄÙÅ±Ÿ}Ωâ©}ç…ïÖ—î°¡Ö…ïπ–§Ï4(4(ÄÄÄÄººÅMï–Å—°îÅ¡Öπï∞Å¡ΩÕ•—•Ω∏∏4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}¡ΩÃ°¡Öπï∞∞Å‡∞Å‰§Ï4(4(ÄÄÄÄººÅMï–Å—°îÅ¡Öπï∞Åë•µïπÕ•ΩπÃ∏4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ•Èî°¡Öπï∞∞Å›•ë—†∞Å°ï•ù°–§Ï4(4(ÄÄÄÄººÅMï–Å—°îÅâÖç≠ù…Ω’πêÅçΩ±Ω’»∏4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}âù}çΩ±Ω»†4(ÄÄÄÄÄÄÄÅ¡Öπï∞∞4(ÄÄÄÄÄÄÄÅ=1=I}A90∞4(ÄÄÄÄÄÄÄÅ1Y}AIQ}5%84(ÄÄÄÄ§Ï4(4(ÄÄÄÄººÅIïµΩŸîÅ—°îÅâΩ…ëï»∏4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}âΩ…ëï…}›•ë—††4(ÄÄÄÄÄÄÄÅ¡Öπï∞∞4(ÄÄÄÄÄÄÄÄ¿∞4(ÄÄÄÄÄÄÄÅ1Y}AIQ}5%84(ÄÄÄÄ§Ï4(4(ÄÄÄÄººÅMï–Å…Ω’πëïêÅçΩ…πï…Ã∏4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}…Öë•’Ã†4(ÄÄÄÄÄÄÄÅ¡Öπï∞∞4(ÄÄÄÄÄÄÄÄ‡∞4(ÄÄÄÄÄÄÄÅ1Y}AIQ}5%84(ÄÄÄÄ§Ï4(4(ÄÄÄÄººÅIïµΩŸîÅ•π—ï…πÖ∞Å¡Öëë•πú∏4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}¡Öë}Ö±∞†4(ÄÄÄÄÄÄÄÅ¡Öπï∞∞4(ÄÄÄÄÄÄÄÄ¿∞4(ÄÄÄÄÄÄÄÅ1Y}AIQ}5%84(ÄÄÄÄ§Ï4(4(ÄÄÄÄººÅëêÅÑÅ…ïÕ—…Ö•πïêÅâ±’îÅΩ’—±•πîÅôΩ»Å¡Öπï∞ÅÕï¡Ö…Ö—•Ω∏∏4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}âΩ…ëï…}›•ë—†°¡Öπï∞∞Äƒ∞Å1Y}AIQ}5%8§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}âΩ…ëï…}çΩ±Ω»°¡Öπï∞∞Å±Ÿ}çΩ±Ω…}°ï‡†¡‡»ÃÿŸ–§∞Å1Y}AIQ}5%8§Ï4(4(ÄÄÄÄººÅIï—’…∏Å—°îÅ¡Öπï∞∏4(ÄÄÄÅ…ï—’…∏Å¡Öπï∞Ï4)Ù4(4(ººÅ¡¡±‰Å—°îÅÕ°Ö…ïêÅ°•ù†µçΩπ—…ÖÕ–Å—Ω’ç†µâ’——Ω∏ÅÕ—Â±î∏4)Õ—Ö—•åÅŸΩ•êÅÕ—Â±ïQΩ’ç°	’——Ω∏°±Ÿ}Ωâ©}–Ä©â’——Ω∏∞Å±Ÿ}çΩ±Ω…}–Åô•±∞§4)Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}âù}çΩ±Ω»°â’——Ω∏∞Åô•±∞∞Å1Y}AIQ}5%8§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}—ï·—}çΩ±Ω»°â’——Ω∏∞Å=1=I}QaP∞Å1Y}AIQ}5%8§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}…Öë•’Ã°â’——Ω∏∞Ä‡∞Å1Y}AIQ}5%8§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}âΩ…ëï…}›•ë—†°â’——Ω∏∞Äƒ∞Å1Y}AIQ}5%8§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}âΩ…ëï…}çΩ±Ω»°â’——Ω∏∞Å±Ÿ}çΩ±Ω…}°ï‡†¡‡Ã–›¿§∞Å1Y}AIQ}5%8§Ï4)Ù4(4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(ººÅ5@ÅA90ÅQ=U ÅY9P4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(4)Õ—Ö—•åÅŸΩ•êÅµÖ¡QΩ’ç°Ÿïπ–°±Ÿ}ïŸïπ—}–Ä©ïŸïπ–§4)Ï4(ÄÄÄÄººÅ=π±‰Å…ïÖç–Å—ºÅÑÅçΩµ¡±ï—ïêÅ—Ω’ç†∏4(ÄÄÄÅ•òÄ°±Ÿ}ïŸïπ—}ùï—}çΩëî°ïŸïπ–§ÄÙÙÅ1Y}Y9Q}1%-§4(ÄÄÄÅÏ4(ÄÄÄÄÄÄÄÄººÅ·¡ÖπêÅΩ»Å…ïÕ—Ω…îÅ—°îÅµÖ¿∏4(ÄÄÄÄÄÄÄÅ—Ωùù±ï5Ö¡AÖπï∞†§Ï4(ÄÄÄÅÙ4)Ù4(4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(ººÅM=9HÅA90ÅQ=U ÅY9P4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(4)Õ—Ö—•åÅŸΩ•êÅÕΩπÖ…QΩ’ç°Ÿïπ–°±Ÿ}ïŸïπ—}–Ä©ïŸïπ–§4)Ï4(ÄÄÄÄººÅ=π±‰Å…ïÖç–Å—ºÅÑÅçΩµ¡±ï—ïêÅ—Ω’ç†∏4(ÄÄÄÅ•òÄ°±Ÿ}ïŸïπ—}ùï—}çΩëî°ïŸïπ–§ÄÙÙÅ1Y}Y9Q}1%-§4(ÄÄÄÅÏ4(ÄÄÄÄÄÄÄÄººÅ·¡ÖπêÅΩ»Å…ïÕ—Ω…îÅ—°îÅÕΩπÖ»∏4(ÄÄÄÄÄÄÄÅ—Ωùù±ïMΩπÖ…AÖπï∞†§Ï4(ÄÄÄÅÙ4)Ù4(4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(ººÅ5I9dÅMQ=@ÅY9P4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(4)Õ—Ö—•åÅŸΩ•êÅÕ—Ω¡QΩ’ç°Ÿïπ–°±Ÿ}ïŸïπ—}–Ä©ïŸïπ–§4)Ï4(ÄÄÄÄººÅ°ïç¨Å›°ï—°ï»Å—°îÅMQ=@Åâ’——Ω∏Å›ÖÃÅ¡…ïÕÕïê∏4(ÄÄÄÅ•òÄ°±Ÿ}ïŸïπ—}ùï—}çΩëî°ïŸïπ–§ÄÙÙÅ1Y}Y9Q}1%-§4(ÄÄÄÅÏ4(ÄÄÄÄÄÄÄÄººÅM—Ω¿ÅâΩ—†ÅµΩ—Ω…ÃÅ•∏Å—°îÅë•Õ¡±ÖÂïêÅÕ—Ö—î∏4(ÄÄÄÄÄÄÄÅâΩÖ—M—Ö—îπµΩ—Ω…1ïô—ç—•ŸîÄÙÅôÖ±ÕîÏ4(ÄÄÄÄÄÄÄÅâΩÖ—M—Ö—îπµΩ—Ω…I•ù°—ç—•ŸîÄÙÅôÖ±ÕîÏ4(4(ÄÄÄÄÄÄÄÄººÅ5Ö…¨Å—°îÅïµï…ùïπç‰ÅÕ—Ω¿ÅÖÃÅÖç—•Ÿî∏4(ÄÄÄÄÄÄÄÅâΩÖ—M—Ö—îπïµï…ùïπçÂM—Ω¿ÄÙÅ—…’îÏ4(ÄÄÄÄÄÄÄÅâΩÖ—M—Ö—îπïµï…ùïπçÂM—Ω¡Ωπô•…µïêÄÙÅôÖ±ÕîÏ4(4(ÄÄÄÄÄÄÄÄººÅÖ±∞Å—°îÅ…ïù•Õ—ï…ïêÅÕÖôï—‰Å°Öπë±ï»∏4(ÄÄÄÄÄÄÄÅ•òÄ°Õ—Ω¡Ö±±âÖç¨ÄÑÙÅπ’±±¡—»§4(ÄÄÄÄÄÄÄÅÏ4(ÄÄÄÄÄÄÄÄÄÄÄÅÕ—Ω¡Ö±±âÖç¨†§Ï4(ÄÄÄÄÄÄÄÅÙ4(4(ÄÄÄÄÄÄÄÄººÅIïô…ïÕ†Å—°îÅë•Õ¡±Ö‰∏4(ÄÄÄÄÄÄÄÅ’¡ëÖ—ï	ΩÖ—Mç…ïï∏°âΩÖ—M—Ö—î§Ï4(ÄÄÄÅÙ4)Ù4(4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(ººÅIQÅ!H4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(4)Õ—Ö—•åÅŸΩ•êÅç…ïÖ—ï!ïÖëï»†§4)Ï4(ÄÄÄÄººÅ…ïÖ—îÅ—°îÅ—Ω¿ÅÕ—Ö—’ÃÅ¡Öπï∞∏4(ÄÄÄÅ°ïÖëï…AÖπï∞ÄÙÅç…ïÖ—ïAÖπï∞†4(ÄÄÄÄÄÄÄÅµÖ•πMç…ïï∏∞4(ÄÄÄÄÄÄÄÄ¿∞4(ÄÄÄÄÄÄÄÄ¿∞4(ÄÄÄÄÄÄÄÅMI9}]%Q ∞4(ÄÄÄÄÄÄÄÅ!I}!%!P4(ÄÄÄÄ§Ï4(4(ÄÄÄÄººÅ•Õ¡±Ö‰Å…Öë•ºÅçΩππïç—•Ω∏ÅÕ—Ö—’Ã∏4(ÄÄÄÅçΩππïç—•Ωπ1Öâï∞ÄÙÅç…ïÖ—ï1Öâï∞†4(ÄÄÄÄÄÄÄÅ°ïÖëï…AÖπï∞∞4(ÄÄÄÄÄÄÄÄãBÉBCBSBcBxËÄ¥¥à∞4(ÄÄÄÄÄÄÄÄƒ»∞4(ÄÄÄÄÄÄÄÄ»‘4(ÄÄÄÄ§Ï4(ÄÄÄÅ’—ç±Ωç≠1Öâï∞ÄÙÅç…ïÖ—ï1Öâï∞†4(ÄÄÄÄÄÄÄÅ°ïÖëï…AÖπï∞∞4(ÄÄÄÄÄÄÄÄâALÅUQËÄ¥¥Ë¥¥Ë¥¥à∞4(ÄÄÄÄÄÄÄÄƒ»∞4(ÄÄÄÄÄÄÄÄƒ4(ÄÄÄÄ§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}—ï·—}çΩ±Ω»°’—ç±Ωç≠1Öâï∞±=1=I}5UQ±1Y}AIQ}5%8§Ï4(4(ÄÄÄÄººÅ•Õ¡±Ö‰ÅâΩÖ–ÅâÖ——ï…‰Å•πôΩ…µÖ—•Ω∏∏4(ÄÄÄÅâÖ——ï…Â1Öâï∞ÄÙÅç…ïÖ—ï1Öâï∞†4(ÄÄÄÄÄÄÄÅ°ïÖëï…AÖπï∞∞4(ÄÄÄÄÄÄÄÄãBGBCBãBWBÉBcBºËÄ¥¥îà∞4(ÄÄÄÄÄÄÄÄ»‡¿∞4(ÄÄÄÄÄÄÄÄƒ‹4(ÄÄÄÄ§Ï4(4(ÄÄÄÄººÅ•Õ¡±Ö‰ÅΩ¡ï…Ö—•πúÅµΩëî∏4(ÄÄÄÅµΩëï1Öâï∞ÄÙÅç…ïÖ—ï1Öâï∞†4(ÄÄÄÄÄÄÄÅ°ïÖëï…AÖπï∞∞4(ÄÄÄÄÄÄÄÄãBÉBWB[BcBpËÉBÉB´BüBWBtà∞4(ÄÄÄÄÄÄÄÄ‘Ã‘∞4(ÄÄÄÄÄÄÄÄƒ‹4(ÄÄÄÄ§Ï4(4(ÄÄÄÄººÅëêÅÑÅùïÖ»Åâ’——Ω∏Å—ºÅΩ¡ï∏Å…ïµΩ—îÅÕï——•πùÃ∏4(ÄÄÄÅ±Ÿ}Ωâ©}–Ä©Õï——•πùÕ	’——Ω∏ÄÙÅ±Ÿ}â’——Ωπ}ç…ïÖ—î°°ïÖëï…AÖπï∞§Ï4(ÄÄÄÅÕ—Â±ïQΩ’ç°	’——Ω∏°Õï——•πùÕ	’——Ω∏∞Å±Ÿ}çΩ±Ω…}°ï‡†¡‡ƒ‹—‰»§§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ•Èî°Õï——•πùÕ	’——Ω∏∞Äƒ¿¿∞ÄÃÿ§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Ö±•ù∏°Õï——•πùÕ	’——Ω∏∞Å1Y}1%9}I%!Q}5%∞Ä¥‡∞Ä¿§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}–Ä©Õï——•πùÕQï·–ÄÙÅ±Ÿ}±Öâï±}ç…ïÖ—î°Õï——•πùÕ	’——Ω∏§Ï4(ÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°Õï——•πùÕQï·–∞ÄãBwBCBáBãBÉB{BgBkB`à§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}çïπ—ï»°Õï——•πùÕQï·–§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Öëë}ïŸïπ—}çà°Õï——•πùÕ	’——Ω∏∞Åmt°±Ÿ}ïŸïπ—}–Ä©ïŸïπ–§ÅÏ4(ÄÄÄÄÄÄÄÅ•òÄ°±Ÿ}ïŸïπ—}ùï—}çΩëî°ïŸïπ–§ÄÙÙÅ1Y}Y9Q}1%-§4(ÄÄÄÄÄÄÄÄÄÄÄÅÕï——•πùÕU%}Ω¡ï∏°µÖ•πMç…ïï∏§Ï4(ÄÄÄÅÙ∞Å1Y}Y9Q}1%-∞Åπ’±±¡—»§Ï4)Ù4(4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(ººÅIQÅ5@ÅA904(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(4)Õ—Ö—•åÅŸΩ•êÅµÖ¡iΩΩµ%πŸïπ–°±Ÿ}ïŸïπ—}–Ä©ïŸïπ–•Ì•ò°±Ÿ}ïŸïπ—}ùï—}çΩëî°ïŸïπ–§Ùı1Y}Y9Q}1%-•ÌµÖ¡Iïπëï…ï…}ÈΩΩµ%∏†§Ì•ò°µÖ¡iΩΩµ1Öâï∞•Ìç°Ö»ÅÈl·tÌÕπ¡…•π—ò°Ë±Õ•ÈïΩò°Ë§∞âhï‘à∞°’πÕ•ùπïê•µÖ¡Iïπëï…ï…}ùï—iΩΩ¥†§§Ì±Ÿ}±Öâï±}Õï—}—ï·–°µÖ¡iΩΩµ1Öâï∞±Ë§ÌııÙ4)Õ—Ö—•åÅŸΩ•êÅµÖ¡iΩΩµ=’—Ÿïπ–°±Ÿ}ïŸïπ—}–Ä©ïŸïπ–•Ì•ò°±Ÿ}ïŸïπ—}ùï—}çΩëî°ïŸïπ–§Ùı1Y}Y9Q}1%-•ÌµÖ¡Iïπëï…ï…}ÈΩΩµ=’–†§Ì•ò°µÖ¡iΩΩµ1Öâï∞•Ìç°Ö»ÅÈl·tÌÕπ¡…•π—ò°Ë±Õ•ÈïΩò°Ë§∞âhï‘à∞°’πÕ•ùπïê•µÖ¡Iïπëï…ï…}ùï—iΩΩ¥†§§Ì±Ÿ}±Öâï±}Õï—}—ï·–°µÖ¡iΩΩµ1Öâï∞±Ë§ÌııÙ4)Õ—Ö—•åÅŸΩ•êÅµÖ¡MΩ’…çïÂç±ïŸïπ–°±Ÿ}ïŸïπ—}–Ä©ïŸïπ–§4)Ï4(ÄÄÄÅ•òÄ°±Ÿ}ïŸïπ—}ùï—}çΩëî°ïŸïπ–§ÄÑÙÅ1Y}Y9Q}1%-§Å…ï—’…∏Ï4(ÄÄÄÅçΩπÕ–Å5Ö¡MΩ’…çï5ΩëîÅµΩëîÄÙÅµÖ¡MΩ’…çï}πï·—5Ωëî†§Ï4(ÄÄÄÅ•òÄ°µÖ¡MΩ’…çï1Öâï∞§Å±Ÿ}±Öâï±}Õï—}—ï·–°µÖ¡MΩ’…çï1Öâï∞∞ÅµÖ¡MΩ’…çï}µΩëï1Öâï∞°µΩëî§§Ï4(ÄÄÄÅ’¡ëÖ—ï	ΩÖ—Mç…ïï∏°âΩÖ—M—Ö—î§Ï4)Ù4)Õ—Ö—•åÅŸΩ•êÅµÖ¡5ÖπÖùï…=¡ïπŸïπ–°±Ÿ}ïŸïπ—}–Ä©ïŸïπ–•Ì•ò°±Ÿ}ïŸïπ—}ùï—}çΩëî°ïŸïπ–§Ñı1Y}Y9Q}1%-•…ï—’…∏ÌçΩπÕ–ÅâΩΩ∞Åù¡Õ…ïÕ†ıâΩÖ—M—Ö—îπù¡ÕYÖ±•êòò°’•π–Ã…}–§°µ•±±•Ã†§µâΩÖ—M—Ö—îπù¡Õ1ÖÕ—U¡ëÖ—ï5Ã§Ù»¿¿¡TÌµÖ¡5ÖπÖùï…ç—•Ÿîı—…’îÌ±Ÿ}Ωâ©}Öëë}ô±Öú°°ïÖëï…AÖπï∞±1Y}=	)}1}!%8§Ì±Ÿ}Ωâ©}Öëë}ô±Öú°çΩπ—ïπ—AÖπï∞±1Y}=	)}1}!%8§Ì±Ÿ}Ωâ©}Öëë}ô±Öú°ôΩΩ—ï…AÖπï∞±1Y}=	)}1}!%8§ÌµÖ¡5ÖπÖùï…U%}Ω¡ï∏°µÖ•πMç…ïï∏±âΩÖ—M—Ö—îπ±Ö—•—’ëî±âΩÖ—M—Ö—îπ±Ωπù•—’ëî±ù¡Õ…ïÕ†±muÌµÖ¡5ÖπÖùï…ç—•ŸîıôÖ±ÕîÌ±Ÿ}Ωâ©}…ïµΩŸï}ô±Öú°°ïÖëï…AÖπï∞±1Y}=	)}1}!%8§Ì±Ÿ}Ωâ©}…ïµΩŸï}ô±Öú°çΩπ—ïπ—AÖπï∞±1Y}=	)}1}!%8§Ì±Ÿ}Ωâ©}…ïµΩŸï}ô±Öú°ôΩΩ—ï…AÖπï∞±1Y}=	)}1}!%8§Ì’¡ëÖ—ï	ΩÖ—Mç…ïï∏°âΩÖ—M—Ö—î§ÌÙ§ÌÙ4)ŸΩ•êÅâΩÖ—U%}…ïô…ïÕ°1Ö≠ï1Öâï∞†§Ï4)Õ—Ö—•åÅŸΩ•êÅç…ïÖ—ï5Ö¡AÖπï∞†§4)Ï4(ÄÄÄÅµÖ¡AÖπï∞ıç…ïÖ—ïAÖπï∞°çΩπ—ïπ—AÖπï∞∞‘∞‘∞Ã‡‘∞Ãƒ‘§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}–Ä©±Ö≠ï	’——Ω∏ı±Ÿ}â’——Ωπ}ç…ïÖ—î°µÖ¡AÖπï∞§ÌÕ—Â±ïQΩ’ç°	’——Ω∏°±Ö≠ï	’——Ω∏±±Ÿ}çΩ±Ω…}°ï‡†¡‡ƒ‹—‰»§§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ•Èî°±Ö≠ï	’——Ω∏∞ƒÿÃ∞»‡§Ì±Ÿ}Ωâ©}Õï—}¡ΩÃ°±Ö≠ï	’——Ω∏∞‡∞–§Ï4(ÄÄÄÅµÖ¡Q•—±îı±Ÿ}±Öâï±}ç…ïÖ—î°±Ö≠ï	’——Ω∏§Ì±Ÿ}Ωâ©}Õï—}›•ë—†°µÖ¡Q•—±î∞ƒ‘Ã§Ì±Ÿ}±Öâï±}Õï—}±Ωπù}µΩëî°µÖ¡Q•—±î±1Y}1	1}1=9}=P§Ì±Ÿ}Ωâ©}çïπ—ï»°µÖ¡Q•—±î§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Öëë}ïŸïπ—}çà°±Ö≠ï	’——Ω∏±mt°±Ÿ}ïŸïπ—}–Ä®•Ì±Ö≠ïU%}Ω¡ï∏°µÖ•πMç…ïï∏§ÌÙ±1Y}Y9Q}1%-±π’±±¡—»§Ï4(ÄÄÄÅâΩÖ—U%}…ïô…ïÕ°1Ö≠ï1Öâï∞†§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}–Ä©ÕΩ’…çï	’——Ω∏ı±Ÿ}â’——Ωπ}ç…ïÖ—î°µÖ¡AÖπï∞§ÌÕ—Â±ïQΩ’ç°	’——Ω∏°ÕΩ’…çï	’——Ω∏∞Å±Ÿ}çΩ±Ω…}°ï‡†¡‡ƒ‹—‰»§§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ•Èî°ÕΩ’…çï	’——Ω∏∞‡ÿ∞»‡§Ì±Ÿ}Ωâ©}Õï—}¡ΩÃ°ÕΩ’…çï	’——Ω∏∞»‡‘∞–§Ï4(ÄÄÄÅµÖ¡MΩ’…çï1Öâï∞ı±Ÿ}±Öâï±}ç…ïÖ—î°ÕΩ’…çï	’——Ω∏§Ì±Ÿ}±Öâï±}Õï—}—ï·–°µÖ¡MΩ’…çï1Öâï∞±µÖ¡MΩ’…çï}µΩëï1Öâï∞°µÖ¡MΩ’…çï}ùï—5Ωëî†§§§Ì±Ÿ}Ωâ©}çïπ—ï»°µÖ¡MΩ’…çï1Öâï∞§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Öëë}ïŸïπ—}çà°ÕΩ’…çï	’——Ω∏±µÖ¡MΩ’…çïÂç±ïŸïπ–±1Y}Y9Q}1%-±π’±±¡—»§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}–Ä©µÖπÖùï»ı±Ÿ}â’——Ωπ}ç…ïÖ—î°µÖ¡AÖπï∞§ÌÕ—Â±ïQΩ’ç°	’——Ω∏°µÖπÖùï»∞Å±Ÿ}çΩ±Ω…}°ï‡†¡‡ƒ‹—‰»§§Ì±Ÿ}Ωâ©}Õï—}Õ•Èî°µÖπÖùï»∞‰»∞»‡§Ì±Ÿ}Ωâ©}Õï—}¡ΩÃ°µÖπÖùï»∞ƒ‡¿∞–§Ì±Ÿ}±Öâï±}Õï—}—ï·–°±Ÿ}±Öâï±}ç…ïÖ—î°µÖπÖùï»§∞ãBèBBÉBCBKBoBWBwBcBTà§Ì±Ÿ}Ωâ©}çïπ—ï»°±Ÿ}Ωâ©}ùï—}ç°•±ê°µÖπÖùï»∞¿§§Ì±Ÿ}Ωâ©}Öëë}ïŸïπ—}çà°µÖπÖùï»±µÖ¡5ÖπÖùï…=¡ïπŸïπ–±1Y}Y9Q}1%-±π’±±¡—»§Ï4(ÄÄÄÅù¡ÕΩΩ…ë•πÖ—ïÕ1Öâï∞ıç…ïÖ—ï1Öâï∞°µÖ¡AÖπï∞∞ãB£BcBÄËÄ¥¥∏¥¥¥¥¥¥ÄÉBSB´BlËÄ¥¥∏¥¥¥¥¥¥à∞ƒ¿∞Ãƒ§Ï4(ÄÄÄÅù¡Õ5Ö¡M—Ö—’Õ1Öâï∞ıç…ïÖ—ï1Öâï∞°µÖ¡AÖπï∞∞âALËÉBwBøBsB@Å%`ÅÅMËÉBBÉB{BKBWBÉBkB@à∞ƒ¿∞‘Ã§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}›•ë—†°ù¡Õ5Ö¡M—Ö—’Õ1Öâï∞∞Ãÿ‘§Ì±Ÿ}±Öâï±}Õï—}±Ωπù}µΩëî°ù¡Õ5Ö¡M—Ö—’Õ1Öâï∞±1Y}1	1}1=9}=P§Ï4(ÄÄÄÅµÖ¡Y•ï›¡Ω…–ı±Ÿ}Ωâ©}ç…ïÖ—î°µÖ¡AÖπï∞§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}¡ΩÃ°µÖ¡Y•ï›¡Ω…–∞‡∞‹‡§Ì±Ÿ}Ωâ©}Õï—}Õ•Èî°µÖ¡Y•ï›¡Ω…–∞Ãÿ‰∞ƒ‰¿§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}âΩ…ëï…}›•ë—†°µÖ¡Y•ï›¡Ω…–∞¿±1Y}AIQ}5%8§Ì±Ÿ}Ωâ©}Õï—}Õ—Â±ï}¡Öë}Ö±∞°µÖ¡Y•ï›¡Ω…–∞¿±1Y}AIQ}5%8§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}âù}çΩ±Ω»°µÖ¡Y•ï›¡Ω…–±±Ÿ}çΩ±Ω…}°ï‡†¡‡»ÿÃ‹–ÿ§±1Y}AIQ}5%8§Ì±Ÿ}Ωâ©}Õï—}Õ—Â±ï}ç±•¡}çΩ…πï»°µÖ¡Y•ï›¡Ω…–±—…’î±1Y}AIQ}5%8§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}ç±ïÖ…}ô±Öú°µÖ¡Y•ï›¡Ω…–±1Y}=	)}1}MI=11	1§ÌµÖ¡Iïπëï…ï…}ç…ïÖ—î°µÖ¡Y•ï›¡Ω…–§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}–Ä©ÈΩΩµ=’–ı±Ÿ}â’——Ωπ}ç…ïÖ—î°µÖ¡AÖπï∞§ÌÕ—Â±ïQΩ’ç°	’——Ω∏°ÈΩΩµ=’–∞Å±Ÿ}çΩ±Ω…}°ï‡†¡‡ƒ‹—‰»§§Ì±Ÿ}Ωâ©}Õï—}Õ•Èî°ÈΩΩµ=’–∞–»∞Ã»§Ì±Ÿ}Ωâ©}Õï—}¡ΩÃ°ÈΩΩµ=’–∞‡∞»‹¿§Ï4(ÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°±Ÿ}±Öâï±}ç…ïÖ—î°ÈΩΩµ=’–§∞à¥à§Ì±Ÿ}Ωâ©}çïπ—ï»°±Ÿ}Ωâ©}ùï—}ç°•±ê°ÈΩΩµ=’–∞¿§§Ì±Ÿ}Ωâ©}Öëë}ïŸïπ—}çà°ÈΩΩµ=’–±µÖ¡iΩΩµ=’—Ÿïπ–±1Y}Y9Q}1%-±π’±±¡—»§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}–Ä©ÈΩΩµ%∏ı±Ÿ}â’——Ωπ}ç…ïÖ—î°µÖ¡AÖπï∞§ÌÕ—Â±ïQΩ’ç°	’——Ω∏°ÈΩΩµ%∏∞Å±Ÿ}çΩ±Ω…}°ï‡†¡‡ƒ‹—‰»§§Ì±Ÿ}Ωâ©}Õï—}Õ•Èî°ÈΩΩµ%∏∞–»∞Ã»§Ì±Ÿ}Ωâ©}Õï—}¡ΩÃ°ÈΩΩµ%∏∞‘–∞»‹¿§Ï4(ÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°±Ÿ}±Öâï±}ç…ïÖ—î°ÈΩΩµ%∏§∞à¨à§Ì±Ÿ}Ωâ©}çïπ—ï»°±Ÿ}Ωâ©}ùï—}ç°•±ê°ÈΩΩµ%∏∞¿§§Ì±Ÿ}Ωâ©}Öëë}ïŸïπ—}çà°ÈΩΩµ%∏±µÖ¡iΩΩµ%πŸïπ–±1Y}Y9Q}1%-±π’±±¡—»§Ï4(ÄÄÄÅµÖ¡iΩΩµ1Öâï∞ıç…ïÖ—ï1Öâï∞°µÖ¡AÖπï∞∞âhƒ‘à∞ƒ¿–∞»‹‡§Ì±Ÿ}Ωâ©}Öëë}ô±Öú°µÖ¡iΩΩµ1Öâï∞±1Y}=	)}1}1%-	1§Ì±Ÿ}Ωâ©}Öëë}ïŸïπ—}çà°µÖ¡iΩΩµ1Öâï∞±mt°±Ÿ}ïŸïπ—}–®•ÌµÖ¡Iïπëï…ï…}…ïçïπ—ï»†§ÌÙ±1Y}Y9Q}1%-±π’±±¡—»§Ìù¡Õï—Ö•±Õ1Öâï∞ıç…ïÖ—ï1Öâï∞°µÖ¡AÖπï∞∞âMPËÄ¥¥ÄÅËÄ¥µ¥ÄÉBkBèBÉBÑËÄ¥¥à∞ƒÿ¿∞»‹‡§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Öëë}ô±Öú°µÖ¡AÖπï∞±1Y}=	)}1}1%-	1§Ì±Ÿ}Ωâ©}Öëë}ïŸïπ—}çà°µÖ¡AÖπï∞±µÖ¡QΩ’ç°Ÿïπ–±1Y}Y9Q}1%-±π’±±¡—»§Ï4)Ù4(4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(ººÅIQÅM=9HÅA904(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(4(ººÅM—Ö—•åÅŸ•Õ’Ö∞µΩπ±‰Åïç°Ωù…Ö¥Å¡…Ω—Ω—Â¡î∏ÅŸï…‰ÅÖ…ç†Å•ÃÅµÖ…≠ïêÅ5<ÏÅπºÅÕΩπÖ»4(ººÅµïÖÕ’…ïµïπ—ÃÅÖ…îÅôÖâ…•çÖ—ïêÅΩ»ÅçΩππïç—ïêÅ—ºÅâΩÖ–Å—ï±ïµï—…‰∏4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©ÕΩπÖ…A±Ω–ÄÙÅπ’±±¡—»Ï4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©ÕΩπÖ…M—Ö—’ÃÄÙÅπ’±±¡—»Ï4(4)Õ—Ö—•åÅŸΩ•êÅÕΩπÖ…1•πî°±Ÿ}Ωâ©}–Ä©¡Ö…ïπ–∞ÅçΩπÕ–Å±Ÿ}¡Ω•π—}¡…ïç•Õï}–Ä©¡—Ã∞Å’•π–ƒŸ}–Å∏∞4(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅ±Ÿ}çΩ±Ω…}–ÅçΩ±Ω»∞Å’•π–·}–Å›•ë—†§4)Ï4(ÄÄÄÅ±Ÿ}Ωâ©}–Ä©±•πîÄÙÅ±Ÿ}±•πï}ç…ïÖ—î°¡Ö…ïπ–§Ï4(ÄÄÄÅ±Ÿ}±•πï}Õï—}¡Ω•π—Ã°±•πî∞Å¡—Ã∞Å∏§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}±•πï}çΩ±Ω»°±•πî∞ÅçΩ±Ω»∞Å1Y}AIQ}5%8§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}±•πï}›•ë—†°±•πî∞Å›•ë—†∞Å1Y}AIQ}5%8§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}±•πï}…Ω’πëïê°±•πî∞Å—…’î∞Å1Y}AIQ}5%8§Ï4)Ù4(4)Õ—Ö—•åÅŸΩ•êÅë…Ö›MΩπÖ…A±Ω–°’•π–ƒŸ}–Å›•ë—†∞Å’•π–ƒŸ}–Å°ï•ù°–§4)Ï4(ÄÄÄÅ•òÄ†ÖÕΩπÖ…A±Ω–§Å…ï—’…∏Ï4(ÄÄÄÅ›°•±îÄ°±Ÿ}Ωâ©}ùï—}ç°•±ë}çΩ’π–°ÕΩπÖ…A±Ω–§Ä¯Ä¿§4(ÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}ëï±ï—î°±Ÿ}Ωâ©}ùï—}ç°•±ê°ÕΩπÖ…A±Ω–∞Ä¿§§Ï4(ÄÄÄÄººÅ1Y0Ä‰∏ÿÅ±Ÿ}¡Ω•π—}¡…ïç•Õï}–ÅÕ—Ω…ïÃÅ•π—ïùï»Å¡•·ï∞ÅçΩΩ…ë•πÖ—ïÃÅ•∏Å—°•Ã4(ÄÄÄÄººÅçΩπô•ù’…Ö—•Ω∏∏Å9ïŸï»Å’ÕîÅô±ΩÖ—•πúµ¡Ω•π–Å±•Õ–Å•π•—•Ö±•ÈÖ—•Ω∏Å°ï…îË4(ÄÄÄÄººÅ…ë’•πºÅÖπêÅA±Ö—ôΩ…µ%<Åµ’Õ–ÅçΩµ¡•±îÅ—°îÅŸï…‰ÅÕÖµîÅë…Ö›•πúÅçΩëî∏4(ÄÄÄÅ•òÄ°›•ë—†ÄÄ»ÅÒÅ°ï•ù°–ÄÄ»§Å…ï—’…∏Ï4(ÄÄÄÅçΩπÕ–Å•π–Ã…}–Å‹ÄÙÅÕ—Ö—•ç}çÖÕ–Ò•π–Ã…}–¯°›•ë—†§Ä¥ÄƒÏ4(ÄÄÄÅçΩπÕ–Å•π–Ã…}–Å†ÄÙÅÕ—Ö—•ç}çÖÕ–Ò•π–Ã…}–¯°°ï•ù°–§Ä¥ÄƒÏ4(ÄÄÄÅçΩπÕ–Å±Ÿ}çΩ±Ω…}–Åù…•êı±Ÿ}çΩ±Ω…}°ï‡†¡‡»––»‘‡§Ï4(ÄÄÄÅÕ—Ö—•åÅ±Ÿ}¡Ω•π—}¡…ïç•Õï}–Å°¡l’ul…t±Ÿ¡l’ul…tÏ4(ÄÄÄÅôΩ»°•π–Å§Ù¿Ì§Ù–Ì§¨¨•Ï4(ÄÄÄÄÄÄÄÅ•π–Å‰Ù°†©§§º–∞Å‡Ù°‹©§§º–Ï4(ÄÄÄÄÄÄÄÅ°¡m•ul¡tıÏ¿±ÂÙÌ°¡m•ul≈tıÌ‹±ÂÙÏ4(ÄÄÄÄÄÄÄÅŸ¡m•ul¡tıÌ‡∞¡ÙÌŸ¡m•ul≈tıÌ‡±°ÙÏ4(ÄÄÄÄÄÄÄÅÕΩπÖ…1•πî°ÕΩπÖ…A±Ω–±°¡m•t∞»±ù…•ê∞ƒ§ÌÕΩπÖ…1•πî°ÕΩπÖ…A±Ω–±Ÿ¡m•t∞»±ù…•ê∞ƒ§Ï4(ÄÄÄÅÙ4(ÄÄÄÄººÅ-ïï¿Å—°îÅ¡±Ω–ÅÖÃÅÖ∏Åïµ¡—‰ÅÕçÖ±îÅ’π—•∞ÅÑÅÕï±ïç—ïêÅÕΩ’πëï»ÅçÖ∏ÅÕ’¡¡±‰Å…ïÖ∞4(ÄÄÄÄººÅïç°ºµ¡…Ωô•±îÅÕÖµ¡±ïÃÏÅπïŸï»Åë…Ö‹Å•πŸïπ—ïêÅô•Õ†ÅÖ…ç°ïÃÅΩ»ÅÑÅôÖ≠îÅâΩ——Ω¥∏4)Ù4(4)Õ—Ö—•åÅŸΩ•êÅç…ïÖ—ïMΩπÖ…AÖπï∞†§4)Ï4(ÄÄÄÅÕΩπÖ…AÖπï∞ÄÙÅç…ïÖ—ïAÖπï∞°çΩπ—ïπ—AÖπï∞∞Ä–¿¿∞Ä‘∞ÄÃ‡‘∞ÄÃƒ‘§Ï4(ÄÄÄÅÕΩπÖ…Q•—±îÄÙÅç…ïÖ—ï1Öâï∞°ÕΩπÖ…AÖπï∞∞ÄãBáB{BwBCBÄÉäàÅ!%I@à∞Äƒ»∞Ä‡§Ï4(ÄÄÄÅ›ïÖ—°ï…1Öâï∞ıç…ïÖ—ï1Öâï∞°ÕΩπÖ…AÖπï∞∞â	5@ËÄ¥¥∏∑
+¡ÄÄ¥¥¥¥Å°AÑà∞ƒ‘¿∞‡§Ï4(ÄÄÄÅÕΩπÖ…ï¡—°1Öâï∞ıç…ïÖ—ï1Öâï∞°ÕΩπÖ…AÖπï∞∞ãBSB´BoBGB{BüBcBwB@ÄÄ¥¥∏¥Å¥à∞ƒ»∞Ã¿§Ï4(ÄÄÄÅ›Ö—ï…Qïµ¡ï…Ö—’…ï1Öâï∞ıç…ïÖ—ï1Öâï∞°ÕΩπÖ…AÖπï∞∞ãBKB{BSB@ÄÄ¥¥∏∑
+¡à∞»»¿∞Ã¿§Ï4(ÄÄÄÅÕΩπÖ…A±Ω–ÄÙÅ±Ÿ}Ωâ©}ç…ïÖ—î°ÕΩπÖ…AÖπï∞§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}¡ΩÃ°ÕΩπÖ…A±Ω–∞Ä–»∞Ä‘»§ÏÅ±Ÿ}Ωâ©}Õï—}Õ•Èî°ÕΩπÖ…A±Ω–∞ÄÃÃ¿∞Ä»ƒ¿§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}âù}çΩ±Ω»°ÕΩπÖ…A±Ω–∞Å±Ÿ}çΩ±Ω…}°ï‡†¡‡¿ÿƒ¿≈§∞Å1Y}AIQ}5%8§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}âΩ…ëï…}›•ë—†°ÕΩπÖ…A±Ω–∞Äƒ∞Å1Y}AIQ}5%8§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}âΩ…ëï…}çΩ±Ω»°ÕΩπÖ…A±Ω–∞Å±Ÿ}çΩ±Ω…}°ï‡†¡‡»‡ÿƒ·§∞Å1Y}AIQ}5%8§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}¡Öë}Ö±∞°ÕΩπÖ…A±Ω–∞Ä¿∞Å1Y}AIQ}5%8§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}ç±ïÖ…}ô±Öú°ÕΩπÖ…A±Ω–∞Å1Y}=	)}1}MI=11	1§Ï4(ÄÄÄÅë…Ö›MΩπÖ…A±Ω–†ÃÃ¿∞»ƒ¿§Ï4(ÄÄÄÅç…ïÖ—ï1Öâï∞°ÕΩπÖ…AÖπï∞∞à¿à∞‡∞‘»§ÏÅç…ïÖ—ï1Öâï∞°ÕΩπÖ…AÖπï∞∞à‘à∞‡∞ƒ¿Ã§Ï4(ÄÄÄÅç…ïÖ—ï1Öâï∞°ÕΩπÖ…AÖπï∞∞àƒ¿à∞–∞ƒ‘‘§ÏÅç…ïÖ—ï1Öâï∞°ÕΩπÖ…AÖπï∞∞àƒ‘à∞–∞»¿‹§Ï4(ÄÄÄÅç…ïÖ—ï1Öâï∞°ÕΩπÖ…AÖπï∞∞ãBWBóB{BOBÉBCBsB@ËÉBwBTÉBTÉBcB_BGBÉBCBtÉBsB{BSBèBlÄºÉBBÉB{BãB{BkB{Blà∞ƒ»∞»‹¿§Ï4(ÄÄÄÅÕΩπÖ…M—Ö—’Ãıç…ïÖ—ï1Öâï∞°ÕΩπÖ…AÖπï∞∞ãBáB{BwBCBÄËÉBwBøBsB@ÉBáBKBWB[B`ÉBSBCBwBwB`à∞ƒ»∞»‡‰§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Öëë}ô±Öú°ÕΩπÖ…AÖπï∞∞Å1Y}=	)}1}1%-	1§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Öëë}ïŸïπ—}çà°ÕΩπÖ…AÖπï∞∞ÅÕΩπÖ…QΩ’ç°Ÿïπ–∞Å1Y}Y9Q}1%-∞Åπ’±±¡—»§Ï4)Ù4(4(ººÅQΩ’ç°Õç…ïï∏ÅµΩëîÅçΩπ—…Ω±ÃÅÕ°Ö…îÅ—°îÅÕÖµîÅçΩµµÖπêÅ¡Ö—†ÅÖÃÅ¡°ÂÕ•çÖ∞Å≠ïÂÃ∏4)Õ—Ö—•åÅŸΩ•êÅ—Ω’ç°5Öπ’Ö±Ÿïπ–°±Ÿ}ïŸïπ—}–Ä©ïŸïπ–§4)Ï4(ÄÄÄÅ•òÄ°±Ÿ}ïŸïπ—}ùï—}çΩëî°ïŸïπ–§Ùı1Y}Y9Q}1%-§ÅâΩÖ—ΩµµÖπëÕ}Õï—5Ωëî°5=}59U0§Ï4)Ù4)Õ—Ö—•åÅŸΩ•êÅ—Ω’ç°’—Ω¡•±Ω—Ÿïπ–°±Ÿ}ïŸïπ—}–Ä©ïŸïπ–§4)Ï4(ÄÄÄÅ•òÄ°±Ÿ}ïŸïπ—}ùï—}çΩëî°ïŸïπ–§Ùı1Y}Y9Q}1%-§ÅâΩÖ—ΩµµÖπëÕ}Õï—5Ωëî°5=}UQ=A%1=P§Ï4)Ù4)Õ—Ö—•åÅŸΩ•êÅ—Ω’ç°Iï—’…πŸïπ–°±Ÿ}ïŸïπ—}–Ä©ïŸïπ–§4)Ï4(ÄÄÄÅ•òÄ°±Ÿ}ïŸïπ—}ùï—}çΩëî°ïŸïπ–§Ùı1Y}Y9Q}1%-§ÅâΩÖ—ΩµµÖπëÕ}Õï—5Ωëî°5=}IQUI9}!=5§Ï4)Ù4)Õ—Ö—•åÅŸΩ•êÅΩ¡ïπ5•ÕÕ•ΩπŸïπ–°±Ÿ}ïŸïπ—}–Ä©ïŸïπ–§4)Ï4(ÄÄÄÅ•òÄ°±Ÿ}ïŸïπ—}ùï—}çΩëî°ïŸïπ–§Ùı1Y}Y9Q}1%-§Åµ•ÕÕ•ΩπU%}Ω¡ï∏°µÖ•πMç…ïï∏§Ï4)Ù4(4(ººÅ=¡ï∏Å—°îÅ©ΩÂÕ—•ç¨ÅçÖ±•â…Ö—•Ω∏ÅÕç…ïï∏∏4)Õ—Ö—•åÅŸΩ•êÅΩ¡ïπ)ΩÂÕ—•ç≠Ö±•â…Ö—•ΩπŸïπ–°±Ÿ}ïŸïπ—}–Ä©ïŸïπ–§4)Ï4(ÄÄÄÄººÅIïÕ¡ΩπêÅΩπ±‰Å—ºÅÑÅçΩµ¡±ï—ïêÅâ’——Ω∏Åç±•ç¨∏4(ÄÄÄÅ•òÄ°±Ÿ}ïŸïπ—}ùï—}çΩëî°ïŸïπ–§ÄÑÙÅ1Y}Y9Q}1%-§4(ÄÄÄÅÏ4(ÄÄÄÄÄÄÄÅ…ï—’…∏Ï4(ÄÄÄÅÙ4(4(ÄÄÄÄººÅ=¡ï∏ÅçÖ±•â…Ö—•Ω∏ÅÖπêÅ…ïµïµâï»Å—°îÅµÖ•∏ÅÕç…ïï∏∏4(ÄÄÄÅ©ΩÂÕ—•ç≠Ö±•â…Ö—•ΩπU%}Ω¡ï∏°µÖ•πMç…ïï∏§Ï4)Ù4(4(4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(ººÅIQÅ==QH4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(4)Õ—Ö—•åÅŸΩ•êÅç…ïÖ—ïΩΩ—ï»†§4)Ï4(ÄÄÄÄººÅ…ïÖ—îÅ—°îÅâΩ——Ω¥ÅçΩπ—…Ω∞Å¡Öπï∞∏4(ÄÄÄÅôΩΩ—ï…AÖπï∞ÄÙÅç…ïÖ—ïAÖπï∞†4(ÄÄÄÄÄÄÄÅµÖ•πMç…ïï∏∞4(ÄÄÄÄÄÄÄÄ¿∞4(ÄÄÄÄÄÄÄÅMI9}!%!PÄ¥Å==QI}!%!P∞4(ÄÄÄÄÄÄÄÅMI9}]%Q ∞4(ÄÄÄÄÄÄÄÅ==QI}!%!P4(ÄÄÄÄ§Ï4(4(ÄÄÄÄººÅ…ïÖ—îÅ—°îÅïµï…ùïπç‰ÅMQ=@Åâ’——Ω∏∏4(ÄÄÄÅÕ—Ω¡	’——Ω∏ÄÙÅ±Ÿ}â’——Ωπ}ç…ïÖ—î°ôΩΩ—ï…AÖπï∞§Ï4(ÄÄÄÅÕ—Â±ïQΩ’ç°	’——Ω∏°Õ—Ω¡	’——Ω∏∞Å=1=I}I§Ï4(4(ÄÄÄÄººÅMï–Å—°îÅMQ=@Åâ’——Ω∏ÅÕ•Èî∏4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ•Èî°Õ—Ω¡	’——Ω∏∞Ä»ƒ¿∞Ä–ÿ§Ï4(4(ÄÄÄÄººÅAΩÕ•—•Ω∏Å—°îÅMQ=@Åâ’——Ω∏ÅΩ∏Å—°îÅ…•ù°–∏4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}¡ΩÃ°Õ—Ω¡	’——Ω∏∞Ä‘‹¿∞Ä–‹§Ï4(4(ÄÄÄÄººÅMï–Å—°îÅMQ=@Åâ’——Ω∏ÅâÖç≠ù…Ω’πêÅçΩ±Ω’»∏4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}âù}çΩ±Ω»†4(ÄÄÄÄÄÄÄÅÕ—Ω¡	’——Ω∏∞4(ÄÄÄÄÄÄÄÅ=1=I}I∞4(ÄÄÄÄÄÄÄÅ1Y}AIQ}5%84(ÄÄÄÄ§Ï4(4(ÄÄÄÄººÅ…ïÖ—îÅ—°îÅMQ=@Åâ’——Ω∏Å—ï·–∏4(ÄÄÄÅ±Ÿ}Ωâ©}–Ä©Õ—Ω¡1Öâï∞ÄÙÅ±Ÿ}±Öâï±}ç…ïÖ—î°Õ—Ω¡	’——Ω∏§Ï4(4(ÄÄÄÄººÅMï–Å—°îÅâ’——Ω∏Å—ï·–∏4(ÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°Õ—Ω¡1Öâï∞∞ÄãBáBãB{B|à§Ï4(4(ÄÄÄÄººÅïπ—…îÅ—°îÅ—ï·–∏4(ÄÄÄÅ±Ÿ}Ωâ©}çïπ—ï»°Õ—Ω¡1Öâï∞§Ï4(4(ÄÄÄÄººÅIïù•Õ—ï»Å—°îÅïµï…ùïπç‰ÅÕ—Ω¿ÅïŸïπ–∏4(ÄÄÄÅ±Ÿ}Ωâ©}Öëë}ïŸïπ—}çà†4(ÄÄÄÄÄÄÄÅÕ—Ω¡	’——Ω∏∞4(ÄÄÄÄÄÄÄÅÕ—Ω¡QΩ’ç°Ÿïπ–∞4(ÄÄÄÄÄÄÄÅ1Y}Y9Q}1%-∞4(ÄÄÄÄÄÄÄÅπ’±±¡—»4(ÄÄÄÄ§Ï4(4(ÄÄÄÄººÅΩµ¡Öç–Å—Ω’ç°Õç…ïï∏ÅµΩëîÅçΩπ—…Ω±Ã∏Å	ΩÖ–µÕ•ëîÅçΩµµÖπêÅ¡Ω±•ç‰Å…ïµÖ•πÃÅÖ’—°Ω…•—Ö—•Ÿî∏4(ÄÄÄÅ±Ÿ}Ωâ©}–Ä©µÖπ’Ö±	’——Ω∏ÄÙÅ±Ÿ}â’——Ωπ}ç…ïÖ—î°ôΩΩ—ï…AÖπï∞§Ï4(ÄÄÄÅÕ—Â±ïQΩ’ç°	’——Ω∏°µÖπ’Ö±	’——Ω∏∞Å±Ÿ}çΩ±Ω…}°ï‡†¡‡ƒ‹—‰»§§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ•Èî°µÖπ’Ö±	’——Ω∏∞Äƒ¿‘∞Ä––§ÏÅ±Ÿ}Ωâ©}Õï—}¡ΩÃ°µÖπ’Ö±	’——Ω∏∞Äƒ¿∞Ä–‹§Ï4(ÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°±Ÿ}±Öâï±}ç…ïÖ—î°µÖπ’Ö±	’——Ω∏§∞ÄãBÉB´BüBwBxà§ÏÅ±Ÿ}Ωâ©}çïπ—ï»°±Ÿ}Ωâ©}ùï—}ç°•±ê°µÖπ’Ö±	’——Ω∏∞¿§§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Öëë}ïŸïπ—}çà°µÖπ’Ö±	’——Ω∏±—Ω’ç°5Öπ’Ö±Ÿïπ–±1Y}Y9Q}1%-±π’±±¡—»§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}–Ä©Ö’—Ω	’——Ω∏ÄÙÅ±Ÿ}â’——Ωπ}ç…ïÖ—î°ôΩΩ—ï…AÖπï∞§Ï4(ÄÄÄÅÕ—Â±ïQΩ’ç°	’——Ω∏°Ö’—Ω	’——Ω∏∞Å±Ÿ}çΩ±Ω…}°ï‡†¡‡ƒ‹—‰»§§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ•Èî°Ö’—Ω	’——Ω∏∞Äƒƒ‡∞Ä––§ÏÅ±Ÿ}Ωâ©}Õï—}¡ΩÃ°Ö’—Ω	’——Ω∏∞Äƒ»¿∞Ä–‹§Ï4(ÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°±Ÿ}±Öâï±}ç…ïÖ—î°Ö’—Ω	’——Ω∏§∞ÄãBCBKBãB{BBcBoB{Bàà§ÏÅ±Ÿ}Ωâ©}çïπ—ï»°±Ÿ}Ωâ©}ùï—}ç°•±ê°Ö’—Ω	’——Ω∏∞¿§§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Öëë}ïŸïπ—}çà°Ö’—Ω	’——Ω∏±—Ω’ç°’—Ω¡•±Ω—Ÿïπ–±1Y}Y9Q}1%-±π’±±¡—»§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}–Ä©…ï—’…π	’——Ω∏ÄÙÅ±Ÿ}â’——Ωπ}ç…ïÖ—î°ôΩΩ—ï…AÖπï∞§Ï4(ÄÄÄÅÕ—Â±ïQΩ’ç°	’——Ω∏°…ï—’…π	’——Ω∏∞Å±Ÿ}çΩ±Ω…}°ï‡†¡‡ƒ‹—‰»§§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ•Èî°…ï—’…π	’——Ω∏∞Äƒƒ¿∞Ä––§ÏÅ±Ÿ}Ωâ©}Õï—}¡ΩÃ°…ï—’…π	’——Ω∏∞Ä»–‡∞Ä–‹§Ï4(ÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°±Ÿ}±Öâï±}ç…ïÖ—î°…ï—’…π	’——Ω∏§∞ÄãBkB´BpÉBSB{BsB@à§ÏÅ±Ÿ}Ωâ©}çïπ—ï»°±Ÿ}Ωâ©}ùï—}ç°•±ê°…ï—’…π	’——Ω∏∞¿§§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Öëë}ïŸïπ—}çà°…ï—’…π	’——Ω∏±—Ω’ç°Iï—’…πŸïπ–±1Y}Y9Q}1%-±π’±±¡—»§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}–Ä©µ•ÕÕ•Ωπ	’——Ω∏ÄÙÅ±Ÿ}â’——Ωπ}ç…ïÖ—î°ôΩΩ—ï…AÖπï∞§Ï4(ÄÄÄÅÕ—Â±ïQΩ’ç°	’——Ω∏°µ•ÕÕ•Ωπ	’——Ω∏∞Å±Ÿ}çΩ±Ω…}°ï‡†¡‡ƒ‹—‰»§§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ•Èî°µ•ÕÕ•Ωπ	’——Ω∏∞Äƒ¿¿∞Ä––§ÏÅ±Ÿ}Ωâ©}Õï—}¡ΩÃ°µ•ÕÕ•Ωπ	’——Ω∏∞ÄÃÿ‘∞Ä–‹§Ï4(ÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°±Ÿ}±Öâï±}ç…ïÖ—î°µ•ÕÕ•Ωπ	’——Ω∏§∞ÄãBsBcBáBcBºà§ÏÅ±Ÿ}Ωâ©}çïπ—ï»°±Ÿ}Ωâ©}ùï—}ç°•±ê°µ•ÕÕ•Ωπ	’——Ω∏∞¿§§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Öëë}ïŸïπ—}çà°µ•ÕÕ•Ωπ	’——Ω∏±Ω¡ïπ5•ÕÕ•ΩπŸïπ–±1Y}Y9Q}1%-±π’±±¡—»§Ï4(4(ÄÄÄÄººÅM°Ω‹Å±•ŸîÅ•π¡’–ÅŸÖ±•ë•—‰ÅÖπêÅçÖ±•â…Ö—•Ω∏ÅÕ—Ö—’Ã∞ÅπΩ–ÅÑÅùïπï…•åÅ…ïµ•πëï»∏4(ÄÄÄÅ•π¡’—M—Ö—’Õ1Öâï∞ÄÙÅç…ïÖ—ï1Öâï∞°ôΩΩ—ï…AÖπï∞∞ÄãBáBãBcBkB{BKBTËÉBwBWBáB´BBÉB{BKBWBÉBWBwB`à∞Äƒ‘∞Ä–§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}›•ë—†°•π¡’—M—Ö—’Õ1Öâï∞∞ÄÃ‡¿§Ï4(ÄÄÄÅ±Ÿ}±Öâï±}Õï—}±Ωπù}µΩëî°•π¡’—M—Ö—’Õ1Öâï∞∞Å1Y}1	1}1=9}=P§Ï4(ÄÄÄÅÕÖôï—ÂM—Ö—’Õ1Öâï∞ÄÙÅç…ïÖ—ï1Öâï∞°ôΩΩ—ï…AÖπï∞∞ÄâMQ=@ËÉBwBWBcB_BKBWBáBãBwBxà∞Ä–ƒ¿∞Ä–§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}›•ë—†°ÕÖôï—ÂM—Ö—’Õ1Öâï∞∞ÄÃ‡¿§Ï4(ÄÄÄÅ±Ÿ}±Öâï±}Õï—}±Ωπù}µΩëî°ÕÖôï—ÂM—Ö—’Õ1Öâï∞∞Å1Y}1	1}1=9}=P§Ï4(ÄÄÄÄººÅHÃ¡ÅÕï¡Ö…Ö—îÅ±•πîÅπïŸï»Å…ï¡±ÖçïÃÅ—°îÅMQ=@Ω±Ω‹µâÖ——ï…‰ÅÖ±ï…–∏4(ÄÄÄÅë•ÖùπΩÕ—•çM—Ö—’Õ1Öâï∞ÄÙÅç…ïÖ—ï1Öâï∞°ôΩΩ—ï…AÖπï∞∞4(ÄÄÄÄÄÄÄÄãBSBcBCBOBt∏ËÉBwBøBsB@ÉBSBCBwBwB`Ä£BwBWBB{BãBH∏§à∞Ä–ƒ¿∞Ä»–§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}›•ë—†°ë•ÖùπΩÕ—•çM—Ö—’Õ1Öâï∞∞ÄÃ‡¿§Ï4(ÄÄÄÅ±Ÿ}±Öâï±}Õï—}±Ωπù}µΩëî°ë•ÖùπΩÕ—•çM—Ö—’Õ1Öâï∞∞Å1Y}1	1}1=9}=P§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}—ï·—}çΩ±Ω»°ë•ÖùπΩÕ—•çM—Ö—’Õ1Öâï∞±=1=I}5UQ±1Y}AIQ}5%8§Ï4(ÄÄÄÄººÅ…ïÖ—îÅÑÅâ’——Ω∏ÅôΩ»Å©ΩÂÕ—•ç¨ÅçÖ±•â…Ö—•Ω∏∏4)±Ÿ}Ωâ©}–Ä©Õ—•ç≠Õ	’——Ω∏ÄÙÅ±Ÿ}â’——Ωπ}ç…ïÖ—î°ôΩΩ—ï…AÖπï∞§Ï4)Õ—Â±ïQΩ’ç°	’——Ω∏°Õ—•ç≠Õ	’——Ω∏∞Å±Ÿ}çΩ±Ω…}°ï‡†¡‡ƒ‹—‰»§§Ï4(4(ººÅMï–Å•—ÃÅÕ•Èî∏4)±Ÿ}Ωâ©}Õï—}Õ•Èî°Õ—•ç≠Õ	’——Ω∏∞Ä‡¿∞Ä–»§Ï4(4(ººÅAΩÕ•—•Ω∏Å•∏Å—°îÅôΩΩ—ï»Å…Ω‹∞ÅâïôΩ…îÅMQ=@∏4)±Ÿ}Ωâ©}Õï—}¡ΩÃ°Õ—•ç≠Õ	’——Ω∏∞Ä–‹¿∞Ä–‹§Ï4(4(ººÅ…ïÖ—îÅ—°îÅâ’——Ω∏Å±Öâï∞∏4)±Ÿ}Ωâ©}–Ä©Õ—•ç≠Õ1Öâï∞ÄÙÅ±Ÿ}±Öâï±}ç…ïÖ—î°Õ—•ç≠Õ	’——Ω∏§Ï4(4(ººÅMï–Å•—ÃÅ—ï·–∏4)±Ÿ}±Öâï±}Õï—}—ï·–°Õ—•ç≠Õ1Öâï∞∞ÄãBkBCBoBcBGBÄ∏à§Ï4(4(ººÅïπ—…îÅ—°îÅ—ï·–∏4)±Ÿ}Ωâ©}çïπ—ï»°Õ—•ç≠Õ1Öâï∞§Ï4(4(ººÅIïù•Õ—ï»Å—°îÅâ’——Ω∏ÅïŸïπ–∏4)±Ÿ}Ωâ©}Öëë}ïŸïπ—}çà†4(ÄÄÄÅÕ—•ç≠Õ	’——Ω∏∞4(ÄÄÄÅΩ¡ïπ)ΩÂÕ—•ç≠Ö±•â…Ö—•ΩπŸïπ–∞4(ÄÄÄÅ1Y}Y9Q}1%-∞4(ÄÄÄÅπ’±±¡—»4(§Ï4)Ù4(4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(ººÅ%9%Q%1%MÅQ!Å=5A1QÅMI84(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(4)ŸΩ•êÅç…ïÖ—ï	ΩÖ—Mç…ïï∏†§4)Ï4(ÄÄÄÅµÖ¡MΩ’…çï}âïù•∏†§Ï4(4(ÄÄÄÄººÅï–Å—°îÅÖç—•ŸîÅ1Y0ÅÕç…ïï∏∏4(ÄÄÄÅµÖ•πMç…ïï∏ÄÙÅ±Ÿ}Õç…ïïπ}Öç—•Ÿî†§Ï4(4(ÄÄÄÄººÅMï–Å—°îÅµÖ•∏ÅâÖç≠ù…Ω’πêÅçΩ±Ω’»∏4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}âù}çΩ±Ω»†4(ÄÄÄÄÄÄÄÅµÖ•πMç…ïï∏∞4(ÄÄÄÄÄÄÄÅ=1=I}	-I=U9∞4(ÄÄÄÄÄÄÄÅ1Y}AIQ}5%84(ÄÄÄÄ§Ï4(4(ÄÄÄÄººÅIïµΩŸîÅ—°îÅµÖ•∏ÅÕç…ïï∏ÅÕç…Ω±±•πúÅâï°ÖŸ•Ω’»∏4(ÄÄÄÅ±Ÿ}Ωâ©}…ïµΩŸï}ô±Öú†4(ÄÄÄÄÄÄÄÅµÖ•πMç…ïï∏∞4(ÄÄÄÄÄÄÄÅ1Y}=	)}1}MI=11	14(ÄÄÄÄ§Ï4(4(ÄÄÄÄººÅ…ïÖ—îÅ—°îÅ—Ω¿ÅÕ—Ö—’ÃÅâÖ»∏4(ÄÄÄÅç…ïÖ—ï!ïÖëï»†§Ï4(4(ÄÄÄÄººÅ…ïÖ—îÅ—°îÅµÖ•∏ÅçΩπ—ïπ–ÅçΩπ—Ö•πï»∏4(ÄÄÄÅçΩπ—ïπ—AÖπï∞ÄÙÅç…ïÖ—ïAÖπï∞†4(ÄÄÄÄÄÄÄÅµÖ•πMç…ïï∏∞4(ÄÄÄÄÄÄÄÄ‘∞4(ÄÄÄÄÄÄÄÅ!I}!%!PÄ¨ÄÃ∞4(ÄÄÄÄÄÄÄÄ‹‰¿∞4(ÄÄÄÄÄÄÄÄÃ»‘4(ÄÄÄÄ§Ï4(4(ÄÄÄÄººÅ…ïÖ—îÅ—°îÅµÖ¿Å¡Öπï∞∏4(ÄÄÄÅç…ïÖ—ï5Ö¡AÖπï∞†§Ï4(4(ÄÄÄÄººÅ…ïÖ—îÅ—°îÅÕΩπÖ»Å¡Öπï∞∏4(ÄÄÄÅç…ïÖ—ïMΩπÖ…AÖπï∞†§Ï4(4(ÄÄÄÄººÅ…ïÖ—îÅ—°îÅâΩ——Ω¥ÅçΩπ—…Ω∞ÅâÖ»∏4(ÄÄÄÅç…ïÖ—ïΩΩ—ï»†§Ï4(4(ÄÄÄÄººÅ•Õ¡±Ö‰Å•π•—•Ö∞ÅâΩÖ–Å•πôΩ…µÖ—•Ω∏∏4(ÄÄÄÅ’¡ëÖ—ï	ΩÖ—Mç…ïï∏°âΩÖ—M—Ö—î§Ï4)Ù4(4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(ººÅaA9Å=HÅIMQ=IÅ5@4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(4)ŸΩ•êÅ—Ωùù±ï5Ö¡AÖπï∞†§4)Ï4(ÄÄÄÄººÅM›•—ç†Å—°îÅï·¡ÖπëïêÅÕ—Ö—î∏4(ÄÄÄÅµÖ¡·¡ÖπëïêÄÙÄÖµÖ¡·¡ÖπëïêÏ4(4(ÄÄÄÄººÅ!•ëîÅÕΩπÖ»Å›°•±îÅµÖ¿Å•ÃÅï·¡Öπëïê∏4(ÄÄÄÅ•òÄ°µÖ¡·¡Öπëïê§4(ÄÄÄÅÏ4(ÄÄÄÄÄÄÄÅÕΩπÖ…·¡ÖπëïêÄÙÅôÖ±ÕîÏ4(4(ÄÄÄÄÄÄÄÄººÅ!•ëîÅ—°îÅÕΩπÖ»Å¡Öπï∞∏4(ÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}Öëë}ô±Öú†4(ÄÄÄÄÄÄÄÄÄÄÄÅÕΩπÖ…AÖπï∞∞4(ÄÄÄÄÄÄÄÄÄÄÄÅ1Y}=	)}1}!%84(ÄÄÄÄÄÄÄÄ§Ï4(4(ÄÄÄÄÄÄÄÄººÅ·¡ÖπêÅµÖ¿Å—ºÅô•±∞Å—°îÅçΩπ—ïπ–ÅÖ…ïÑ∏4(ÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}Õï—}¡ΩÃ°µÖ¡AÖπï∞∞Ä‘∞Ä‘§Ï4(4(ÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ•Èî°µÖ¡AÖπï∞∞Ä‹‡¿∞ÄÃƒ‘§Ï4(ÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ•Èî°µÖ¡Y•ï›¡Ω…–∞Ä‹ÿ¿∞Ä»»¿§Ï4(ÄÄÄÅÙ4(ÄÄÄÅï±Õî4(ÄÄÄÅÏ4(ÄÄÄÄÄÄÄÄººÅIïÕ—Ω…îÅ—°îÅΩ…•ù•πÖ∞ÅµÖ¿Åë•µïπÕ•ΩπÃ∏4(ÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}Õï—}¡ΩÃ°µÖ¡AÖπï∞∞Ä‘∞Ä‘§Ï4(4(ÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ•Èî°µÖ¡AÖπï∞∞ÄÃ‡‘∞ÄÃƒ‘§Ï4(ÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ•Èî°µÖ¡Y•ï›¡Ω…–∞ÄÃÿ‰∞Äƒ‰¿§Ï4(4(ÄÄÄÄÄÄÄÄººÅM°Ω‹ÅÕΩπÖ»ÅÖùÖ•∏∏4(ÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}…ïµΩŸï}ô±Öú†4(ÄÄÄÄÄÄÄÄÄÄÄÅÕΩπÖ…AÖπï∞∞4(ÄÄÄÄÄÄÄÄÄÄÄÅ1Y}=	)}1}!%84(ÄÄÄÄÄÄÄÄ§Ï4(ÄÄÄÅÙ4)Ù4(4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(ººÅaA9Å=HÅIMQ=IÅM=9H4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(4)ŸΩ•êÅ—Ωùù±ïMΩπÖ…AÖπï∞†§4)Ï4(ÄÄÄÄººÅM›•—ç†Å—°îÅï·¡ÖπëïêÅÕ—Ö—î∏4(ÄÄÄÅÕΩπÖ…·¡ÖπëïêÄÙÄÖÕΩπÖ…·¡ÖπëïêÏ4(4(ÄÄÄÄººÅ!•ëîÅµÖ¿Å›°•±îÅÕΩπÖ»Å•ÃÅï·¡Öπëïê∏4(ÄÄÄÅ•òÄ°ÕΩπÖ…·¡Öπëïê§4(ÄÄÄÅÏ4(ÄÄÄÄÄÄÄÅµÖ¡·¡ÖπëïêÄÙÅôÖ±ÕîÏ4(4(ÄÄÄÄÄÄÄÄººÅ!•ëîÅ—°îÅµÖ¿Å¡Öπï∞∏4(ÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}Öëë}ô±Öú†4(ÄÄÄÄÄÄÄÄÄÄÄÅµÖ¡AÖπï∞∞4(ÄÄÄÄÄÄÄÄÄÄÄÅ1Y}=	)}1}!%84(ÄÄÄÄÄÄÄÄ§Ï4(4(ÄÄÄÄÄÄÄÄººÅ·¡ÖπêÅÕΩπÖ»Å—ºÅô•±∞Å—°îÅçΩπ—ïπ–ÅÖ…ïÑ∏4(ÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}Õï—}¡ΩÃ°ÕΩπÖ…AÖπï∞∞Ä‘∞Ä‘§Ï4(4(ÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ•Èî°ÕΩπÖ…AÖπï∞∞Ä‹‡¿∞ÄÃƒ‘§Ï4(ÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ•Èî°ÕΩπÖ…A±Ω–∞Ä‹»¿∞Ä»»¿§Ï4(ÄÄÄÄÄÄÄÅë…Ö›MΩπÖ…A±Ω–†‹»¿∞»»¿§Ï4(ÄÄÄÅÙ4(ÄÄÄÅï±Õî4(ÄÄÄÅÏ4(ÄÄÄÄÄÄÄÄººÅIïÕ—Ω…îÅ—°îÅΩ…•ù•πÖ∞ÅÕΩπÖ»Åë•µïπÕ•ΩπÃ∏4(ÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}Õï—}¡ΩÃ°ÕΩπÖ…AÖπï∞∞Ä–¿¿∞Ä‘§Ï4(4(ÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ•Èî°ÕΩπÖ…AÖπï∞∞ÄÃ‡‘∞ÄÃƒ‘§Ï4(ÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ•Èî°ÕΩπÖ…A±Ω–∞ÄÃÃ¿∞Ä»ƒ¿§Ï4(ÄÄÄÄÄÄÄÅë…Ö›MΩπÖ…A±Ω–†ÃÃ¿∞»ƒ¿§Ï4(4(ÄÄÄÄÄÄÄÄººÅM°Ω‹ÅµÖ¿ÅÖùÖ•∏∏4(ÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}…ïµΩŸï}ô±Öú†4(ÄÄÄÄÄÄÄÄÄÄÄÅµÖ¡AÖπï∞∞4(ÄÄÄÄÄÄÄÄÄÄÄÅ1Y}=	)}1}!%84(ÄÄÄÄÄÄÄÄ§Ï4(ÄÄÄÅÙ4)Ù4(4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(ººÅUAQÅ%MA1eÅ	=PÅ%9=I5Q%=84(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(4)Õ—Ö—•åÅŸΩ•êÅ’¡ëÖ—ï5Ö¡5•ÕÕ•Ωπ5Ö…≠ï…Ã°çΩπÕ–Å	ΩÖ—M—Ö—îÄôÕ—Ö—î§4)Ï4(ÄÄÄÅ5Ö¡Iïπëï…ï…]ÖÂ¡Ω•π–Å¡Ω•π—ÕlƒŸtıÌÙÏ4(ÄÄÄÅôΩ»°’•π–·}–Å§Ù¿Ì§ƒÿÌ§¨¨•Ìô±ΩÖ–Å±Ö–Ù¿±±Ω∏Ù¿ÌâΩΩ∞ÅâÖ•–ıôÖ±Õî±°ΩΩ¨ıôÖ±ÕîÌ¡Ω•π—Õm•tπŸÖ±•êıµ•ÕÕ•ΩπU%}ùï—]ÖÂ¡Ω•π–°§∞ô±Ö–∞ô±Ω∏∞ôâÖ•–∞ô°ΩΩ¨§Ì¡Ω•π—Õm•tπ±Ö–ı±Ö–Ì¡Ω•π—Õm•tπ±Ω∏ı±Ω∏Ì¡Ω•π—Õm•tπâÖ•–ıâÖ•–Ì¡Ω•π—Õm•tπ°ΩΩ¨ı°ΩΩ¨ÌÙ4(ÄÄÄÅô±ΩÖ–Å°±Ö–Ù¿±°±Ω∏Ù¿ÌâΩΩ∞Å°ÿıµ•ÕÕ•ΩπU%}ùï—!Ωµî†ô°±Ö–∞ô°±Ω∏§Ï4(ÄÄÄÅâΩΩ∞Åô…ïÕ†ıÕ—Ö—îπù¡ÕYÖ±•êòò°’•π–Ã…}–§°µ•±±•Ã†§µÕ—Ö—îπù¡Õ1ÖÕ—U¡ëÖ—ï5Ã§Ù»¿¿¡TÏ4(ÄÄÄÅµÖ¡Iïπëï…ï…}’¡ëÖ—î°ô…ïÕ†±Õ—Ö—îπ±Ö—•—’ëî±Õ—Ö—îπ±Ωπù•—’ëî±Õ—Ö—îπ°ïÖë•πú±°ÿ±°±Ö–±°±Ω∏±¡Ω•π—Ã∞°’•π–·}–•µ•ÕÕ•ΩπU%}ùï—Mï±ïç—ïë%πëï‡†§±Õ—Ö—îπµΩëîÙı5=}IQUI9}!=5§Ï4(ÄÄÄÅ•ò°µÖ¡iΩΩµ1Öâï∞•Ìç°Ö»ÅÈl·tÌÕπ¡…•π—ò°Ë±Õ•ÈïΩò°Ë§∞âhï‘à∞°’πÕ•ùπïê•µÖ¡Iïπëï…ï…}ùï—iΩΩ¥†§§Ì±Ÿ}±Öâï±}Õï—}—ï·–°µÖ¡iΩΩµ1Öâï∞±Ë§ÌÙ4)Ù4(4)ŸΩ•êÅ’¡ëÖ—ï	ΩÖ—Mç…ïï∏°çΩπÕ–Å	ΩÖ—M—Ö—îÄôÕ—Ö—î§4)Ï4(ÄÄÄÅ•ò°›ïÖ—°ï…1Öâï∞•Ï4(ÄÄÄÄÄÅç°Ö»Å›l‡¡tÏ4(ÄÄÄÄÄÅ•ò°Õ—Ö—îπ›ïÖ—°ï…YÖ±•ê•Õπ¡…•π—ò°‹±Õ•ÈïΩò°‹§∞â	5@ËÄî∏≈õ
+¡ÄÄî∏≈òÅ°AÑà±Õ—Ö—îπ—ïµ¡ï…Ö—’…ïïπ—•ºƒ¿¿∏¡ò±Õ—Ö—îπ¡…ïÕÕ’…ïAÑºƒ¿¿∏¡ò§Ï4(ÄÄÄÄÄÅï±ÕîÅÕπ¡…•π—ò°‹±Õ•ÈïΩò°‹§∞â	5@ËÄ¥¥∏∑
+¡ÄÄ¥¥¥¥Å°AÑà§Ï4(ÄÄÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°›ïÖ—°ï…1Öâï∞±‹§Ï4(ÄÄÄÅÙ4(ÄÄÄÅ•ò°ÕΩπÖ…ï¡—°1Öâï∞•Ìç°Ö»Åël–·tÏ4(ÄÄÄÄÄÅ•ò°Õ—Ö—îπÕΩπÖ…IïÖë•πùYÖ±•ê•Õπ¡…•π—ò°ê±Õ•ÈïΩò°ê§∞ãBSB´BoBGB{BüBcBwB@ÄÄî∏…òÅ¥à±Õ—Ö—îπÕΩπÖ…ï¡—°¥ºƒ¿¿∏¡ò§Ï4(ÄÄÄÄÄÅï±ÕîÅÕπ¡…•π—ò°ê±Õ•ÈïΩò°ê§∞ãBSB´BoBGB{BüBcBwB@ÄÄ¥¥∏¥Å¥à§Ï4(ÄÄÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°ÕΩπÖ…ï¡—°1Öâï∞±ê§Ï4(ÄÄÄÅÙ4(ÄÄÄÅ•ò°›Ö—ï…Qïµ¡ï…Ö—’…ï1Öâï∞•Ìç°Ö»Å—l–¡tÏ4(ÄÄÄÄÄÅ•ò°Õ—Ö—îπ›Ö—ï…Qïµ¡ï…Ö—’…ïYÖ±•ê•Õπ¡…•π—ò°–±Õ•ÈïΩò°–§∞ãBKB{BSB@ÄÄî∏≈õ
+¡à±Õ—Ö—îπ›Ö—ï…Qïµ¡ï…Ö—’…ïïπ—•ºƒ¿¿∏¡ò§Ï4(ÄÄÄÄÄÅï±ÕîÅÕπ¡…•π—ò°–±Õ•ÈïΩò°–§∞ãBKB{BSB@ÄÄ¥¥∏∑
+¡à§Ï4(ÄÄÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°›Ö—ï…Qïµ¡ï…Ö—’…ï1Öâï∞±–§Ï4(ÄÄÄÅÙ4(ÄÄÄÅ•ò°ÕΩπÖ…M—Ö—’Ã•±Ÿ}±Öâï±}Õï—}—ï·–°ÕΩπÖ…M—Ö—’Ã±Õ—Ö—îπÕΩπÖ…IïÖë•πùYÖ±•ê¸ãBáB{BwBCBÄËÉBcB_BsBWBÉBKBCBwBWBãBxÉBTÉBCBkBãBcBKBwBxàËãBáB{BwBCBÄËÉBwBøBsB@ÉBáBKBWB[B`ÉBSBCBwBwB`à§Ï4(ÄÄÄÄººÅU¡ëÖ—îÅ—°îÅALÅçΩΩ…ë•πÖ—îÅë•Õ¡±Ö‰ÅΩπ±‰Å›°ï∏Å—ï±ïµï—…‰Å…ï¡Ω…—ÃÅÑÅŸÖ±•êÅô•‡∏4(ÄÄÄÅ•òÄ°Õ—Ö—îπù¡ÕYÖ±•ê§4(ÄÄÄÅÏ4(ÄÄÄÄÄÄÄÅç°Ö»ÅçΩΩ…ë•πÖ—ïQï·—l‡¡tÏ4(ÄÄÄÄÄÄÄÅÕπ¡…•π—ò†4(ÄÄÄÄÄÄÄÄÄÄÄÅçΩΩ…ë•πÖ—ïQï·–∞4(ÄÄÄÄÄÄÄÄÄÄÄÅÕ•ÈïΩò°çΩΩ…ë•πÖ—ïQï·–§∞4(ÄÄÄÄÄÄÄÄÄÄÄÄãB£BcBÄËÄî∏ŸòÄÄÉBSB´BlËÄî∏Ÿòà∞4(ÄÄÄÄÄÄÄÄÄÄÄÅÕ—Ö—îπ±Ö—•—’ëî∞4(ÄÄÄÄÄÄÄÄÄÄÄÅÕ—Ö—îπ±Ωπù•—’ëî4(ÄÄÄÄÄÄÄÄ§Ï4(ÄÄÄÄÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°ù¡ÕΩΩ…ë•πÖ—ïÕ1Öâï∞∞ÅçΩΩ…ë•πÖ—ïQï·–§Ï4(4(ÄÄÄÄÄÄÄÅç°Ö»ÅµÖ¡M—Ö—’ÕQï·—l‰ŸtÏ4(ÄÄÄÄÄÄÄÅçΩπÕ–Åç°Ö»Ä©µÖ¡M—Ω…ÖùïQï·–ÄÙÅô±Â—ïç}’§ËÈÕëM—Ω…ÖùïM—Ö—’Ã°Õ—Ö—îπÕëÖ…ëIïÖë‰∞ÅÕ—Ö—îπΩôô±•πï5Ö¡IïÖë‰§Ï4(ÄÄÄÄÄÄÄÅçΩπÕ–Å5Ö¡MΩ’…çï5ΩëîÅÕΩ’…çï5ΩëîÄÙÅµÖ¡MΩ’…çï}ùï—5Ωëî†§Ï4(ÄÄÄÄÄÄÄÅçΩπÕ–Åç°Ö»Ä©ÕΩ’…çïQï·–ÄÙÄ°ÕΩ’…çï5ΩëîÄÙÙÅ5A}M=UI}=91%9ÄòòÄÖµÖ¡MΩ’…çï}Ωπ±•πïŸÖ•±Öâ±î†§§Ä¸Äâ=91%9ÉBwBTÉBTÉBwBCBoBcBüBWBtÉäPÉBGBWB\ÉBkBCBÉBãB@àÄËÄ°ÕΩ’…çï5ΩëîÄÙÙÅ5A}M=UI}UQ<Ä¸ÄâUQ<ÄºÅMàÄËÄâ=1%9ÄºÅMà§Ï4(ÄÄÄÄÄÄÄÅÕπ¡…•π—ò°µÖ¡M—Ö—’ÕQï·–∞ÅÕ•ÈïΩò°µÖ¡M—Ö—’ÕQï·–§∞ÄâALËÉBcBsB@Å%`ÄÅÄÄïÃÄÅÄÄïÃà∞ÅµÖ¡M—Ω…ÖùïQï·–∞ÅÕΩ’…çïQï·–§Ï4(ÄÄÄÄÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°ù¡Õ5Ö¡M—Ö—’Õ1Öâï∞∞ÅµÖ¡M—Ö—’ÕQï·–§Ï4(4(ÄÄÄÄÄÄÄÅç°Ö»Åù¡Õï—Ö•±ÕQï·—l‡¡tÏ4(ÄÄÄÄÄÄÄÅÕπ¡…•π—ò†4(ÄÄÄÄÄÄÄÄÄÄÄÅù¡Õï—Ö•±ÕQï·–∞4(ÄÄÄÄÄÄÄÄÄÄÄÅÕ•ÈïΩò°ù¡Õï—Ö•±ÕQï·–§∞4(ÄÄÄÄÄÄÄÄÄÄÄÄâMPËÄï‘ÄÄÅËÄî∏≈òÅ¥ÄÄÉBkBèBÉBÑËÄî∏¡õ
+¿à∞4(ÄÄÄÄÄÄÄÄÄÄÄÅÕ—Ö—•ç}çÖÕ–Ò’πÕ•ùπïê¯°Õ—Ö—îπù¡ÕMÖ—ï±±•—ïÃ§∞4(ÄÄÄÄÄÄÄÄÄÄÄÅÕ—Ö—îπù¡Õçç’…ÖçÂ5ï—ï…Ã∞4(ÄÄÄÄÄÄÄÄÄÄÄÅÕ—Ö—îπ°ïÖë•πú4(ÄÄÄÄÄÄÄÄ§Ï4(ÄÄÄÄÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°ù¡Õï—Ö•±Õ1Öâï∞∞Åù¡Õï—Ö•±ÕQï·–§Ï4(ÄÄÄÅÙ4(ÄÄÄÅï±Õî4(ÄÄÄÅÏ4(ÄÄÄÄÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°ù¡ÕΩΩ…ë•πÖ—ïÕ1Öâï∞∞ÄãB£BcBÄËÄ¥¥∏¥¥¥¥¥¥ÄÄÉBSB´BlËÄ¥¥∏¥¥¥¥¥¥à§Ï4(ÄÄÄÄÄÄÄÅçΩπÕ–Åç°Ö»Ä©µÖ¡M—Ω…ÖùïQï·–ÄÙÅô±Â—ïç}’§ËÈÕëM—Ω…ÖùïM—Ö—’Ã°Õ—Ö—îπÕëÖ…ëIïÖë‰∞ÅÕ—Ö—îπΩôô±•πï5Ö¡IïÖë‰§Ï4(ÄÄÄÄÄÄÄÅçΩπÕ–Å5Ö¡MΩ’…çï5ΩëîÅÕΩ’…çï5ΩëîÄÙÅµÖ¡MΩ’…çï}ùï—5Ωëî†§Ï4(ÄÄÄÄÄÄÄÅçΩπÕ–Åç°Ö»Ä©ÕΩ’…çïQï·–ÄÙÄ°ÕΩ’…çï5ΩëîÄÙÙÅ5A}M=UI}=91%9ÄòòÄÖµÖ¡MΩ’…çï}Ωπ±•πïŸÖ•±Öâ±î†§§Ä¸Äâ=91%9ÉBwBTÉBTÉBwBCBoBcBüBWBtÉäPÉBGBWB\ÉBkBCBÉBãB@àÄËÄ°ÕΩ’…çï5ΩëîÄÙÙÅ5A}M=UI}UQ<Ä¸ÄâUQ<ÄºÅMàÄËÄâ=1%9ÄºÅMà§Ï4(ÄÄÄÄÄÄÄÅç°Ö»ÅµÖ¡M—Ö—’ÕQï·—lƒ»¡tÏ4(ÄÄÄÄÄÄÄÅÕπ¡…•π—ò°µÖ¡M—Ö—’ÕQï·–∞ÅÕ•ÈïΩò°µÖ¡M—Ö—’ÕQï·–§∞ÄâALËÉBwBøBsB@Å%`ÄÅÄÄïÃÄÅÄÄïÃà∞ÅµÖ¡M—Ω…ÖùïQï·–∞ÅÕΩ’…çïQï·–§Ï4(ÄÄÄÄÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°ù¡Õ5Ö¡M—Ö—’Õ1Öâï∞∞ÅµÖ¡M—Ö—’ÕQï·–§Ï4(ÄÄÄÄÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°ù¡Õï—Ö•±Õ1Öâï∞∞ÄâMPËÄ¥¥ÄÄÅËÄ¥¥Å¥ÄÄÉBkBèBÉBÑËÄ¥∑
+¿à§Ï4(ÄÄÄÅÙ4(4(ÄÄÄÅµ•ÕÕ•ΩπU%}•π•—M—Ω…Öùî†§Ï4(ÄÄÄÄ4(ÄÄÄÄººÅ5Ö¿Å5ÖπÖùï»ÅçΩ¡•ïÃÅ•π—ºÅ—°îÅÖç—•ŸîÅMÅôΩ±ëï»ÏÅ¡Ö’ÕîÅ°•ëëï∏µµÖ¿Å…ïÖëÃÅë’…•πúÅ•µ¡Ω…–∏4(ÄÄÄÅ•òÄ†ÖµÖ¡5ÖπÖùï…ç—•Ÿî§Å’¡ëÖ—ï5Ö¡5•ÕÕ•Ωπ5Ö…≠ï…Ã°Õ—Ö—î§Ï4(4(ÄÄÄÄººÅM°Ω‹ÅÕï±ïç—ïêÅ±•π¨ÅÖπêÅôÖ•±ΩŸï»ÅÕ—Ö—î∏4(ÄÄÄÅçΩπÕ–Åç°Ö»Ä©…Öë•ΩQï·–ÄÙÄãBÉBCBSBcBxËÉBwBøBsB@àÏ4(ÄÄÄÅÕ›•—ç†Ä°Õ—Ö—îπ…Öë•Ω1•π≠M—Ö—î§4(ÄÄÄÅÏ4(ÄÄÄÄÄÄÄÅçÖÕîÅI%=}U%}AI%5IdËÅ…Öë•ΩQï·–ÄÙÄãBÉBCBSBcBxËÅ9I»–àÏÅâ…ïÖ¨Ï4(ÄÄÄÄÄÄÄÅçÖÕîÅI%=}U%}IËÅ…Öë•ΩQï·–ÄÙÄãBÉBCBSBcBxËÉBáBoBCBGB@ÉBKBÉB´B_BkB@àÏÅâ…ïÖ¨Ï4(ÄÄÄÄÄÄÄÅçÖÕîÅI%=}U%}	-U@ËÅ…Öë•ΩQï·–ÄÙÄãBÉBCBSBcBxËÉBÉBWB_BWBÉBKBwBxÅ1=IàÏÅâ…ïÖ¨Ï4(ÄÄÄÄÄÄÄÅçÖÕîÅI%=}U%}9=}1%9,ËÅ…Öë•ΩQï·–ÄÙÄãBÉBCBSBcBxËÉBwBøBsB@ÉBKBÉB´B_BkB@àÏÅâ…ïÖ¨Ï4(ÄÄÄÄÄÄÄÅçÖÕîÅI%=}U%}I=YIdËÅ…Öë•ΩQï·–ÄÙÄãBÉBCBSBcBxËÉBKB´B_BáBãBCBwB{BKBøBKB@àÏÅâ…ïÖ¨Ï4(ÄÄÄÄÄÄÄÅëïôÖ’±–ËÅ…Öë•ΩQï·–ÄÙÄãBÉBCBSBcBxËÉBcB_BkBoBªBüBWBwBxàÏÅâ…ïÖ¨Ï4(ÄÄÄÅÙ4(ÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°çΩππïç—•Ωπ1Öâï∞∞Å…Öë•ΩQï·–§Ï4(ÄÄÄÄººÅIïÖêµΩπ±‰ÅUQ∞ÅïŸï∏ÅΩ∏Å	Öç≠’¿ËÅπïŸï»ÅçΩπô’ÕîÅ!5ÅUQÅç±Ωç¨Åë•Õ¡±Ö‰4(ÄÄÄÄººÅ›•—†ÅAALÄºÅÕ°Ö…ïêÅÖπÖ±ÂÈï»Å—•µ•πúÅΩ»Å¡°ÂÕ•çÖ∞ÅMQ=@ÅÖççï¡—Öπçî∏4(ÄÄÄÅ•ò°’—ç±Ωç≠1Öâï∞•Ï4(ÄÄÄÄÄÄÄÅçΩπÕ–ÅÖ’—ºÅ≈’Ö±•—‰ıâΩÖ—IÖë•Ω}’—çE’Ö±•—‰†§Ï4(ÄÄÄÄÄÄÄÅç°Ö»Å—•µïQï·—l–·uÌÙÏ4(ÄÄÄÄÄÄÄÅçΩπÕ–ÅâΩΩ∞ÅçΩÖ…Õîıô±Â—ïç}»Ã¡†‹ËÈôΩ…µÖ—U—å°≈’Ö±•—‰±—•µïQï·–±Õ•ÈïΩò°—•µïQï·–§§Ï4(ÄÄÄÄÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°’—ç±Ωç≠1Öâï∞±—•µïQï·–§Ï4(ÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}—ï·—}çΩ±Ω»°’—ç±Ωç≠1Öâï∞∞4(ÄÄÄÄÄÄÄÄÄÄÄÅçΩÖ…Õî˝=1=I}QaPÈ=1=I}5UQ±1Y}AIQ}5%8§Ï4(ÄÄÄÅÙ4(4(ÄÄÄÄººÅ	ΩÖ–ÅâÖ——ï…‰Å•ÃÅ•πëï¡ïπëïπ–ÅΩòÅ—°îÅIïµΩ—îùÃÅΩ›∏ÅâÖ——ï…‰∏ÅAï…çïπ—ÖùîÅ•Ã4(ÄÄÄÄººÅŸΩ±—ÖùîµïÕ—•µÖ—ïêÅâ‰Å—°îÅ	ΩÖ–ÏÅπïŸï»ÅÕ°Ω‹ÅÕ—Ö±îÅΩ»Å•πŸïπ—ïêÅŸÖ±’ïÃ∏4(ÄÄÄÅçΩπÕ–Å’•π–Ã…}–ÅâÖ——ï…Â9Ω‹ıµ•±±•Ã†§Ï4(ÄÄÄÅçΩπÕ–ÅâΩΩ∞Å¡ï…çïπ—…ïÕ†ı—ï±ïµï—…‰πâÖ——ï…ÂAï…çïπ—YÖ±•êòò4(ÄÄÄÄÄÄÄÄ°’•π–Ã…}–§°âÖ——ï…Â9Ω‹µ—ï±ïµï—…‰πâÖ——ï…ÂAï…çïπ—Iïçï•Ÿïë—5Ã§Ùƒ‘¿¡TÏ4(ÄÄÄÅçΩπÕ–ÅâΩΩ∞ÅŸΩ±—Öùï…ïÕ†ı—ï±ïµï—…‰πâÖ——ï…ÂYΩ±—ÖùïYÖ±•êòò4(ÄÄÄÄÄÄÄÄ°’•π–Ã…}–§°âÖ——ï…Â9Ω‹µ—ï±ïµï—…‰πâÖ——ï…ÂIïçï•Ÿïë—5Ã§Ùƒ‘¿¡TÏ4(ÄÄÄÅç°Ö»ÅâÖ——ï…ÂQï·—l–·tÏ4(ÄÄÄÅ±Ÿ}çΩ±Ω…}–ÅâÖ——ï…ÂΩ±Ω»ı=1=I}5UQÏ4(ÄÄÄÅ•ò°¡ï…çïπ—…ïÕ†•Ï4(ÄÄÄÄÄÄÄÅ•ò°ŸΩ±—Öùï…ïÕ†•Õπ¡…•π—ò°âÖ——ï…ÂQï·–±Õ•ÈïΩò°âÖ——ï…ÂQï·–§∞ãBoB{BSBkB@ËÄî∏≈ôXÄïêîîà±—ï±ïµï—…‰πâÖ——ï…ÂYΩ±—Öùî±—ï±ïµï—…‰πâÖ——ï…ÂAï…çïπ–§Ï4(ÄÄÄÄÄÄÄÅï±ÕîÅÕπ¡…•π—ò°âÖ——ï…ÂQï·–±Õ•ÈïΩò°âÖ——ï…ÂQï·–§∞ãBoB{BSBkB@ËÄïêîîà±—ï±ïµï—…‰πâÖ——ï…ÂAï…çïπ–§Ï4(ÄÄÄÄÄÄÄÅ•ò°Õ—Ö—îπç…•—•çÖ±	Ö——ï…ÂÒÒÕ—Ö—îπ±Ω›	Ö——ï…ÂÒÒ—ï±ïµï—…‰πâÖ——ï…ÂAï…çïπ–Ù»¿•âÖ——ï…ÂΩ±Ω»ı=1=I}IÏ4(ÄÄÄÄÄÄÄÅï±ÕîÅ•ò°—ï±ïµï—…‰πâÖ——ï…ÂAï…çïπ–Ù‘¿•âÖ——ï…ÂΩ±Ω»ı=1=I}e11=\Ï4(ÄÄÄÄÄÄÄÅï±ÕîÅâÖ——ï…ÂΩ±Ω»ı=1=I}I8Ï4(ÄÄÄÅıï±ÕîÅÕπ¡…•π—ò°âÖ——ï…ÂQï·–±Õ•ÈïΩò°âÖ——ï…ÂQï·–§∞ãBoB{BSBkB@ËÄ¥¥à§Ï4(ÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°âÖ——ï…Â1Öâï∞±âÖ——ï…ÂQï·–§Ï4(ÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}—ï·—}çΩ±Ω»°âÖ——ï…Â1Öâï∞±âÖ——ï…ÂΩ±Ω»±1Y}AIQ}5%8§Ï4(4(ÄÄÄÄººÅU¡ëÖ—îÅΩ¡ï…Ö—•πúÅµΩëî∏4(ÄÄÄÅÕ›•—ç†Ä°Õ—Ö—îπµΩëî§4(ÄÄÄÅÏ4(ÄÄÄÄÄÄÄÅçÖÕîÅ5=}59U0Ë4(ÄÄÄÄÄÄÄÄÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–†4(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅµΩëï1Öâï∞∞4(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄãBÉBWB[BcBpËÉBÉB´BüBWBtà4(ÄÄÄÄÄÄÄÄÄÄÄÄ§Ï4(ÄÄÄÄÄÄÄÄÄÄÄÅâ…ïÖ¨Ï4(4(ÄÄÄÄÄÄÄÅçÖÕîÅ5=}UQ=A%1=PË4(ÄÄÄÄÄÄÄÄÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–†4(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅµΩëï1Öâï∞∞4(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄãBÉBWB[BcBpËÉBCBKBãB{BBcBoB{Bàà4(ÄÄÄÄÄÄÄÄÄÄÄÄ§Ï4(ÄÄÄÄÄÄÄÄÄÄÄÅâ…ïÖ¨Ï4(4(ÄÄÄÄÄÄÄÅçÖÕîÅ5=}IQUI9}!=5Ë4(ÄÄÄÄÄÄÄÄÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–†4(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅµΩëï1Öâï∞∞4(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄãBÉBWB[BcBpËÉBkB´BpÉBSB{BsB@à4(ÄÄÄÄÄÄÄÄÄÄÄÄ§Ï4(ÄÄÄÄÄÄÄÄÄÄÄÅâ…ïÖ¨Ï4(ÄÄÄÅÙ4(4(ÄÄÄÄººÅIïô…ïÕ†Å—°îÅ±•ŸîÅ•π¡’–ÅÖπêÅÕÖôï—‰ÅÕ—Ö—’ÃÅôΩΩ—ï»∏4(ÄÄÄÅçΩπÕ–Å)ΩÂÕ—•ç≠MπÖ¡Õ°Ω–Å•π¡’–ÄÙÅ©ΩÂÕ—•ç≠}ùï—MπÖ¡Õ°Ω–†§Ï4(ÄÄÄÅç°Ö»Å•π¡’—Qï·—lƒƒ…tÏ4(ÄÄÄÅ•òÄ†Ö•π¡’–π…ïÖë•πùÕYÖ±•ê§ÅÕπ¡…•π—ò°•π¡’—Qï·–±Õ•ÈïΩò°•π¡’—Qï·–§∞ãBáBãBcBkB{BKBTËÅÉBOBÉBWB£BkB@ÄºÉBwBøBsB@ÉBSBCBwBwB`à§Ï4(ÄÄÄÅï±ÕîÅ•òÄ†Ö•π¡’–πçÖ±•â…Ö—•ΩπYÖ±•ê§ÅÕπ¡…•π—ò°•π¡’—Qï·–±Õ•ÈïΩò°•π¡’—Qï·–§∞ãBáBãBcBkB{BKBTËÉBkBCBoBcBGBÉBcBÉBCBdÄÅI\ÄïêºïêÄïêºïêà±•π¡’–π…Ö‹π±ïô—`±•π¡’–π…Ö‹π±ïô—d±•π¡’–π…Ö‹π…•ù°—`±•π¡’–π…Ö‹π…•ù°—d§Ï4(ÄÄÄÅï±ÕîÅÕπ¡…•π—ò°•π¡’—Qï·–±Õ•ÈïΩò°•π¡’—Qï·–§∞ãBáBãBcBkB{BKBTÅ0Äïê∞ïêÄÅHÄïê∞ïêÄÄïÃà±•π¡’–πŸÖ±’ïÃπ±ïô—`±•π¡’–πŸÖ±’ïÃπ±ïô—d±•π¡’–πŸÖ±’ïÃπ…•ù°—`±•π¡’–πŸÖ±’ïÃπ…•ù°—d±•π¡’–ππï’—…Ö∞¸ãBwBWBèBãBÉBCBoBwB`àËãBCBkBãBcBKBwB`à§Ï4(ÄÄÄÅ•òÄ°•π¡’—M—Ö—’Õ1Öâï∞§Å±Ÿ}±Öâï±}Õï—}—ï·–°•π¡’—M—Ö—’Õ1Öâï∞±•π¡’—Qï·–§Ï4(ÄÄÄÅç°Ö»ÅÕÖôï—ÂQï·—lƒ»·tÏ4(ÄÄÄÅçΩπÕ–Åç°Ö»Ä©Õ—Ω¡Qï·–ÄÙÅâΩÖ—IÖë•Ω}âÖç≠’¡M—Ω¡Ωπô•…µïê†§ÄòòÄÖÕ—Ö—îπïµï…ùïπçÂM—Ω¡Ωπô•…µïêÄ¸Äâ1ΩIÑÅMQ=@àÄËÅÕ—Ö—îπïµï…ùïπçÂM—Ω¿Ä¸Ä°Õ—Ö—îπïµï…ùïπçÂM—Ω¡Ωπô•…µïêÄ¸ÄãBB{BãBKB´BÉBSB`àÄËÄãB_BCBkBoBªBüBWBt¸à§ÄËÄ°Õ—Ö—îπïµï…ùïπçÂM—Ω¡Ωπô•…µïêÄ¸ÄãBcB_BüBcBáBãBWBtàÄËÄâU9-9=]8à§Ï4(ÄÄÄÅçΩπÕ–ÅâΩΩ∞ÅâÖ——ï…Â5•êı¡ï…çïπ—…ïÕ†òô—ï±ïµï—…‰πâÖ——ï…ÂAï…çïπ–Ù‘¿òòÖÕ—Ö—îπ±Ω›	Ö——ï…‰Ï4(ÄÄÄÅçΩπÕ–Åç°Ö»Ä©°ïÖ±—°Qï·–ÄÙÅâÖ——ï…Â5•êÄ¸ÄãBáBÉBWBSBwB@ÉBGBCBà∏ÉäPÉB_BCBÉBWBSB`àÄË4(ÄÄÄÄÄÄÄÄ°Õ—Ö—îπôÖ•±ÕÖôïç—•ŸîÄ¸ÄãBCBKBCBÄ∏ÉBÉBWB[BcBpàÄËÄ°Õ—Ö—îπÖç—’Ö—Ω…MÖôï—ÂIïÖë‰Ä¸ÄãBOB{BãB{BKBxàÄËÄãBGBoB{BkBcBÉBCBwBxà§§Ï4(ÄÄÄÄººÅÅ…ïêÅŸΩ±—ÖùîÅâ‰Å•—Õï±òÅëΩïÃÅπΩ–Å¡…ΩŸîÅ—°Ö–ÅIQ Å°ÖÃÅÖç—’Ö±±‰ÅÕ—Ö…—ïê∏4(ÄÄÄÄººÅ-ïï¿Å—°îÅΩ¡ï…Ö—Ω»ÅÖç—•Ω∏ÅŸ•Õ•â±îÅ•∏ÅïŸï…‰Å…ïêµâÖ——ï…‰ÅÕ—Ö—î∏4(ÄÄÄÅ•ò°Õ—Ö—îπç…•—•çÖ±	Ö——ï…‰§ÅÕπ¡…•π—ò°ÕÖôï—ÂQï·–±Õ•ÈïΩò°ÕÖôï—ÂQï·–§∞ãBkBÉBcBãBcBüBwB@ÉBGBCBãBWBÉBcBºÉäPÅMQ=@Ñà§Ï4(ÄÄÄÅï±ÕîÅ•ò°Õ—Ö—îπ±Ω›	Ö——ï…‰òôÕ—Ö—îπµΩëîÙı5=}IQUI9}!=5§4(ÄÄÄÄÄÄÄÅÕπ¡…•π—ò°ÕÖôï—ÂQï·–±Õ•ÈïΩò°ÕÖôï—ÂQï·–§∞ãBwBcBáBkB@ÉBGBCBà∏ÉäPÅIQ ÏÉB_BCBÉBWBSB`øBáBsBWBwB`à§Ï4(ÄÄÄÅï±ÕîÅ•ò°Õ—Ö—îπ±Ω›	Ö——ï…‰§4(ÄÄÄÄÄÄÄÅÕπ¡…•π—ò°ÕÖôï—ÂQï·–±Õ•ÈïΩò°ÕÖôï—ÂQï·–§∞ãBwBcBáBkB@ÉBGBCBà∏ÉäPÉB_BCBÉBWBSB`øBáBsBWBwB`à§Ï4(ÄÄÄÅï±ÕîÅÕπ¡…•π—ò°ÕÖôï—ÂQï·–±Õ•ÈïΩò°ÕÖôï—ÂQï·–§∞âMQ=@ËïÃÄïÃÅ,Ëï‘à±Õ—Ω¡Qï·–±°ïÖ±—°Qï·–∞°’πÕ•ùπïê•âΩÖ—IÖë•Ω}¡ïπë•πùΩµµÖπëç≠Ã†§§Ï4(ÄÄÄÅ•òÄ°ÕÖôï—ÂM—Ö—’Õ1Öâï∞§ÅÏ4(ÄÄÄÄÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°ÕÖôï—ÂM—Ö—’Õ1Öâï∞±ÕÖôï—ÂQï·–§Ï4(ÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}—ï·—}çΩ±Ω»°ÕÖôï—ÂM—Ö—’Õ1Öâï∞∞4(ÄÄÄÄÄÄÄÄÄÄÄÄ°Õ—Ö—îπ±Ω›	Ö——ï…ÂÒÒÕ—Ö—îπç…•—•çÖ±	Ö——ï…‰§Ä¸Å=1=I}IÄËÄ°âÖ——ï…Â5•êÄ¸Å=1=I}e11=\ÄËÅ=1=I}5UQ§∞4(ÄÄÄÄÄÄÄÄÄÄÄÅ1Y}AIQ}5%8§Ï4(ÄÄÄÅÙ4(4(ÄÄÄÄººÅ•ÖùπΩÕ—•åÅµïÕÕÖùïÃÅÖ…îÅÖ’—°ïπ—•çÖ—ïêÅâ’–ÅπïŸï»ÅÑÅÕ’âÕ—•—’—îÅôΩ»4(ÄÄÄÄººÅ•πëï¡ïπëïπ—±‰ÅçΩµµ•ÕÕ•ΩπïêÅ¡°ÂÕ•çÖ∞ÅçΩπ—Öç—ÃÅΩ»ÅMQ=@ÅçΩπô•…µÖ—•Ω∏∏4(ÄÄÄÅ•ò°ë•ÖùπΩÕ—•çM—Ö—’Õ1Öâï∞•Ï4(ÄÄÄÄÄÄÄÅç°Ö»Åë•ÖùπΩÕ—•çQï·—l‰ŸtÏ4(ÄÄÄÄÄÄÄÅ•ò°Õ—Ö—îπë•ÖùπΩÕ—•ç…ïÕ†§4(ÄÄÄÄÄÄÄÄÄÄÄÅÕπ¡…•π—ò°ë•ÖùπΩÕ—•çQï·–±Õ•ÈïΩò°ë•ÖùπΩÕ—•çQï·–§∞4(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄãBSBcBCBOBt∏ËÉBwBWBB{BãBH∏ÄºÄïÃà∞4(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅë•ÖùπΩÕ—•çIïÖÕΩπ	’±ùÖ…•Ö∏°Õ—Ö—îπë•ÖùπΩÕ—•çIïÖÕΩ∏§§Ï4(ÄÄÄÄÄÄÄÅï±ÕîÅÕπ¡…•π—ò°ë•ÖùπΩÕ—•çQï·–±Õ•ÈïΩò°ë•ÖùπΩÕ—•çQï·–§∞4(ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄãBSBcBCBOBt∏ËÉBwBøBsB@ÉBSBCBwBwB`Ä£BwBWBB{BãBH∏§à§Ï4(ÄÄÄÄÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–°ë•ÖùπΩÕ—•çM—Ö—’Õ1Öâï∞±ë•ÖùπΩÕ—•çQï·–§Ï4(ÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}Õï—}Õ—Â±ï}—ï·—}çΩ±Ω»°ë•ÖùπΩÕ—•çM—Ö—’Õ1Öâï∞∞4(ÄÄÄÄÄÄÄÄÄÄÄÄÅÕ—Ö—îπë•ÖùπΩÕ—•ç…ïÕ†òôÕ—Ö—îπë•ÖùπΩÕ—•çIïÖÕΩ∏¯Ù‡òò4(ÄÄÄÄÄÄÄÄÄÄÄÄÅÕ—Ö—îπë•ÖùπΩÕ—•çIïÖÕΩ∏ÙƒÃ˝=1=I}IÈ=1=I}5UQ±1Y}AIQ}5%8§Ï4(ÄÄÄÅÙ4(4(ÄÄÄÄººÅ°ÖπùîÅMQ=@Åâ’——Ω∏Å—ï·–Å›°ï∏Åïµï…ùïπç‰ÅÕ—Ω¿Å•ÃÅÖç—•Ÿî∏4(ÄÄÄÅ•òÄ°Õ—Ö—îπïµï…ùïπçÂM—Ω¿§4(ÄÄÄÅÏ4(ÄÄÄÄÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–†4(ÄÄÄÄÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}ùï—}ç°•±ê°Õ—Ω¡	’——Ω∏∞Ä¿§∞4(ÄÄÄÄÄÄÄÄÄÄÄÄãBáBãB{B|ÉBCBkBãBcBKBWBtà4(ÄÄÄÄÄÄÄÄ§Ï4(ÄÄÄÅÙ4(ÄÄÄÅï±Õî4(ÄÄÄÅÏ4(ÄÄÄÄÄÄÄÅ±Ÿ}±Öâï±}Õï—}—ï·–†4(ÄÄÄÄÄÄÄÄÄÄÄÅ±Ÿ}Ωâ©}ùï—}ç°•±ê°Õ—Ω¡	’——Ω∏∞Ä¿§∞4(ÄÄÄÄÄÄÄÄÄÄÄÄâMQ=@à4(ÄÄÄÄÄÄÄÄ§Ï4(ÄÄÄÅÙ4)Ù4(4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(ººÅI%MQHÅ5I9dÅMQ=@Å11	,4(ººÄ¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥¥4(4)ŸΩ•êÅâΩÖ—U%}Õï—M—Ω¡Ö±±âÖç¨°M—Ω¡Ö±±âÖç¨ÅçÖ±±âÖç¨§4)Ï4(ÄÄÄÄººÅM—Ω…îÅ—°îÅÕÖôï—‰ÅçÖ±±âÖç¨∏4(ÄÄÄÅÕ—Ω¡Ö±±âÖç¨ÄÙÅçÖ±±âÖç¨Ï4)Ù4(4)ŸΩ•êÅâΩÖ—U%}…ïô…ïÕ°1Ö≠ï1Öâï∞†•Ì•ò°µÖ¡Q•—±î•Ìç°Ö»ÅπÖµïm1-}95}	eQMt±çÖ¡—•Ωπlÿ—tÌ±Ö≠ïM—Ω…Öùï}ùï—9Öµî°±Ö≠ïM—Ω…Öùï}Öç—•Ÿî†§±πÖµî±Õ•ÈïΩò°πÖµî§§ÌÕπ¡…•π—ò°çÖ¡—•Ω∏±Õ•ÈïΩò°çÖ¡—•Ω∏§∞àî¿…‘ÄïÃà∞°’πÕ•ùπïê•±Ö≠ïM—Ω…Öùï}Öç—•Ÿî†§¨ƒ±πÖµî§Ì±Ÿ}±Öâï±}Õï—}—ï·–°µÖ¡Q•—±î±çÖ¡—•Ω∏§ÌıÙ4(4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©…ï±ïÖÕïM—Ö—’ÕMç…ïï∏ıπ’±±¡—»Ï4)Õ—Ö—•åÅ±Ÿ}Ωâ©}–Ä©…ï±ïÖÕïM—Ö—’ÕQï·–ıπ’±±¡—»Ï4)Õ—Ö—•åÅ±Ÿ}—•µï…}–Ä©…ï±ïÖÕïM—Ö—’ÕQ•µï»ıπ’±±¡—»Ï4)Õ—Ö—•åÅŸΩ•êÅ’¡ëÖ—ïIï±ïÖÕïM—Ö—’Ã°±Ÿ}—•µï…}–Ä®•Ï4(Å•ò†Ö…ï±ïÖÕïM—Ö—’ÕQï·–•…ï—’…∏Ï4(Åç°Ö»ÅÕlÃ¿¡tÌÕπ¡…•π—ò°Ã±Õ•ÈïΩò°Ã§∞âMQ=@ËÄïÕqªBÉBCBSBcBxËÄïÕqªBGBoB{BkBcBÉB{BKBkB@ËÄïÕqªBB{BãBKB´BÉB[BSBWBwBcBTËÄï‘à∞4(ÅâΩÖ—M—Ö—îπïµï…ùïπçÂM—Ω¡Ωπô•…µïê¸°âΩÖ—M—Ö—îπïµï…ùïπçÂM—Ω¿¸ãBCBkBãBcBKBWBtàËãB{BáBKB{BGB{BSBWBtà§Ë°âΩÖ—IÖë•Ω}âÖç≠’¡M—Ω¡Ωπô•…µïê†§¸ãBB{BãBKB´BÉBSBWBtÄ°1ΩIÑ§àËãBwBWBB{BãBKB´BÉBSBWBtà§∞4(ÅâΩÖ—M—Ö—îπ…Öë•ΩΩππïç—ïê¸ãBáBKB´BÉB_BCBwBxàËãBwBøBsB@à∞4(ÅâΩÖ—M—Ö—îπÖç—’Ö—Ω…MÖôï—ÂIïÖë‰¸ãBOB{BãB{BKBxàËãBGBoB{BkBcBÉBCBwBxà∞°’πÕ•ùπïê•…ï±ïÖÕï’Ö…ë}Õ—Ö—î†§§Ï4(Å±Ÿ}±Öâï±}Õï—}—ï·–°…ï±ïÖÕïM—Ö—’ÕQï·–±Ã§Ï4)Ù4)Õ—Ö—•åÅâΩΩ∞Åç±ΩÕïIï±ïÖÕïM—Ö—’Ã†•Ï4(Å•ò†Ö…ï±ïÖÕïM—Ö—’ÕMç…ïïπÒÒ±Ÿ}Õç…ïïπ}Öç—•Ÿî†§Ñı…ï±ïÖÕïM—Ö—’ÕMç…ïï∏•…ï—’…∏ÅôÖ±ÕîÏ4(Å•ò°…ï±ïÖÕïM—Ö—’ÕQ•µï»•Ì±Ÿ}—•µï…}ëï±ï—î°…ï±ïÖÕïM—Ö—’ÕQ•µï»§Ì…ï±ïÖÕïM—Ö—’ÕQ•µï»ıπ’±±¡—»ÌÙ4(Å±Ÿ}Ωâ©}–Ä©Ω±êı…ï±ïÖÕïM—Ö—’ÕMç…ïï∏Ì…ï±ïÖÕïM—Ö—’ÕMç…ïï∏ıπ’±±¡—»Ì…ï±ïÖÕïM—Ö—’ÕQï·–ıπ’±±¡—»Ï4(Å±Ÿ}Õç…ïïπ}±ΩÖê°µÖ•πMç…ïï∏§Ì±Ÿ}Ωâ©}ëï±ï—ï}ÖÕÂπå°Ω±ê§Ì…ï—’…∏Å—…’îÏ4)Ù4)Õ—Ö—•åÅŸΩ•êÅΩ¡ïπIï±ïÖÕïM—Ö—’Ã†•Ï4(Å•ò°…ï±ïÖÕïM—Ö—’ÕMç…ïï∏•…ï—’…∏Ï4(Å…ï±ïÖÕïM—Ö—’ÕMç…ïï∏ı±Ÿ}Ωâ©}ç…ïÖ—î°π’±±¡—»§Ï4(Å±Ÿ}Ωâ©}Õï—}Õ—Â±ï}âù}çΩ±Ω»°…ï±ïÖÕïM—Ö—’ÕMç…ïï∏±±Ÿ}çΩ±Ω…}°ï‡†¡‡¿‡ƒ‘»»§±1Y}AIQ}5%8§Ï4(Å±Ÿ}Ωâ©}Õï—}Õ—Â±ï}—ï·—}çΩ±Ω»°…ï±ïÖÕïM—Ö—’ÕMç…ïï∏±±Ÿ}çΩ±Ω…}°ï‡†¡·§±1Y}AIQ}5%8§Ï4(Åç…ïÖ—ï1Öâï∞°…ï±ïÖÕïM—Ö—’ÕMç…ïï∏∞ãBáB´BáBãB{BøBwBcBTÉBwB@ÉB_BCBóBÉBCBwBkB@ÉB`ÉBkBèBkB`à∞ƒÿ∞ƒ‡§Ï4(Å…ï±ïÖÕïM—Ö—’ÕQï·–ıç…ïÖ—ï1Öâï∞°…ï±ïÖÕïM—Ö—’ÕMç…ïï∏∞àà∞ƒÿ∞‹‘§Ï4(Å±Ÿ}Ωâ©}–Ä©àı±Ÿ}â’——Ωπ}ç…ïÖ—î°…ï±ïÖÕïM—Ö—’ÕMç…ïï∏§Ì±Ÿ}Ωâ©}Õï—}¡ΩÃ°à∞ÿƒ¿∞–ƒ‘§Ì±Ÿ}Ωâ©}Õï—}Õ•Èî°à∞ƒ‹¿∞–ÿ§Ï4(Å±Ÿ}±Öâï±}Õï—}—ï·–°±Ÿ}±Öâï±}ç…ïÖ—î°à§∞ãBwBCB_BCBPà§Ì±Ÿ}Ωâ©}çïπ—ï»°±Ÿ}Ωâ©}ùï—}ç°•±ê°à∞¿§§Ï4(Å±Ÿ}Ωâ©}Öëë}ïŸïπ—}çà°à±mt°±Ÿ}ïŸïπ—}–®•Ìç±ΩÕïIï±ïÖÕïM—Ö—’Ã†§ÌÙ±1Y}Y9Q}1%-±π’±±¡—»§Ï4(Å’¡ëÖ—ïIï±ïÖÕïM—Ö—’Ã°π’±±¡—»§Ì…ï±ïÖÕïM—Ö—’ÕQ•µï»ı±Ÿ}—•µï…}ç…ïÖ—î°’¡ëÖ—ïIï±ïÖÕïM—Ö—’Ã∞»‘¿±π’±±¡—»§Ï4(Å±Ÿ}Õç…ïïπ}±ΩÖê°…ï±ïÖÕïM—Ö—’ÕMç…ïï∏§Ï4)Ù4)ŸΩ•êÅâΩÖ—U%}¡°ÂÕ•çÖ±ç—•Ω∏°’•π–·}–Å•ê•Ï4(Å•ò†ÖµÖ•πMç…ïï∏•…ï—’…∏Ï4(Å•ò°•êÙÙƒ–•Ï4(ÄÅ…ï±ïÖÕï’Ö…ë}çÖπçï∞†§Ï4(ÄÅ•ò°ç±ΩÕïIï±ïÖÕïM—Ö—’Ã†•ÒÒ±Ö≠ïU%}ç±ΩÕî†•ÒÒµ•ÕÕ•ΩπU%}ç±ΩÕî†•ÒÒÕï——•πùÕU%}ç±ΩÕî†§•…ï—’…∏Ï4(ÄÅ•ò°©ΩÂÕ—•ç≠Ö±•â…Ö—•ΩπU%}•Õ=¡ï∏†§•Ì©ΩÂÕ—•ç≠Ö±•â…Ö—•ΩπU%}ç±ΩÕî†§Ì…ï—’…∏ÌÙ4(ÄÅ•ò°µÖ¡5ÖπÖùï…ç—•Ÿî•ÌµÖ¡5ÖπÖùï…U%}ç±ΩÕî†§Ì…ï—’…∏ÌÙ4(ÄÅ•ò°µÖ¡·¡Öπëïê•—Ωùù±ï5Ö¡AÖπï∞†§Ìï±ÕîÅ•ò°ÕΩπÖ…·¡Öπëïê•—Ωùù±ïMΩπÖ…AÖπï∞†§Ï4(ÄÅ…ï—’…∏Ï4(ÅÙ4(Å•ò°•êÙÙƒ‘•Ì•ò°µ•ÕÕ•ΩπU%}•Õ=¡ï∏†§•µ•ÕÕ•ΩπU%}ç±ΩÕî†§Ì…ï—’…∏ÌÙ4(Å•ò°µ•ÕÕ•ΩπU%}•Õ=¡ï∏†§•Ï4(ÄÅ•ò°•êÙÙÃ•µ•ÕÕ•ΩπU%}ÕÖŸï’……ïπ–†§Ìï±ÕîÅ•ò°•êÙÙ–•µ•ÕÕ•ΩπU%}Õï±ïç—9ï·–†§Ì…ï—’…∏Ï4(ÅÙ4(Å•ò°±Ÿ}Õç…ïïπ}Öç—•Ÿî†§ÑıµÖ•πMç…ïïπÒÒµÖ¡5ÖπÖùï…ç—•Ÿî•…ï—’…∏Ï4(ÅÕ›•—ç†°•ê•Ï4(ÄÅçÖÕîÄÃÈµ•ÕÕ•ΩπU%}Ω¡ï∏°µÖ•πMç…ïï∏§Ìµ•ÕÕ•ΩπU%}ÕÖŸï’……ïπ–†§Ìâ…ïÖ¨Ï4(ÄÅçÖÕîÄ–Èµ•ÕÕ•ΩπU%}Ω¡ï∏°µÖ•πMç…ïï∏§Ìµ•ÕÕ•ΩπU%}Õï±ïç—9ï·–†§Ìâ…ïÖ¨Ï4(ÄÅçÖÕîÄ‘È•ò°ÕΩπÖ…·¡Öπëïê•—Ωùù±ïMΩπÖ…AÖπï∞†§Ì—Ωùù±ï5Ö¡AÖπï∞†§Ìâ…ïÖ¨Ï4(ÄÅçÖÕîÄÿÈ•ò°µÖ¡·¡Öπëïê•—Ωùù±ï5Ö¡AÖπï∞†§Ì—Ωùù±ïMΩπÖ…AÖπï∞†§Ìâ…ïÖ¨Ï4(ÄÅçÖÕîÄ‹ÈÕï——•πùÕU%}Ω¡ï∏°µÖ•πMç…ïï∏§Ìâ…ïÖ¨Ï4(ÄÅçÖÕîÄƒ»ÈçÖÕîÄƒÃÈΩ¡ïπIï±ïÖÕïM—Ö—’Ã†§Ìâ…ïÖ¨Ï4(ÄÅëïôÖ’±–Èâ…ïÖ¨Ï4(ÅÙ4)Ù4(

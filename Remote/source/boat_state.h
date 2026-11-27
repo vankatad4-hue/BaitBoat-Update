@@ -1,70 +1,2 @@
-
-#ifndef BOAT_STATE_H
-#define BOAT_STATE_H
-
-#include <Arduino.h>
-
-// Operating modes available on the remote.
-enum BoatMode
-{
-    MODE_MANUAL,       // Direct joystick control.
-    MODE_AUTOPILOT,    // Automatic navigation.
-    MODE_RETURN_HOME   // Return to stored home position.
-};
-
-enum RadioUiLink : uint8_t { RADIO_UI_NONE=0, RADIO_UI_NRF_PRIMARY, RADIO_UI_LORA_BACKUP };
-enum RadioUiState : uint8_t { RADIO_UI_DISCONNECTED=0, RADIO_UI_PRIMARY, RADIO_UI_DEGRADED, RADIO_UI_BACKUP, RADIO_UI_NO_LINK, RADIO_UI_RECOVERY };
-
-// Current state of the boat.
-struct BoatState
-{
-    BoatMode mode;         // Current operating mode.
-
-    bool radioConnected;   // Radio communication status.
-    bool radioPrimaryConnected;
-    bool radioBackupConnected;
-    RadioUiLink radioActiveLink;
-    RadioUiState radioLinkState;
-    bool gpsValid;         // True only while the latest GPS fix is valid and fresh.
-    uint8_t gpsFixType;    // GNSS fix type reported by the boat (0=no fix, 3=3D fix, etc.).
-    uint8_t gpsSatellites; // Number of satellites used in the solution.
-    float gpsAccuracyMeters; // Estimated horizontal position accuracy in metres.
-    uint32_t gpsLastUpdateMs; // Local receipt time of the latest valid GPS telemetry.
-    bool weatherValid;int16_t temperatureCentiC;uint32_t pressurePa;
-    bool sonarActive;      // Sonar operating status.
-    bool headingValid;     // Heading valid only when fresh status/nav flags agree.
-    bool lowBattery;       // Boat-reported low battery/RTH flag.
-    bool criticalBattery;  // Boat-reported critical battery STOP flag.
-    bool failsafeActive;  // Boat-reported failsafe flag/mode.
-
-    bool sdCardReady;      // True when the remote TF card is mounted.
-    bool offlineMapReady;  // True when the offline-map manifest is installed.
-
-    float batteryVoltage;  // Boat battery voltage.
-    float batteryPercent;  // Estimated battery charge.
-
-    float latitude;        // Current GPS latitude.
-    float longitude;       // Current GPS longitude.
-
-    float heading;         // Boat compass heading in degrees.
-    float speed;           // Boat speed in metres per second.
-
-    bool motorLeftActive;  // Left motor status.
-    bool motorRightActive; // Right motor status.
-
-    bool emergencyStop;             // True when the boat reports STOP active.
-    bool emergencyStopConfirmed;    // True only when telemetry confirms the current emergency-stop state (active or released).
-    bool actuatorSafetyReady;      // Fresh authenticated telemetry must set true only after boat interlocks pass.
-    // R30F display-only uncommissioned safety observation. These fields
-    // NEVER participate in stop confirmation or actuatorSafetyReady.
-    bool diagnosticFresh;
-    uint8_t diagnosticReason;
-    uint16_t diagnosticFlags;
-};
-
-// Global boat state shared between software modules.
-extern BoatState boatState;
-
-// Initialise the boat state with safe default values.
-void initialiseBoatState();
-#endif
+1ëa¡Ñ1qêmŠ‰ËŠwµê·ıº¶ËZµèmµ©•§r«×œ…ªõÑÈZ¯]¢{Ş	©ç¢×(÷«µªàºg§¶‰]
+«Â+a½©nyú+EêeiÇ­¢Ü©y,¬µé‚…ªÂjyèµÊ'½êí½©nzÚ-Ê—’ÊË^˜(Z¬Jë¢´­®)àšë-mç±iËeÊ‰Şr«iË^®Z'€4(¥™¹‘•˜	=Q}MQQ} 4(‘•™¥¹”	=Q}MQQ} 4(4(¥¹±Õ‘”€ñÉ‘Õ¥¹¼¹ ø4(4(¼¼=Á•É…Ñ¥¹œµ½‘•Ì…Ù…¥±…‰±”½¸Ñ¡”É•µ½Ñ”¸4)•¹Õ´	½…Ñ5½‘”4)ì4(€€€5=}59U0°€€€€€€€¼¼¥É•Ğ©½åÍÑ¥¬½¹ÑÉ½°¸4(€€€5=}UQ=A%1=P°€€€€¼¼ÕÑ½µ…Ñ¥Œ¹…Ù¥…Ñ¥½¸¸4(€€€5=}IQUI9}!=5€€€¼¼I•ÑÕÉ¸Ñ¼ÍÑ½É•¡½µ”Á½Í¥Ñ¥½¸¸4)ôì4(4)•¹Õ´I…‘¥½U¥1¥¹¬€èÕ¥¹Ğá}ĞìI%=}U%}9=9ôÀ°I%=}U%}9I}AI%5Id°I%=}U%}1=I}	-U@ôì4)•¹Õ´I…‘¥½U¥MÑ…Ñ”€èÕ¥¹Ğá}ĞìI%=}U%}%M=99QôÀ°I%=}U%}AI%5Id°I%=}U%}I°I%=}U%}	-U@°I%=}U%}9=}1%9,°I%=}U%}I=YIdôì4(4(¼¼ÕÉÉ•¹ĞÍÑ…Ñ”½˜Ñ¡”‰½…Ğ¸4)ÍÑÉÕĞ	½…ÑMÑ…Ñ”4)ì4(€€€	½…Ñ5½‘”µ½‘”ì€€€€€€€€€¼¼ÕÉÉ•¹Ğ½Á•É…Ñ¥¹œµ½‘”¸4(4(€€€‰½½°É…‘¥½½¹¹•Ñ•ì€€€¼¼I…‘¥¼½µµÕ¹¥…Ñ¥½¸ÍÑ…ÑÕÌ¸4(€€€‰½½°É…‘¥½AÉ¥µ…Éå½¹¹•Ñ•ì4(€€€‰½½°É…‘¥½	…­ÕÁ½¹¹•Ñ•ì4(€€€I…‘¥½U¥1¥¹¬É…‘¥½Ñ¥Ù•1¥¹¬ì4(€€€I…‘¥½U¥MÑ…Ñ”É…‘¥½1¥¹­MÑ…Ñ”ì4(€€€‰½½°ÁÍY…±¥ì€€€€€€€€€¼¼QÉÕ”½¹±äİ¡¥±”Ñ¡”±…Ñ•ÍĞAL™¥à¥ÌÙ…±¥…¹™É•Í ¸4(€€€Õ¥¹Ğá}ĞÁÍ¥áQåÁ”ì€€€€¼¼9ML™¥àÑåÁ”É•Á½ÉÑ•‰äÑ¡”‰½…Ğ€ Àõ¹¼™¥à°€ÌôÍ™¥à°•ÑŒ¸¤¸4(€€€Õ¥¹Ğá}ĞÁÍM…Ñ•±±¥Ñ•Ìì€¼¼9Õµ‰•È½˜Í…Ñ•±±¥Ñ•ÌÕÍ•¥¸Ñ¡”Í½±ÕÑ¥½¸¸4(€€€™±½…ĞÁÍÕÉ…å5•Ñ•ÉÌì€¼¼ÍÑ¥µ…Ñ•¡½É¥é½¹Ñ…°Á½Í¥Ñ¥½¸…ÕÉ…ä¥¸µ•ÑÉ•Ì¸4(€€€Õ¥¹ĞÌÉ}ĞÁÍ1…ÍÑUÁ‘…Ñ•5Ìì€¼¼1½…°É••¥ÁĞÑ¥µ”½˜Ñ¡”±…Ñ•ÍĞÙ…±¥ALÑ•±•µ•ÑÉä¸4(€€€‰½½°İ•…Ñ¡•ÉY…±¥í¥¹ĞÄÙ}ĞÑ•µÁ•É…ÑÕÉ••¹Ñ¥íÕ¥¹ĞÌÉ}ĞÁÉ•ÍÍÕÉ•A„ì4(€€€‰½½°İ…Ñ•ÉQ•µÁ•É…ÑÕÉ•Y…±¥í¥¹ĞÄÙ}Ğİ…Ñ•ÉQ•µÁ•É…ÑÕÉ••¹Ñ¥íÕ¥¹Ğá}Ğİ…Ñ•ÉQ•µÁ•É…ÑÕÉ•M…µÁ±”ì4(€€€‰½½°Í½¹…ÉI•…‘¥¹Y…±¥íÕ¥¹ĞÄÙ}ĞÍ½¹…É•ÁÑ¡´±Í½¹…ÉI…¹•´íÕ¥¹Ğá}ĞÍ½¹…É!•…±Ñ ±Í½¹…É±…Éµ±…Ìì4(€€€‰½½°Í½¹…ÉÑ¥Ù”ì€€€€€€¼¼M½¹…È½Á•É…Ñ¥¹œÍÑ…ÑÕÌ¸4(€€€‰½½°¡•…‘¥¹Y…±¥ì€€€€€¼¼!•…‘¥¹œÙ…±¥½¹±äİ¡•¸™É•Í ÍÑ…ÑÕÌ½¹…Ø™±…Ì…É•”¸4(€€€‰½½°±½İ	…ÑÑ•Éäì€€€€€€€¼¼	½…ĞµÉ•Á½ÉÑ•±½Ü‰…ÑÑ•Éä½IQ ™±…œ¸4(€€€‰½½°É¥Ñ¥…±	…ÑÑ•Éäì€€¼¼	½…ĞµÉ•Á½ÉÑ•É¥Ñ¥…°‰…ÑÑ•ÉäMQ=@™±…œ¸4(€€€‰½½°™…¥±Í…™•Ñ¥Ù”ì€€¼¼	½…ĞµÉ•Á½ÉÑ•™…¥±Í…™”™±…œ½µ½‘”¸4(4(€€€‰½½°Í‘…É‘I•…‘äì€€€€€€¼¼QÉÕ”İ¡•¸Ñ¡”É•µ½Ñ”Q…É¥Ìµ½Õ¹Ñ•¸4(€€€‰½½°½™™±¥¹•5…ÁI•…‘äì€€¼¼QÉÕ”İ¡•¸Ñ¡”½™™±¥¹”µµ…Àµ…¹¥™•ÍĞ¥Ì¥¹ÍÑ…±±•¸4(4(€€€™±½…Ğ‰…ÑÑ•ÉåY½±Ñ…”ì€€¼¼	½…Ğ‰…ÑÑ•ÉäÙ½±Ñ…”¸4(€€€™±½…Ğ‰…ÑÑ•ÉåA•É•¹Ğì€€¼¼ÍÑ¥µ…Ñ•‰…ÑÑ•Éä¡…É”¸4(4(€€€™±½…Ğ±…Ñ¥ÑÕ‘”ì€€€€€€€€¼¼ÕÉÉ•¹ĞAL±…Ñ¥ÑÕ‘”¸4(€€€™±½…Ğ±½¹¥ÑÕ‘”ì€€€€€€€¼¼ÕÉÉ•¹ĞAL±½¹¥ÑÕ‘”¸4(4(€€€™±½…Ğ¡•…‘¥¹œì€€€€€€€€€¼¼	½…Ğ½µÁ…ÍÌ¡•…‘¥¹œ¥¸‘•É••Ì¸4(€€€™±½…ĞÍÁ••ì€€€€€€€€€€€¼¼	½…ĞÍÁ••¥¸µ•ÑÉ•ÌÁ•ÈÍ•½¹¸4(4(€€€‰½½°µ½Ñ½É1•™ÑÑ¥Ù”ì€€¼¼1•™Ğµ½Ñ½ÈÍÑ…ÑÕÌ¸4(€€€‰½½°µ½Ñ½ÉI¥¡ÑÑ¥Ù”ì€¼¼I¥¡Ğµ½Ñ½ÈÍÑ…ÑÕÌ¸4(4(€€€‰½½°•µ•É•¹åMÑ½Àì€€€€€€€€€€€€€¼¼QÉÕ”İ¡•¸Ñ¡”‰½…ĞÉ•Á½ÉÑÌMQ=@…Ñ¥Ù”¸4(€€€‰½½°•µ•É•¹åMÑ½Á½¹™¥Éµ•ì€€€€¼¼QÉÕ”½¹±äİ¡•¸Ñ•±•µ•ÑÉä½¹™¥ÉµÌÑ¡”ÕÉÉ•¹Ğ•µ•É•¹äµÍÑ½ÀÍÑ…Ñ”€¡…Ñ¥Ù”½ÈÉ•±•…Í•¤¸4(€€€‰½½°…ÑÕ…Ñ½ÉM…™•ÑåI•…‘äì€€€€€€¼¼É•Í …ÕÑ¡•¹Ñ¥…Ñ•Ñ•±•µ•ÑÉäµÕÍĞÍ•ĞÑÉÕ”½¹±ä…™Ñ•È‰½…Ğ¥¹Ñ•É±½­ÌÁ…ÍÌ¸4(€€€€¼¼HÌÁ‘¥ÍÁ±…äµ½¹±äÕ¹½µµ¥ÍÍ¥½¹•Í…™•Ñä½‰Í•ÉÙ…Ñ¥½¸¸Q¡•Í”™¥•±‘Ì4(€€€€¼¼9YHÁ…ÉÑ¥¥Á…Ñ”¥¸ÍÑ½À½¹™¥Éµ…Ñ¥½¸½È…ÑÕ…Ñ½ÉM…™•ÑåI•…‘ä¸4(€€€‰½½°‘¥…¹½ÍÑ¥É•Í ì4(€€€Õ¥¹Ğá}Ğ‘¥…¹½ÍÑ¥I•…Í½¸ì4(€€€Õ¥¹ĞÄÙ}Ğ‘¥…¹½ÍÑ¥±…Ìì4)ôì4(4(¼¼±½‰…°‰½…ĞÍÑ…Ñ”Í¡…É•‰•Ñİ••¸Í½™Ñİ…É”µ½‘Õ±•Ì¸4)•áÑ•É¸	½…ÑMÑ…Ñ”‰½…ÑMÑ…Ñ”ì4(4(¼¼%¹¥Ñ¥…±¥Í”Ñ¡”‰½…ĞÍÑ…Ñ”İ¥Ñ Í…™”‘•™…Õ±ĞÙ…±Õ•Ì¸4)Ù½¥¥¹¥Ñ¥…±¥Í•	½…ÑMÑ…Ñ” ¤ì4(•¹‘¥˜4
