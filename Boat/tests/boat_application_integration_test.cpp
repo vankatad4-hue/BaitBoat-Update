@@ -9,7 +9,15 @@ static unsigned disables=0;
 static bool readSample(BoatHardwareSample &s){
  if(!available)return false;
  if(!holdStamp)stamp=fakeNow;
- s={{422000000,275000000,1.25,90,true,true,true,true},stamp,fakeNow,fakeNow,true,physical,true,true,true,idle,true,true,output.left!=0,output.right!=0,70,3,8,12000,0,fakeNow,fakeNow,true,true,BOAT_BATTERY_GREEN,false};
+ s={};
+ s.fix={422000000,275000000,1.25,90,true,true,true,true};
+ s.safetyAt=stamp;s.gnssAt=s.headingAt=fakeNow;
+ s.safetyValid=true;s.physicalStopReleased=physical;s.batteryHealthy=s.stationary=true;
+ s.releaseInterlocks=true;s.releaseIdle=idle;s.watchdogReady=s.outputFeedbackValid=true;
+ s.leftMotorActive=output.left!=0;s.rightMotorActive=output.right!=0;
+ s.batteryPercent=70;s.gpsFixType=3;s.satellites=8;s.batteryMillivolts=12000;
+ s.batteryAt=s.speedAt=fakeNow;s.voltageValid=s.speedValid=true;
+ s.batteryBand=BOAT_BATTERY_GREEN;
  return true;
 }
 static bool apply(const BoatActuatorOutput &o,uint16_t lease){

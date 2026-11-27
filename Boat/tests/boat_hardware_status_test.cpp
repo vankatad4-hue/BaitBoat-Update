@@ -2,7 +2,12 @@
 #include <cassert>
 #include <iostream>
 int main(){
- BoatHardwareSample s={{0,1000,1,90,true,true,true,true},0,0,0,true,true,true,true,true,true,true,true,false,false,70,3,8,12000,0,0,0,true,true,BOAT_BATTERY_GREEN,false};
+ BoatHardwareSample s{};
+ s.fix={0,1000,1,90,true,true,true,true};
+ s.safetyValid=s.physicalStopReleased=s.batteryHealthy=s.stationary=true;
+ s.releaseInterlocks=s.releaseIdle=s.watchdogReady=s.outputFeedbackValid=true;
+ s.batteryPercent=70;s.gpsFixType=3;s.satellites=8;s.batteryMillivolts=12000;
+ s.voltageValid=s.speedValid=true;s.batteryBand=BOAT_BATTERY_GREEN;
  auto p=boatHardware_status(s,0,true,MC_IDLE,false,true);
  assert(p.stopState==1&&p.boatMode==0&&!(p.safetyFlags&1));
  p=boatHardware_status(s,0,false,MC_IDLE,false,true);assert(p.stopState==0&&(p.safetyFlags&1));

@@ -2,7 +2,15 @@
 #include <cassert>
 #include <iostream>
 static BoatHardwareSample sample(uint32_t t){
- return {{0,1000,1,90,true,true,true,true},t,t,t,true,true,true,true,true,true,true,true,false,false,75,3,8,12000,0,0,0,true,true,BOAT_BATTERY_GREEN,false};
+ BoatHardwareSample s{};
+ s.fix={0,1000,1,90,true,true,true,true};
+ s.safetyAt=s.gnssAt=s.headingAt=t;
+ s.safetyValid=s.physicalStopReleased=s.batteryHealthy=s.stationary=true;
+ s.releaseInterlocks=s.releaseIdle=s.watchdogReady=s.outputFeedbackValid=true;
+ s.batteryPercent=75;s.gpsFixType=3;s.satellites=8;s.batteryMillivolts=12000;
+ s.batteryAt=s.speedAt=0;s.voltageValid=s.speedValid=true;
+ s.batteryBand=BOAT_BATTERY_GREEN;
+ return s;
 }
 int main(){
  BoatActuatorSupervisor s;auto hw=sample(0);

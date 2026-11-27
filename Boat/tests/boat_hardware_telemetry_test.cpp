@@ -3,7 +3,14 @@
 #include <cassert>
 #include <iostream>
 int main(){
- BoatHardwareSample s={{422000000,275000000,1.25,359.999,true,true,true,true},10,10,10,true,true,true,true,true,true,true,true,false,false,70,3,8,12000,125,10,10,true,true,BOAT_BATTERY_GREEN,false};
+ BoatHardwareSample s{};
+ s.fix={422000000,275000000,1.25,359.999,true,true,true,true};
+ s.safetyAt=s.gnssAt=s.headingAt=10;
+ s.safetyValid=s.physicalStopReleased=s.batteryHealthy=s.stationary=true;
+ s.releaseInterlocks=s.releaseIdle=s.watchdogReady=s.outputFeedbackValid=true;
+ s.batteryPercent=70;s.gpsFixType=3;s.satellites=8;s.batteryMillivolts=12000;
+ s.speedCmPerSecond=125;s.batteryAt=s.speedAt=10;
+ s.voltageValid=s.speedValid=true;s.batteryBand=BOAT_BATTERY_GREEN;
  auto b=boatHardware_telemetry(s,11,255,4,MC_RETURNING);
  assert(b.count==4&&b.payload[0].batteryMillivolts==12000&&b.payload[1].headingCentidegrees==35999);
  assert(b.payload[2].coordinateSample==255&&b.payload[3].coordinateSample==255&&b.payload[2].horizontalAccuracyCm==125);
