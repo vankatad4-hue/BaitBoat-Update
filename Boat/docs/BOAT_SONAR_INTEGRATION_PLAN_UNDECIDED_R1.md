@@ -1,8 +1,10 @@
-# Sonar integration plan — preferred candidate selected (no implementation)
+# Sonar integration plan — preferred candidate and software input path
 
-**Owner constraint:** plan sonar only. No purchase authorization, data parser, firmware integration, UI modifications, GPIO assignment, sounder/transducer wiring or separate display is authorized by this document.
+**Owner constraint:** candidate selection is not purchase, wiring, or electrical approval. Software-only NMEA DBT parsing, compact depth telemetry, and Remote depth display integration are authorized; no GPIO assignment, transducer power, hardware activation, or full echo transport is approved.
 
-**Sonar choice — 2026-11-27:** Owner-selected preferred candidate: Open Echo TUSS4470 + Lucky D+T wired 200 kHz / 45° transducer, including live water temperature measurement. Electrical compatibility, probe pinout, temperature sensor characteristics, shallow-water performance and CHIRP capability remain unverified. Implementation and procurement remain deferred; no firmware, wiring or other hardware decisions changed.
+**Sonar choice — 2026-11-27:** Owner-selected preferred candidate: [Open Echo TUSS4470](https://github.com/Neumi/open_echo) + Lucky D+T wired 200 kHz / 45° transducer, including live water temperature measurement. Electrical compatibility, probe pinout, temperature sensor characteristics, shallow-water performance and CHIRP capability remain unverified.
+
+**Software integration — 2026-11-27:** The [Open Echo repository](https://github.com/Neumi/open_echo) provides an [NMEA DBT output sketch](https://github.com/Neumi/open_echo/blob/main/TUSS4470_shield_002/arduino/NMEA_DBT_OUT/NMEA_DBT_OUT.ino) that emits depth-only serial sentences. Boat now has a bounded checksum-validating DBT decoder and normalized sensor ingress; Remote receives the compact depth summary. The DBT path does not carry water temperature, range configuration, or raw echo amplitudes; the current sketch calculates depth with a fixed 1450 m/s sound speed. A verified dedicated UART adapter, depth accuracy evaluation and target validation are still required before live readings.
 
 ## Required end-user behaviour
 - Full fishfinder-style echogram with real *fish arches* on the existing single **4.3-inch 800×480 Waveshare Remote display**. No separate sonar screen.
@@ -28,4 +30,4 @@ The Remote continues to have one display. Radio telemetry architecture must dist
 ## Development sequencing after model selection
 A. Freeze the device/API/power/transducer and data transport. B. Capture real sample records under a permitted interface. C. Budget RF/data and implement isolated receive/decoder (separate from Boat motor and watchdog logic). D. Render calibrated echogram, fish-arch history and bottom trace with LVGL on the existing screen. E. Test against recorded captures and measured on-water echoes with manual/autopilot view. F. Check impact on battery, radio and watchdog deadlines. 
 
-**Today:** documentation and interface reservation only; **no sonar source code, module integration or electronics assigned.**
+**Current:** software-only DBT decoder and compact depth telemetry are prepared. No physical reader, UART pin assignment, module wiring, transducer drive, or echogram decoder is active.

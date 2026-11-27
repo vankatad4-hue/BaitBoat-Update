@@ -1009,3 +1009,8 @@ Next software step: connect the commissioned Boat sample owner to `TrackerSensor
 ### R30H-124W sensor-owner handoff — 2026-11-27
 
 `Flytec_Boat.ino` now copies the optional sensor snapshot on the existing loop/I²C owner and passes it into `BoatApplicationPort`. The application merges only sonar, water-temperature and BMP280 weather fields into the telemetry batch; the snapshot does not participate in actuator safety. The default firmware still has no commissioned `BoatPhysicalDriver`, so production telemetry through this path is not claimed. Remaining software: protocol/host regressions and both target builds; hardware-dependent drivers await verified interfaces. Map remains postponed.
+
+
+### R30H-124W Open Echo DBT parser — 2026-11-27
+
+Added the [Open Echo repository](https://github.com/Neumi/open_echo) reference and inspected its NMEA DBT sketch. Boat now parses bounded/checksummed DBT serial records through `OpenEchoDbtDecoder` and `TrackerSensorPort::feedOpenEchoDbtByte`, then publishes compact depth-only telemetry through the existing Boat/Remote path. It uses unknown range and reduced quality because DBT does not provide either. The reviewed sketch uses fixed 1450 m/s sound speed and emits no water temperature or echo amplitudes. No physical UART pins are assigned and the method is not connected to a serial port yet. Need unit/protocol regression and build verification, then target depth accuracy, cable temperature output and UART level/pin acceptance when boards arrive. Keep map integration postponed.

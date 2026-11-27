@@ -921,6 +921,12 @@ The Boat physical worker, managed E22 admission, quiet-history proof and Remote 
 - The default build still has no commissioned `BoatPhysicalDriver`; production sensor telemetry over the application path is therefore not claimed. I²C remains on the existing loop owner and worker activation remains disabled.
 
 
+### R30H-124W Open Echo DBT input — 2026-11-27
+
+- Added [Open Echo](https://github.com/Neumi/open_echo) as a sonar reference and inspected its NMEA DBT firmware. Boat now has a bounded checksum-validated DBT sentence decoder and `TrackerSensorPort::feedOpenEchoDbtByte` normalized input path; it publishes depth-only data with unknown range and reduced/unknown echo-quality status.
+- Open Echo DBT does not transmit water temperature or raw echo strength, and the current sketch uses a fixed 1450 m/s sound speed. The parser is not connected to a UART because the shield pinout/levels and Boat connector assignment are not verified. No live sensor or depth-accuracy claim.
+
+
 
 
 

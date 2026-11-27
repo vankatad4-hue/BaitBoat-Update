@@ -19,7 +19,7 @@ inline BoatTelemetryBatch boatHardware_telemetry(const BoatHardwareSample &s,uin
   auto &lat=b.payload[b.count++];lat.kind=RADIO_PAYLOAD_GNSS_LATITUDE;lat.coordinateSample=id;lat.coordinateE7=f.latE7;lat.horizontalAccuracyCm=(uint16_t)std::ceil(f.accuracyM*100.0);
   auto &lon=b.payload[b.count++];lon.kind=RADIO_PAYLOAD_GNSS_LONGITUDE;lon.coordinateSample=id;lon.coordinateE7=f.lonE7;
  }
- if(s.sonarValid&&(uint32_t)(now-s.sonarAt)<=1500U&&(s.sonarHealth==1||s.sonarHealth==2)&&s.sonarRangeCm>0&&s.sonarDepthCm<=s.sonarRangeCm&&(s.sonarAlarmFlags&0xF0U)==0){
+ if(s.sonarValid&&(uint32_t)(now-s.sonarAt)<=1500U&&(s.sonarHealth==1||s.sonarHealth==2)&&(!s.sonarRangeCm||s.sonarDepthCm<=s.sonarRangeCm)&&(s.sonarAlarmFlags&0xF0U)==0){
   auto &sonar=b.payload[b.count++];sonar.kind=RADIO_PAYLOAD_SONAR_SUMMARY;sonar.depthCm=s.sonarDepthCm;sonar.sonarRangeCm=s.sonarRangeCm;
   sonar.sonarHealth=s.sonarHealth;sonar.sonarAlarmFlags=s.sonarAlarmFlags;sonar.sonarSample=s.sonarSample;
  }

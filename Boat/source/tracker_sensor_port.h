@@ -12,6 +12,7 @@
 #include "carrier_sensor_math.h"
 #include "boat_hardware_supervisor.h"
 #include "ina231_acquisition.h"
+#include "open_echo_dbt.h"
 // Logic-only sensor driver. Caller must establish verified GNSS power/reset
 // and choose exact UART/I2C header pins. Does not set safety or stationary flags.
 struct TrackerSensorConfig{
@@ -35,6 +36,12 @@ public:
  // Normalized input boundary for a future selected sonar driver. These
  // methods perform no bus I/O and do not select a sonar protocol or hardware.
  bool publishSonarSummary(uint16_t depthCm,uint16_t rangeCm,uint8_t health,uint8_t alarmFlags,uint8_t sample,uint32_t now);
+ // Feed bytes from a dedicated, verified Open Echo NMEA-DBT UART adapter.
+ // This parser call performs no UART reads and does not assign board pins.
+ bool feedOpenEchoDbtByte(char byte,uint32_t now);
+ // Bounded adapter for an owner-supplied dedicated serial stream. The caller
+ // chooses and verifies that stream/pin mapping; this method never configures it.
+ void pollOpenEchoDbt(Stream &stream,uint32_t now);
  void invalidateSonar(){sonarValid_=false;}
  // Accepts already converted Celsius from the eventual waterproof probe.
  // No water-temperature sensor model or electrical interface is selected yet.
@@ -76,6 +83,7 @@ private:
  bool bmpReady_=false,bmpValid_=false;uint8_t bmpAddress_=0;
  Bmp280Calibration bmpCal_{};int32_t bmpTemp_=0;uint32_t bmpPressure_=0,bmpAt_=0,bmpPollAt_=0;
  bool sonarValid_=false;uint16_t sonarDepthCm_=0,sonarRangeCm_=0;uint8_t sonarHealth_=0,sonarAlarmFlags_=0,sonarSample_=0;uint32_t sonarAt_=0;
+ OpenEchoDbtDecoder openEchoDbt_{};uint8_t openEchoSample_=0;
  bool waterTemperatureValid_=false;int16_t waterTemperatureCentiC_=0;uint8_t waterTemperatureSample_=0;uint32_t waterTemperatureAt_=0;
  bool configured_=false,imuReady_=false,headingValid_=false,voltageValid_=false,adcPending_=false;
  bool ina231Ready_=false;

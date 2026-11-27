@@ -10,6 +10,8 @@ The preferred candidate is **Open Echo TUSS4470 + Lucky D+T 200 kHz / 45° wired
 
 Boat accepts a normalized, compact depth summary through `TrackerSensorPort::publishSonarSummary`; that method does not read hardware or assume a vendor protocol. The Remote receives depth, range, health, alarm flags, and sample ID. It shows the depth only while fresh. The plot is an empty scale and explicitly says the module/protocol is unselected. It draws no synthetic arches or bottom trace.
 
+The Open Echo repository offers an Arduino NMEA DBT output sketch. `OpenEchoDbtDecoder` parses its checksummed serial `$??DBT` sentences, uses the meter field, and rejects malformed, out-of-range, or stale partial records. `TrackerSensorPort::feedOpenEchoDbtByte` publishes a depth-only summary with unknown range and degraded/unknown echo quality. A verified UART adapter can feed that method later; this code does not assign UART pins or connect hardware. The current sketch computes depth with a fixed 1450 m/s sound-speed value and its DBT sentence carries neither measured water temperature nor raw echo amplitudes; shallow-water accuracy must be measured before trusting the displayed value.
+
 The current radio is suitable only for compact measurements. Do not send raw CHIRP echo profiles over the control/telemetry links. A future sonar selection must provide lawful documented data access and recorded samples before any driver or echogram decoder is added.
 
 ## Water temperature
@@ -34,3 +36,9 @@ The existing Boat BMP280 driver probes addresses 0x76/0x77, requires chip ID 0x5
 2. Determine whether the D+T water-temperature output is accessible and document its pinout, voltage, calibration and waterproof connector behaviour.
 3. Add protocol/host regressions and build both targets for the new Boat-to-Remote path. The default firmware still has no commissioned `BoatPhysicalDriver`, so this path is prepared but does not claim production RF telemetry.
 4. After boards are available, verify GY-91 silicon/address, pressure against a reference, probe calibration, sonar depth against known distances, bus timing, and radio freshness on the actual units.
+
+## Open Echo references
+
+- [Open Echo repository](https://github.com/Neumi/open_echo) — project overview, RAW Data and NMEA DBT firmware choices, and desktop echogram tools.
+- [TUSS4470 shield guide](https://github.com/Neumi/open_echo/blob/main/TUSS4470_shield_002/README.md) — UNO-specific interface and power notes.
+- [NMEA DBT output sketch](https://github.com/Neumi/open_echo/blob/main/TUSS4470_shield_002/arduino/NMEA_DBT_OUT/NMEA_DBT_OUT.ino) — serial depth output; this mode does not include temperature or raw echo intensity.

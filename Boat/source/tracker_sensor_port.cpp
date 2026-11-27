@@ -130,10 +130,27 @@ void TrackerSensorPort::copySensors(BoatHardwareSample &s,uint32_t now)const{
 }
 
 bool TrackerSensorPort::publishSonarSummary(uint16_t depthCm,uint16_t rangeCm,uint8_t health,uint8_t alarmFlags,uint8_t sample,uint32_t now){
- // A selected decoder must call this only for a coherent, current depth
- // sample. Health 1/2 follows the existing compact summary contract.
- if((health!=1&&health!=2)||(alarmFlags&0xF0U)!=0||!rangeCm||depthCm>rangeCm){sonarValid_=false;return false;}
+ // Range zero means the source protocol reports depth only. If range is known,
+ // reject an impossible depth. Health 1/2 follows the compact summary contract.
+ if((health!=1&&health!=2)||(alarmFlags&0xF0U)!=0||(rangeCm&&depthCm>rangeCm)){sonarValid_=false;return false;}
  sonarDepthCm_=depthCm;sonarRangeCm_=rangeCm;sonarHealth_=health;sonarAlarmFlags_=alarmFlags;sonarSample_=sample;sonarAt_=now;sonarValid_=true;return true;
+}
+
+bool TrackerSensorPort::feedOpenEchoDbtByte(char byte,uint32_t now){
+ uint16_t depthCm=0;
+ if(!openEchoDbt_.feed(byte,now,depthCm))return false;
+ // NMEA DBT supplies depth only; range, alarms and echo quality are unknown.
+ // Health 2 keeps this compact depth-only source visibly distinct from a
+ // future reader that can validate the raw echo profile.
+ return publishSonarSummary(depthCm,0,2,0,++openEchoSample_,now);
+}
+
+void TrackerSensorPort::pollOpenEchoDbt(Stream &stream,uint32_t now){
+ // Cap parsing work per loop so a noisy or disconnected serial stream cannot
+ // monopolize Boat radio, watchdog, or application servicing.
+ for(uint8_t budget=0;budget<96U&&stream.available()>0;++budget){
+  const int byte=stream.read();if(byte>=0)feedOpenEchoDbtByte((char)byte,now);
+ }
 }
 
 bool TrackerSensorPort::publishWaterTemperature(int16_t temperatureCentiC,uint8_t sample,uint32_t now){
