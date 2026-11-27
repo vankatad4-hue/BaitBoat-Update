@@ -1,6 +1,6 @@
 # Boat and Remote GPIO hardware assignment register R1
 
-**Branch:** `platformio-unified-r30h20`  
+**Branch:** `platformio-unified-r30h20`
 **Status:** software design allocation only. The physical boards, headers, cable orientation, logic levels, and peripheral revisions have not been inspected or signed. A listed candidate is not permission to energize it.
 
 This register consolidates the current source maps and board-owned peripherals. It treats every usable GPIO as assigned to a function or explicitly reserved. It does not allocate pins to unreviewed hardware just to remove a `reserved` entry.
@@ -66,3 +66,4 @@ Remote receives sonar summaries over the existing authenticated radio telemetry 
 - [Remote GPIO map](../Remote/docs/REMOTE_R30H_10_PIN_MAP.csv)
 - [Remote Waveshare resource audit](../Remote/New_Handheld_Remote/PCB/WAVESHARE_GPIO_RESOURCE_AUDIT_R1.md)
 - [Open Echo wiring feasibility gate](../Boat/docs/BOAT_OPEN_ECHO_DIRECT_WIRING_GATE_R1.md)
+
