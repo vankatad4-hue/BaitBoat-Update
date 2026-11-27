@@ -72,6 +72,8 @@ jobs:
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -Itests/r30h117_stubs -IRemote/source \
             Remote/source/e22_uart_link.cpp tests/r30h117_e22_test.cpp -o /tmp/remote_e22_managed
           /tmp/remote_e22_managed
+      - name: R30H-124 Remote production worker activation lock
+        run: python3 -m unittest Remote/tests/test_r30h124_worker_activation_lock.py -v
       - name: R30H-61 bounded mailbox FIFO and overflow host test
         run: |
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror Remote/tests/transport_mailbox_test.cpp -o /tmp/remote_transport_mailbox_test
