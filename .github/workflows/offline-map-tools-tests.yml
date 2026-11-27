@@ -1,7 +1,7 @@
 name: Offline Map Tool Tests
 on:
   push:
-    branches: [hardware-ready-dual-radio-r1]
+    branches: [hardware-ready-dual-radio-r1, platformio-unified-r30h20]
     paths:
       - "Remote/tools/**"
       - ".github/workflows/offline-map-tools-tests.yml"

@@ -26,5 +26,15 @@ class AreaPlannerTests(unittest.TestCase):
         self.assertEqual(plan["raw_storage_bytes"], plan["unique_tile_count"] * 131072)
         self.assertGreaterEqual(plan["recommended_free_bytes_with_10pct_margin"], plan["raw_storage_bytes"])
 
+    def test_rejects_non_finite_geometry(self):
+        with self.assertRaises(ValueError):
+            square_bounds(float("nan"), 25.0, 1000)
+        with self.assertRaises(ValueError):
+            square_bounds(43.0, 25.0, float("inf"))
+
+    def test_rejects_plans_beyond_firmware_index_capacity(self):
+        with self.assertRaisesRegex(ValueError, "6000-tile"):
+            build_plan(0.0, 0.0, 1_000_000.0, [22], "source", "attribution", "https://example.org/licence")
+
 if __name__ == "__main__":
     unittest.main()

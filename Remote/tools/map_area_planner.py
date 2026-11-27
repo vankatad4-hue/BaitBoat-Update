@@ -12,11 +12,14 @@ from pathlib import Path
 
 TILE_SIZE = 256
 BYTES_PER_TILE = TILE_SIZE * TILE_SIZE * 2
+MAX_PACK_TILES = 6000  # Match the firmware coverage-index and importer limits.
 MERCATOR_LIMIT = 85.05112878
 METERS_PER_DEG_LAT = 111_320.0
 
 
 def square_bounds(center_lat, center_lon, side_m=1000.0):
+    if not all(math.isfinite(value) for value in (center_lat, center_lon, side_m)):
+        raise ValueError("latitude, longitude and side length must be finite")
     if not (-90 <= center_lat <= 90):
         raise ValueError("latitude must be between -90 and 90")
     if not (-180 <= center_lon <= 180):
@@ -53,14 +56,22 @@ def lat_to_tile_y(lat, zoom):
 def tiles_for_bounds(bounds, zoom):
     if not (0 <= zoom <= 22):
         raise ValueError("zoom must be 0..22")
+    if not all(math.isfinite(bounds[key]) for key in ("west", "east", "south", "north")):
+        raise ValueError("tile bounds must be finite")
     n = 1 << zoom
     x0 = math.floor((bounds["west"] + 180.0) / 360.0 * n)
     x1 = math.floor((bounds["east"] + 180.0) / 360.0 * n)
     y0 = lat_to_tile_y(bounds["north"], zoom)
     y1 = lat_to_tile_y(bounds["south"], zoom)
-    ys = range(min(y0, y1), max(y0, y1) + 1)
-    # Inclusive range in unwrapped x handles a dateline crossing and wraps x.
-    xs = sorted({x % n for x in range(x0, x1 + 1)})
+    y_start, y_end = min(y0, y1), max(y0, y1)
+    y_count = y_end - y_start + 1
+    # Count unique wrapped x tiles before building a range, including areas
+    # wider than a world, so huge requests fail without allocating huge lists.
+    x_count = min(n, x1 - x0 + 1)
+    if x_count * y_count > MAX_PACK_TILES:
+        raise ValueError(f"zoom {zoom} exceeds the {MAX_PACK_TILES}-tile firmware pack limit")
+    ys = range(y_start, y_end + 1)
+    xs = sorted({(x0 + offset) % n for offset in range(x_count)})
     return [(x, y) for x in xs for y in ys]
 
 
@@ -72,6 +83,8 @@ def build_plan(lat, lon, side_m, zooms, source_name, attribution, licence_url):
     tile_set = set()
     for z in sorted(set(zooms)):
         coords = tiles_for_bounds(bounds, z)
+        if len(tile_set) + len(coords) > MAX_PACK_TILES:
+            raise ValueError(f"plan exceeds the {MAX_PACK_TILES}-tile firmware pack limit")
         per_zoom[str(z)] = len(coords)
         tile_set.update((z, x, y) for x, y in coords)
     total = len(tile_set)

@@ -6,6 +6,19 @@ from pathlib import Path
 from PIL import Image
 from map_area_planner import build_plan
 
+MANIFEST_LIMIT = 2048
+FIELD_LIMIT_BYTES = 255
+
+def validate_metadata(style, provider, attribution, licence_url):
+    if style not in ("street", "satellite"):
+        raise ValueError("Style must be street or satellite")
+    fields = (("provider", provider), ("attribution", attribution), ("licence URL", licence_url))
+    for name, value in fields:
+        if not value or "\0" in value or any(ord(ch) < 32 and ch != "\t" for ch in value):
+            raise ValueError(f"{name} must be non-empty single-line text")
+        if len(value.encode("utf-8")) > FIELD_LIMIT_BYTES:
+            raise ValueError(f"{name} exceeds the firmware's {FIELD_LIMIT_BYTES}-byte field limit")
+
 def mbtiles_tms_to_xyz_y(tms_y, zoom):
     return (1 << zoom) - 1 - tms_y
 
@@ -24,12 +37,17 @@ def single_line(value):
 
 def export_area(mbtiles_path,output_dir,style,lat,lon,side_m,zooms,provider,attribution,licence_url):
     provider=single_line(provider);attribution=single_line(attribution);licence_url=single_line(licence_url)
+    validate_metadata(style,provider,attribution,licence_url)
     if not zooms:raise ValueError("At least one zoom level is required")
     plan=build_plan(lat,lon,side_m,zooms,provider,attribution,licence_url)
     wanted={(t["z"],t["x"],t["y"]) for t in plan["tiles"]}
     root=Path(output_dir);maps=root/"maps";tile_root=maps/style;tile_root.mkdir(parents=True,exist_ok=True)
     db=sqlite3.connect(f"file:{Path(mbtiles_path).resolve()}?mode=ro",uri=True)
     metadata=dict(db.execute("SELECT name,value FROM metadata"));exported=0;missing=[];index_rows=[]
+    # Remove the completion marker before mutating tile files. An interrupted
+    # export must never leave an older manifest advertising mixed tile data.
+    manifest_path=maps/"manifest.txt"
+    if manifest_path.exists():manifest_path.unlink()
     try:
         for z,x,y in sorted(wanted):
             tms_y=mbtiles_tms_to_xyz_y(y,z)
@@ -52,7 +70,10 @@ def export_area(mbtiles_path,output_dir,style,lat,lon,side_m,zooms,provider,attr
         f"exported_tile_count={exported}",f"missing_tile_count={len(missing)}","coverage_index=coverage_index.csv",
         f"pack_complete={'true' if not missing else 'false'}",f"provider={provider}",
         f"attribution={attribution}",f"licence_url={licence_url}"]
-    (maps/"manifest.txt").write_text("\n".join(manifest)+"\n",encoding="utf-8")
+    manifest_text="\n".join(manifest)+"\n"
+    if len(manifest_text.encode("utf-8"))>=MANIFEST_LIMIT:
+        raise ValueError("Generated manifest exceeds the firmware validation limit")
+    (maps/"manifest.txt").write_text(manifest_text,encoding="utf-8")
     return plan
 
 def main():
