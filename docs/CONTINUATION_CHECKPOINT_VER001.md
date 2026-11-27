@@ -1779,3 +1779,10 @@ Run the Boat physical-worker compile, Boat response host, lifecycle, and primary
 - Prepared the existing RF latency procedure for the pending cold-start and RF-tail gates. It requires continuous independent UART/RF capture for at least 3,600 seconds, restarts the observation on any gap/fault/reset/energy or capture failure, and measures complete packet airtime and post-`LocalReady` RF tail in a separate explicitly authorized RF-only session. Compile-only airtime/profile gates remain false.
 - Local MSVC C++17 `/W4 /WX` regressions passed for quiet-history/admission, Boat mission controller/temporary override, Boat-Remote mission transport integration, and Remote mission-control ACK handling. Full Python suites passed (Boat 248, Remote 11); Common staging, radio preflight, source-layout, and diff checks passed.
 - The remaining activation work is hardware-dependent: run the prepared RF-only capture on the inspected board/module with actuators disconnected, obtain independent review of the measured profile/tail, and only then consider commissioning inputs. No RF, actuator, worker-owner, upload, or firmware-version gate was changed.
+
+### R30H-124W8.5c.2 — shared frame protocol contract follow-up (2026-11-27)
+
+- Confirmed `radio_protocol.cpp/.h` were already canonical under `Common/source` and generated for both endpoints; no extra mirrored files remained to remove. Added this invariant to the shared-source contract test and R30F verifier, and documented the shared frame API in both endpoint source guides.
+- Added concise API/process comments for CRC, HMAC, frame initialization/sealing/verification, and local tick freshness. HMAC setup failure now clears the partial digest and output tag before returning failure.
+- Fixed the R23 interface workflow push filter to include `platformio-unified-r30h20` and point the radio-protocol paths at Common, so the active branch receives that gate.
+- Local checks: shared staging 40/40, R30F verifier PASS, R30H radio preflight PASS, source-layout PASS, and 60 focused Python tests PASS. Exact-commit GitHub checks remain required after publishing; no physical or RF gate changed.

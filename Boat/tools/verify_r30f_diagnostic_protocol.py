@@ -65,8 +65,11 @@ for forbidden in ("statusReceivedAtMs=", "batteryReceivedAtMs=", "receivedAtMs=n
 ui=read("Remote/source/boat_ui.cpp")
 assert "diagnosticStatusLabel" in ui and "НЕПОТВ." in ui
 assert "diagnosticReasonBulgarian" in ui
-assert "RADIO_PROTOCOL_VERSION = 1" in read("Boat/source/radio_protocol.h")
-assert read("Boat/source/radio_protocol.h")==read("Remote/source/radio_protocol.h")
+protocol=read("Common/source/radio_protocol.h")
+assert "RADIO_PROTOCOL_VERSION = 1" in protocol
+for end in ("Boat","Remote"):
+    assert read(f"{end}/source/radio_protocol.h")==protocol
+    assert read(f"{end}/source/radio_protocol.cpp")==read("Common/source/radio_protocol.cpp")
 assert "ACTUAL_READER_COMMISSIONED = false" in read("Boat/source/boat_common_bus_readonly_port.h")
 assert "COMMON_BUS_HARDWARE_COMMISSIONED = false" in read("Boat/source/boat_common_bus_feedback.h")
 assert "SHARED_BUS_PHYSICALLY_ACCEPTED = false" in read("Boat/source/boat_shared_bus_contract.h")

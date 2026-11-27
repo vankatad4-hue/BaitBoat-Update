@@ -18,6 +18,7 @@ Active Boat hardware decisions are in [BOAT_HARDWARE_SELECTION_R20.md](../docs/B
 - `Common/source/e22_uart_link.cpp` and `e22_uart_link.h`: canonical E22 UART driver for both endpoints. Run `python Common/stage.py` to generate ignored endpoint build copies; edit only the Common files.
 - `Common/source/radio_command_codec.cpp` and `.h`: canonical command frame encoder/decoder and sequence guard shared by Boat and Remote; staged into each endpoint by the same command.
 - `Common/source/radio_key_store.h`: canonical key-store interface shared by both endpoints and generated into each endpoint by the staging command.
+- `Common/source/radio_protocol.cpp` and `.h`: canonical 32-byte frame, CRC, HMAC, and message-type contract staged for Boat and Remote.
 - `boat_home_point_nvs.*`: two-slot CRC-verified Boat-local Home persistence.
 - `mission_execution.h` / `mission_controller.h`: mission state, outbound hold on low battery, Home diversion and no-radio Home navigation.
 - `boat_hardware_supervisor.h`: motor/release output policy, one-at-a-time releases, low-battery outbound inhibit and Home-only RTH gate.

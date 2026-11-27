@@ -14,9 +14,15 @@ uint16_t radio_crc16(const uint8_t *data, size_t length) {
 }
 
 static bool hmacTag(const uint8_t key[32], const uint8_t *data, size_t length, uint8_t out[8]) {
-    uint8_t digest[32];
+    // Compute the frame tag and erase the full digest after retaining 8 bytes.
+    if (!key || !out || (!data && length)) return false;
+    uint8_t digest[32] = {};
     const mbedtls_md_info_t *info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
-    if (!info || mbedtls_md_hmac(info, key, 32, data, length, digest) != 0) return false;
+    if (!info || mbedtls_md_hmac(info, key, 32, data, length, digest) != 0) {
+        memset(digest, 0, sizeof(digest));
+        memset(out, 0, 8);
+        return false;
+    }
     memcpy(out, digest, 8);
     memset(digest, 0, sizeof(digest));
     return true;
@@ -24,6 +30,7 @@ static bool hmacTag(const uint8_t key[32], const uint8_t *data, size_t length, u
 
 void radio_frameInit(RadioFrame &f, RadioMessageType type, uint8_t src, uint8_t dst,
                      uint16_t seq, uint16_t cmdId, uint32_t nowMs, uint8_t sessionEpoch) {
+    // Clear unused payload/flags, then initialize the authenticated header.
     memset(&f, 0, sizeof(f));
     f.magic[0] = RADIO_FRAME_MAGIC0;
     f.magic[1] = RADIO_FRAME_MAGIC1;
@@ -38,12 +45,14 @@ void radio_frameInit(RadioFrame &f, RadioMessageType type, uint8_t src, uint8_t 
 }
 
 bool radio_frameSeal(RadioFrame &f, const uint8_t key[32]) {
+    // Add CRC for corruption detection before HMAC authenticates the frame.
     f.crc16 = radio_crc16((const uint8_t*)&f, offsetof(RadioFrame, crc16));
     memset(f.authTag, 0, sizeof(f.authTag));
     return hmacTag(key, (const uint8_t*)&f, offsetof(RadioFrame, authTag), f.authTag);
 }
 
 bool radio_frameVerify(const RadioFrame &f, const uint8_t key[32]) {
+    // Reject malformed or damaged frames first, then compare the HMAC in constant time.
     if (f.magic[0] != RADIO_FRAME_MAGIC0 || f.magic[1] != RADIO_FRAME_MAGIC1 ||
         f.version != RADIO_PROTOCOL_VERSION) return false;
     if (radio_crc16((const uint8_t*)&f, offsetof(RadioFrame, crc16)) != f.crc16) return false;
@@ -56,6 +65,7 @@ bool radio_frameVerify(const RadioFrame &f, const uint8_t key[32]) {
 }
 
 bool radio_tickFresh(uint16_t receivedTick, uint16_t nowTick, uint16_t maxAgeMs) {
+    // Modular subtraction tolerates one 16-bit wrap for short local-age windows.
     const uint16_t age = (uint16_t)(nowTick - receivedTick);
     return age <= maxAgeMs;
 }

@@ -65,9 +65,14 @@ struct RadioFrame {
 
 static_assert(sizeof(RadioFrame) == RADIO_FRAME_SIZE, "RadioFrame must be 32 bytes");
 
+// Calculate the frame's CRC-16/CCITT-FALSE corruption check.
 uint16_t radio_crc16(const uint8_t *data, size_t length);
+// Populate CRC then authenticate the 32-byte frame with the session key.
 bool radio_frameSeal(RadioFrame &frame, const uint8_t key[32]);
+// Validate marker/version, CRC, and HMAC before a frame reaches dispatch.
 bool radio_frameVerify(const RadioFrame &frame, const uint8_t key[32]);
+// Clear a frame and initialize its header; payload bytes start at zero.
 void radio_frameInit(RadioFrame &frame, RadioMessageType type, uint8_t src, uint8_t dst,
                      uint16_t seq, uint16_t cmdId, uint32_t nowMs, uint8_t sessionEpoch = 0);
+// Check a sender-local 16-bit tick over a short wrap-safe age interval.
 bool radio_tickFresh(uint16_t receivedTick, uint16_t nowTick, uint16_t maxAgeMs);

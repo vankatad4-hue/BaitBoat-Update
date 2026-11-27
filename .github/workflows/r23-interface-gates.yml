@@ -1,7 +1,7 @@
 name: Boat R24 host safety and interface gates
 on:
   push:
-    branches: [hardware-ready-dual-radio-r1]
+    branches: [hardware-ready-dual-radio-r1, platformio-unified-r30h20]
     paths:
       - 'Common/**'
       - 'Boat/tools/r22_interface_gate.py'
@@ -37,8 +37,8 @@ on:
       - 'Boat/source/figure8_calibration_store.h'
       - 'Boat/tests/figure8_calibration_store_test.cpp'
       - 'Common/source/e22_uart_link.cpp'
-      - 'Boat/source/radio_protocol.h'
-      - 'Remote/source/radio_protocol.h'
+      - 'Common/source/radio_protocol.cpp'
+      - 'Common/source/radio_protocol.h'
       - '.github/workflows/r23-interface-gates.yml'
   pull_request:
     paths:

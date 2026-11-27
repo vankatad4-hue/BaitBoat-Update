@@ -60,8 +60,10 @@ class SharedEndpointSourceContract(unittest.TestCase):
     def test_equal_application_wire_contract(self):
         for name in ("radio_protocol.h", "radio_protocol.cpp"):
             with self.subTest(name=name):
+                canonical = read("Common/source/" + name)
+                self.assertEqual(read("Boat/source/" + name), canonical)
                 self.assertEqual(read("Remote/source/" + name),
-                                 read("Boat/source/" + name))
+                                 canonical)
 
     def test_declared_matching_model_and_bridge(self):
         manifest = read("Remote/docs/REMOTE_BOAT_DUAL_RADIO_REDUNDANCY_R3.md")
