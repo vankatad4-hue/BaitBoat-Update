@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 50146)
+Total output lines: 962
+
 Warning: truncated output (original token count: 50401)
 Total output lines: 969
 
@@ -540,8 +543,7 @@ Shared preflight and hostile tests verify epoch gating, primary freshness, ident
 
 ## R30H-7 continuation — practical Remote GPS UTC display, host regression, unsigned physical clocks (2026-11-22)
 
-**Source implementation committed to `hardware-ready-dual-radio-r1`:** Boat M100 PRO → GNSS validation → Boat ESP32-S3 `CLOCK_REALTIME` (only behind physically signed sensor profile); a low-priority authenticated nRF subtype 9 UTC packet → Remote ESP32-S3 `CLOCK_REALTIME`;…401 tokens truncated… s, reply age <250 ms, proof gap <750 ms, RX capture age <100 ms. Generic STATUS and local nRF ACK alone cannot supply this proof. No motion/STOP authority or recovery transition yet.
-- [17b616a](https://github.com/vankatad4-hue/BaitBoat-Update/commit/17b616ab220dd08ba0061cdec15f2bb4bece023c): focused C++17 -Wall -Wextra -Werror host regression LOCAL PASS, exit 0. Local header blob 5aa7559a8b69c402d18ae1b00460c371866d6954 and test c1b4ba745cc2408b9696bebbca99b208e05ee043 match repository readback. Tests wrong sequence/epoch-generation, unauthenticated, pre-offer/replay, timeout, unstable spacing, stable proof and wraparound. This is isolated evidence logic, not cryptographic packet/PHY test.
+**Source implementation committed to `hardware-ready-dual-radio-r1`:** Boat M100 PRO → GNSS validation → Boat ESP32-S3 `CLOCK_REALTIME` (only behind physically signed sensor profile); a low-prio…146 tokens truncated…43 match repository readback. Tests wrong sequence/epoch-generation, unauthenticated, pre-offer/replay, timeout, unstable spacing, stable proof and wraparound. This is isolated evidence logic, not cryptographic packet/PHY test.
 - [badc0d9](https://github.com/vankatad4-hue/BaitBoat-Update/commit/badc0d914ad91bde9c1eeb9ced32692cd529af43): lifecycle workflow adds trigger paths and strict compile/run for recovery regression. New CI execution pending.
 
 Next W8.4b: verify latest CI by exact revision/run ID, fix integrated failures; audit existing RADIO_MSG_LINK_PROBE wire semantics before binding a signed correlated primary-only challenge/echo to mock peer, TX scope and application. Ensure STOP preemption, preserve backup pacing and outcome, revoke backup generation on qualified recovery without restoring movement, preserve RTH and terminal mission state. Add hostile/unsafe STATUS and timeout tests, verify both PlatformIO targets. Physical NOT_RUN, production Legacy-only, workers/upload locked, Boat VER014 / Remote VER028 unchanged. Append updates below.
@@ -955,6 +957,8 @@ Run the Boat physical-worker compile, Boat response host, lifecycle, and primary
 - The failure path now revokes application authority and requests runtime stop. Added a regression that pre-starts the runtime, attempts exclusive adoption, and verifies the application claim is revoked and the worker receives a stop request.
 - Exact commit `42bc4692a9ed23e40179b532311872b7f9fe448b`: Remote host [46029712743](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46029712743), dual-core lifecycle [46029712763](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46029712763), both Boat/Remote no-flash PlatformIO targets [46029712712](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46029712712), source inventory [46029712775](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46029712775), and package [46029712748](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46029712748) all PASS.
 - The regression covers software lifecycle behavior only. No production worker binding, RF signoff, upload or hardware gate changed. Continue reviewing the STOP/ACK session handoff and keep the Remote production path Legacy-only until board and radio evidence is available.
+- Follow-up STOP/ACK review confirmed the worker path consumes ACKs only after matching command/session/sequence checks, carries the local RX-capture timestamp into the async stop gate, and requires a later fresh STOP STATUS before primary confirmation. Existing `r30h124g_async_control.cpp` covers mismatched IDs, stale ACK/status, backup-only status not clearing the primary interlock, repeated STOP intent and bounded retries; no additional gap was found in this pass.
+
 
 
 
