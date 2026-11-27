@@ -1004,3 +1004,8 @@ Map integration is postponed. Current branch remains `platformio-unified-r30h20`
 - Implementation contract: [R30H-124W sensor telemetry and dual-core plan](R30H124W_SENSOR_TELEMETRY_DUAL_CORE.md). This code still needs exact-commit host regressions and Boat/Remote target CI; physical readings require the boards and selected modules.
 
 Next software step: connect the commissioned Boat sample owner to `TrackerSensorPort::copySensors`, add host regressions for subtype 10 and sensor freshness, then run the exact-commit PlatformIO, Remote/Boat host, source-inventory and package workflows. Hardware-dependent sonar and water-probe drivers wait for model/interface selection. Map stays postponed until user resumes it.
+
+
+### R30H-124W sensor-owner handoff — 2026-11-27
+
+`Flytec_Boat.ino` now copies the optional sensor snapshot on the existing loop/I²C owner and passes it into `BoatApplicationPort`. The application merges only sonar, water-temperature and BMP280 weather fields into the telemetry batch; the snapshot does not participate in actuator safety. The default firmware still has no commissioned `BoatPhysicalDriver`, so production telemetry through this path is not claimed. Remaining software: protocol/host regressions and both target builds; hardware-dependent drivers await verified interfaces. Map remains postponed.

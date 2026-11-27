@@ -915,6 +915,12 @@ The Boat physical worker, managed E22 admission, quiet-history proof and Remote 
 - See [sensor telemetry and dual-core contract](../../docs/R30H124W_SENSOR_TELEMETRY_DUAL_CORE.md). Hardware readings remain unverified until the modules/boards are available and their interfaces are selected. Boat VER014 / Remote VER028 unchanged.
 
 
+### R30H-124W sensor-owner handoff — 2026-11-27
+
+- The Boat loop now copies the optional sonar, water-temperature and BMP280 snapshot from `TrackerSensorPort` into `BoatApplicationPort`. The application merges only those telemetry fields into its publish batch; it does not use them for actuator permission or safety decisions.
+- The default build still has no commissioned `BoatPhysicalDriver`; production sensor telemetry over the application path is therefore not claimed. I²C remains on the existing loop owner and worker activation remains disabled.
+
+
 
 
 

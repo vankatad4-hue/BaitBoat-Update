@@ -109,6 +109,11 @@ void loop(){
    if(command=='x'){sensors.abortAutomaticFigure8();Serial.println("FIGURE8: aborted; no calibration applied.");}
   }
   const uint32_t now=millis();sensors.poll(now);
+  // Copy sensor values while this legacy application loop still owns Wire.
+  // Optional telemetry is handed to BoatApplicationPort as data only; no
+  // sensor bus access or actuator authority is moved into the radio worker.
+  BoatHardwareSample sensorSnapshot{};sensors.copySensors(sensorSnapshot,now);
+  application.updateSensorTelemetry(sensorSnapshot);
   const auto utc=sensors.utcSnapshot(now);
   // The sensor configuration is physically audited before begin().
   // The received GNSS serial-time sample has no PPS; UTC is COARSE,

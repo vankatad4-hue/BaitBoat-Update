@@ -19,6 +19,9 @@ class BoatApplicationPort {
 public:
  explicit BoatApplicationPort(BoatDualRadioPort &radio):radio_(radio){}
  bool attach(const BoatPhysicalDriver &driver,const BoatActuatorConfig &config);
+ // Copy optional sensor values from the existing application/I2C owner.
+ // These telemetry-only fields never enter actuator permission decisions.
+ void updateSensorTelemetry(const BoatHardwareSample &sample);
  void tick();
 private:
  static BoatApplicationPort *active_;
@@ -28,6 +31,7 @@ private:
  BoatPhysicalDriver driver_{};
  BoatActuatorSupervisor executor_;
  BoatHardwareSample sample_{};
+ BoatHardwareSample sensorTelemetry_{};
  BoatBatteryMonitor batteryMonitor_{};
  bool attached_=false,sampleOK_=false;
  // A physical driver apply() failure has uncertain actuator state. Do not

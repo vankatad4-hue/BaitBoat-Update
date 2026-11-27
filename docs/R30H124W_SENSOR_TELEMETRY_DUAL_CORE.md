@@ -23,7 +23,7 @@ The existing Boat BMP280 driver probes addresses 0x76/0x77, requires chip ID 0x5
 ## Dual-core ownership
 
 - Keep the physical GY-91/BMP280 I²C reads, future water-probe reads, and future sonar interface reads on the existing Boat application owner until bus timing and target ownership are measured.
-- Publish only copied, timestamped summaries to the future radio worker/transport queue. Do not let a second task access `Wire`, LVGL, motor state, or actuator outputs.
+- The current Boat loop now copies timestamped optional sensor summaries into `BoatApplicationPort`; if a commissioned driver is attached, that snapshot is merged into telemetry without entering actuator decisions. A future radio worker must receive only copied summaries through its bounded transport queue. Do not let a second task access `Wire`, LVGL, motor state, or actuator outputs.
 - Keep Remote UI mutation on its existing application task. The worker may receive/transfer authenticated bounded packets; it must not render sensor state.
 - Sonar depth, water temperature, and BMP pressure can use the bounded telemetry queue. Full echo images remain local to a future Boat renderer or a separately designed data link.
 - Production worker activation, RF gates, and hardware locks remain unchanged. This source work does not claim live sensor readings without the selected modules and wiring.
@@ -32,5 +32,5 @@ The existing Boat BMP280 driver probes addresses 0x76/0x77, requires chip ID 0x5
 
 1. Bench-check the preferred Open Echo shield with Lucky D+T at reduced/controlled drive, verify ESP32-S3-safe logic/analog levels, interface timing, transducer loading and target depth range; obtain recorded real echo samples.
 2. Determine whether the D+T water-temperature output is accessible and document its pinout, voltage, calibration and waterproof connector behaviour.
-3. Connect the normalized sensor snapshots to the commissioned Boat sample owner, then run protocol/host regressions and both target builds.
+3. Add protocol/host regressions and build both targets for the new Boat-to-Remote path. The default firmware still has no commissioned `BoatPhysicalDriver`, so this path is prepared but does not claim production RF telemetry.
 4. After boards are available, verify GY-91 silicon/address, pressure against a reference, probe calibration, sonar depth against known distances, bus timing, and radio freshness on the actual units.

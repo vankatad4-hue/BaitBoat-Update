@@ -4,6 +4,17 @@
 #include "boat_shared_supply_fault_guard.h"
 #include "boat_software_output_boundary.h"
 BoatApplicationPort *BoatApplicationPort::active_=nullptr;
+void BoatApplicationPort::updateSensorTelemetry(const BoatHardwareSample &s){
+ // This is a copied read-only telemetry snapshot. Keep the actuator driver's
+ // local safety sample untouched even if optional sensors are stale/bad.
+ sensorTelemetry_.weatherValid=s.weatherValid; sensorTelemetry_.weatherTemperatureCentiC=s.weatherTemperatureCentiC;
+ sensorTelemetry_.pressurePa=s.pressurePa; sensorTelemetry_.weatherAt=s.weatherAt;
+ sensorTelemetry_.sonarValid=s.sonarValid; sensorTelemetry_.sonarDepthCm=s.sonarDepthCm;
+ sensorTelemetry_.sonarRangeCm=s.sonarRangeCm; sensorTelemetry_.sonarHealth=s.sonarHealth;
+ sensorTelemetry_.sonarAlarmFlags=s.sonarAlarmFlags; sensorTelemetry_.sonarSample=s.sonarSample; sensorTelemetry_.sonarAt=s.sonarAt;
+ sensorTelemetry_.waterTemperatureValid=s.waterTemperatureValid; sensorTelemetry_.waterTemperatureCentiC=s.waterTemperatureCentiC;
+ sensorTelemetry_.waterTemperatureSample=s.waterTemperatureSample; sensorTelemetry_.waterTemperatureAt=s.waterTemperatureAt;
+}
 bool BoatApplicationPort::attach(const BoatPhysicalDriver &driver,const BoatActuatorConfig &config){
  if(attached_||active_||!driver.read||!driver.apply||!driver.disable)return false;
  driver.disable();
@@ -31,7 +42,15 @@ void BoatApplicationPort::finishManual(bool success){
  radio_.completeApplicationAction(manualRelease_,generation_,success,status.stopState,(status.safetyFlags&1)?1:0);
 }
 void BoatApplicationPort::publishData(uint32_t now){
- const auto b=boatHardware_telemetry(sample_,now,++sampleSequence_,255,radio_.missionPhase());
+ BoatHardwareSample telemetrySample=sample_;
+ telemetrySample.weatherValid=sensorTelemetry_.weatherValid;telemetrySample.weatherTemperatureCentiC=sensorTelemetry_.weatherTemperatureCentiC;
+ telemetrySample.pressurePa=sensorTelemetry_.pressurePa;telemetrySample.weatherAt=sensorTelemetry_.weatherAt;
+ telemetrySample.sonarValid=sensorTelemetry_.sonarValid;telemetrySample.sonarDepthCm=sensorTelemetry_.sonarDepthCm;
+ telemetrySample.sonarRangeCm=sensorTelemetry_.sonarRangeCm;telemetrySample.sonarHealth=sensorTelemetry_.sonarHealth;
+ telemetrySample.sonarAlarmFlags=sensorTelemetry_.sonarAlarmFlags;telemetrySample.sonarSample=sensorTelemetry_.sonarSample;telemetrySample.sonarAt=sensorTelemetry_.sonarAt;
+ telemetrySample.waterTemperatureValid=sensorTelemetry_.waterTemperatureValid;telemetrySample.waterTemperatureCentiC=sensorTelemetry_.waterTemperatureCentiC;
+ telemetrySample.waterTemperatureSample=sensorTelemetry_.waterTemperatureSample;telemetrySample.waterTemperatureAt=sensorTelemetry_.waterTemperatureAt;
+ const auto b=boatHardware_telemetry(telemetrySample,now,++sampleSequence_,255,radio_.missionPhase());
  for(uint8_t i=0;i<b.count;++i)radio_.sendHardwareTelemetry(b.payload[i],now);
 }
 void BoatApplicationPort::fault(){
