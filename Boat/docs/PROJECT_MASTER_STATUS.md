@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 50055)
+Total output lines: 906
+
 Warning: truncated output (original token count: 54209)
 Total output lines: 963
 
@@ -424,7 +427,7 @@ MDD20A vendor Figure 3 uses named signals DIR1/PWM1/DIR2/PWM2/GND, not the retro
 - The new interface contract `Boat/docs/BOAT_R7_R9_R10_R11_INTERFACE_CONTRACT.csv` maps R7 raw release, R9 MOSFET gates and R10 safety, but **all physical inter-sheet connections remain UNBUILT**. R10 internal LATCH_Q is not wired out to an approved connector.
 - **Blocking unsafe failure mode:** The external `RELEASE_EDGE_TOKEN_TBD` is **not implemented**. If this input remains HIGH, a held release request can trigger a second pulse after the 74HC221 window ends. Analog motor-/coil-current-zero comparators, independent 3V3/POR and rail-good logic, R/C pulse bounds, input filtering/setup/hold and actual actuator STOP/current-off testing are also missing. **Never connect/energize motors or solenoids from this schematic.**
 - Remaining standalone ERC blockers: R7 **15**, R9 **0** (isolated low-side stages), R10 **2** (external power), R11 **2** (external power). No combined ERC, PCB DRC, validated high-current path, physical acceptance or release.
-- Next: capture the *consumed* hardware release/zero-current rearm token (no autorepeat), independently qualify current-zero and l…4209 tokens truncated…ill be verified. Independent STOP/POR/no-repeat/current-zero modules remain unselected and no powered actuator commissioning is authorized. Sonar unselected. Remote VER028 / Boat VER014 unchanged.
+- Next: capture the *consumed* hardware release/z…55 tokens truncated…commissioning is authorized. Sonar unselected. Remote VER028 / Boat VER014 unchanged.
 
 
 ## R62 — active endpoint code review and configuration corrections (2026-11-22)
@@ -896,10 +899,11 @@ Next W7: verify all W6 CI, integrate scoped backup-only admission and shared 3-s
 
 ## Current dual-core continuation — R30H-124W8.5c.2 (2026-11-27)
 
-The active development branch is `platformio-unified-r30h20`; latest source-contract commit is `f8634e962701a06ccc2676cda0eec6499c554912` (exact CI pending). It extends the Remote production-worker lock regression to cover STOP-only worker commands, legacy-only mission preparation, and explicit authorized/exclusive-I²C startup. The six focused Python checks pass locally. The preceding ownership-lock commit `385a024` passed Remote host [45951550220](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45951550220), both primary no-flash PlatformIO targets [45951550314](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45951550314), and ZIP packaging [45951550274](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/45951550274). Earlier firmware, PlatformIO, lifecycle, dual-core bench, inventory and package results remain recorded in the continuation checkpoint.
+The active development branch is `platformio-unified-r30h20`; latest source-contract commit `f8634e962701a06ccc2676cda0eec6499c554912` passed Remote host [46028451906](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46028451906), both Boat/Remote no-flash PlatformIO targets [46028451888](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46028451888), and package [46028451895](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46028451895). It extends the Remote production-worker lock regression to cover STOP-only worker commands, legacy-only mission preparation, and explicit authorized/exclusive-I²C startup. All six focused Python checks pass locally. Follow-up status-document commit `2622743683ae25e8ab1cc82fe771420fa233c6bf` passed package [46028752172](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46028752172). Earlier firmware, PlatformIO, lifecycle, dual-core bench, inventory and package results remain recorded in the continuation checkpoint.
 
 The Boat physical worker, managed E22 admission, quiet-history proof and Remote worker/mock components are present and covered by software builds and regressions. The Remote host source-contract regression confirms production startup claims only the legacy owner, worker application commands remain STOP-only, mission preparation remains legacy-only, worker startup requires explicit authorization and exclusive I²C ownership, radio commissioning inputs remain false, and Boat's physical owner is compile-locked off. Production ownership has **not** migrated: Remote `boatRadio_begin()` still claims the legacy owner; its worker path is exercised only by isolated bench targets. The CI-only change does not modify firmware behavior. Official Boat VER014 / Remote VER028, upload and hardware gates remain unchanged.
 
 **Next dual-core work:** inspect the actual boards, E22/nRF modules, power and antenna configuration; run the uninterrupted 3,600-second RF cold-start isolation capture with actuators disconnected; then measure packet airtime and RF tail in a separate RF-only session and obtain independent review of the raw evidence. Only after those gates pass should production Boat ownership or the Remote worker path be bound and migrated, with exact-target CI and staged hardware acceptance. Target loop, I2C/SD/display and radio-poll timing also remain unmeasured; keep hardware adapters, Wire, SD and LVGL on their existing owner until timing evidence supports another boundary. See the [continuation checkpoint](../../docs/CONTINUATION_CHECKPOINT_VER001.md) and [RF latency bench procedure](BOAT_R30H_RF_LATENCY_BENCH_PROCEDURE.md).
+
 
 

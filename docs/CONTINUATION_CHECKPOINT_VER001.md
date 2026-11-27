@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 50131)
+Total output lines: 958
+
 Warning: truncated output (original token count: 106007)
 Total output lines: 1807
 
@@ -534,7 +537,7 @@ Shared preflight and hostile tests verify epoch gating, primary freshness, ident
 
 ## R30H-7 continuation — practical Remote GPS UTC display, host regression, unsigned physical clocks (2026-11-22)
 
-**Source implementation committed to `hardware-ready-dual-radio-r1`:** Boat M100 PRO → GNSS validation → Boat ESP32-S3 `CLOCK_REALTIME` (only behind physically signed sensor profile); a low-priority authenticated nRF subtype 9 UTC packet → Remote ESP32-S3 `CLOCK_REALTIME`; both `millis()` monotonic watchdog/RTH timers unmodified. The Remote LVGL status header now renders `GPS UTC: HH:MM:SS ~` only when its authenticated primary UTC q…56007 tokens truncated…https://github.com/vankatad4-hue/BaitBoat-Update/commit/6c7b6f9d9306220f36d87d18f5501f59368a898f): existing W5 lifecycle regression extended with explicit scope transfer, primary ID 2 preserved, no PAUSE before fresh backup status/phase, START/RESUME rejection, signed PAUSE ID 3 and CANCEL ID 4, correlated acceptance and retained movement lock. CI NOT_RUN/UNVERIFIED. No full host or target compilation performed here; earlier W6 timeout regression and freshness/replay tests still pending.
+**Source implementation committed to `hardware-ready-dual-radio-r1`:** Boat M100 PRO → GNSS validation → Boat ESP32-S3 `CLOCK_REALTIME` (only behind physically signed sensor profile); a low-priority authenticated nRF subtype 9 UTC packet → Remote ESP32-S3 `CLOCK_REALTIME`; both `millis()` monotonic watchdog/RTH timers unmodified. The Remote LVGL status…131 tokens truncated…d here; earlier W6 timeout regression and freshness/replay tests still pending.
 
 ### Next — R30H-124W8.4
 Verify exact CI results, fix integrated test failures, finish timeout and hostile replay/tamper/wrong-transaction/unsafe battery and safety-return regressions. Implement validated bidirectional primary recovery without automatic movement or resumption; preserve STOP/RTH and terminal mission state. Retest both PlatformIO targets and all host/bench/packaging CI. Production Legacy-only, worker/upload locks unchanged, physical timing NOT_RUN, Boat VER014 / Remote VER028 frozen. Future updates append below.
@@ -951,7 +954,8 @@ Run the Boat physical-worker compile, Boat response host, lifecycle, and primary
 ### R30H-124W8.5c.2 — production worker boundary regression expansion (2026-11-27)
 
 - Expanded `Remote/tests/test_r30h124_worker_activation_lock.py` so CI also verifies that the dormant worker application accepts STOP only, mission preparation requires the legacy owner, and worker startup requires explicit authorization, exclusive I²C ownership, and an absent legacy owner.
-- Focused local Python regression: 6/6 PASS. Exact-commit GitHub CI is pending; the earlier activation-lock commit's Remote host, Boat+Remote no-flash PlatformIO and package checks remain PASS as recorded above.
+- Focused local Python regression: 6/6 PASS. Exact commit `f8634e962701a06ccc2676cda0eec6499c554912`: Remote host [46028451906](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46028451906), both Boat/Remote PlatformIO no-flash targets [46028451888](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46028451888), and package [46028451895](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46028451895) all PASS. Status-document follow-up `2622743683ae25e8ab1cc82fe771420fa233c6bf` passed package [46028752172](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46028752172).
 - This is a source-contract safeguard only. Production startup remains legacy-owned, all Remote radio hardware signoffs remain zero, and Boat's physical-owner macro remains locked to zero. Do not bind mission/manual application traffic or activate production worker ownership until the board and radio evidence gates are completed and reviewed.
 - Next software task: use the available host/target workflows to keep reviewing and covering the dormant worker lifecycle and STOP/ACK handoff contracts. Hardware-dependent Remote application migration and actual radio commissioning wait for the boards and measured evidence.
+
 
