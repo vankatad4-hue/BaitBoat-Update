@@ -758,7 +758,7 @@ void updateBoatScreen(const BoatState &state)
         char mapStatusText[96];
         const char *mapStorageText = flytec_ui::sdStorageStatus(state.sdCardReady, state.offlineMapReady);
         const MapSourceMode sourceMode = mapSource_getMode();
-        const char *sourceText = (sourceMode == MAP_SOURCE_ONLINE && !mapSource_onlineAvailable()) ? "ONLINE НЕ Е НАЛИЧЕН — SD РЕЗЕРВА" : (sourceMode == MAP_SOURCE_AUTO ? "AUTO / SD" : "OFFLINE / SD");
+        const char *sourceText = (sourceMode == MAP_SOURCE_ONLINE && !mapSource_onlineAvailable()) ? "ONLINE НЕ Е НАЛИЧЕН — БЕЗ КАРТА" : (sourceMode == MAP_SOURCE_AUTO ? "AUTO / SD" : "OFFLINE / SD");
         snprintf(mapStatusText, sizeof(mapStatusText), "GPS: ИМА FIX  |  %s  |  %s", mapStorageText, sourceText);
         lv_label_set_text(gpsMapStatusLabel, mapStatusText);
 
@@ -778,7 +778,7 @@ void updateBoatScreen(const BoatState &state)
         lv_label_set_text(gpsCoordinatesLabel, "ШИР: --.------   ДЪЛ: --.------");
         const char *mapStorageText = flytec_ui::sdStorageStatus(state.sdCardReady, state.offlineMapReady);
         const MapSourceMode sourceMode = mapSource_getMode();
-        const char *sourceText = (sourceMode == MAP_SOURCE_ONLINE && !mapSource_onlineAvailable()) ? "ONLINE НЕ Е НАЛИЧЕН — SD РЕЗЕРВА" : (sourceMode == MAP_SOURCE_AUTO ? "AUTO / SD" : "OFFLINE / SD");
+        const char *sourceText = (sourceMode == MAP_SOURCE_ONLINE && !mapSource_onlineAvailable()) ? "ONLINE НЕ Е НАЛИЧЕН — БЕЗ КАРТА" : (sourceMode == MAP_SOURCE_AUTO ? "AUTO / SD" : "OFFLINE / SD");
         char mapStatusText[120];
         snprintf(mapStatusText, sizeof(mapStatusText), "GPS: НЯМА FIX  |  %s  |  %s", mapStorageText, sourceText);
         lv_label_set_text(gpsMapStatusLabel, mapStatusText);

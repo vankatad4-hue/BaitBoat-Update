@@ -3,6 +3,7 @@
 #include <misc/cache/instance/lv_image_cache.h>
 #include "offline_map.h"
 #include "map_projection.h"
+#include "map_source.h"
 #include "lake_storage.h"
 #include <Arduino.h>
 #include <math.h>
@@ -21,6 +22,12 @@ static double centerLat=0,centerLon=0; static bool haveCenter=false,followBoat=t
 static lv_point_t dragPoint={};static bool dragging=false;
 static int viewW=0,viewH=0;
 static lv_color_t missingColor(){return lv_color_hex(0x263746);}
+static bool offlineSourceSelected(){
+ const MapSourceMode mode=mapSource_getMode();
+ if(mode==MAP_SOURCE_ONLINE)return false;
+ if(mode==MAP_SOURCE_AUTO)return !mapSource_onlineAvailable();
+ return true;
+}
 static void hideTile(TileSlot &t){if(t.image)lv_obj_add_flag(t.image,LV_OBJ_FLAG_HIDDEN);}
 static void releaseTile(TileSlot &t){if(pendingTile==&t){offlineMap_cancelTile();pendingTile=nullptr;}if(t.image&&t.pixels){lv_image_set_src(t.image,nullptr);lv_image_cache_drop(&t.dsc);}if(t.pixels)offlineMap_freeTile(t.pixels);t.pixels=nullptr;t.valid=false;}
 // Parent deletion owns the image widgets; detach sources before freeing their buffers.
@@ -50,7 +57,7 @@ static void stepTile(){
 static void drawTiles()
 {
  if(!view)return;
- if(!offlineMap_hasMapData()){for(auto&t:tiles){hideTile(t);releaseTile(t);}return;}
+ if(!offlineSourceSelected()||!offlineMap_hasMapData()){for(auto&t:tiles){hideTile(t);releaseTile(t);}return;}
  if(!haveCenter){if(pendingTile)releaseTile(*pendingTile);for(auto&t:tiles)hideTile(t);return;}
  const MapWorldPixel c=mapProjection_toWorldPixel(centerLat,centerLon,zoomLevel);
  const double left=c.x-viewW/2.0,top=c.y-viewH/2.0;
