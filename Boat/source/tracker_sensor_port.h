@@ -33,8 +33,9 @@ public:
  bool begin(const TrackerSensorConfig &cfg);
  void poll(uint32_t now);
  void copySensors(BoatHardwareSample &sample,uint32_t now)const;
- // Normalized input boundary for a future selected sonar driver. These
- // methods perform no bus I/O and do not select a sonar protocol or hardware.
+ // Normalized acquisition-to-telemetry boundary. A future direct TUSS4470
+ // reader or the DBT adapter may publish here after validating a real depth;
+ // this method itself performs no bus I/O and assigns no pins.
  bool publishSonarSummary(uint16_t depthCm,uint16_t rangeCm,uint8_t health,uint8_t alarmFlags,uint8_t sample,uint32_t now);
  // Feed bytes from a dedicated, verified Open Echo NMEA-DBT UART adapter.
  // This parser call performs no UART reads and does not assign board pins.
