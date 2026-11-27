@@ -1,2 +1,110 @@
-1ëa¡Ñ1qêmŠ‰ËŠwµé«mzW¦zÚòršmµ©•§r«×œ…ªõÑÈZ¯]¢{Þ	©ç¢×(ž÷«µªàºg§¶‰]
-«Â+a½©nyú+EêeiÇ­¢Ü©y,¬µé‚…ªÂjyèµÊ'½êí½©nzÚ-Ê—’ÊË^˜(Z¬Jë¢´­®)àšë-mç±iËeÊ‰Þr«iË^®Z'€¥¹±Õ‘”€‰‰½…Ñ}Ñ•±•µ•ÑÉä¹ ˆ4(¥¹±Õ‘”€‰É…‘¥½}Í…™•Ñå}‘¥…¹½ÍÑ¥}ØÄ¹ ˆ4)	½…ÑQ•±•µ•ÑÉäÑ•±•µ•ÑÉäì4)ÍÑ…Ñ¥Œ½¹ÍÑ•áÁÈÕ¥¹ÐÌÉ}ÐMQQUM}5a}ôÄÔÀÀ±	QQIe}5a}ôÔÀÀÀ±==I}A%I}5a}@ôÔÀÀ±AM}5a}ôÈÀÀÀ±9Y}5a}ôÈÀÀÀ±M=9I}5a}ôÄÔÀÀì4)ÍÑ…Ñ¥Œ½¹ÍÑ•áÁÈÕ¥¹ÐÌÉ}ÐMQe}%9=MQ%}5a}}5LôØÀÀÁTì€¼¼HÌÁ€ÈµÍ•½¹¹½µ¥¹…°Q`4)ÍÑ…Ñ¥Œ‰½½°™É•Í ¡Õ¥¹ÐÌÉ}Ð¹½Ü±Õ¥¹ÐÌÉ}ÐÍÑ…µÀ±Õ¥¹ÐÌÉ}Ðµ…á”¥íÉ•ÑÕÉ¸€¡Õ¥¹ÐÌÉ}Ð¤¡¹½ÜµÍÑ…µÀ¤ðõµ…á”íô4)Ù½¥Ñ•±•µ•ÑÉå%¹¥Ð ¥íÑ•±•µ•ÑÉäõíôíÑ•±•µ•ÑÉä¹‰…ÑÑ•ÉåA•É•¹Ðô´ÄíÑ•±•µ•ÑÉä¹ÍÑ½ÁMÑ…Ñ”ôÈíô4)Ù½¥Ñ•±•µ•ÑÉåUÁ‘…Ñ”¡½¹ÍÐ	½…ÑQ•±•µ•ÑÉä€™¥íÑ•±•µ•ÑÉäõíÑ•±•µ•ÑÉä¹É••¥Ù•‘Ñ5Ìõµ¥±±¥Ì ¤íô4)‰½½°Ñ•±•µ•ÑÉåÁÁ±åI…‘¥½A…å±½…¡½¹ÍÐI…‘¥½•½‘•‘A…å±½…€™À±‰½½°ÁÉ¥µ…Éä±Õ¥¹ÐÌÉ}Ð¹½Ü¥ì4(ÍÝ¥Ñ ¡À¹­¥¹¥ì4(…Í”I%=}Ae1=}MQQULè4(€Ñ•±•µ•ÑÉä¹ÍÑ…ÑÕÍY…±¥õÑÉÕ”íÑ•±•µ•ÑÉä¹ÍÑ…ÑÕÍAÉ¥µ…ÉäõÁÉ¥µ…ÉäíÑ•±•µ•ÑÉä¹É•Á½ÉÑ•‘5½‘”õÀ¹‰½…Ñ5½‘”íÑ•±•µ•ÑÉä¹ÍÑ½ÁMÑ…Ñ”õÀ¹ÍÑ½ÁMÑ…Ñ”íÑ•±•µ•ÑÉä¹Í…™•Ñå±…ÌõÀ¹Í…™•Ñå±…Ìì4(€Ñ•±•µ•ÑÉä¹‰…ÑÑ•ÉåA•É•¹Ðô¡À¹‰…ÑÑ•ÉåA•É•¹ÐôôÈÔÔ¤ü´Äè¡¥¹Ð¥À¹‰…ÑÑ•ÉåA•É•¹ÐíÑ•±•µ•ÑÉä¹ÁÍ¥áQåÁ”õÀ¹ÁÍ¥áQåÁ”íÑ•±•µ•ÑÉä¹ÁÍM…Ñ•±±¥Ñ•ÌõÀ¹Í…Ñ•±±¥Ñ•Ìì4(€Ñ•±•µ•ÑÉä¹ÁÍ½¹¹•Ñ•ô¡À¹Í…™•Ñå±…Ì˜ ÅTððÌ¤¤„ôÀíÑ•±•µ•ÑÉä¹…ÕÑ½Á¥±½ÑÑ¥Ù”õÀ¹‰½…Ñ5½‘”ôôÅññÀ¹‰½…Ñ5½‘”ôôÈì4(€Ñ•±•µ•ÑÉä¹µ½Ñ½ÉÍÑ¥Ù”ô¡À¹Í…™•Ñå±…Ì˜ ÅTððÄ¤¤„ôÁñð¡À¹Í…™•Ñå±…Ì˜ ÅTððÈ¤¤„ôÀì4(€Ñ•±•µ•ÑÉä¹ÍÑ…ÑÕÍI••¥Ù•‘Ñ5Ìõ¹½ÜíÑ•±•µ•ÑÉä¹É••¥Ù•‘Ñ5Ìõ¹½ÜíÑ•±•µ•ÑÉä¹É…‘¥½½¹¹•Ñ•õÑÉÕ”ì4(€Ñ•±•µ•ÑÉä¹‰…ÑÑ•ÉåA•É•¹ÑY…±¥ô¡À¹‰…ÑÑ•ÉåA•É•¹Ð„ôÈÔÔ¤íÑ•±•µ•ÑÉä¹‰…ÑÑ•ÉåA•É•¹ÑI••¥Ù•‘Ñ5Ìõ¹½ÜíÉ•ÑÕÉ¸ÑÉÕ”ì4(…Í”I%=}Ae1=}	QQIe}MAè4(€Ñ•±•µ•ÑÉä¹‰…ÑÑ•ÉåY½±Ñ…•Y…±¥ô¡À¹‰…ÑÑ•Éå5¥±±¥Ù½±ÑÌ„ôÁáT¤íÑ•±•µ•ÑÉä¹‰…ÑÑ•Éå5¥±±¥Ù½±ÑÌõÀ¹‰…ÑÑ•Éå5¥±±¥Ù½±ÑÌì4(€Ñ•±•µ•ÑÉä¹‰…ÑÑ•ÉåY½±Ñ…”ô¡À¹‰…ÑÑ•Éå5¥±±¥Ù½±ÑÌôôÁáT¤üÀ¸Á˜è¡™±½…Ð¥À¹‰…ÑÑ•Éå5¥±±¥Ù½±ÑÌ¼ÄÀÀÀ¸Á˜ì4(€Ñ•±•µ•ÑÉä¹ÍÁ••ô¡À¹ÍÁ••‘µA•ÉM•½¹ôôÁáT¤üÀ¸Á˜è¡™±½…Ð¥À¹ÍÁ••‘µA•ÉM•½¹¼ÄÀÀ¸Á˜íÑ•±•µ•ÑÉä¹‰…ÑÑ•ÉåI••¥Ù•‘Ñ5Ìõ¹½ÜíÑ•±•µ•ÑÉä¹É••¥Ù•‘Ñ5Ìõ¹½ÜíÉ•ÑÕÉ¸ÑÉÕ”ì4(…Í”I%=}Ae1=}9MM}1Q%QUè4(€Ñ•±•µ•ÑÉä¹±…Ñ¥ÑÕ‘•I•½É‘Y…±¥õÑÉÕ”íÑ•±•µ•ÑÉä¹±…Ñ¥ÑÕ‘•M…µÁ±”õÀ¹½½É‘¥¹…Ñ•M…µÁ±”íÑ•±•µ•ÑÉä¹±…Ñ¥ÑÕ‘”ô¡™±½…Ð¥À¹½½É‘¥¹…Ñ•Ü¼ÄÀÀÀÀÀÀÀ¸Á˜ì4(€Ñ•±•µ•ÑÉä¹ÁÍÕÉ…å5•Ñ•ÉÌô¡À¹¡½É¥é½¹Ñ…±ÕÉ…å´ôôÁáT¤üÀ¸Á˜è¡™±½…Ð¥À¹¡½É¥é½¹Ñ…±ÕÉ…å´¼ÄÀÀ¸Á˜íÑ•±•µ•ÑÉä¹±…Ñ¥ÑÕ‘•I••¥Ù•‘Ñ5Ìõ¹½Üì4(€Ñ•±•µ•ÑÉä¹½½É‘¥¹…Ñ•A…¥ÉY…±¥õÑ•±•µ•ÑÉä¹±½¹¥ÑÕ‘•I•½É‘Y…±¥˜™Ñ•±•µ•ÑÉä¹±…Ñ¥ÑÕ‘•M…µÁ±”ôõÑ•±•µ•ÑÉä¹±½¹¥ÑÕ‘•M…µÁ±”˜˜¡Õ¥¹ÐÌÉ}Ð¤¡¹½ÜµÑ•±•µ•ÑÉä¹±½¹¥ÑÕ‘•I••¥Ù•‘Ñ5Ì¤ðõ==I}A%I}5a}@ì4(€¥˜¡Ñ•±•µ•ÑÉä¹½½É‘¥¹…Ñ•A…¥ÉY…±¥¤ì4(€€Ñ•±•µ•ÑÉä¹½½É‘¥¹…Ñ•A…¥ÉI••¥Ù•‘Ñ5Ìõ¹½Üì4(€ô4(€Ñ•±•µ•ÑÉä¹É••¥Ù•‘Ñ5Ìõ¹½ÜíÉ•ÑÕÉ¸ÑÉÕ”ì4(…Í”I%=}Ae1=}9MM}1=9%QUè4(€Ñ•±•µ•ÑÉä¹±½¹¥ÑÕ‘•I•½É‘Y…±¥õÑÉÕ”íÑ•±•µ•ÑÉä¹±½¹¥ÑÕ‘•M…µÁ±”õÀ¹½½É‘¥¹…Ñ•M…µÁ±”íÑ•±•µ•ÑÉä¹±½¹¥ÑÕ‘”ô¡™±½…Ð¥À¹½½É‘¥¹…Ñ•Ü¼ÄÀÀÀÀÀÀÀ¸Á˜íÑ•±•µ•ÑÉä¹±½¹¥ÑÕ‘•I••¥Ù•‘Ñ5Ìõ¹½Üì4(€Ñ•±•µ•ÑÉä¹½½É‘¥¹…Ñ•A…¥ÉY…±¥õÑ•±•µ•ÑÉä¹±…Ñ¥ÑÕ‘•I•½É‘Y…±¥˜™Ñ•±•µ•ÑÉä¹±…Ñ¥ÑÕ‘•M…µÁ±”ôõÑ•±•µ•ÑÉä¹±½¹¥ÑÕ‘•M…µÁ±”˜˜¡Õ¥¹ÐÌÉ}Ð¤¡¹½ÜµÑ•±•µ•ÑÉä¹±…Ñ¥ÑÕ‘•I••¥Ù•‘Ñ5Ì¤ðõ==I}A%I}5a}@ì4(€¥˜¡Ñ•±•µ•ÑÉä¹½½É‘¥¹…Ñ•A…¥ÉY…±¥¤ì4(€€Ñ•±•µ•ÑÉä¹½½É‘¥¹…Ñ•A…¥ÉI••¥Ù•‘Ñ5Ìõ¹½Üì4(€ô4(€Ñ•±•µ•ÑÉä¹É••¥Ù•‘Ñ5Ìõ¹½ÜíÉ•ÑÕÉ¸ÑÉÕ”ì4(…Í”I%=}Ae1=}9Y%Q%=8è4(€Ñ•±•µ•ÑÉä¹¹…Ù¥…Ñ¥½¹Y…±¥õÑÉÕ”íÑ•±•µ•ÑÉä¹¡•…‘¥¹œô¡À¹¡•…‘¥¹•¹Ñ¥‘•É••ÌôôÁáT¤ü´Ä¸Á˜è¡™±½…Ð¥À¹¡•…‘¥¹•¹Ñ¥‘•É••Ì¼ÄÀÀ¸Á˜ì4(€Ñ•±•µ•ÑÉä¹ÍÁ••ô¡À¹ÍÁ••‘µA•ÉM•½¹ôôÁáT¤üÀ¸Á˜è¡™±½…Ð¥À¹ÍÁ••‘µA•ÉM•½¹¼ÄÀÀ¸Á˜íÑ•±•µ•ÑÉä¹¹…Ù¥…Ñ¥½¹MÑ…ÑÕÌõÀ¹¹…Ù¥…Ñ¥½¹MÑ…ÑÕÌì4(€Ñ•±•µ•ÑÉä¹Ý…åÁ½¥¹Ñ%¹‘•àõÀ¹Ý…åÁ½¥¹Ñ%¹‘•àíÑ•±•µ•ÑÉä¹¹…Ù¥…Ñ¥½¹M…µÁ±”õÀ¹¹…Ù¥…Ñ¥½¹M…µÁ±”íÑ•±•µ•ÑÉä¹¹…Ù¥…Ñ¥½¹I••¥Ù•‘Ñ5Ìõ¹½ÜíÑ•±•µ•ÑÉä¹É••¥Ù•‘Ñ5Ìõ¹½ÜíÉ•ÑÕÉ¸ÑÉÕ”ì4(…Í”I%=}Ae1=}MQe}%9=MQ%è4(€€¼¼I•Ù…±¥‘…Ñ”•Ù•¸™½È¥¹Ñ•É¹…°…±±•ÉÌ½ÕÑÍ¥‘”Ñ¡”…ÕÑ¡•¹Ñ¥…Ñ•‘•½‘•È¸4(€€¼¼Q¡¥ÌµÕÍÐ¹•Ù•È‰•½µ”„MQ=@,½Èµ½Ñ½ÈÍ…™•Ñä½‰Í•ÉÙ…Ñ¥½¸¸4(€ì4(€€É…‘¥½}ÈÌÁ˜èé¥…¹½ÍÑ¥Œ‘íôì4(€€¹É•…Í½¸õÀ¹‘¥…¹½ÍÑ¥I•…Í½¸í¹™±…ÌõÀ¹‘¥…¹½ÍÑ¥±…Ìì4(€€¹µ¥±±¥Ù½±ÑÌõÀ¹‘¥…¹½ÍÑ¥5¥±±¥Ù½±ÑÌí¹Í•ÅÕ•¹”õÀ¹‘¥…¹½ÍÑ¥M•ÅÕ•¹”ì4(€€¥˜ …ÁÉ¥µ…Éåñð…É…‘¥½}ÈÌÁ˜èéÙ…±¥‘…Ñ”¡¤¥É•ÑÕÉ¸™…±Í”ì4(€ô4(€€¼¼=¹±ä…ÕÑ¡•¹Ñ¥…Ñ•AI%5IdÉ••¥Ù”Á…Ñ …¸…±°Ñ¡¥ÌÍÕ•ÍÍ™Õ±±ä¸4(€€¼¼Q¡¥ÌÉ•…µ½¹±äÍ¥‘•…ÈµÕÍÐ¹½ÐÉ•™É•Í ¹½Éµ…°MQQUL°MQ=@½¹™¥Éµ…Ñ¥½¸°4(€€¼¼‰…ÑÑ•Éä¡…É”°½µµ…¹,½Èµ½Ñ½ÈµÍ…™•ÑäÑ•±•µ•ÑÉäÑ¥µ•ÍÑ…µÁÌ¸4(€¥˜ …ÁÉ¥µ…Éä¥É•ÑÕÉ¸™…±Í”ì4(€Ñ•±•µ•ÑÉä¹‘¥…¹½ÍÑ¥Y…±¥õÑÉÕ”íÑ•±•µ•ÑÉä¹‘¥…¹½ÍÑ¥AÉ¥µ…ÉäõÑÉÕ”ì4(€Ñ•±•µ•ÑÉä¹‘¥…¹½ÍÑ¥I•…Í½¸õÀ¹‘¥…¹½ÍÑ¥I•…Í½¸ì4(€Ñ•±•µ•ÑÉä¹‘¥…¹½ÍÑ¥±…ÌõÀ¹‘¥…¹½ÍÑ¥±…Ìì4(€Ñ•±•µ•ÑÉä¹‘¥…¹½ÍÑ¥5¥±±¥Ù½±ÑÌõÀ¹‘¥…¹½ÍÑ¥5¥±±¥Ù½±ÑÌì4(€Ñ•±•µ•ÑÉä¹‘¥…¹½ÍÑ¥M•ÅÕ•¹”õÀ¹‘¥…¹½ÍÑ¥M•ÅÕ•¹”ì4(€Ñ•±•µ•ÑÉä¹‘¥…¹½ÍÑ¥I••¥Ù•‘Ñ5Ìõ¹½Üì4(€É•ÑÕÉ¸ÑÉÕ”ì4(…Í”I%=}Ae1=}]Q!Hè4(€Ñ•±•µ•ÑÉä¹Ý•…Ñ¡•ÉY…±¥õÑÉÕ”íÑ•±•µ•ÑÉä¹Ñ•µÁ•É…ÑÕÉ••¹Ñ¥õÀ¹Ñ•µÁ•É…ÑÕÉ••¹Ñ¥íÑ•±•µ•ÑÉä¹ÁÉ•ÍÍÕÉ•A„õÀ¹ÁÉ•ÍÍÕÉ•A„ì4(€Ñ•±•µ•ÑÉä¹Ý•…Ñ¡•ÉI••¥Ù•‘Ñ5Ìõ¹½ÜíÑ•±•µ•ÑÉä¹É••¥Ù•‘Ñ5Ìõ¹½ÜíÉ•ÑÕÉ¸ÑÉÕ”ì4(…Í”I%=}Ae1=}M=9I}MU55Idè4(€Ñ•±•µ•ÑÉä¹Í½¹…ÉMÕµµ…ÉåY…±¥õÑÉÕ”íÑ•±•µ•ÑÉä¹Í½¹…É•ÁÑ¡´õÀ¹‘•ÁÑ¡´íÑ•±•µ•ÑÉä¹Í½¹…ÉI…¹•´õÀ¹Í½¹…ÉI…¹•´íÑ•±•µ•ÑÉä¹Í½¹…É!•…±Ñ õÀ¹Í½¹…É!•…±Ñ ì4(€Ñ•±•µ•ÑÉä¹Í½¹…É±…Éµ±…ÌõÀ¹Í½¹…É±…Éµ±…ÌíÑ•±•µ•ÑÉä¹Í½¹…ÉM…µÁ±”õÀ¹Í½¹…ÉM…µÁ±”íÑ•±•µ•ÑÉä¹Í½¹…ÉI••¥Ù•‘Ñ5Ìõ¹½ÜíÑ•±•µ•ÑÉä¹É••¥Ù•‘Ñ5Ìõ¹½ÜíÉ•ÑÕÉ¸ÑÉÕ”ì4(…Í”I%=}Ae1=}]QI}Q5AIQUIè4(€Ñ•±•µ•ÑÉä¹Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ•Y…±¥õÑÉÕ”íÑ•±•µ•ÑÉä¹Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ••¹Ñ¥õÀ¹Ñ•µÁ•É…ÑÕÉ••¹Ñ¥ì4(€Ñ•±•µ•ÑÉä¹Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ•M…µÁ±”õÀ¹Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ•M…µÁ±”íÑ•±•µ•ÑÉä¹Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ•I••¥Ù•‘Ñ5Ìõ¹½ÜíÑ•±•µ•ÑÉä¹É••¥Ù•‘Ñ5Ìõ¹½ÜíÉ•ÑÕÉ¸ÑÉÕ”ì4(‘•™…Õ±ÐéÉ•ÑÕÉ¸™…±Í”ì4(ô4)ô4)Ù½¥Ñ•±•µ•ÑÉåÁÁ±åQ½	½…ÑMÑ…Ñ”¡	½…ÑMÑ…Ñ”€™Ì±Õ¥¹ÐÌÉ}Ð¹½Ü¥ì4(½¹ÍÐ‰½½°ÍÑ…ÑÕÍÉ•Í õÑ•±•µ•ÑÉä¹ÍÑ…ÑÕÍY…±¥˜™™É•Í ¡¹½Ü±Ñ•±•µ•ÑÉä¹ÍÑ…ÑÕÍI••¥Ù•‘Ñ5Ì±MQQUM}5a}¤ì4(½¹ÍÐ‰½½°Ù½±Ñ…•É•Í õÑ•±•µ•ÑÉä¹‰…ÑÑ•ÉåY½±Ñ…•Y…±¥˜™™É•Í ¡¹½Ü±Ñ•±•µ•ÑÉä¹‰…ÑÑ•ÉåI••¥Ù•‘Ñ5Ì±	QQIe}5a}¤ì4(½¹ÍÐ‰½½°Á•É•¹ÑÉ•Í õÑ•±•µ•ÑÉä¹‰…ÑÑ•ÉåA•É•¹ÑY…±¥˜™™É•Í ¡¹½Ü±Ñ•±•µ•ÑÉä¹‰…ÑÑ•ÉåA•É•¹ÑI••¥Ù•‘Ñ5Ì±MQQUM}5a}¤ì4(½¹ÍÐ‰½½°ÁÍÉ•Í õÑ•±•µ•ÑÉä¹½½É‘¥¹…Ñ•A…¥ÉY…±¥˜™™É•Í ¡¹½Ü±Ñ•±•µ•ÑÉä¹½½É‘¥¹…Ñ•A…¥ÉI••¥Ù•‘Ñ5Ì±AM}5a}¤ì4(½¹ÍÐ‰½½°¹…ÙÉ•Í õÑ•±•µ•ÑÉä¹¹…Ù¥…Ñ¥½¹Y…±¥˜™™É•Í ¡¹½Ü±Ñ•±•µ•ÑÉä¹¹…Ù¥…Ñ¥½¹I••¥Ù•‘Ñ5Ì±9Y}5a}¤ì4(½¹ÍÐ‰½½°Í½¹…ÉÉ•Í õÑ•±•µ•ÑÉä¹Í½¹…ÉMÕµµ…ÉåY…±¥˜™™É•Í ¡¹½Ü±Ñ•±•µ•ÑÉä¹Í½¹…ÉI••¥Ù•‘Ñ5Ì±M=9I}5a}¤ì4(Ì¹‰…ÑÑ•ÉåY½±Ñ…”õÙ½±Ñ…•É•Í ýÑ•±•µ•ÑÉä¹‰…ÑÑ•ÉåY½±Ñ…”èÀ¸Á˜íÌ¹‰…ÑÑ•ÉåA•É•¹ÐõÁ•É•¹ÑÉ•Í ýÑ•±•µ•ÑÉä¹‰…ÑÑ•ÉåA•É•¹ÐèÀ¸Á˜ì4(Ì¹±…Ñ¥ÑÕ‘”õÑ•±•µ•ÑÉä¹±…Ñ¥ÑÕ‘”íÌ¹±½¹¥ÑÕ‘”õÑ•±•µ•ÑÉä¹±½¹¥ÑÕ‘”íÌ¹¡•…‘¥¹Y…±¥õÍÑ…ÑÕÍÉ•Í ˜™¹…ÙÉ•Í ˜˜¡Ñ•±•µ•ÑÉä¹Í…™•Ñå±…Ì˜ ÅTððÐ¤¤„ôÀ˜™Ñ•±•µ•ÑÉä¹¡•…‘¥¹œøôÀ¸Á˜ì4(Ì¹¡•…‘¥¹œõÌ¹¡•…‘¥¹Y…±¥ýÑ•±•µ•ÑÉä¹¡•…‘¥¹œèÀ¸Á˜ì4(Ì¹ÍÁ••õÙ½±Ñ…•É•Í¡ññ¹…ÙÉ•Í ýÑ•±•µ•ÑÉä¹ÍÁ••èÀ¸Á˜íÌ¹ÁÍ¥áQåÁ”õÑ•±•µ•ÑÉä¹ÁÍ¥áQåÁ”íÌ¹ÁÍM…Ñ•±±¥Ñ•ÌõÑ•±•µ•ÑÉä¹ÁÍM…Ñ•±±¥Ñ•Ìì4(Ì¹ÁÍÕÉ…å5•Ñ•ÉÌõÑ•±•µ•ÑÉä¹ÁÍÕÉ…å5•Ñ•ÉÌíÌ¹ÁÍ1…ÍÑUÁ‘…Ñ•5ÌõÑ•±•µ•ÑÉä¹½½É‘¥¹…Ñ•A…¥ÉI••¥Ù•‘Ñ5Ìì4(Ì¹ÁÍY…±¥õÍÑ…ÑÕÍÉ•Í ˜™ÁÍÉ•Í ˜™Ñ•±•µ•ÑÉä¹ÁÍ½¹¹•Ñ•˜™Ñ•±•µ•ÑÉä¹ÁÍ¥áQåÁ”øôÌ˜™Ñ•±•µ•ÑÉä¹±…Ñ¥ÑÕ‘”øô´äÀ¸Á˜˜™Ñ•±•µ•ÑÉä¹±…Ñ¥ÑÕ‘”ðôäÀ¸Á˜˜™Ñ•±•µ•ÑÉä¹±½¹¥ÑÕ‘”øô´ÄàÀ¸Á˜˜™Ñ•±•µ•ÑÉä¹±½¹¥ÑÕ‘”ðôÄàÀ¸Á˜ì4(Ì¹Ý•…Ñ¡•ÉY…±¥õÑ•±•µ•ÑÉä¹Ý•…Ñ¡•ÉY…±¥˜™™É•Í ¡¹½Ü±Ñ•±•µ•ÑÉä¹Ý•…Ñ¡•ÉI••¥Ù•‘Ñ5Ì°ÄÀÀÀÁT¤ì4(Ì¹Ñ•µÁ•É…ÑÕÉ••¹Ñ¥õÌ¹Ý•…Ñ¡•ÉY…±¥ýÑ•±•µ•ÑÉä¹Ñ•µÁ•É…ÑÕÉ••¹Ñ¥èÀì4(Ì¹ÁÉ•ÍÍÕÉ•A„õÌ¹Ý•…Ñ¡•ÉY…±¥ýÑ•±•µ•ÑÉä¹ÁÉ•ÍÍÕÉ•A„èÀì4(Ì¹Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ•Y…±¥õÑ•±•µ•ÑÉä¹Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ•Y…±¥˜™™É•Í ¡¹½Ü±Ñ•±•µ•ÑÉä¹Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ•I••¥Ù•‘Ñ5Ì°ÄÀÀÀÁT¤ì4(Ì¹Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ••¹Ñ¥õÌ¹Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ•Y…±¥ýÑ•±•µ•ÑÉä¹Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ••¹Ñ¥èÀì4(Ì¹Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ•M…µÁ±”õÑ•±•µ•ÑÉä¹Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ•M…µÁ±”ì4(Ì¹Í½¹…ÉI•…‘¥¹Y…±¥õÍ½¹…ÉÉ•Í ˜˜¡Ñ•±•µ•ÑÉä¹Í½¹…É!•…±Ñ ôôÅññÑ•±•µ•ÑÉä¹Í½¹…É!•…±Ñ ôôÈ¤ì4(Ì¹Í½¹…É•ÁÑ¡´õÌ¹Í½¹…ÉI•…‘¥¹Y…±¥ýÑ•±•µ•ÑÉä¹Í½¹…É•ÁÑ¡´èÀíÌ¹Í½¹…ÉI…¹•´õÌ¹Í½¹…ÉI•…‘¥¹Y…±¥ýÑ•±•µ•ÑÉä¹Í½¹…ÉI…¹•´èÀì4(Ì¹Í½¹…É!•…±Ñ õÌ¹Í½¹…ÉI•…‘¥¹Y…±¥ýÑ•±•µ•ÑÉä¹Í½¹…É!•…±Ñ èÀíÌ¹Í½¹…É±…Éµ±…ÌõÌ¹Í½¹…ÉI•…‘¥¹Y…±¥ýÑ•±•µ•ÑÉä¹Í½¹…É±…Éµ±…ÌèÀì4(Ì¹Í½¹…ÉÑ¥Ù”õÍ½¹…ÉÉ•Í ˜˜¡Ñ•±•µ•ÑÉä¹Í½¹…É!•…±Ñ ôôÅññÑ•±•µ•ÑÉä¹Í½¹…É!•…±Ñ ôôÈ¤ì4(Ì¹µ½Ñ½É1•™ÑÑ¥Ù”õÍÑ…ÑÕÍÉ•Í ˜˜¡Ñ•±•µ•ÑÉä¹Í…™•Ñå±…Ì˜ ÅTððÄ¤¤„ôÀíÌ¹µ½Ñ½ÉI¥¡ÑÑ¥Ù”õÍÑ…ÑÕÍÉ•Í ˜˜¡Ñ•±•µ•ÑÉä¹Í…™•Ñå±…Ì˜ ÅTððÈ¤¤„ôÀì4(Ì¹±½Ý	…ÑÑ•ÉäõÍÑ…ÑÕÍÉ•Í ˜˜¡Ñ•±•µ•ÑÉä¹Í…™•Ñå±…Ì˜ ÅTððÔ¤¤„ôÀì4(Ì¹É¥Ñ¥…±	…ÑÑ•ÉäõÍÑ…ÑÕÍÉ•Í ˜˜¡Ñ•±•µ•ÑÉä¹Í…™•Ñå±…Ì˜ ÅTððÜ¤¤„ôÀì4(Ì¹™…¥±Í…™•Ñ¥Ù”õÍÑ…ÑÕÍÉ•Í ˜˜ ¡Ñ•±•µ•ÑÉä¹Í…™•Ñå±…Ì˜ ÅTððØ¤¤„ôÁññÑ•±•µ•ÑÉä¹É•Á½ÉÑ•‘5½‘”ôôÌ¤ì4(¥˜¡ÍÑ…ÑÕÍÉ•Í ˜™Ñ•±•µ•ÑÉä¹É•Á½ÉÑ•‘5½‘”ðôÈ¥Ì¹µ½‘”ô¡	½…Ñ5½‘”¥Ñ•±•µ•ÑÉä¹É•Á½ÉÑ•‘5½‘”ì4(¥˜¡ÍÑ…ÑÕÍÉ•Í ˜™Ñ•±•µ•ÑÉä¹ÍÑ½ÁMÑ…Ñ”ðôÄ˜™Ñ•±•µ•ÑÉä¹ÍÑ…ÑÕÍAÉ¥µ…Éä¥íÌ¹•µ•É•¹åMÑ½ÀõÑ•±•µ•ÑÉä¹ÍÑ½ÁMÑ…Ñ”ôôÄíÌ¹•µ•É•¹åMÑ½Á½¹™¥Éµ•õÑÉÕ”íõ•±Í”Ì¹•µ•É•¹åMÑ½Á½¹™¥Éµ•õ™…±Í”ì4(Ì¹…ÑÕ…Ñ½ÉM…™•ÑåI•…‘äõÍÑ…ÑÕÍÉ•Í ˜™Ñ•±•µ•ÑÉä¹ÍÑ…ÑÕÍAÉ¥µ…Éä˜™Ñ•±•µ•ÑÉä¹ÍÑ½ÁMÑ…Ñ”ôôÀ˜˜¡Ñ•±•µ•ÑÉä¹Í…™•Ñå±…Ì˜ÅT¤„ôÀ˜˜…Ì¹™…¥±Í…™•Ñ¥Ù”˜™Ì¹É…‘¥½AÉ¥µ…Éå½¹¹•Ñ•˜™Ì¹É…‘¥½Ñ¥Ù•1¥¹¬ôõI%=}U%}9I}AI%5Idì4(€¼¼¥ÍÁ±…äµ½¹±äè¹•Ù•È™••Ñ¡¥Ì¥¹Ñ¼…ÑÕ…Ñ½ÉM…™•ÑåI•…‘ä°MQ=@°µ¥ÍÍ¥½¸4(€¼¼Á•Éµ¥ÍÍ¥½¸°É…‘¥¼™É•Í¡¹•ÍÌ°‰…ÑÑ•Éä…Á…¥Ñä½È™…¥±Í…™”ÍÑ…Ñ”¸4(Ì¹‘¥…¹½ÍÑ¥É•Í õÑ•±•µ•ÑÉä¹‘¥…¹½ÍÑ¥Y…±¥˜™Ñ•±•µ•ÑÉä¹‘¥…¹½ÍÑ¥AÉ¥µ…Éä˜˜4(€€€™É•Í ¡¹½Ü±Ñ•±•µ•ÑÉä¹‘¥…¹½ÍÑ¥I••¥Ù•‘Ñ5Ì±MQe}%9=MQ%}5a}}5L¤˜˜4(€€€Ì¹É…‘¥½AÉ¥µ…Éå½¹¹•Ñ•˜™Ì¹É…‘¥½Ñ¥Ù•1¥¹¬ôõI%=}U%}9I}AI%5Idì4(Ì¹‘¥…¹½ÍÑ¥I•…Í½¸õÌ¹‘¥…¹½ÍÑ¥É•Í ýÑ•±•µ•ÑÉä¹‘¥…¹½ÍÑ¥I•…Í½¸èÁTì4(Ì¹‘¥…¹½ÍÑ¥±…ÌõÌ¹‘¥…¹½ÍÑ¥É•Í ýÑ•±•µ•ÑÉä¹‘¥…¹½ÍÑ¥±…ÌèÁTì4)ô4
+#include "boat_telemetry.h"
+#include "radio_safety_diagnostic_v1.h"
+BoatTelemetry telemetry;
+static constexpr uint32_t STATUS_MAX_AGE=1500,BATTERY_MAX_AGE=5000,COORD_PAIR_MAX_GAP=500,GPS_MAX_AGE=2000,NAV_MAX_AGE=2000,SONAR_MAX_AGE=1500;
+static constexpr uint32_t SAFETY_DIAGNOSTIC_MAX_AGE_MS=6000U; // R30F 2-second nominal TX
+static bool fresh(uint32_t now,uint32_t stamp,uint32_t maxAge){return (uint32_t)(now-stamp)<=maxAge;}
+void telemetryInit(){telemetry={};telemetry.batteryPercent=-1;telemetry.stopState=2;}
+void telemetryUpdate(const BoatTelemetry &d){telemetry=d;telemetry.receivedAtMs=millis();}
+bool telemetryApplyRadioPayload(const RadioDecodedPayload &p,bool primary,uint32_t now){
+ switch(p.kind){
+ case RADIO_PAYLOAD_STATUS:
+  telemetry.statusValid=true;telemetry.statusPrimary=primary;telemetry.reportedMode=p.boatMode;telemetry.stopState=p.stopState;telemetry.safetyFlags=p.safetyFlags;
+  telemetry.batteryPercent=(p.batteryPercent==255)?-1:(int)p.batteryPercent;telemetry.gpsFixType=p.gpsFixType;telemetry.gpsSatellites=p.satellites;
+  telemetry.gpsConnected=(p.safetyFlags&(1U<<3))!=0;telemetry.autopilotActive=p.boatMode==1||p.boatMode==2;
+  telemetry.motorsActive=(p.safetyFlags&(1U<<1))!=0||(p.safetyFlags&(1U<<2))!=0;
+  telemetry.statusReceivedAtMs=now;telemetry.receivedAtMs=now;telemetry.radioConnected=true;
+  telemetry.batteryPercentValid=(p.batteryPercent!=255);telemetry.batteryPercentReceivedAtMs=now;return true;
+ case RADIO_PAYLOAD_BATTERY_SPEED:
+  telemetry.batteryVoltageValid=(p.batteryMillivolts!=0xFFFFU);telemetry.batteryMillivolts=p.batteryMillivolts;
+  telemetry.batteryVoltage=(p.batteryMillivolts==0xFFFFU)?0.0f:(float)p.batteryMillivolts/1000.0f;
+  telemetry.speed=(p.speedCmPerSecond==0xFFFFU)?0.0f:(float)p.speedCmPerSecond/100.0f;telemetry.batteryReceivedAtMs=now;telemetry.receivedAtMs=now;return true;
+ case RADIO_PAYLOAD_GNSS_LATITUDE:
+  telemetry.latitudeRecordValid=true;telemetry.latitudeSample=p.coordinateSample;telemetry.latitude=(float)p.coordinateE7/10000000.0f;
+  telemetry.gpsAccuracyMeters=(p.horizontalAccuracyCm==0xFFFFU)?0.0f:(float)p.horizontalAccuracyCm/100.0f;telemetry.latitudeReceivedAtMs=now;
+  telemetry.coordinatePairValid=telemetry.longitudeRecordValid&&telemetry.latitudeSample==telemetry.longitudeSample&&(uint32_t)(now-telemetry.longitudeReceivedAtMs)<=COORD_PAIR_MAX_GAP;
+  if(telemetry.coordinatePairValid) {
+   telemetry.coordinatePairReceivedAtMs=now;
+  }
+  telemetry.receivedAtMs=now;return true;
+ case RADIO_PAYLOAD_GNSS_LONGITUDE:
+  telemetry.longitudeRecordValid=true;telemetry.longitudeSample=p.coordinateSample;telemetry.longitude=(float)p.coordinateE7/10000000.0f;telemetry.longitudeReceivedAtMs=now;
+  telemetry.coordinatePairValid=telemetry.latitudeRecordValid&&telemetry.latitudeSample==telemetry.longitudeSample&&(uint32_t)(now-telemetry.latitudeReceivedAtMs)<=COORD_PAIR_MAX_GAP;
+  if(telemetry.coordinatePairValid) {
+   telemetry.coordinatePairReceivedAtMs=now;
+  }
+  telemetry.receivedAtMs=now;return true;
+ case RADIO_PAYLOAD_NAVIGATION:
+  telemetry.navigationValid=true;telemetry.heading=(p.headingCentidegrees==0xFFFFU)?-1.0f:(float)p.headingCentidegrees/100.0f;
+  telemetry.speed=(p.speedCmPerSecond==0xFFFFU)?0.0f:(float)p.speedCmPerSecond/100.0f;telemetry.navigationStatus=p.navigationStatus;
+  telemetry.waypointIndex=p.waypointIndex;telemetry.navigationSample=p.navigationSample;telemetry.navigationReceivedAtMs=now;telemetry.receivedAtMs=now;return true;
+ case RADIO_PAYLOAD_SAFETY_DIAGNOSTIC:
+  // Revalidate even for internal callers outside the authenticated decoder.
+  // This must never become a STOP ACK or motor safety observation.
+  {
+   radio_r30f::Diagnostic d{};
+   d.reason=p.diagnosticReason;d.flags=p.diagnosticFlags;
+   d.millivolts=p.diagnosticMillivolts;d.sequence=p.diagnosticSequence;
+   if(!primary||!radio_r30f::validate(d))return false;
+  }
+  // Only authenticated PRIMARY receive path can call this successfully.
+  // This read-only sidecar must not refresh normal STATUS, STOP confirmation,
+  // battery charge, command ACK or motor-safety telemetry timestamps.
+  if(!primary)return false;
+  telemetry.diagnosticValid=true;telemetry.diagnosticPrimary=true;
+  telemetry.diagnosticReason=p.diagnosticReason;
+  telemetry.diagnosticFlags=p.diagnosticFlags;
+  telemetry.diagnosticMillivolts=p.diagnosticMillivolts;
+  telemetry.diagnosticSequence=p.diagnosticSequence;
+  telemetry.diagnosticReceivedAtMs=now;
+  return true;
+ case RADIO_PAYLOAD_WEATHER:
+  telemetry.weatherValid=true;telemetry.temperatureCentiC=p.temperatureCentiC;telemetry.pressurePa=p.pressurePa;
+  telemetry.weatherReceivedAtMs=now;telemetry.receivedAtMs=now;return true;
+ case RADIO_PAYLOAD_SONAR_SUMMARY:
+  telemetry.sonarSummaryValid=true;telemetry.sonarDepthCm=p.depthCm;telemetry.sonarRangeCm=p.sonarRangeCm;telemetry.sonarHealth=p.sonarHealth;
+  telemetry.sonarAlarmFlags=p.sonarAlarmFlags;telemetry.sonarSample=p.sonarSample;telemetry.sonarReceivedAtMs=now;telemetry.receivedAtMs=now;return true;
+ case RADIO_PAYLOAD_WATER_TEMPERATURE:
+  telemetry.waterTemperatureValid=true;telemetry.waterTemperatureCentiC=p.temperatureCentiC;
+  telemetry.waterTemperatureSample=p.waterTemperatureSample;telemetry.waterTemperatureReceivedAtMs=now;telemetry.receivedAtMs=now;return true;
+ default:return false;
+ }
+}
+void telemetryApplyToBoatState(BoatState &s,uint32_t now){
+ const bool statusFresh=telemetry.statusValid&&fresh(now,telemetry.statusReceivedAtMs,STATUS_MAX_AGE);
+ const bool voltageFresh=telemetry.batteryVoltageValid&&fresh(now,telemetry.batteryReceivedAtMs,BATTERY_MAX_AGE);
+ const bool percentFresh=telemetry.batteryPercentValid&&fresh(now,telemetry.batteryPercentReceivedAtMs,STATUS_MAX_AGE);
+ const bool gpsFresh=telemetry.coordinatePairValid&&fresh(now,telemetry.coordinatePairReceivedAtMs,GPS_MAX_AGE);
+ const bool navFresh=telemetry.navigationValid&&fresh(now,telemetry.navigationReceivedAtMs,NAV_MAX_AGE);
+ const bool sonarFresh=telemetry.sonarSummaryValid&&fresh(now,telemetry.sonarReceivedAtMs,SONAR_MAX_AGE);
+ s.batteryVoltage=voltageFresh?telemetry.batteryVoltage:0.0f;s.batteryPercent=percentFresh?telemetry.batteryPercent:0.0f;
+ s.latitude=telemetry.latitude;s.longitude=telemetry.longitude;s.headingValid=statusFresh&&navFresh&&(telemetry.safetyFlags&(1U<<4))!=0&&telemetry.heading>=0.0f;
+ s.heading=s.headingValid?telemetry.heading:0.0f;
+ s.speed=voltageFresh||navFresh?telemetry.speed:0.0f;s.gpsFixType=telemetry.gpsFixType;s.gpsSatellites=telemetry.gpsSatellites;
+ s.gpsAccuracyMeters=telemetry.gpsAccuracyMeters;s.gpsLastUpdateMs=telemetry.coordinatePairReceivedAtMs;
+ s.gpsValid=statusFresh&&gpsFresh&&telemetry.gpsConnected&&telemetry.gpsFixType>=3&&telemetry.latitude>=-90.0f&&telemetry.latitude<=90.0f&&telemetry.longitude>=-180.0f&&telemetry.longitude<=180.0f;
+ s.weatherValid=telemetry.weatherValid&&fresh(now,telemetry.weatherReceivedAtMs,10000U);
+ s.temperatureCentiC=s.weatherValid?telemetry.temperatureCentiC:0;
+ s.pressurePa=s.weatherValid?telemetry.pressurePa:0;
+ s.waterTemperatureValid=telemetry.waterTemperatureValid&&fresh(now,telemetry.waterTemperatureReceivedAtMs,10000U);
+ s.waterTemperatureCentiC=s.waterTemperatureValid?telemetry.waterTemperatureCentiC:0;
+ s.waterTemperatureSample=telemetry.waterTemperatureSample;
+ s.sonarReadingValid=sonarFresh&&(telemetry.sonarHealth==1||telemetry.sonarHealth==2);
+ s.sonarDepthCm=s.sonarReadingValid?telemetry.sonarDepthCm:0;s.sonarRangeCm=s.sonarReadingValid?telemetry.sonarRangeCm:0;
+ s.sonarHealth=s.sonarReadingValid?telemetry.sonarHealth:0;s.sonarAlarmFlags=s.sonarReadingValid?telemetry.sonarAlarmFlags:0;
+ s.sonarActive=sonarFresh&&(telemetry.sonarHealth==1||telemetry.sonarHealth==2);
+ s.motorLeftActive=statusFresh&&(telemetry.safetyFlags&(1U<<1))!=0;s.motorRightActive=statusFresh&&(telemetry.safetyFlags&(1U<<2))!=0;
+ s.lowBattery=statusFresh&&(telemetry.safetyFlags&(1U<<5))!=0;
+ s.criticalBattery=statusFresh&&(telemetry.safetyFlags&(1U<<7))!=0;
+ s.failsafeActive=statusFresh&&((telemetry.safetyFlags&(1U<<6))!=0||telemetry.reportedMode==3);
+ if(statusFresh&&telemetry.reportedMode<=2)s.mode=(BoatMode)telemetry.reportedMode;
+ if(statusFresh&&telemetry.stopState<=1&&telemetry.statusPrimary){s.emergencyStop=telemetry.stopState==1;s.emergencyStopConfirmed=true;}else s.emergencyStopConfirmed=false;
+ s.actuatorSafetyReady=statusFresh&&telemetry.statusPrimary&&telemetry.stopState==0&&(telemetry.safetyFlags&1U)!=0&&!s.failsafeActive&&s.radioPrimaryConnected&&s.radioActiveLink==RADIO_UI_NRF_PRIMARY;
+ // Display-only: never feed this into actuatorSafetyReady, STOP, mission
+ // permission, radio freshness, battery capacity or failsafe state.
+ s.diagnosticFresh=telemetry.diagnosticValid&&telemetry.diagnosticPrimary&&
+    fresh(now,telemetry.diagnosticReceivedAtMs,SAFETY_DIAGNOSTIC_MAX_AGE_MS)&&
+    s.radioPrimaryConnected&&s.radioActiveLink==RADIO_UI_NRF_PRIMARY;
+ s.diagnosticReason=s.diagnosticFresh?telemetry.diagnosticReason:0U;
+ s.diagnosticFlags=s.diagnosticFresh?telemetry.diagnosticFlags:0U;
+}

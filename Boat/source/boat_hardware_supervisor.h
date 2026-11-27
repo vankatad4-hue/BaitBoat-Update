@@ -1,2 +1,166 @@
-1ëa¡Ñ1qêmŠ‰ËŠwµéªÞ²ê^®ø¬¢¸mµ©•§r«×œ…ªõÑÈZ¯]¢{Þ	©ç¢×(ž÷«µªàºg§¶‰]
-«Â+a½©nyú+EêeiÇ­¢Ü©y,¬µé‚…ªÂjyèµÊ'½êí½©nzÚ-Ê—’ÊË^˜(Z¬Jë¢´­®)àšë-mç±iËeÊ‰Þr«iË^®Z'€ÁÉ…µ„½¹”4(¥¹±Õ‘”€‰µ¥ÍÍ¥½¹}•á•ÕÑ¥½¸¹ ˆ4(¥¹±Õ‘”€‰‰½…Ñ}‰…ÑÑ•Éå}Á½±¥ä¹ ˆ4(¥¹±Õ‘”€ñµ…Ñ ø4(¼¼!…É‘Ý…É”µ•…ÍÕÉ•µ•¹ÑÌµÕÍÐ‰”…ÅÕ¥É•±½…±±ä¸9•ÑÝ½É¬µ•ÍÍ…•Ì…¹¹½Ð4(¼¼ÍÕÁÁ±äÑ¡•Í”Ñ¥µ•ÍÑ…µÁÌ½È½Ù•ÉÉ¥‘”Ñ¡”Á¡åÍ¥…°MQ=@½¥¹Ñ•É±½¬ÍÑ…Ñ”¸4)ÍÑÉÕÐ	½…Ñ!…É‘Ý…É•M…µÁ±”ì4(5¥ÍÍ¥½¹9…Ù¥…Ñ¥½¹¥à™¥àì4(Õ¥¹ÐÌÉ}ÐÍ…™•ÑåÐ±¹ÍÍÐ±¡•…‘¥¹Ðì4(‰½½°Í…™•ÑåY…±¥±Á¡åÍ¥…±MÑ½ÁI•±•…Í•±‰…ÑÑ•Éå!•…±Ñ¡ä±ÍÑ…Ñ¥½¹…Éä±É•±•…Í•%¹Ñ•É±½­Ì±É•±•…Í•%‘±”±Ý…Ñ¡‘½I•…‘äì4(‰½½°½ÕÑÁÕÑ••‘‰…­Y…±¥±±•™Ñ5½Ñ½ÉÑ¥Ù”±É¥¡Ñ5½Ñ½ÉÑ¥Ù”ì4(Õ¥¹Ðá}Ð‰…ÑÑ•ÉåA•É•¹Ð±ÁÍ¥áQåÁ”±Í…Ñ•±±¥Ñ•Ìì4(Õ¥¹ÐÄÙ}Ð‰…ÑÑ•Éå5¥±±¥Ù½±ÑÌ±ÍÁ••‘µA•ÉM•½¹ì4(Õ¥¹ÐÌÉ}Ð‰…ÑÑ•ÉåÐ±ÍÁ••‘Ðì4(‰½½°Ù½±Ñ…•Y…±¥±ÍÁ••‘Y…±¥ì4(	½…Ñ	…ÑÑ•Éå	…¹‰…ÑÑ•Éå	…¹ì4(‰½½°‰…ÑÑ•ÉåIÑ¡I•ÅÕ•ÍÑ•ì4(€¼¼=ÁÑ¥½¹…°±½…°Í•¹Í½ÈÉ•…‘¥¹Ì¸!…É‘Ý…É”…‘…ÁÑ•ÉÌÍ•ÐÑ¡•Í”½¹±ä…™Ñ•È„4(€¼¼ÍÕ•ÍÍ™Õ°Í…µÁ±”ìÑ¥µ•ÍÑ…µÁÌ…É”±½…°µ½¹½Ñ½¹¥Œµ¥±±¥Í•½¹‘Ì¸4(‰½½°Í½¹…ÉY…±¥íÕ¥¹ÐÄÙ}ÐÍ½¹…É•ÁÑ¡´±Í½¹…ÉI…¹•´íÕ¥¹Ðá}ÐÍ½¹…É!•…±Ñ ±Í½¹…É±…Éµ±…Ì±Í½¹…ÉM…µÁ±”íÕ¥¹ÐÌÉ}ÐÍ½¹…ÉÐì4(‰½½°Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ•Y…±¥í¥¹ÐÄÙ}ÐÝ…Ñ•ÉQ•µÁ•É…ÑÕÉ••¹Ñ¥íÕ¥¹Ðá}ÐÝ…Ñ•ÉQ•µÁ•É…ÑÕÉ•M…µÁ±”íÕ¥¹ÐÌÉ}ÐÝ…Ñ•ÉQ•µÁ•É…ÑÕÉ•Ðì4(‰½½°Ý•…Ñ¡•ÉY…±¥í¥¹ÐÄÙ}ÐÝ•…Ñ¡•ÉQ•µÁ•É…ÑÕÉ••¹Ñ¥íÕ¥¹ÐÌÉ}ÐÁÉ•ÍÍÕÉ•A„±Ý•…Ñ¡•ÉÐì4)ôì4)ÍÑÉÕÐ	½…ÑÑÕ…Ñ½É½¹™¥œì4(Õ¥¹ÐÄÙ}ÐÁÕ±Í•5ÍlÑtì€¼¼…ÑÕ…°½¥°¡…É…Ñ•É¥é…Ñ¥½¸É•ÅÕ¥É•4(Õ¥¹ÐÄÙ}Ðµ…á9…Ù5½Ñ½Èì€¼¼‰•¹ µÑÕ¹•‘•µ…¹…À°¹½Ð„A]4Á¥¸…ÍÍ¥¹µ•¹Ð4(‘½Õ‰±”å…Ý…¥¸ì4)ôì4)ÍÑÉÕÐ	½…ÑÑÕ…Ñ½É=ÕÑÁÕÑí¥¹ÐÄÙ}Ð±•™Ð±É¥¡Ðí¥¹Ðá}ÐÉ•±•…Í•¡…¹¹•°íôì4)¥¹±¥¹”á•%¹ÁÕÑÌ‰½…Ñ!…É‘Ý…É•}¥¹ÁÕÑÌ¡½¹ÍÐ	½…Ñ!…É‘Ý…É•M…µÁ±”€™Ì±Õ¥¹ÐÌÉ}Ð¹½Ü±‰½½°ÍÑ½Á1…Ñ¡•¥ì4(½¹ÍÐ‰½½°Í…™”õÌ¹Í…™•ÑåY…±¥˜™¹½ÜµÌ¹Í…™•ÑåÐðÄÀÁT˜™Ì¹Ý…Ñ¡‘½I•…‘ä˜™Ì¹½ÕÑÁÕÑ••‘‰…­Y…±¥ì4(…ÕÑ¼™¥àõÌ¹™¥àì4(™¥à¹™É•Í õ™¥à¹™É•Í ˜™¹½ÜµÌ¹¹ÍÍÐðÈÀÀÁTì4(™¥à¹¡•…‘¥¹Y…±¥õ™¥à¹¡•…‘¥¹Y…±¥˜™¹½ÜµÌ¹¡•…‘¥¹ÐðÌÀÁTì4(™¥à¹‰…ÑÑ•Éå!•…±Ñ¡äõÍ…™”˜™Ì¹‰…ÑÑ•Éå!•…±Ñ¡äì4(½¹ÍÐ‰½½°‰…ÑÑ•Éå1½ÜõÌ¹‰…ÑÑ•Éå	…¹øõ	=Q}	QQIe}Iì4(É•ÑÕÉ¸í™¥à±ÍÑ½Á1…Ñ¡•‘ñð…Í…™•ñð…Ì¹Á¡åÍ¥…±MÑ½ÁI•±•…Í•±™…±Í”±™…±Í”±Í…™”˜™Ì¹ÍÑ…Ñ¥½¹…Éä˜˜…Ì¹±•™Ñ5½Ñ½ÉÑ¥Ù”˜˜…Ì¹É¥¡Ñ5½Ñ½ÉÑ¥Ù”±Í…™”˜™Ì¹É•±•…Í•%¹Ñ•É±½­Ì±Í…™”˜™Ì¹É•±•…Í•%‘±”±™…±Í”±‰…ÑÑ•Éå1½Ýôì4)ô4)¥¹±¥¹”‰½½°‰½…Ñ!…É‘Ý…É•}½¹™¥Y…±¥¡½¹ÍÐ	½…ÑÑÕ…Ñ½É½¹™¥œ€™Œ¥ì4(¥˜ …Œ¹µ…á9…Ù5½Ñ½ÉññŒ¹µ…á9…Ù5½Ñ½ÈøÄÀÀÁñð…ÍÑèé¥Í™¥¹¥Ñ”¡Œ¹å…Ý…¥¸¥ññŒ¹å…Ý…¥¸ðôÁññŒ¹å…Ý…¥¸øÄÀÀÀ¥É•ÑÕÉ¸™…±Í”ì4(™½È¡…ÕÑ¼µÌéŒ¹ÁÕ±Í•5Ì¥¥˜ …µÍññµÌøôÐÀÀÀ¥É•ÑÕÉ¸™…±Í”ì4(É•ÑÕÉ¸ÑÉÕ”ì4)ô4(¼¼ÑÕ…Ñ½ÈµÍ¥‘”Í½™ÑÝ…É”Ý…Ñ¡‘½œ…¹½µµ…¹±•…Í”¸•‘¥…Ñ••áÑ•É¹…°4(¼¼™…¥±Í…™”•±•ÑÉ½¹¥Ì…É”½ÕÑÍ¥‘”Ñ¡”ÁÉ½©•ÐÍ½Á”¸Q¡¥Ì±…ÍÌ…¹¹½Ð4(¼¼‘••¹•É¥é”„ÍÑÕ¬5T½È™…¥±•½ÕÑÁÕÐ‘É¥Ù•È‰ä¥ÑÍ•±˜¸4)±…ÍÌ	½…ÑÑÕ…Ñ½ÉMÕÁ•ÉÙ¥Í½Éì4)ÁÕ‰±¥Œè4(‰½½°½¹™¥ÕÉ”¡½¹ÍÐ	½…ÑÑÕ…Ñ½É½¹™¥œ€™™œ¥íÍÑ½À ¤í™|õ™œí½¹™¥ÕÉ•‘|õ‰½…Ñ!…É‘Ý…É•}½¹™¥Y…±¥¡™œ¤íÉ•ÑÕÉ¸½¹™¥ÕÉ•‘|íô4(Ù½¥ÍÑ½À ¥íÍÑ½Á1…Ñ¡•‘|õÑÉÕ”íµ…¹Õ…±Y…±¥‘|õ™…±Í”íÁÕ±Í•Ñ¥Ù•|õ™…±Í”í…Ý…¥Ñ%‘±•|õ™…±Í”íÉ•±•…Í•…¹•±±•‘|õ™…±Í”í½µÁ±•Ñ¥½¹|õíôíô4(‰½½°±•…ÉMÑ½À¡½¹ÍÐ	½…Ñ!…É‘Ý…É•M…µÁ±”€™Ì±Õ¥¹ÐÌÉ}Ð¹½Ü±‰½½°…ÕÑ¡•¹Ñ¥…Ñ•‘AÉ¥µ…Éä±‰½½°¹•ÕÑÉ…°¥ì4(€½¹ÍÐ…ÕÑ¼¥¸õ‰½…Ñ!…É‘Ý…É•}¥¹ÁÕÑÌ¡Ì±¹½Ü±™…±Í”¤ì4(€¥˜ …½¹™¥ÕÉ•‘}ñð……ÕÑ¡•¹Ñ¥…Ñ•‘AÉ¥µ…Éåñð…¹•ÕÑÉ…±ññ¥¸¹ÍÑ½ÁÑ¥Ù•ñð…¥¸¹™¥à¹‰…ÑÑ•Éå!•…±Ñ¡åñð…¥¸¹ÍÑ…Ñ¥½¹…Éåñð…¥¸¹É•±•…Í•%‘±•ñð…¥¸¹É•±•…Í•%¹Ñ•É±½­Ì¥É•ÑÕÉ¸™…±Í”ì4(€ÍÑ½Á1…Ñ¡•‘|õ™…±Í”íÉ•ÑÕÉ¸ÑÉÕ”ì4(ô4(‰½½°ÍÑ½ÁÁ• ¥½¹ÍÑíÉ•ÑÕÉ¸ÍÑ½Á1…Ñ¡•‘|íô4(Ù½¥µ…¹Õ…°¡¥¹ÐÄÙ}Ð±•™Ð±¥¹ÐÄÙ}ÐÉ¥¡Ð±Õ¥¹ÐÌÉ}ÐÉ••¥Ù•‘Ð±‰½½°…ÕÑ¡•¹Ñ¥…Ñ•‘AÉ¥µ…Éä¥ì4(€¥˜¡µ…¹Õ…±9••‘Í9•ÕÑÉ…±|¥í¥˜¡…ÕÑ¡•¹Ñ¥…Ñ•‘AÉ¥µ…Éä˜˜…ÁÕ±Í•Ñ¥Ù•|˜˜……Ý…¥Ñ%‘±•|˜˜…±•™Ð˜˜…É¥¡Ð¥µ…¹Õ…±9••‘Í9•ÕÑÉ…±|õ™…±Í”íµ…¹Õ…±Y…±¥‘|õ™…±Í”íÉ•ÑÕÉ¸íô4(€µ…¹Õ…±Y…±¥‘|ô…ÁÕ±Í•Ñ¥Ù•|˜˜……Ý…¥Ñ%‘±•|˜™…ÕÑ¡•¹Ñ¥…Ñ•‘AÉ¥µ…Éä˜˜…ÍÑ½Á1…Ñ¡•‘|˜™±•™Ðøô´ÄÀÀÀ˜™±•™ÐðôÄÀÀÀ˜™É¥¡Ðøô´ÄÀÀÀ˜™É¥¡ÐðôÄÀÀÀì4(€µ…¹Õ…±1•™Ñ|õ±•™Ðíµ…¹Õ…±I¥¡Ñ|õÉ¥¡Ðíµ…¹Õ…±Ñ|õÉ••¥Ù•‘Ðì4(ô4(Ù½¥…¹•±5…¹Õ…° ¥íµ…¹Õ…±Y…±¥‘|õ™…±Í”íô4(€¼¼HÌÁ ´ÈÔè„¹•Ü…ÕÑ¡•¹Ñ¥…Ñ•É…‘¥¼Í•ÍÍ¥½¸½È„±½…°•µ•É•¹ä™…Õ±Ð4(€¼¼µÕÍÐ¹½ÐÉ•Á±…ä¹½¸µ¹•ÕÑÉ…°ÍÑ¥­Ì¸™É•Í ¹•ÕÑÉ…°ÁÉ¥µ…Éäµ½¹±ä½µµ…¹4(€¼¼¥ÌÉ•ÅÕ¥É•‰•™½É”„ÍÕ‰Í•ÅÕ•¹Ð¹½¹é•É¼µ…¹Õ…°µ½Ñ½È±•…Í”¸4(Ù½¥É•ÅÕ¥É•5…¹Õ…±9•ÕÑÉ…° ¥í…¹•±5…¹Õ…° ¤íµ…¹Õ…±9••‘Í9•ÕÑÉ…±|õÑÉÕ”íô4(‰½½°É•±•…Í•	ÕÍä ¥½¹ÍÑíÉ•ÑÕÉ¸ÁÕ±Í•Ñ¥Ù•}ññ…Ý…¥Ñ%‘±•|íô4(Ù½¥…¹•±I•±•…Í•½É…¥±Í…™”¡Õ¥¹ÐÌÉ}Ð¹½Ü¥í¥˜¡ÁÕ±Í•Ñ¥Ù•|¥íÁÕ±Í•Ñ¥Ù•|õ™…±Í”í…Ý…¥Ñ%‘±•|õÑÉÕ”í½™™Ñ|õ¹½ÜíÉ•±•…Í•…¹•±±•‘|õÑÉÕ”í…¹•±5…¹Õ…° ¤íõô4(‰½½°‰•¥¹5…¹Õ…±I•±•…Í”¡Õ¥¹ÐÄÙ}Ð¥±¥¹Ðá}Ð¡…¹¹•°±½¹ÍÐá•%¹ÁÕÑÌ€™¥¸±Õ¥¹ÐÌÉ}Ð¹½Ü¥ì4(€¥˜¡É•±•…Í•	ÕÍä ¥ñð¡µ…¹Õ…±Y…±¥‘|˜™¹½Üµµ…¹Õ…±Ñ|ðÈÀÁT˜˜¡µ…¹Õ…±1•™Ñ}ññµ…¹Õ…±I¥¡Ñ|¤¤¥É•ÑÕÉ¸™…±Í”ì4(€¹•Ý5¥ÍÍ¥½¹%‘•¹Ñ¥Ñä ¤í¥˜ …‰•¥¹I•±•…Í”¡¥°Ä±¡…¹¹•°±¥¸±¹½Ü¤¥É•ÑÕÉ¸™…±Í”ì4(€µ…¹Õ…±I•±•…Í•|õÑÉÕ”íµ…¹Õ…±9••‘Í9•ÕÑÉ…±|õÑÉÕ”í…¹•±5…¹Õ…° ¤íÉ•ÑÕÉ¸ÑÉÕ”ì4(ô4(€¼¼5¥ÍÍ¥½¸É•±•…Í”¥Ì„Í¥¹±”Ñ½­•¹¥é••‘”°¹½Ð„½¹Ñ¥¹Õ½ÕÍ±äÉ•Á•…Ñ•½µµ…¹¸4(‰½½°‰•¥¹I•±•…Í”¡Õ¥¹ÐÄÙ}ÐÑà±Õ¥¹ÐÄÙ}ÐÑ½­•¸±¥¹Ðá}Ð¡…¹¹•°±½¹ÍÐá•%¹ÁÕÑÌ€™¥¸±Õ¥¹ÐÌÉ}Ð¹½Ü¥ì4(€¥˜ …½¹™¥ÕÉ•‘}ññÍÑ½Á1…Ñ¡•‘}ñð…Ñáñð…Ñ½­•¹ññ¡…¹¹•°ðÁññ¡…¹¹•°øÍññÁÕ±Í•Ñ¥Ù•}ññ…Ý…¥Ñ%‘±•}ñð4(€€€€¡Ñàôõ±…ÍÑQá|˜™Ñ½­•¸ðõ±…ÍÑQ½­•¹|¥ññ¥¸¹ÍÑ½ÁÑ¥Ù•ñð…¥¸¹ÁÉ¥µ…ÉåÉ•Í¡ñð…¥¸¹ÍÑ…Ñ¥½¹…Éåñð4(€€€€…¥¸¹É•±•…Í•%‘±•ñð…¥¸¹É•±•…Í•%¹Ñ•É±½­Íñð…¥¸¹™¥à¹‰…ÑÑ•Éå!•…±Ñ¡åññ¥¸¹‰…ÑÑ•Éå1½Ü¥É•ÑÕÉ¸™…±Í”ì4(€µ…¹Õ…±I•±•…Í•|õ™…±Í”íÉ•±•…Í•…¹•±±•‘|õ™…±Í”í±…ÍÑQá|õÑàí±…ÍÑQ½­•¹|õÑ½­•¸í¡…¹¹•±|õ¡…¹¹•°íÁÕ±Í•Ñ|õ¹½ÜíÁÕ±Í•Ñ¥Ù•|õÑÉÕ”íÉ•ÑÕÉ¸ÑÉÕ”ì4(ô4(Ù½¥¹•Ý5¥ÍÍ¥½¹%‘•¹Ñ¥Ñä ¥í¥˜ …ÁÕ±Í•Ñ¥Ù•|˜˜……Ý…¥Ñ%‘±•|¥í±…ÍÑQá|õ±…ÍÑQ½­•¹|ôÀíõô4(	½…ÑÑÕ…Ñ½É=ÕÑÁÕÐÑ¥¬¡½¹ÍÐá•%¹ÁÕÑÌ€™¥¸±Õ¥¹ÐÌÉ}Ð¹½Ü±á•=ÕÑÁÕÐ¥¹Ñ•¹Ð±½¹ÍÐ5¥ÍÍ¥½¹9…Ù¥…Ñ¥½¹I•ÍÕ±Ð€™¹…Ø±‰½½°µ¥ÍÍ¥½¹Ñ¥Ù”±‰½½°½Ù•ÉÉ¥‘•Ñ¥Ù”±¥¹ÐÄÙ}Ð½Ù•ÉÉ¥‘•1•™Ð±¥¹ÐÄÙ}Ð½Ù•ÉÉ¥‘•I¥¡Ð±Õ¥¹ÐÌÉ}ÐÍ…™•ÑåM…µÁ±•Ð¥ì4(€½¹ÍÐ	½…ÑÑÕ…Ñ½É=ÕÑÁÕÐ½™˜õìÀ°À°´Åôì4(€¥˜ …½¹™¥ÕÉ•‘}ññÍÑ½Á1…Ñ¡•‘}ññ¥¸¹ÍÑ½ÁÑ¥Ù•ñð…¥¸¹™¥à¹‰…ÑÑ•Éå!•…±Ñ¡ä¥íÍÑ½À ¤íÉ•ÑÕÉ¸½™˜íô4(€¥˜¡¥¸¹‰…ÑÑ•Éå1½Ü˜™µ¥ÍÍ¥½¹Ñ¥Ù”˜™¥¹Ñ•¹Ð¹¥¹Ñ•¹Ð„õ%9Q9Q}9Y}!=5¥ì4(€€€¼¼ÕÉ¥¹œ„‰…ÑÑ•Éä…‰½ÉÐ°‘••¹•É¥é”…¹ä½¹½¥¹œÉ•±•…Í”€©¥µµ•‘¥…Ñ•±ä¨¸4(€€€¼¼MÑ¥±°…‘Ù…¹”Ñ¡”Á½ÍÐµ½™˜™••‘‰…¬…Ñ”°½Ñ¡•ÉÝ¥Í”…Ý…¥Ñ%‘±•|Ý½Õ±4(€€€¼¼É•µ…¥¸Á•Éµ…¹•¹Ñ±äÍ•Ð…¹Í…™”!½µ”‘¥Ù•ÉÍ¥½¸½Õ±¹•Ù•È‰•¥¸¸4(€€¥˜¡ÁÕ±Í•Ñ¥Ù•|¥…¹•±I•±•…Í•½É…¥±Í…™”¡¹½Ü¤ì4(€€¥˜¡…Ý…¥Ñ%‘±•|¥ì4(€€€¥˜ ¡¥¹ÐÌÉ}Ð¤¡Í…™•ÑåM…µÁ±•Ðµ½™™Ñ|¤øÀ˜™¥¸¹É•±•…Í•%‘±”¥ì4(€€€€½µÁ±•Ñ¥½¹|õí±…ÍÑQá|±±…ÍÑQ½­•¹|±™…±Í”±ÑÉÕ•ôì4(€€€€…Ý…¥Ñ%‘±•|õ™…±Í”íÉ•±•…Í•…¹•±±•‘|õ™…±Í”ì4(€€€õ•±Í”¥˜ ¡Õ¥¹ÐÌÉ}Ð¤¡¹½Üµ½™™Ñ|¤øôÔÀÁT¥ì4(€€€€½µÁ±•Ñ¥½¹|õí±…ÍÑQá|±±…ÍÑQ½­•¹|±™…±Í”±ÑÉÕ•ôì4(€€€€…Ý…¥Ñ%‘±•|õ™…±Í”íÉ•±•…Í•…¹•±±•‘|õ™…±Í”íÍÑ½Á1…Ñ¡•‘|õÑÉÕ”ì4(€€€ô4(€€ô4(€€É•ÑÕÉ¸½™˜ì4(€ô4(€€¼¼9•Ù•ÈÉ•Ñ…¥¸½É•Á±…ä„µ…¹Õ…°ÍÑ¥¬½µµ…¹…™Ñ•ÈÁÉ¥µ…Éäµ±¥¹¬±½ÍÌ¸4(€¥˜ …¥¸¹ÁÉ¥µ…ÉåÉ•Í ¥í…¹•±5…¹Õ…° ¤íµ…¹Õ…±9••‘Í9•ÕÑÉ…±|õÑÉÕ”íô4(€€¼¼	½Ñ …ÕÑ¡•¹Ñ¥…Ñ•É…‘¥¼Á…Ñ¡ÌÍÑ…±”è…±°½ÕÑÁÕÑÌ=°•á•ÁÐ„±½…±±ä4(€€¼¼…ÕÑ¡½É¥é•%9Q9Q}9Y}!=5…™Ñ•ÈÑ¡”€ÄÀµÍ•½¹…Ñ”¸I•±•…Í•ÌÍÑ…ä=¸4(€€¼¼¸¥¹Ñ•ÉÉÕÁÑ•É•±•…Í”¥Ì±…Ñ¡•‰•…ÕÍ”¥ÑÌÁ¡åÍ¥…°½µÁ±•Ñ¥½¸¥ÌÕ¹­¹½Ý¸¸4(€½¹ÍÐ‰½½°É…‘¥½%¹‘•Á•¹‘•¹Ñ!½µ”õ¥¸¹…ÕÑ½¹½µ½ÕÍIÑ ˜™µ¥ÍÍ¥½¹Ñ¥Ù”˜™¥¹Ñ•¹Ð¹¥¹Ñ•¹Ðôõ%9Q9Q}9Y}!=5ì4(€¥˜ …¥¸¹ÁÉ¥µ…ÉåÉ•Í ˜˜…¥¸¹‰…­ÕÁÉ•Í ˜˜…É…‘¥½%¹‘•Á•¹‘•¹Ñ!½µ”¥ì4(€€¥˜¡É•±•…Í•	ÕÍä ¤¥ì4(€€€½µÁ±•Ñ¥½¹|õí±…ÍÑQá|±±…ÍÑQ½­•¹|±™…±Í”±ÑÉÕ•ôì4(€€€ÁÕ±Í•Ñ¥Ù•|õ…Ý…¥Ñ%‘±•|õ™…±Í”ì4(€€€ÍÑ½Á1…Ñ¡•‘|õÑÉÕ”ì4(€€ô4(€€É•ÑÕÉ¸½™˜ì4(€ô4(€¥˜¡ÁÕ±Í•Ñ¥Ù•}ññ…Ý…¥Ñ%‘±•|¥ì4(€€…¹•±5…¹Õ…° ¤ì4(€€¥˜ ¡µ…¹Õ…±I•±•…Í•|ýµ¥ÍÍ¥½¹Ñ¥Ù”è…µ¥ÍÍ¥½¹Ñ¥Ù”¥ñð…¥¸¹ÁÉ¥µ…ÉåÉ•Í¡ñð…¥¸¹ÍÑ…Ñ¥½¹…Éåñð…¥¸¹É•±•…Í•%¹Ñ•É±½­Ì¥ì4(€€€½µÁ±•Ñ¥½¹|õí±…ÍÑQá|±±…ÍÑQ½­•¹|±™…±Í”±ÑÉÕ•ôíÁÕ±Í•Ñ¥Ù•|õ…Ý…¥Ñ%‘±•|õ™…±Í”íÍÑ½Á1…Ñ¡•‘|õÑÉÕ”íÉ•ÑÕÉ¸½™˜ì4(€€ô4(€€¥˜¡ÁÕ±Í•Ñ¥Ù•|¥ì4(€€€¥˜¡¹½ÜµÁÕ±Í•Ñ|ñ™|¹ÁÕ±Í•5Ím¡…¹¹•±}t¥É•ÑÕÉ¸ìÀ°À±¡…¹¹•±}ôì4(€€€ÁÕ±Í•Ñ¥Ù•|õ™…±Í”í…Ý…¥Ñ%‘±•|õÑÉÕ”í½™™Ñ|õ¹½ÜíÉ•±•…Í•…¹•±±•‘|õ™…±Í”íÉ•ÑÕÉ¸½™˜ì4(€€ô4(€€€¼¼I•ÅÕ¥É”„Í•Á…É…Ñ”Á½ÍÐµ‘••¹•É¥é…Ñ¥½¸¥‘±”Í…µÁ±”°¹½ÐÍ…µ”µÑ¥¬½¹™¥Éµ…Ñ¥½¸¸4(€€¥˜ ¡¥¹ÐÌÉ}Ð¤¡Í…™•ÑåM…µÁ±•Ðµ½™™Ñ|¤øÀ˜™¥¸¹É•±•…Í•%‘±”¥í½µÁ±•Ñ¥½¹|õí±…ÍÑQá|±±…ÍÑQ½­•¹|°…É•±•…Í•…¹•±±•‘|±ÑÉÕ•ôí…Ý…¥Ñ%‘±•|õ™…±Í”íÉ•±•…Í•…¹•±±•‘|õ™…±Í”íô4(€€•±Í”¥˜¡¹½Üµ½™™Ñ|øôÔÀÁT¥í½µÁ±•Ñ¥½¹|õí±…ÍÑQá|±±…ÍÑQ½­•¹|±™…±Í”±ÑÉÕ•ôí…Ý…¥Ñ%‘±•|õ™…±Í”íÉ•±•…Í•…¹•±±•‘|õ™…±Í”íÍÑ½Á1…Ñ¡•‘|õÑÉÕ”íô4(€€É•ÑÕÉ¸½™˜ì4(€ô4(€¥˜ …¥¸¹É•±•…Í•%‘±”¥É•ÑÕÉ¸½™˜ì4(€¥˜¡µ¥ÍÍ¥½¹Ñ¥Ù”¥ì4(€€…¹•±5…¹Õ…° ¤ì4(€€¥˜¡½Ù•ÉÉ¥‘•Ñ¥Ù”˜™¥¸¹ÁÉ¥µ…ÉåÉ•Í ˜™¥¸¹É•±•…Í•%¹Ñ•É±½­Ì˜™½Ù•ÉÉ¥‘•1•™Ðøô´ÄÀÀÀ˜™½Ù•ÉÉ¥‘•1•™ÐðôÄÀÀÀ˜™½Ù•ÉÉ¥‘•I¥¡Ðøô´ÄÀÀÀ˜™½Ù•ÉÉ¥‘•I¥¡ÐðôÄÀÀÀ¤4(€€€É•ÑÕÉ¸í½Ù•ÉÉ¥‘•1•™Ð±½Ù•ÉÉ¥‘•I¥¡Ð°´Åôì4(€€¥˜¡¥¹Ñ•¹Ð¹¥¹Ñ•¹Ð„õ%9Q9Q}9Y}QIP˜™¥¹Ñ•¹Ð¹¥¹Ñ•¹Ð„õ%9Q9Q}9Y}!=5¥É•ÑÕÉ¸½™˜ì4(€€€¼¼HÌÁ ´ÈÐèÙ…±¥‘…Ñ”Ñ¡”€©±½…°¨¹…Ù¥…Ñ¥½¸Ý¥Ñ¹•ÍÌ…ÐÑ¡”±…ÍÐ…ÑÕ…Ñ½È4(€€€¼¼‰½Õ¹‘…Éä°•Ù•¸¥˜„ÁÉ•Ù¥½ÕÍ±ä…¡•¹…Ù¥…Ñ¥½¸É•ÍÕ±ÐÍÑ¥±°Í…åÌÙ…±¥¸4(€€€¼¼9•¥Ñ¡•È„ÍÑ…±”9ML½¡•…‘¥¹œÍ…µÁ±”¹½È…¸Iµ‘•É¥Ù•‘¥ÍÁ±…äÙ…±Õ”…¸4(€€€¼¼…ÕÑ¡½É¥é”…ÕÑ½¹½µ½ÕÌµ½Ñ½È‘•µ…¹¸Q¡¥Ì¥ÌÍ½™ÑÝ…É”‘•™•¹Í”µ¥¸µ‘•ÁÑ °4(€€€¼¼9=P¥¹‘•Á•¹‘•¹Ð¡…É‘Ý…É”½ÕÑÁÕÐ‘¥Í…‰±”¸4(€€¥˜ …¥¸¹™¥à¹™É•Í¡ñð…¥¸¹™¥à¹¡•…‘¥¹Y…±¥‘ñð…¥¸¹™¥à¹•½™•¹•Y…±¥‘ñð4(€€€€€€…ÍÑèé¥Í™¥¹¥Ñ”¡¥¸¹™¥à¹…ÕÉ…å4¥ññ¥¸¹™¥à¹…ÕÉ…å4ðôÀ¸Áñð4(€€€€€€…ÍÑèé¥Í™¥¹¥Ñ”¡¥¸¹™¥à¹¡•…‘¥¹•œ¥ññ¥¸¹™¥à¹¡•…‘¥¹•œðÀ¸Áñð4(€€€€€¥¸¹™¥à¹¡•…‘¥¹•œøôÌØÀ¸À¥É•ÑÕÉ¸½™˜ì4(€€¥˜ …¹…Ø¹Ù…±¥‘ññ¹…Ø¹…ÉÉ¥Ù•‘ñð…ÍÑèé¥Í™¥¹¥Ñ”¡¹…Ø¹¡•…‘¥¹ÉÉ½É•œ¥ñð…ÍÑèé¥Í™¥¹¥Ñ”¡¹…Ø¹‘¥ÍÑ…¹•4¥ñð…¥¸¹É•±•…Í•%¹Ñ•É±½­Ì¥É•ÑÕÉ¸½™˜ì4(€€€¼¼¥™™•É•¹Ñ¥…°Ñ¡ÉÕÍÐ=91dèÁ½Í¥Ñ¥Ù”‰•…É¥¹œ•ÉÉ½Èµ•…¹Ì±½­Ý¥Í”½É¥¡Ð°4(€€€¼¼¡•¹”Ñ¡”Á½ÉÐ½±•™ÐÁÉ½Á•±±•È•ÑÌµ½É”™½ÉÝ…ÉÑ¡ÉÕÍÐÑ¡…¸ÍÑ…É‰½…É¸4(€€€¼¼%5A=IQ9PèÕ¹½µµ¥ÍÍ¥½¹•…ÕÑ½¹½µ½ÕÌÁ¥Ù½Ð½É•Ù•ÉÍ”¥Ì‘¥Í…±±½Ý•¸4(€€€¼¼5…¹Õ…°Q9,µ½‘”É•Ñ…¥¹ÌÍ¥¹•É•Ù•ÉÍ”½µµ…¹‘ÌÕ¹‘•È¥ÑÌ½Ý¸Í…™•Ñä±•…Í”¸4(€€½¹ÍÐ‘½Õ‰±”…Àõ™|¹µ…á9…Ù5½Ñ½Èì4(€€½¹ÍÐ‘½Õ‰±”ÑÕÉ¸õÍÑèé™µ…à µ…À±ÍÑèé™µ¥¸¡…À±¹…Ø¹¡•…‘¥¹ÉÉ½É•œ©™|¹å…Ý…¥¸¤¤ì4(€€½¹ÍÐ‘½Õ‰±”™½ÉÝ…ÉõÍÑèé™…‰Ì¡¹…Ø¹¡•…‘¥¹ÉÉ½É•œ¤øÐÔ¸ÀüÀ¸Àé…À¨ Ä¸ÀµÍÑèé™…‰Ì¡¹…Ø¹¡•…‘¥¹ÉÉ½É•œ¤¼äÀ¸À¤ì4(€€½¹ÍÐ‘½Õ‰±”±•™ÐõÍÑèé™µ…à À¸À±ÍÑèé™µ¥¸¡…À±™½ÉÝ…É­ÑÕÉ¸¤¤ì4(€€½¹ÍÐ‘½Õ‰±”É¥¡ÐõÍÑèé™µ…à À¸À±ÍÑèé™µ¥¸¡…À±™½ÉÝ…ÉµÑÕÉ¸¤¤ì4(€€É•ÑÕÉ¸ì¡¥¹ÐÄÙ}Ð¥±•™Ð°¡¥¹ÐÄÙ}Ð¥É¥¡Ð°´Åôì4(€ô4(€¥˜¡µ…¹Õ…±Y…±¥‘|˜™¥¸¹ÁÉ¥µ…ÉåÉ•Í ˜™¹½Üµµ…¹Õ…±Ñ|ðÈÀÁT˜™¥¸¹É•±•…Í•%¹Ñ•É±½­Ì¥É•ÑÕÉ¸íµ…¹Õ…±1•™Ñ|±µ…¹Õ…±I¥¡Ñ|°´Åôì4(€…¹•±5…¹Õ…° ¤íÉ•ÑÕÉ¸½™˜ì4(ô4(ÍÑÉÕÐ½µÁ±•Ñ¥½¹íÕ¥¹ÐÄÙ}ÐÑÉ…¹Í…Ñ¥½¸±Ñ½­•¸í‰½½°ÍÕ•ÍÌ±Ù…±¥íôì4(½µÁ±•Ñ¥½¸Ñ…­•½µÁ±•Ñ¥½¸ ¥í…ÕÑ¼Ù…±Õ”õ½µÁ±•Ñ¥½¹|í½µÁ±•Ñ¥½¹|õíôíÉ•ÑÕÉ¸Ù…±Õ”íô4)ÁÉ¥Ù…Ñ”è4(	½…ÑÑÕ…Ñ½É½¹™¥œ™}íôí‰½½°µ…¹Õ…±9••‘Í9•ÕÑÉ…±|õ™…±Í”±µ…¹Õ…±I•±•…Í•|õ™…±Í”±½¹™¥ÕÉ•‘|õ™…±Í”±ÍÑ½Á1…Ñ¡•‘|õÑÉÕ”±µ…¹Õ…±Y…±¥‘|õ™…±Í”±ÁÕ±Í•Ñ¥Ù•|õ™…±Í”±…Ý…¥Ñ%‘±•|õ™…±Í”±É•±•…Í•…¹•±±•‘|õ™…±Í”ì4(¥¹ÐÄÙ}Ðµ…¹Õ…±1•™Ñ|ôÀ±µ…¹Õ…±I¥¡Ñ|ôÀí¥¹Ðá}Ð¡…¹¹•±|ô´Äì4(Õ¥¹ÐÌÉ}Ðµ…¹Õ…±Ñ|ôÀ±ÁÕ±Í•Ñ|ôÀ±½™™Ñ|ôÀì4(Õ¥¹ÐÄÙ}Ð±…ÍÑQá|ôÀ±±…ÍÑQ½­•¹|ôÀí½µÁ±•Ñ¥½¸½µÁ±•Ñ¥½¹}íôì4)ôì4
+#pragma once
+#include "mission_execution.h"
+#include "boat_battery_policy.h"
+#include <cmath>
+// Hardware measurements must be acquired locally. Network messages cannot
+// supply these timestamps or override the physical STOP/interlock state.
+struct BoatHardwareSample {
+ MissionNavigationFix fix;
+ uint32_t safetyAt,gnssAt,headingAt;
+ bool safetyValid,physicalStopReleased,batteryHealthy,stationary,releaseInterlocks,releaseIdle,watchdogReady;
+ bool outputFeedbackValid,leftMotorActive,rightMotorActive;
+ uint8_t batteryPercent,gpsFixType,satellites;
+ uint16_t batteryMillivolts,speedCmPerSecond;
+ uint32_t batteryAt,speedAt;
+ bool voltageValid,speedValid;
+ BoatBatteryBand batteryBand;
+ bool batteryRthRequested;
+ // Optional local sensor readings. Hardware adapters set these only after a
+ // successful sample; timestamps are local monotonic milliseconds.
+ bool sonarValid;uint16_t sonarDepthCm,sonarRangeCm;uint8_t sonarHealth,sonarAlarmFlags,sonarSample;uint32_t sonarAt;
+ bool waterTemperatureValid;int16_t waterTemperatureCentiC;uint8_t waterTemperatureSample;uint32_t waterTemperatureAt;
+ bool weatherValid;int16_t weatherTemperatureCentiC;uint32_t pressurePa,weatherAt;
+};
+struct BoatActuatorConfig {
+ uint16_t pulseMs[4]; // actual coil characterization required
+ uint16_t maxNavMotor; // bench-tuned demand cap, not a PWM pin assignment
+ double yawGain;
+};
+struct BoatActuatorOutput{int16_t left,right;int8_t releaseChannel;};
+inline ExecInputs boatHardware_inputs(const BoatHardwareSample &s,uint32_t now,bool stopLatched){
+ const bool safe=s.safetyValid&&now-s.safetyAt<100U&&s.watchdogReady&&s.outputFeedbackValid;
+ auto fix=s.fix;
+ fix.fresh=fix.fresh&&now-s.gnssAt<2000U;
+ fix.headingValid=fix.headingValid&&now-s.headingAt<300U;
+ fix.batteryHealthy=safe&&s.batteryHealthy;
+ const bool batteryLow=s.batteryBand>=BOAT_BATTERY_RED;
+ return {fix,stopLatched||!safe||!s.physicalStopReleased,false,false,safe&&s.stationary&&!s.leftMotorActive&&!s.rightMotorActive,safe&&s.releaseInterlocks,safe&&s.releaseIdle,false,batteryLow};
+}
+inline bool boatHardware_configValid(const BoatActuatorConfig &c){
+ if(!c.maxNavMotor||c.maxNavMotor>1000||!std::isfinite(c.yawGain)||c.yawGain<=0||c.yawGain>1000)return false;
+ for(auto ms:c.pulseMs)if(!ms||ms>=4000)return false;
+ return true;
+}
+// Actuator-side software watchdog and command lease. Dedicated external
+// failsafe electronics are outside the project scope. This class cannot
+// deenergize a stuck MCU or failed output driver by itself.
+class BoatActuatorSupervisor{
+public:
+ bool configure(const BoatActuatorConfig &cfg){stop();cfg_=cfg;configured_=boatHardware_configValid(cfg);return configured_;}
+ void stop(){stopLatched_=true;manualValid_=false;pulseActive_=false;awaitIdle_=false;releaseCancelled_=false;completion_={};}
+ bool clearStop(const BoatHardwareSample &s,uint32_t now,bool authenticatedPrimary,bool neutral){
+  const auto in=boatHardware_inputs(s,now,false);
+  if(!configured_||!authenticatedPrimary||!neutral||in.stopActive||!in.fix.batteryHealthy||!in.stationary||!in.releaseIdle||!in.releaseInterlocks)return false;
+  stopLatched_=false;return true;
+ }
+ bool stopped()const{return stopLatched_;}
+ void manual(int16_t left,int16_t right,uint32_t receivedAt,bool authenticatedPrimary){
+  if(manualNeedsNeutral_){if(authenticatedPrimary&&!pulseActive_&&!awaitIdle_&&!left&&!right)manualNeedsNeutral_=false;manualValid_=false;return;}
+  manualValid_=!pulseActive_&&!awaitIdle_&&authenticatedPrimary&&!stopLatched_&&left>=-1000&&left<=1000&&right>=-1000&&right<=1000;
+  manualLeft_=left;manualRight_=right;manualAt_=receivedAt;
+ }
+ void cancelManual(){manualValid_=false;}
+ // R30H-25: a new authenticated radio session or a local emergency fault
+ // must not replay non-neutral sticks. A fresh neutral primary-only command
+ // is required before a subsequent nonzero manual motor lease.
+ void requireManualNeutral(){cancelManual();manualNeedsNeutral_=true;}
+ bool releaseBusy()const{return pulseActive_||awaitIdle_;}
+ void cancelReleaseForFailsafe(uint32_t now){if(pulseActive_){pulseActive_=false;awaitIdle_=true;offAt_=now;releaseCancelled_=true;cancelManual();}}
+ bool beginManualRelease(uint16_t id,int8_t channel,const ExecInputs &in,uint32_t now){
+  if(releaseBusy()||(manualValid_&&now-manualAt_<200U&&(manualLeft_||manualRight_)))return false;
+  newMissionIdentity();if(!beginRelease(id,1,channel,in,now))return false;
+  manualRelease_=true;manualNeedsNeutral_=true;cancelManual();return true;
+ }
+ // Mission release is a single tokenized edge, not a continuously repeated command.
+ bool beginRelease(uint16_t tx,uint16_t token,int8_t channel,const ExecInputs &in,uint32_t now){
+  if(!configured_||stopLatched_||!tx||!token||channel<0||channel>3||pulseActive_||awaitIdle_||
+    (tx==lastTx_&&token<=lastToken_)||in.stopActive||!in.primaryFresh||!in.stationary||
+    !in.releaseIdle||!in.releaseInterlocks||!in.fix.batteryHealthy||in.batteryLow)return false;
+  manualRelease_=false;releaseCancelled_=false;lastTx_=tx;lastToken_=token;channel_=channel;pulseAt_=now;pulseActive_=true;return true;
+ }
+ void newMissionIdentity(){if(!pulseActive_&&!awaitIdle_){lastTx_=lastToken_=0;}}
+ BoatActuatorOutput tick(const ExecInputs &in,uint32_t now,ExecOutput intent,const MissionNavigationResult &nav,bool missionActive,bool overrideActive,int16_t overrideLeft,int16_t overrideRight,uint32_t safetySampleAt){
+  const BoatActuatorOutput off={0,0,-1};
+  if(!configured_||stopLatched_||in.stopActive||!in.fix.batteryHealthy){stop();return off;}
+  if(in.batteryLow&&missionActive&&intent.intent!=INTENT_NAV_HOME){
+   // During a battery abort, deenergize any ongoing release *immediately*.
+   // Still advance the post-off feedback gate, otherwise awaitIdle_ would
+   // remain permanently set and safe Home diversion could never begin.
+   if(pulseActive_)cancelReleaseForFailsafe(now);
+   if(awaitIdle_){
+    if((int32_t)(safetySampleAt-offAt_)>0&&in.releaseIdle){
+     completion_={lastTx_,lastToken_,false,true};
+     awaitIdle_=false;releaseCancelled_=false;
+    }else if((uint32_t)(now-offAt_)>=500U){
+     completion_={lastTx_,lastToken_,false,true};
+     awaitIdle_=false;releaseCancelled_=false;stopLatched_=true;
+    }
+   }
+   return off;
+  }
+  // Never retain/replay a manual stick command after primary-link loss.
+  if(!in.primaryFresh){cancelManual();manualNeedsNeutral_=true;}
+  // Both authenticated radio paths stale: all outputs OFF, except a locally
+  // authorized INTENT_NAV_HOME after the 10-second gate. Releases stay OFF.
+  // An interrupted release is latched because its physical completion is unknown.
+  const bool radioIndependentHome=in.autonomousRth&&missionActive&&intent.intent==INTENT_NAV_HOME;
+  if(!in.primaryFresh&&!in.backupFresh&&!radioIndependentHome){
+   if(releaseBusy()){
+    completion_={lastTx_,lastToken_,false,true};
+    pulseActive_=awaitIdle_=false;
+    stopLatched_=true;
+   }
+   return off;
+  }
+  if(pulseActive_||awaitIdle_){
+   cancelManual();
+   if((manualRelease_?missionActive:!missionActive)||!in.primaryFresh||!in.stationary||!in.releaseInterlocks){
+    completion_={lastTx_,lastToken_,false,true};pulseActive_=awaitIdle_=false;stopLatched_=true;return off;
+   }
+   if(pulseActive_){
+    if(now-pulseAt_<cfg_.pulseMs[channel_])return {0,0,channel_};
+    pulseActive_=false;awaitIdle_=true;offAt_=now;releaseCancelled_=false;return off;
+   }
+   // Require a separate post-deenergization idle sample, not same-tick confirmation.
+   if((int32_t)(safetySampleAt-offAt_)>0&&in.releaseIdle){completion_={lastTx_,lastToken_,!releaseCancelled_,true};awaitIdle_=false;releaseCancelled_=false;}
+   else if(now-offAt_>=500U){completion_={lastTx_,lastToken_,false,true};awaitIdle_=false;releaseCancelled_=false;stopLatched_=true;}
+   return off;
+  }
+  if(!in.releaseIdle)return off;
+  if(missionActive){
+   cancelManual();
+   if(overrideActive&&in.primaryFresh&&in.releaseInterlocks&&overrideLeft>=-1000&&overrideLeft<=1000&&overrideRight>=-1000&&overrideRight<=1000)
+    return {overrideLeft,overrideRight,-1};
+   if(intent.intent!=INTENT_NAV_TARGET&&intent.intent!=INTENT_NAV_HOME)return off;
+   // R30H-24: validate the *local* navigation witness at the last actuator
+   // boundary, even if a previously cached navigation result still says valid.
+   // Neither a stale GNSS/heading sample nor an RF-derived display value can
+   // authorize autonomous motor demand. This is software defense-in-depth,
+   // NOT independent hardware output disable.
+   if(!in.fix.fresh||!in.fix.headingValid||!in.fix.geofenceValid||
+      !std::isfinite(in.fix.accuracyM)||in.fix.accuracyM<=0.0||
+      !std::isfinite(in.fix.headingDeg)||in.fix.headingDeg<0.0||
+      in.fix.headingDeg>=360.0)return off;
+   if(!nav.valid||nav.arrived||!std::isfinite(nav.headingErrorDeg)||!std::isfinite(nav.distanceM)||!in.releaseInterlocks)return off;
+   // Differential thrust ONLY: positive bearing error means clockwise/right,
+   // hence the port/left propeller gets more forward thrust than starboard.
+   // IMPORTANT: uncommissioned autonomous pivot/reverse is disallowed.
+   // Manual TANK mode retains signed reverse commands under its own safety lease.
+   const double cap=cfg_.maxNavMotor;
+   const double turn=std::fmax(-cap,std::fmin(cap,nav.headingErrorDeg*cfg_.yawGain));
+   const double forward=std::fabs(nav.headingErrorDeg)>45.0?0.0:cap*(1.0-std::fabs(nav.headingErrorDeg)/90.0);
+   const double left=std::fmax(0.0,std::fmin(cap,forward+turn));
+   const double right=std::fmax(0.0,std::fmin(cap,forward-turn));
+   return {(int16_t)left,(int16_t)right,-1};
+  }
+  if(manualValid_&&in.primaryFresh&&now-manualAt_<200U&&in.releaseInterlocks)return {manualLeft_,manualRight_,-1};
+  cancelManual();return off;
+ }
+ struct Completion{uint16_t transaction,token;bool success,valid;};
+ Completion takeCompletion(){auto value=completion_;completion_={};return value;}
+private:
+ BoatActuatorConfig cfg_{};bool manualNeedsNeutral_=false,manualRelease_=false,configured_=false,stopLatched_=true,manualValid_=false,pulseActive_=false,awaitIdle_=false,releaseCancelled_=false;
+ int16_t manualLeft_=0,manualRight_=0;int8_t channel_=-1;
+ uint32_t manualAt_=0,pulseAt_=0,offAt_=0;
+ uint16_t lastTx_=0,lastToken_=0;Completion completion_{};
+};

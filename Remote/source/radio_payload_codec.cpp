@@ -1,2 +1,97 @@
-1ëa¡Ñ1qêmŠ‰ËŠwµé¬¥¡§\¡×œršmµ©•§r«×œ…ªõÑÈZ¯]¢{Þ	©ç¢×(ž÷«µªàºg§¶‰]
-«Â+a½©nyú+EêeiÇ­¢Ü©y,¬µé‚…ªÂjyèµÊ'½êí½©nzÚ-Ê—’ÊË^˜(Z¬Jë¢´­®)àšë-mç±iËeÊ‰Þr«iË^®Z'€¥¹±Õ‘”€‰É…‘¥½}Á…å±½…‘}½‘•Œ¹ ˆ4(¥¹±Õ‘”€‰É…‘¥½}Í…™•Ñå}‘¥…¹½ÍÑ¥}ØÄ¹ ˆ4(¥¹±Õ‘”€ñÍÑÉ¥¹œ¹ ø4(4)ÍÑ…Ñ¥ŒÕ¥¹ÐÄÙ}ÐÉ•…‘TÄÙ1¡½¹ÍÐÕ¥¹Ðá}Ð€©À¤ì4(€€€É•ÑÕÉ¸€¡Õ¥¹ÐÄÙ}Ð¥ÁlÁtð€ ¡Õ¥¹ÐÄÙ}Ð¥ÁlÅt€ðð€à¤ì4)ô4)ÍÑ…Ñ¥Œ¥¹ÐÌÉ}ÐÉ•…‘$ÌÉ1¡½¹ÍÐÕ¥¹Ðá}Ð€©À¤ì4(€€€½¹ÍÐÕ¥¹ÐÌÉ}ÐÔô¡Õ¥¹ÐÌÉ}Ð¥ÁlÁtð€ ¡Õ¥¹ÐÌÉ}Ð¥ÁlÅtððà¤ð4(€€€€€€€€€€€€€€€€€€€€€ ¡Õ¥¹ÐÌÉ}Ð¥ÁlÉtððÄØ¤ð€ ¡Õ¥¹ÐÌÉ}Ð¥ÁlÍtððÈÐ¤ì4(€€€¥¹ÐÌÉ}ÐÙ…±Õ”ì4(€€€µ•µÁä ™Ù…±Õ”°™Ô±Í¥é•½˜¡Ù…±Õ”¤¤ì4(€€€É•ÑÕÉ¸Ù…±Õ”ì4)ô4)ÍÑ…Ñ¥ŒÙ½¥É•Í•Ñ=ÕÐ¡I…‘¥½•½‘•‘A…å±½…€™½ÕÐ¤ì4(€€€½ÕÐõíôì½ÕÐ¹­¥¹õI%=}Ae1=}%9Y1%ì4)ô4)ÍÑ…Ñ¥Œ‰½½°É•Í•ÉÙ•‘i•É¼¡½¹ÍÐÕ¥¹Ðá}Ð€©À°Õ¥¹Ðá}Ð™É½´°Õ¥¹Ðá}ÐÑ½%¹±ÕÍ¥Ù”¤ì4(€€€™½È¡Õ¥¹Ðá}Ð¤õ™É½´í¤ðõÑ½%¹±ÕÍ¥Ù”í¤¬¬¤¥˜¡Ám¥t„ôÀ¤É•ÑÕÉ¸™…±Í”ì4(€€€É•ÑÕÉ¸ÑÉÕ”ì4)ô4(4)‰½½°É…‘¥½}‘•½‘•!•…ÉÑ‰•…ÑA…å±½…¡½¹ÍÐÕ¥¹Ðá}ÐÁlát°I…‘¥½•½‘•‘A…å±½…€™½ÕÐ¤ì4(€€€É•Í•Ñ=ÕÐ¡½ÕÐ¤ì4(€€€¥˜ ¡ÁlÁt˜ÁáÁT¤„ôÀñð€…É•Í•ÉÙ•‘i•É¼¡À°È°Ü¤¤É•ÑÕÉ¸™…±Í”ì4(€€€½ÕÐ¹­¥¹õI%=}Ae1=}!IQ	Pì½ÕÐ¹¡•…ÉÑ‰•…Ñ±…ÌõÁlÁtì½ÕÐ¹‰Õ¥±‘5…©½ÈõÁlÅtì4(€€€É•ÑÕÉ¸ÑÉÕ”ì4)ô4)‰½½°É…‘¥½}‘•½‘•­A…å±½…¡½¹ÍÐÕ¥¹Ðá}ÐÁlát°I…‘¥½•½‘•‘A…å±½…€™½ÕÐ¤ì4(€€€É•Í•Ñ=ÕÐ¡½ÕÐ¤ì4(€€€¥˜¡ÁlÁt„ôÀñðÁlÅtùI%=}-}%9QI91}%1UIñðÁlÉtðÄñðÁlÉtøÄÀñð4(€€€€€€ÁlÕtøÈñð€¡ÁlÙt˜ÁáÁT¤„ôÀñðÁlÝt„ôÀ¤É•ÑÕÉ¸™…±Í”ì4(€€€½ÕÐ¹­¥¹õI%=}Ae1=},ì½ÕÐ¹ÍÕ‰ÑåÁ”ôÀì½ÕÐ¹…­I•ÍÕ±ÐõÁlÅtì½ÕÐ¹½µµ…¹‘QåÁ”õÁlÉtì4(€€€½ÕÐ¹½µµ…¹‘%õÉ•…‘TÄÙ1¡À¬Ì¤ì½ÕÐ¹ÍÑ½ÁMÑ…Ñ”õÁlÕtì½ÕÐ¹¥¹Ñ•É±½­±…ÌõÁlÙtì4(€€€É•ÑÕÉ¸ÑÉÕ”ì4)ô4)‰½½°É…‘¥½}‘•½‘•Q•±•µ•ÑÉåA…å±½…¡½¹ÍÐÕ¥¹Ðá}ÐÁlát°I…‘¥½•½‘•‘A…å±½…€™½ÕÐ¤ì4(€€€É•Í•Ñ=ÕÐ¡½ÕÐ¤ì½ÕÐ¹ÍÕ‰ÑåÁ”õÁlÁtì4(€€€ÍÝ¥Ñ ¡ÁlÁt¤ì4(€€€…Í”€Äè4(€€€€€€€¥˜¡ÁlÅtøÐñðÁlÉtøÈñð€¡ÁlÑtøÄÀÀ€˜˜ÁlÑt„ôÈÔÔ¤ñðÁlÝt„ôÀ¤ìÉ•Í•Ñ=ÕÐ¡½ÕÐ¤ìÉ•ÑÕÉ¸™…±Í”ìô4(€€€€€€€½ÕÐ¹­¥¹õI%=}Ae1=}MQQULì½ÕÐ¹‰½…Ñ5½‘”õÁlÅtì½ÕÐ¹ÍÑ½ÁMÑ…Ñ”õÁlÉtì½ÕÐ¹Í…™•Ñå±…ÌõÁlÍtì4(€€€€€€€½ÕÐ¹‰…ÑÑ•ÉåA•É•¹ÐõÁlÑtì½ÕÐ¹ÁÍ¥áQåÁ”õÁlÕtì½ÕÐ¹Í…Ñ•±±¥Ñ•ÌõÁlÙtìÉ•ÑÕÉ¸ÑÉÕ”ì4(€€€…Í”€Èè4(€€€€€€€¥˜ …É•Í•ÉÙ•‘i•É¼¡À°Ô°Ü¤¤ìÉ•Í•Ñ=ÕÐ¡½ÕÐ¤ìÉ•ÑÕÉ¸™…±Í”ìô4(€€€€€€€½ÕÐ¹­¥¹õI%=}Ae1=}	QQIe}MAì½ÕÐ¹‰…ÑÑ•Éå5¥±±¥Ù½±ÑÌõÉ•…‘TÄÙ1¡À¬Ä¤ì½ÕÐ¹ÍÁ••‘µA•ÉM•½¹õÉ•…‘TÄÙ1¡À¬Ì¤ì4(€€€€€€€¥˜¡½ÕÐ¹ÍÁ••‘µA•ÉM•½¹„ôÁáT€˜˜½ÕÐ¹ÍÁ••‘µA•ÉM•½¹øÄÀÀÀÁT¤ìÉ•Í•Ñ=ÕÐ¡½ÕÐ¤ìÉ•ÑÕÉ¸™…±Í”ìô4(€€€€€€€É•ÑÕÉ¸ÑÉÕ”ì4(€€€…Í”€Ìè4(€€€€€€€½ÕÐ¹­¥¹õI%=}Ae1=}9MM}1Q%QUì½ÕÐ¹½½É‘¥¹…Ñ•M…µÁ±”õÁlÅtì½ÕÐ¹½½É‘¥¹…Ñ•ÜõÉ•…‘$ÌÉ1¡À¬È¤ì½ÕÐ¹¡½É¥é½¹Ñ…±ÕÉ…å´õÉ•…‘TÄÙ1¡À¬Ø¤ì4(€€€€€€€¥˜¡½ÕÐ¹½½É‘¥¹…Ñ•Ü€ð€´äÀÀÀÀÀÀÀÁ0ñð½ÕÐ¹½½É‘¥¹…Ñ•Ü€ø€äÀÀÀÀÀÀÀÁ0¤ìÉ•Í•Ñ=ÕÐ¡½ÕÐ¤ìÉ•ÑÕÉ¸™…±Í”ìô4(€€€€€€€É•ÑÕÉ¸ÑÉÕ”ì4(€€€…Í”€Ðè4(€€€€€€€¥˜ …É•Í•ÉÙ•‘i•É¼¡À°Ø°Ü¤¤ìÉ•Í•Ñ=ÕÐ¡½ÕÐ¤ìÉ•ÑÕÉ¸™…±Í”ìô4(€€€€€€€½ÕÐ¹­¥¹õI%=}Ae1=}9MM}1=9%QUì½ÕÐ¹½½É‘¥¹…Ñ•M…µÁ±”õÁlÅtì½ÕÐ¹½½É‘¥¹…Ñ•ÜõÉ•…‘$ÌÉ1¡À¬È¤ì4(€€€€€€€¥˜¡½ÕÐ¹½½É‘¥¹…Ñ•Ü€ð€´ÄàÀÀÀÀÀÀÀÁ0ñð½ÕÐ¹½½É‘¥¹…Ñ•Ü€ø€ÄàÀÀÀÀÀÀÀÁ0¤ìÉ•Í•Ñ=ÕÐ¡½ÕÐ¤ìÉ•ÑÕÉ¸™…±Í”ìô4(€€€€€€€É•ÑÕÉ¸ÑÉÕ”ì4(€€€…Í”€Ôè4(€€€€€€€½ÕÐ¹­¥¹õI%=}Ae1=}9Y%Q%=8ì½ÕÐ¹¡•…‘¥¹•¹Ñ¥‘•É••ÌõÉ•…‘TÄÙ1¡À¬Ä¤ì½ÕÐ¹ÍÁ••‘µA•ÉM•½¹õÉ•…‘TÄÙ1¡À¬Ì¤ì4(€€€€€€€½ÕÐ¹¹…Ù¥…Ñ¥½¹MÑ…ÑÕÌõÁlÕtì½ÕÐ¹Ý…åÁ½¥¹Ñ%¹‘•àõÁlÙtì½ÕÐ¹¹…Ù¥…Ñ¥½¹M…µÁ±”õÁlÝtì4(€€€€€€€¥˜ ¡½ÕÐ¹¡•…‘¥¹•¹Ñ¥‘•É••Ì„ôÁáT€˜˜½ÕÐ¹¡•…‘¥¹•¹Ñ¥‘•É••ÌøÌÔääåT¤ñð4(€€€€€€€€€€€¡½ÕÐ¹ÍÁ••‘µA•ÉM•½¹„ôÁáT€˜˜½ÕÐ¹ÍÁ••‘µA•ÉM•½¹øÄÀÀÀÁT¤ñð½ÕÐ¹¹…Ù¥…Ñ¥½¹MÑ…ÑÕÌøÔ¤ìÉ•Í•Ñ=ÕÐ¡½ÕÐ¤ìÉ•ÑÕÉ¸™…±Í”ìô4(€€€€€€€É•ÑÕÉ¸ÑÉÕ”ì4(€€€…Í”€Øè4(€€€€€€€½ÕÐ¹­¥¹õI%=}Ae1=}M=9I}MU55Idì½ÕÐ¹‘•ÁÑ¡´õÉ•…‘TÄÙ1¡À¬Ä¤ì½ÕÐ¹Í½¹…ÉI…¹•´õÉ•…‘TÄÙ1¡À¬Ì¤ì4(€€€€€€€½ÕÐ¹Í½¹…É!•…±Ñ õÁlÕtì½ÕÐ¹Í½¹…É±…Éµ±…ÌõÁlÙtì½ÕÐ¹Í½¹…ÉM…µÁ±”õÁlÝtì4(€€€€€€€¥˜¡½ÕÐ¹Í½¹…É!•…±Ñ øÌñð€¡½ÕÐ¹Í½¹…É±…Éµ±…Ì˜ÁáÁT¤„ôÀ¤ìÉ•Í•Ñ=ÕÐ¡½ÕÐ¤ìÉ•ÑÕÉ¸™…±Í”ìô4(€€€€€€€É•ÑÕÉ¸ÑÉÕ”ì4(€€€…Í”€Üè4(€€€€€€€¥˜¡ÁlÝt„ôÀ¥íÉ•Í•Ñ=ÕÐ¡½ÕÐ¤íÉ•ÑÕÉ¸™…±Í”íô4(€€€€€€€½ÕÐ¹­¥¹õI%=}Ae1=}]Q!Hì4(€€€€€€€½ÕÐ¹Ñ•µÁ•É…ÑÕÉ••¹Ñ¥ô¡¥¹ÐÄÙ}Ð¥É•…‘TÄÙ1¡À¬Ä¤ì4(€€€€€€€½ÕÐ¹ÁÉ•ÍÍÕÉ•A„ô¡Õ¥¹ÐÌÉ}Ð¥ÁlÍuð ¡Õ¥¹ÐÌÉ}Ð¥ÁlÑtððà¥ð ¡Õ¥¹ÐÌÉ}Ð¥ÁlÕtððÄØ¥ð ¡Õ¥¹ÐÌÉ}Ð¥ÁlÙtððÈÐ¤ì4(€€€€€€€¥˜¡½ÕÐ¹Ñ•µÁ•É…ÑÕÉ••¹Ñ¥€ð€´ÐÀÀÀñð½ÕÐ¹Ñ•µÁ•É…ÑÕÉ••¹Ñ¥€ø€àÔÀÀñð½ÕÐ¹ÁÉ•ÍÍÕÉ•A„€ð€ÌÀÀÀÀñð½ÕÐ¹ÁÉ•ÍÍÕÉ•A„€ø€ÄÈÀÀÀÀ¥íÉ•Í•Ñ=ÕÐ¡½ÕÐ¤íÉ•ÑÕÉ¸™…±Í”íô4(€€€€€€€É•ÑÕÉ¸ÑÉÕ”ì4(€€€…Í”€àèì4(€€€€€€€€¼¼=ÁÑ¥½¹…°HÌÁ‘¥…¹½ÍÑ¥Œ¸ÕÑ¡•¹Ñ¥…Ñ•I…‘¥½É…µ”¡•­Ì‰•±½¹œÑ¼4(€€€€€€€€¼¼Ñ¡”ÑÉ…¹ÍÁ½ÉÐì½‰Í•ÉÙ¥¹œÑ¡¥ÌÍÕ‰ÑåÁ”9YH½¹™¥ÉµÌMQ=@½Èµ½Ñ½È4(€€€€€€€€¼¼É•…‘¥¹•ÍÌ¸I•©•Ð½±‘•ÈµÙ•ÉÍ¥½¸½È™…±Í•±ä½µµ¥ÍÍ¥½¹•Á…å±½…‘Ì¸4(€€€€€€€É…‘¥½}ÈÌÁ˜èé¥…¹½ÍÑ¥Œ‘¥…¹½ÍÑ¥íôì4(€€€€€€€¥˜ …É…‘¥½}ÈÌÁ˜èé‘•½‘”¡À±‘¥…¹½ÍÑ¥Œ¤¤íÉ•Í•Ñ=ÕÐ¡½ÕÐ¤íÉ•ÑÕÉ¸™…±Í”íô4(€€€€€€€½ÕÐ¹­¥¹õI%=}Ae1=}MQe}%9=MQ%ì4(€€€€€€€½ÕÐ¹‘¥…¹½ÍÑ¥I•…Í½¸õ‘¥…¹½ÍÑ¥Œ¹É•…Í½¸ì4(€€€€€€€½ÕÐ¹‘¥…¹½ÍÑ¥±…Ìõ‘¥…¹½ÍÑ¥Œ¹™±…Ìì4(€€€€€€€½ÕÐ¹‘¥…¹½ÍÑ¥5¥±±¥Ù½±ÑÌõ‘¥…¹½ÍÑ¥Œ¹µ¥±±¥Ù½±ÑÌì4(€€€€€€€½ÕÐ¹‘¥…¹½ÍÑ¥M•ÅÕ•¹”õ‘¥…¹½ÍÑ¥Œ¹Í•ÅÕ•¹”ì4(€€€€€€€É•ÑÕÉ¸ÑÉÕ”ì4(€€€ô4(€€€…Í”€ÄÀè4(€€€€€€€¥˜ …É•Í•ÉÙ•‘i•É¼¡À°Ð°Ü¤¥íÉ•Í•Ñ=ÕÐ¡½ÕÐ¤íÉ•ÑÕÉ¸™…±Í”íô4(€€€€€€€½ÕÐ¹­¥¹õI%=}Ae1=}]QI}Q5AIQUIì4(€€€€€€€½ÕÐ¹Ñ•µÁ•É…ÑÕÉ••¹Ñ¥ô¡¥¹ÐÄÙ}Ð¥É•…‘TÄÙ1¡À¬Ä¤í½ÕÐ¹Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ•M…µÁ±”õÁlÍtì4(€€€€€€€¥˜¡½ÕÐ¹Ñ•µÁ•É…ÑÕÉ••¹Ñ¥€ð€´ÔÀÀñð½ÕÐ¹Ñ•µÁ•É…ÑÕÉ••¹Ñ¥€ø€ÔÀÀÀ¥íÉ•Í•Ñ=ÕÐ¡½ÕÐ¤íÉ•ÑÕÉ¸™…±Í”íô4(€€€€€€€É•ÑÕÉ¸ÑÉÕ”ì4(€€€‘•™…Õ±ÐèÉ•Í•Ñ=ÕÐ¡½ÕÐ¤ìÉ•ÑÕÉ¸™…±Í”ì4(€€€ô4)ô4(
+#include "radio_payload_codec.h"
+#include "radio_safety_diagnostic_v1.h"
+#include <string.h>
+
+static uint16_t readU16LE(const uint8_t *p) {
+    return (uint16_t)p[0] | ((uint16_t)p[1] << 8);
+}
+static int32_t readI32LE(const uint8_t *p) {
+    const uint32_t u=(uint32_t)p[0] | ((uint32_t)p[1]<<8) |
+                     ((uint32_t)p[2]<<16) | ((uint32_t)p[3]<<24);
+    int32_t value;
+    memcpy(&value,&u,sizeof(value));
+    return value;
+}
+static void resetOut(RadioDecodedPayload &out) {
+    out={}; out.kind=RADIO_PAYLOAD_INVALID;
+}
+static bool reservedZero(const uint8_t *p, uint8_t from, uint8_t toInclusive) {
+    for(uint8_t i=from;i<=toInclusive;i++) if(p[i]!=0) return false;
+    return true;
+}
+
+bool radio_decodeHeartbeatPayload(const uint8_t p[8], RadioDecodedPayload &out) {
+    resetOut(out);
+    if((p[0]&0xF0U)!=0 || !reservedZero(p,2,7)) return false;
+    out.kind=RADIO_PAYLOAD_HEARTBEAT; out.heartbeatFlags=p[0]; out.buildMajor=p[1];
+    return true;
+}
+bool radio_decodeAckPayload(const uint8_t p[8], RadioDecodedPayload &out) {
+    resetOut(out);
+    if(p[0]!=0 || p[1]>RADIO_ACK_INTERNAL_FAILURE || p[2]<1 || p[2]>10 ||
+       p[5]>2 || (p[6]&0xF0U)!=0 || p[7]!=0) return false;
+    out.kind=RADIO_PAYLOAD_ACK; out.subtype=0; out.ackResult=p[1]; out.commandType=p[2];
+    out.commandId=readU16LE(p+3); out.stopState=p[5]; out.interlockFlags=p[6];
+    return true;
+}
+bool radio_decodeTelemetryPayload(const uint8_t p[8], RadioDecodedPayload &out) {
+    resetOut(out); out.subtype=p[0];
+    switch(p[0]) {
+    case 1:
+        if(p[1]>4 || p[2]>2 || (p[4]>100 && p[4]!=255) || p[7]!=0) { resetOut(out); return false; }
+        out.kind=RADIO_PAYLOAD_STATUS; out.boatMode=p[1]; out.stopState=p[2]; out.safetyFlags=p[3];
+        out.batteryPercent=p[4]; out.gpsFixType=p[5]; out.satellites=p[6]; return true;
+    case 2:
+        if(!reservedZero(p,5,7)) { resetOut(out); return false; }
+        out.kind=RADIO_PAYLOAD_BATTERY_SPEED; out.batteryMillivolts=readU16LE(p+1); out.speedCmPerSecond=readU16LE(p+3);
+        if(out.speedCmPerSecond!=0xFFFFU && out.speedCmPerSecond>10000U) { resetOut(out); return false; }
+        return true;
+    case 3:
+        out.kind=RADIO_PAYLOAD_GNSS_LATITUDE; out.coordinateSample=p[1]; out.coordinateE7=readI32LE(p+2); out.horizontalAccuracyCm=readU16LE(p+6);
+        if(out.coordinateE7 < -900000000L || out.coordinateE7 > 900000000L) { resetOut(out); return false; }
+        return true;
+    case 4:
+        if(!reservedZero(p,6,7)) { resetOut(out); return false; }
+        out.kind=RADIO_PAYLOAD_GNSS_LONGITUDE; out.coordinateSample=p[1]; out.coordinateE7=readI32LE(p+2);
+        if(out.coordinateE7 < -1800000000L || out.coordinateE7 > 1800000000L) { resetOut(out); return false; }
+        return true;
+    case 5:
+        out.kind=RADIO_PAYLOAD_NAVIGATION; out.headingCentidegrees=readU16LE(p+1); out.speedCmPerSecond=readU16LE(p+3);
+        out.navigationStatus=p[5]; out.waypointIndex=p[6]; out.navigationSample=p[7];
+        if((out.headingCentidegrees!=0xFFFFU && out.headingCentidegrees>35999U) ||
+           (out.speedCmPerSecond!=0xFFFFU && out.speedCmPerSecond>10000U) || out.navigationStatus>5) { resetOut(out); return false; }
+        return true;
+    case 6:
+        out.kind=RADIO_PAYLOAD_SONAR_SUMMARY; out.depthCm=readU16LE(p+1); out.sonarRangeCm=readU16LE(p+3);
+        out.sonarHealth=p[5]; out.sonarAlarmFlags=p[6]; out.sonarSample=p[7];
+        if(out.sonarHealth>3 || (out.sonarAlarmFlags&0xF0U)!=0) { resetOut(out); return false; }
+        return true;
+    case 7:
+        if(p[7]!=0){resetOut(out);return false;}
+        out.kind=RADIO_PAYLOAD_WEATHER;
+        out.temperatureCentiC=(int16_t)readU16LE(p+1);
+        out.pressurePa=(uint32_t)p[3]|((uint32_t)p[4]<<8)|((uint32_t)p[5]<<16)|((uint32_t)p[6]<<24);
+        if(out.temperatureCentiC < -4000 || out.temperatureCentiC > 8500 || out.pressurePa < 30000 || out.pressurePa > 120000){resetOut(out);return false;}
+        return true;
+    case 8: {
+        // Optional R30F diagnostic. Authenticated RadioFrame checks belong to
+        // the transport; observing this subtype NEVER confirms STOP or motor
+        // readiness. Reject older-version or falsely commissioned payloads.
+        radio_r30f::Diagnostic diagnostic{};
+        if(!radio_r30f::decode(p,diagnostic)) {resetOut(out);return false;}
+        out.kind=RADIO_PAYLOAD_SAFETY_DIAGNOSTIC;
+        out.diagnosticReason=diagnostic.reason;
+        out.diagnosticFlags=diagnostic.flags;
+        out.diagnosticMillivolts=diagnostic.millivolts;
+        out.diagnosticSequence=diagnostic.sequence;
+        return true;
+    }
+    case 10:
+        if(!reservedZero(p,4,7)){resetOut(out);return false;}
+        out.kind=RADIO_PAYLOAD_WATER_TEMPERATURE;
+        out.temperatureCentiC=(int16_t)readU16LE(p+1);out.waterTemperatureSample=p[3];
+        if(out.temperatureCentiC < -500 || out.temperatureCentiC > 5000){resetOut(out);return false;}
+        return true;
+    default: resetOut(out); return false;
+    }
+}

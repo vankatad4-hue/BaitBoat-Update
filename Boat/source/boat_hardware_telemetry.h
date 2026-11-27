@@ -1,2 +1,33 @@
-1ëa¡Ñ1qêmŠ‰ËŠwµë«z×¥zg­¯(mµ©•§r«×œ…ªõÑÈZ¯]¢{Þ	©ç¢×(ž÷«µªàºg§¶‰]
-«Â+a½©nyú+EêeiÇ­¢Ü©y,¬µé‚…ªÂjyèµÊ'½êí½©nzÚ-Ê—’ÊË^˜(Z¬Jë¢´­®)àšë-mç±iËeÊ‰Þr«iË^®Z'€ÁÉ…µ„½¹”4(¥¹±Õ‘”€‰‰½…Ñ}¡…É‘Ý…É•}ÍÑ…ÑÕÌ¹ ˆ4(¼¼=¹”½¡•É•¹ÐÁÕ‰±¥Í Á…ÍÌ…¸¹½Ü¥¹±Õ‘”½µÁ…ÐÍ•¹Í½ÈÍÕµµ…É¥•ÌÝ¡¥±”4(¼¼­••Á¥¹œÑ¡”IÝ½É¬‰½Õ¹‘•Ñ¼…Ðµ½ÍÐ•¥¡Ð™¥á•µÍ¥é”Á…å±½…‘Ì¸4)ÍÑÉÕÐ	½…ÑQ•±•µ•ÑÉå	…Ñ¡íI…‘¥½•½‘•‘A…å±½…Á…å±½…‘látíÕ¥¹Ðá}Ð½Õ¹Ðíôì4)¥¹±¥¹”	½…ÑQ•±•µ•ÑÉå	…Ñ ‰½…Ñ!…É‘Ý…É•}Ñ•±•µ•ÑÉä¡½¹ÍÐ	½…Ñ!…É‘Ý…É•M…µÁ±”€™Ì±Õ¥¹ÐÌÉ}Ð¹½Ü±Õ¥¹Ðá}Ð¥±Õ¥¹Ðá}ÐÝ…åÁ½¥¹Ð±5¥ÍÍ¥½¹½¹ÑÉ½±A¡…Í”Á¡…Í”¥ì4(	½…ÑQ•±•µ•ÑÉå	…Ñ ‰íôí…ÕÑ¼¥¸õ‰½…Ñ!…É‘Ý…É•}¥¹ÁÕÑÌ¡Ì±¹½Ü±™…±Í”¤ì4(½¹ÍÐ‰½½°ÍÁ••õÌ¹ÍÁ••‘Y…±¥˜™¹½ÜµÌ¹ÍÁ••‘ÐðÈÀÀÁT˜™Ì¹ÍÁ••‘µA•ÉM•½¹ðôÄÀÀÀÀì4(…ÕÑ¼€™‰…ÑÑ•Éäõˆ¹Á…å±½…‘mˆ¹½Õ¹Ð¬­tí‰…ÑÑ•Éä¹­¥¹õI%=}Ae1=}	QQIe}MAì4(‰…ÑÑ•Éä¹‰…ÑÑ•Éå5¥±±¥Ù½±ÑÌõÌ¹Ù½±Ñ…•Y…±¥˜™¹½ÜµÌ¹‰…ÑÑ•ÉåÐðÄÀÀÁT˜™Ì¹‰…ÑÑ•Éå5¥±±¥Ù½±ÑÌøÀ˜™Ì¹‰…ÑÑ•Éå5¥±±¥Ù½±ÑÌðØÔÔÌÔýÌ¹‰…ÑÑ•Éå5¥±±¥Ù½±ÑÌèÁá™™™˜ì4(‰…ÑÑ•Éä¹ÍÁ••‘µA•ÉM•½¹õÍÁ••ýÌ¹ÍÁ••‘µA•ÉM•½¹èÁá™™™˜ì4(…ÕÑ¼€™¹…Øõˆ¹Á…å±½…‘mˆ¹½Õ¹Ð¬­tí¹…Ø¹­¥¹õI%=}Ae1=}9Y%Q%=8ì4(½¹ÍÐ‰½½°¡•…‘¥¹œõ¥¸¹™¥à¹¡•…‘¥¹Y…±¥˜™ÍÑèé¥Í™¥¹¥Ñ”¡¥¸¹™¥à¹¡•…‘¥¹•œ¤˜™¥¸¹™¥à¹¡•…‘¥¹•œøôÀ˜™¥¸¹™¥à¹¡•…‘¥¹•œðÌØÀì4(¹…Ø¹¡•…‘¥¹•¹Ñ¥‘•É••Ìõ¡•…‘¥¹œü¡Õ¥¹ÐÄÙ}Ð¥ÍÑèé™µ¥¸ ÌÔäää¸À±ÍÑèéÉ½Õ¹¡¥¸¹™¥à¹¡•…‘¥¹•œ¨ÄÀÀ¸À¤¤èÁá™™™˜ì4(¹…Ø¹ÍÁ••‘µA•ÉM•½¹õ‰…ÑÑ•Éä¹ÍÁ••‘µA•ÉM•½¹í¹…Ø¹¹…Ù¥…Ñ¥½¹M…µÁ±”õ¥í¹…Ø¹Ý…åÁ½¥¹Ñ%¹‘•àõÝ…åÁ½¥¹Ðì4(¹…Ø¹¹…Ù¥…Ñ¥½¹MÑ…ÑÕÌõÁ¡…Í”ôõ5}IQUI9%9üÈéÁ¡…Í”ôõ5}=UQ	=U9üÄéÁ¡…Í”ôõ5}=5A1QüÌéÁ¡…Í”ôõ5}	=IQüÐèÀì4(½¹ÍÐ…ÕÑ¼€™˜õ¥¸¹™¥àì4(¥˜¡˜¹™É•Í ˜™Ì¹ÁÍ¥áQåÁ”øôÌ˜™ÍÑèé¥Í™¥¹¥Ñ”¡˜¹…ÕÉ…å4¤˜™˜¹…ÕÉ…å4øÀ˜™˜¹…ÕÉ…å4ðôØÔÔ¸ÌÐ˜™˜¹±…ÑÜøô´äÀÀÀÀÀÀÀÀ˜™˜¹±…ÑÜðôäÀÀÀÀÀÀÀÀ˜™˜¹±½¹Üøô´ÄàÀÀÀÀÀÀÀÀ˜™˜¹±½¹ÜðôÄàÀÀÀÀÀÀÀÀ¥ì4(€…ÕÑ¼€™±…Ðõˆ¹Á…å±½…‘mˆ¹½Õ¹Ð¬­tí±…Ð¹­¥¹õI%=}Ae1=}9MM}1Q%QUí±…Ð¹½½É‘¥¹…Ñ•M…µÁ±”õ¥í±…Ð¹½½É‘¥¹…Ñ•Üõ˜¹±…ÑÜí±…Ð¹¡½É¥é½¹Ñ…±ÕÉ…å´ô¡Õ¥¹ÐÄÙ}Ð¥ÍÑèé•¥°¡˜¹…ÕÉ…å4¨ÄÀÀ¸À¤ì4(€…ÕÑ¼€™±½¸õˆ¹Á…å±½…‘mˆ¹½Õ¹Ð¬­tí±½¸¹­¥¹õI%=}Ae1=}9MM}1=9%QUí±½¸¹½½É‘¥¹…Ñ•M…µÁ±”õ¥í±½¸¹½½É‘¥¹…Ñ•Üõ˜¹±½¹Üì4(ô4(¥˜¡Ì¹Í½¹…ÉY…±¥˜˜¡Õ¥¹ÐÌÉ}Ð¤¡¹½ÜµÌ¹Í½¹…ÉÐ¤ðôÄÔÀÁT˜˜¡Ì¹Í½¹…É!•…±Ñ ôôÅññÌ¹Í½¹…É!•…±Ñ ôôÈ¤˜™Ì¹Í½¹…ÉI…¹•´øÀ˜™Ì¹Í½¹…É•ÁÑ¡´ðõÌ¹Í½¹…ÉI…¹•´˜˜¡Ì¹Í½¹…É±…Éµ±…Ì˜ÁáÁT¤ôôÀ¥ì4(€…ÕÑ¼€™Í½¹…Èõˆ¹Á…å±½…‘mˆ¹½Õ¹Ð¬­tíÍ½¹…È¹­¥¹õI%=}Ae1=}M=9I}MU55IdíÍ½¹…È¹‘•ÁÑ¡´õÌ¹Í½¹…É•ÁÑ¡´íÍ½¹…È¹Í½¹…ÉI…¹•´õÌ¹Í½¹…ÉI…¹•´ì4(€Í½¹…È¹Í½¹…É!•…±Ñ õÌ¹Í½¹…É!•…±Ñ íÍ½¹…È¹Í½¹…É±…Éµ±…ÌõÌ¹Í½¹…É±…Éµ±…ÌíÍ½¹…È¹Í½¹…ÉM…µÁ±”õÌ¹Í½¹…ÉM…µÁ±”ì4(ô4(¥˜¡Ì¹Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ•Y…±¥˜˜¡Õ¥¹ÐÌÉ}Ð¤¡¹½ÜµÌ¹Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ•Ð¤ðôÔÀÀÁT˜™Ì¹Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ••¹Ñ¥øô´ÔÀÀ˜™Ì¹Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ••¹Ñ¥ðôÔÀÀÀ¥ì4(€…ÕÑ¼€™Ý…Ñ•Èõˆ¹Á…å±½…‘mˆ¹½Õ¹Ð¬­tíÝ…Ñ•È¹­¥¹õI%=}Ae1=}]QI}Q5AIQUIíÝ…Ñ•È¹Ñ•µÁ•É…ÑÕÉ••¹Ñ¥õÌ¹Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ••¹Ñ¥íÝ…Ñ•È¹Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ•M…µÁ±”õÌ¹Ý…Ñ•ÉQ•µÁ•É…ÑÕÉ•M…µÁ±”ì4(ô4(¥˜¡Ì¹Ý•…Ñ¡•ÉY…±¥˜˜¡Õ¥¹ÐÌÉ}Ð¤¡¹½ÜµÌ¹Ý•…Ñ¡•ÉÐ¤ðôÔÀÀÁT˜™Ì¹Ý•…Ñ¡•ÉQ•µÁ•É…ÑÕÉ••¹Ñ¥øô´ÐÀÀÀ˜™Ì¹Ý•…Ñ¡•ÉQ•µÁ•É…ÑÕÉ••¹Ñ¥ðôàÔÀÀ˜™Ì¹ÁÉ•ÍÍÕÉ•A„øôÌÀÀÀÀ˜™Ì¹ÁÉ•ÍÍÕÉ•A„ðôÄÈÀÀÀÀ¥ì4(€…ÕÑ¼€™Ý•…Ñ¡•Èõˆ¹Á…å±½…‘mˆ¹½Õ¹Ð¬­tíÝ•…Ñ¡•È¹­¥¹õI%=}Ae1=}]Q!HíÝ•…Ñ¡•È¹Ñ•µÁ•É…ÑÕÉ••¹Ñ¥õÌ¹Ý•…Ñ¡•ÉQ•µÁ•É…ÑÕÉ••¹Ñ¥íÝ•…Ñ¡•È¹ÁÉ•ÍÍÕÉ•A„õÌ¹ÁÉ•ÍÍÕÉ•A„ì4(ô4(É•ÑÕÉ¸ˆì4)ô4(
+#pragma once
+#include "boat_hardware_status.h"
+// One coherent publish pass can now include compact sensor summaries while
+// keeping the RF work bounded to at most eight fixed-size payloads.
+struct BoatTelemetryBatch{RadioDecodedPayload payload[8];uint8_t count;};
+inline BoatTelemetryBatch boatHardware_telemetry(const BoatHardwareSample &s,uint32_t now,uint8_t id,uint8_t waypoint,MissionControlPhase phase){
+ BoatTelemetryBatch b{};auto in=boatHardware_inputs(s,now,false);
+ const bool speed=s.speedValid&&now-s.speedAt<2000U&&s.speedCmPerSecond<=10000;
+ auto &battery=b.payload[b.count++];battery.kind=RADIO_PAYLOAD_BATTERY_SPEED;
+ battery.batteryMillivolts=s.voltageValid&&now-s.batteryAt<1000U&&s.batteryMillivolts>0&&s.batteryMillivolts<65535?s.batteryMillivolts:0xffff;
+ battery.speedCmPerSecond=speed?s.speedCmPerSecond:0xffff;
+ auto &nav=b.payload[b.count++];nav.kind=RADIO_PAYLOAD_NAVIGATION;
+ const bool heading=in.fix.headingValid&&std::isfinite(in.fix.headingDeg)&&in.fix.headingDeg>=0&&in.fix.headingDeg<360;
+ nav.headingCentidegrees=heading?(uint16_t)std::fmin(35999.0,std::round(in.fix.headingDeg*100.0)):0xffff;
+ nav.speedCmPerSecond=battery.speedCmPerSecond;nav.navigationSample=id;nav.waypointIndex=waypoint;
+ nav.navigationStatus=phase==MC_RETURNING?2:phase==MC_OUTBOUND?1:phase==MC_COMPLETE?3:phase==MC_ABORTED?4:0;
+ const auto &f=in.fix;
+ if(f.fresh&&s.gpsFixType>=3&&std::isfinite(f.accuracyM)&&f.accuracyM>0&&f.accuracyM<=655.34&&f.latE7>=-900000000&&f.latE7<=900000000&&f.lonE7>=-1800000000&&f.lonE7<=1800000000){
+  auto &lat=b.payload[b.count++];lat.kind=RADIO_PAYLOAD_GNSS_LATITUDE;lat.coordinateSample=id;lat.coordinateE7=f.latE7;lat.horizontalAccuracyCm=(uint16_t)std::ceil(f.accuracyM*100.0);
+  auto &lon=b.payload[b.count++];lon.kind=RADIO_PAYLOAD_GNSS_LONGITUDE;lon.coordinateSample=id;lon.coordinateE7=f.lonE7;
+ }
+ if(s.sonarValid&&(uint32_t)(now-s.sonarAt)<=1500U&&(s.sonarHealth==1||s.sonarHealth==2)&&s.sonarRangeCm>0&&s.sonarDepthCm<=s.sonarRangeCm&&(s.sonarAlarmFlags&0xF0U)==0){
+  auto &sonar=b.payload[b.count++];sonar.kind=RADIO_PAYLOAD_SONAR_SUMMARY;sonar.depthCm=s.sonarDepthCm;sonar.sonarRangeCm=s.sonarRangeCm;
+  sonar.sonarHealth=s.sonarHealth;sonar.sonarAlarmFlags=s.sonarAlarmFlags;sonar.sonarSample=s.sonarSample;
+ }
+ if(s.waterTemperatureValid&&(uint32_t)(now-s.waterTemperatureAt)<=5000U&&s.waterTemperatureCentiC>=-500&&s.waterTemperatureCentiC<=5000){
+  auto &water=b.payload[b.count++];water.kind=RADIO_PAYLOAD_WATER_TEMPERATURE;water.temperatureCentiC=s.waterTemperatureCentiC;water.waterTemperatureSample=s.waterTemperatureSample;
+ }
+ if(s.weatherValid&&(uint32_t)(now-s.weatherAt)<=5000U&&s.weatherTemperatureCentiC>=-4000&&s.weatherTemperatureCentiC<=8500&&s.pressurePa>=30000&&s.pressurePa<=120000){
+  auto &weather=b.payload[b.count++];weather.kind=RADIO_PAYLOAD_WEATHER;weather.temperatureCentiC=s.weatherTemperatureCentiC;weather.pressurePa=s.pressurePa;
+ }
+ return b;
+}

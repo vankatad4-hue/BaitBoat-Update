@@ -1,2 +1,56 @@
-1ëa¡Ñ1qêmŠ‰ËŠwµéïÛ¡«lµ«^ršmµ©•§r«×œ…ªõÑÈZ¯]¢{Ş	©ç¢×(÷«µªàºg§¶‰]
-«Â+a½©nyú+EêeiÇ­¢Ü©y,¬µé‚…ªÂjyèµÊ'½êí½©nzÚ-Ê—’ÊË^˜(Z¬Jë¢´­®)àšë-mç±iËeÊ‰Şr«iË^®Z'€4(¥¹±Õ‘”€‰‰½…Ñ}ÍÑ…Ñ”¹ ˆ4(4(¼¼É•…Ñ”Ñ¡”Í¡…É•‰½…ĞÍÑ…Ñ”Ù…É¥…‰±”¸4)	½…ÑMÑ…Ñ”‰½…ÑMÑ…Ñ”ì4(4(¼¼%¹¥Ñ¥…±¥Í”…±°Ù…±Õ•Ì‰•™½É”ÍÑ…ÉÑ¥¹œÑ¡”…ÁÁ±¥…Ñ¥½¸¸4)Ù½¥¥¹¥Ñ¥…±¥Í•	½…ÑMÑ…Ñ” ¤4)ì4(€€€‰½…ÑMÑ…Ñ”¹µ½‘”€ô5=}59U0ì4(4(€€€‰½…ÑMÑ…Ñ”¹É…‘¥½½¹¹•Ñ•€ô™…±Í”ì4(€€€‰½…ÑMÑ…Ñ”¹É…‘¥½AÉ¥µ…Éå½¹¹•Ñ•€ô™…±Í”ì4(€€€‰½…ÑMÑ…Ñ”¹É…‘¥½	…­ÕÁ½¹¹•Ñ•€ô™…±Í”ì4(€€€‰½…ÑMÑ…Ñ”¹É…‘¥½Ñ¥Ù•1¥¹¬€ôI%=}U%}9=9ì4(€€€‰½…ÑMÑ…Ñ”¹É…‘¥½1¥¹­MÑ…Ñ”€ôI%=}U%}%M=99Qì4(€€€‰½…ÑMÑ…Ñ”¹ÁÍY…±¥€ô™…±Í”ì4(€€€‰½…ÑMÑ…Ñ”¹ÁÍ¥áQåÁ”€ô€Àì4(€€€‰½…ÑMÑ…Ñ”¹ÁÍM…Ñ•±±¥Ñ•Ì€ô€Àì4(€€€‰½…ÑMÑ…Ñ”¹ÁÍÕÉ…å5•Ñ•ÉÌ€ô€À¸Á˜ì4(€€€‰½…ÑMÑ…Ñ”¹ÁÍ1…ÍÑUÁ‘…Ñ•5Ì€ô€Àì4(€€€‰½…ÑMÑ…Ñ”¹Í½¹…ÉÑ¥Ù”€ô™…±Í”ì4(€€€‰½…ÑMÑ…Ñ”¹Í½¹…ÉI•…‘¥¹Y…±¥€ô™…±Í”ì4(€€€‰½…ÑMÑ…Ñ”¹Í½¹…É•ÁÑ¡´€ô‰½…ÑMÑ…Ñ”¹Í½¹…ÉI…¹•´€ô€Àì4(€€€‰½…ÑMÑ…Ñ”¹Í½¹…É!•…±Ñ €ô‰½…ÑMÑ…Ñ”¹Í½¹…É±…Éµ±…Ì€ô€Àì4(€€€‰½…ÑMÑ…Ñ”¹İ…Ñ•ÉQ•µÁ•É…ÑÕÉ•Y…±¥€ô™…±Í”ì4(€€€‰½…ÑMÑ…Ñ”¹İ…Ñ•ÉQ•µÁ•É…ÑÕÉ••¹Ñ¥€ô€Àì4(€€€‰½…ÑMÑ…Ñ”¹İ…Ñ•ÉQ•µÁ•É…ÑÕÉ•M…µÁ±”€ô€Àì4(€€€‰½…ÑMÑ…Ñ”¹İ•…Ñ¡•ÉY…±¥€ô™…±Í”ì4(€€€‰½…ÑMÑ…Ñ”¹Ñ•µÁ•É…ÑÕÉ••¹Ñ¥€ô€Àì4(€€€‰½…ÑMÑ…Ñ”¹ÁÉ•ÍÍÕÉ•A„€ô€Àì4(€€€‰½…ÑMÑ…Ñ”¹¡•…‘¥¹Y…±¥€ô™…±Í”ì4(€€€‰½…ÑMÑ…Ñ”¹±½İ	…ÑÑ•Éä€ô™…±Í”ì4(€€€‰½…ÑMÑ…Ñ”¹™…¥±Í…™•Ñ¥Ù”€ô™…±Í”ì4(€€€‰½…ÑMÑ…Ñ”¹Í‘…É‘I•…‘ä€ô™…±Í”ì4(€€€‰½…ÑMÑ…Ñ”¹½™™±¥¹•5…ÁI•…‘ä€ô™…±Í”ì4(4(€€€‰½…ÑMÑ…Ñ”¹‰…ÑÑ•ÉåY½±Ñ…”€ô€À¸Á˜ì4(€€€‰½…ÑMÑ…Ñ”¹‰…ÑÑ•ÉåA•É•¹Ğ€ô€À¸Á˜ì4(4(€€€‰½…ÑMÑ…Ñ”¹±…Ñ¥ÑÕ‘”€ô€À¸Á˜ì4(€€€‰½…ÑMÑ…Ñ”¹±½¹¥ÑÕ‘”€ô€À¸Á˜ì4(4(€€€‰½…ÑMÑ…Ñ”¹¡•…‘¥¹œ€ô€À¸Á˜ì4(€€€‰½…ÑMÑ…Ñ”¹ÍÁ••€ô€À¸Á˜ì4(4(€€€‰½…ÑMÑ…Ñ”¹µ½Ñ½É1•™ÑÑ¥Ù”€ô™…±Í”ì4(€€€‰½…ÑMÑ…Ñ”¹µ½Ñ½ÉI¥¡ÑÑ¥Ù”€ô™…±Í”ì4(€€€€¼¼MÑ…ÉĞ¥¸„±…Ñ¡•µÍ…™”ÍÑ…Ñ”Õ¹Ñ¥°Ñ•±•µ•ÑÉä½¹™¥ÉµÌ‰½…ĞÍÑ…ÑÕÌ¸4(€€€‰½…ÑMÑ…Ñ”¹•µ•É•¹åMÑ½À€ôÑÉÕ”ì4(€€€‰½…ÑMÑ…Ñ”¹•µ•É•¹åMÑ½Á½¹™¥Éµ•€ô™…±Í”ì4(€€€‰½…ÑMÑ…Ñ”¹…ÑÕ…Ñ½ÉM…™•ÑåI•…‘ä€ô™…±Í”ì4(€€€‰½…ÑMÑ…Ñ”¹‘¥…¹½ÍÑ¥É•Í €ô™…±Í”ì4(€€€‰½…ÑMÑ…Ñ”¹‘¥…¹½ÍÑ¥I•…Í½¸€ô€Àì4(€€€‰½…ÑMÑ…Ñ”¹‘¥…¹½ÍÑ¥±…Ì€ô€Àì4)ô4(
+
+#include "boat_state.h"
+
+// Create the shared boat state variable.
+BoatState boatState;
+
+// Initialise all values before starting the application.
+void initialiseBoatState()
+{
+    boatState.mode = MODE_MANUAL;
+
+    boatState.radioConnected = false;
+    boatState.radioPrimaryConnected = false;
+    boatState.radioBackupConnected = false;
+    boatState.radioActiveLink = RADIO_UI_NONE;
+    boatState.radioLinkState = RADIO_UI_DISCONNECTED;
+    boatState.gpsValid = false;
+    boatState.gpsFixType = 0;
+    boatState.gpsSatellites = 0;
+    boatState.gpsAccuracyMeters = 0.0f;
+    boatState.gpsLastUpdateMs = 0;
+    boatState.sonarActive = false;
+    boatState.sonarReadingValid = false;
+    boatState.sonarDepthCm = boatState.sonarRangeCm = 0;
+    boatState.sonarHealth = boatState.sonarAlarmFlags = 0;
+    boatState.waterTemperatureValid = false;
+    boatState.waterTemperatureCentiC = 0;
+    boatState.waterTemperatureSample = 0;
+    boatState.weatherValid = false;
+    boatState.temperatureCentiC = 0;
+    boatState.pressurePa = 0;
+    boatState.headingValid = false;
+    boatState.lowBattery = false;
+    boatState.failsafeActive = false;
+    boatState.sdCardReady = false;
+    boatState.offlineMapReady = false;
+
+    boatState.batteryVoltage = 0.0f;
+    boatState.batteryPercent = 0.0f;
+
+    boatState.latitude = 0.0f;
+    boatState.longitude = 0.0f;
+
+    boatState.heading = 0.0f;
+    boatState.speed = 0.0f;
+
+    boatState.motorLeftActive = false;
+    boatState.motorRightActive = false;
+    // Start in a latched-safe state until telemetry confirms boat status.
+    boatState.emergencyStop = true;
+    boatState.emergencyStopConfirmed = false;
+    boatState.actuatorSafetyReady = false;
+    boatState.diagnosticFresh = false;
+    boatState.diagnosticReason = 0;
+    boatState.diagnosticFlags = 0;
+}
