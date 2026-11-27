@@ -39,6 +39,8 @@ public:
  LoRaQuietRestart()=default;
  LoRaQuietRestart(const LoRaQuietRestart&)=delete;
  LoRaQuietRestart& operator=(const LoRaQuietRestart&)=delete;
+ // Call from the exclusive PHY owner at least every MaxSampleGap. A missed
+ // sample or failed isolation observation restarts the complete quiet hour.
  void observe(uint32_t now,bool continuousIsolation){
   if(!continuousIsolation){tracking_=false;return;}
   if(!tracking_||uint32_t(now-last_)>MaxSampleGap){tracking_=true;since_=now;}

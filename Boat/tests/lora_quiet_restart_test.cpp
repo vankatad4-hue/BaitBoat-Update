@@ -34,6 +34,15 @@ int main() {
   assert(!boundary.ready(2011));
   assert(!boundary.consume(2011));
 
+  LoRaQuietRestart stale;
+  fillQuiet(stale, 40);
+  const uint32_t staleNow = 40U + LoRaQuietRestart::QuietMs +
+                            LoRaQuietRestart::MaxSampleGap + 1U;
+  assert(!stale.ready(staleNow)); // an old final sample cannot unlock TX
+  assert(!stale.consume(staleNow));
+  stale.observe(staleNow, true); // fresh evidence starts a new interval
+  assert(!stale.ready(staleNow));
+
   LoRaQuietRestart interrupted;
   interrupted.observe(10, true);
   interrupted.observe(11, false);
