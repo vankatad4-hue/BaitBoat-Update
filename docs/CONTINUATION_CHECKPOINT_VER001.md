@@ -1024,3 +1024,10 @@ Remote now carries the sonar sample counter into `BoatState` and draws up to 64 
 ### R30H-124W direct Open Echo shield wiring preparation — 2026-11-27
 
 Direct shield-to-Boat wiring is feasible in principle with an adapter harness; the Uno is only required if using Open Echo's unchanged Uno sketch as a temporary DBT host. Added a signal crosswalk using the sketch's UNO references (D10 CS, D8/D9 IO1/IO2, D3/D2 OUT3/OUT4, A0 VOUT, plus D11-D13 SPI); none are ESP32 pin assignments. Recorded two implementation constraints: the sketch's 1 MHz SPI setting exceeds TI's 500 kHz maximum, and its 5,224-sample capture takes roughly 69 ms at the documented interval, so it cannot be copied as a blocking Boat loop. Exact shield/Boat revisions, voltage levels, transducer supply, safe ADC conditioning, pin conflicts and timed-capture behavior remain gates. See `Boat/docs/BOAT_OPEN_ECHO_DIRECT_WIRING_GATE_R1.md`. No driver, pin map, hardware activation or tests/builds were added in this preparation.
+
+
+### GPIO hardware assignment audit — 2026-11-27
+
+- Added the [Boat and Remote GPIO assignment register](GPIO_HARDWARE_ASSIGNMENT_R1.md) and mirrored board-owned Waveshare pins, external bridge routes, and Boat reservations in the canonical source pin maps.
+- Boat's current safe GPIO budget is fully allocated or reserved. Direct Open Echo GPIOs remain `-1`: the shield needs multiple digital controls plus an ADC input, and the existing unassigned pins are reserved or do not provide a complete conflict-free interface. Revisit after exact boards/shield are inspected and choose a compatible interface or additional controller if needed.
+- Remote GPIO6/15 remain excluded for direct nRF controls; its nRF bridge, joystick ADC, buttons, E22 bridge and display are listed by resource. Sonar stays telemetry-only on Remote. All mappings remain unsigned design allocations; no hardware was commissioned, no output gates changed, and no local tests/builds were run.

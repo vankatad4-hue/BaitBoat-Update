@@ -1,6 +1,9 @@
 #pragma once
-// R30H-32 canonical Boat module-only wiring map (2026-11-23).
-// These are design assignments, NOT hardware signoff or output enable.
+// Canonical Boat module-only GPIO map for the active R20 hardware baseline.
+// These are unsigned design assignments, not hardware signoff or output enable.
+// The pin budget is committed: GPIO1/2/41/42 remain reserved, not free spares.
+// Direct Open Echo sonar pins remain unassigned until the exact board/shield,
+// ADC range, timing, and GPIO conflicts are physically checked.
 #include <stdint.h>
 namespace boat_pins {
 constexpr int GNSS_TX=4, GNSS_RX=5, I2C_SCL=7, I2C_SDA=8;
@@ -13,7 +16,20 @@ constexpr uint8_t MCP_HOOK_LEFT_GPA=2, MCP_HOOK_RIGHT_GPA=3;
 constexpr uint8_t INA231_ADDR=0x40, QMC5883L_ADDR=0x0D, MPU9250_ADDR=0x68;
 constexpr uint8_t BMP280_ADDR=0x76;
 constexpr int GNSS_PPS=-1; // UART UTC only
-constexpr int SPARE1=1, SPARE2=2, SPARE41=41, SPARE42=42;
+// Unassigned general-purpose pins are reserved for project safety design;
+// they are not available for optional sensors or debug wiring.
+constexpr int RESERVED_SAFETY_1=1, RESERVED_SAFETY_2=2;
+constexpr int RESERVED_SAFETY_41=41, RESERVED_SAFETY_42=42;
+// Keep legacy names for source compatibility; each aliases a reserved pin.
+constexpr int SPARE1=RESERVED_SAFETY_1, SPARE2=RESERVED_SAFETY_2;
+constexpr int SPARE41=RESERVED_SAFETY_41, SPARE42=RESERVED_SAFETY_42;
+// Open Echo needs a dedicated CS, IO1/IO2, OUT3/OUT4 and analog VOUT input.
+// No conflict-free, electrically reviewed Boat allocation is available yet.
+constexpr bool OPEN_ECHO_GPIO_MAP_ASSIGNED=false;
+constexpr int OPEN_ECHO_CS=-1, OPEN_ECHO_IO1=-1, OPEN_ECHO_IO2=-1;
+constexpr int OPEN_ECHO_OUT3=-1, OPEN_ECHO_OUT4=-1, OPEN_ECHO_VOUT_ADC=-1;
 static_assert(NRF_CSN!=NRF_CE && MDD_PWM1!=MDD_PWM2,"Boat GPIO conflict");
 static_assert(MCP_HOOK_RIGHT_GPA<8 && MCP_DIR2_GPB<8,"MCP bit invalid");
+static_assert(!OPEN_ECHO_GPIO_MAP_ASSIGNED && OPEN_ECHO_CS<0 &&
+              OPEN_ECHO_VOUT_ADC<0,"Open Echo GPIO map requires physical review");
 }
