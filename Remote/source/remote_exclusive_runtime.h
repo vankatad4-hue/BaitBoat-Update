@@ -21,7 +21,9 @@ public:
   revoke_=revoke;context_=ctx;
   if(!runtime_.bindRetirement(&retireThunk,this)||!handoff_.begin()||
      !initialize(ctx)||!runtime_.begin(true,true)){
-   retireApplication();return false;
+   // A bind failure can mean this runtime was already started elsewhere.
+   // Revoke this application claim, then stop any worker that may be live.
+   retireApplication();runtime_.requestStop();return false;
   }
   return true;
  }
@@ -55,3 +57,4 @@ private:
  bool attempted_=false,retired_=false;
 };
 }
+

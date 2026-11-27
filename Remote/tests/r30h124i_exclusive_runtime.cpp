@@ -45,6 +45,16 @@ int main(){
  RemoteExclusiveRuntime<decltype(fr)> fe(failedOwner,fh,fr);App fa{failedOwner,ft};fa.ok=false;
  assert(!fe.begin(true,&App::init,&App::revoke,&fa)&&fa.revokes==1&&fw.starts==0);
  assert(!failedOwner.claimLegacy()&&!fe.begin(true,&App::init,&App::revoke,&fa));
+ // A pre-started runtime cannot be adopted by the exclusive wrapper. Even
+ // though callback binding fails, fail closed by retiring the owner and
+ // requesting stop on the already-live worker.
+ RemoteRadioOwner adoptedOwner;RadioFrameHandoff ah;TxGenerationGate ag;
+ RemoteAsyncTx at(adoptedOwner,ah,ag);Worker aw;Service as;
+ RemoteWorkerRuntime<Worker,Service> ar(aw,as);assert(ar.begin(true,true));
+ RemoteExclusiveRuntime<decltype(ar)> ae(adoptedOwner,ah,ar);App aa{adoptedOwner,at};
+ assert(!ae.begin(true,&App::init,&App::revoke,&aa));
+ assert(aa.inits==0&&aa.revokes==1&&aw.starts==1&&aw.stops==1);
+ assert(ar.state()==decltype(ar)::State::Retired&&!adoptedOwner.worker());
  // External application retirement must not strand a live Core 0 worker.
  RemoteRadioOwner eo;RadioFrameHandoff eh;TxGenerationGate eg;RemoteAsyncTx et(eo,eh,eg);
  Worker ew;Service es;RemoteWorkerRuntime<Worker,Service> er(ew,es);
@@ -64,3 +74,4 @@ int main(){
  assert(a.tick(ph,pg,3133)&&d.starts==1);
  assert(a.tick(ph,pg,3134)&&d.starts==2);
 }
+
