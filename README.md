@@ -27,6 +27,8 @@ These are compile-only targets. A successful build or host simulation does not e
 - **Remote:** Waveshare ESP32-S3 touchscreen controller with LVGL, primary and backup radio links, joysticks, and SD-backed offline maps.
 - **Official firmware markers:** Boat VER014 and Remote VER028.
 
+**Sonar choice — 2026-11-27:** Owner-selected preferred candidate: Open Echo TUSS4470 + Lucky D+T wired 200 kHz / 45° transducer, including live water temperature measurement. Electrical compatibility, probe pinout, temperature sensor characteristics, shallow-water performance and CHIRP capability remain unverified. Implementation and procurement remain deferred; no firmware, wiring or other hardware decisions changed.
+
 ## Operational status
 
 Firmware upload and physical RF/hardware commissioning remain controlled by unsigned project gates. Do not treat compilation, simulated tests, software acknowledgements, or GPIO register readback as proof of physical operation. Keep actuators disconnected unless the applicable approved commissioning procedure authorizes a specific test.
