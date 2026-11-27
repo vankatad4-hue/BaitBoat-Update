@@ -66,4 +66,3 @@ Remote receives sonar summaries over the existing authenticated radio telemetry 
 - [Remote GPIO map](../Remote/docs/REMOTE_R30H_10_PIN_MAP.csv)
 - [Remote Waveshare resource audit](../Remote/New_Handheld_Remote/PCB/WAVESHARE_GPIO_RESOURCE_AUDIT_R1.md)
 - [Open Echo wiring feasibility gate](../Boat/docs/BOAT_OPEN_ECHO_DIRECT_WIRING_GATE_R1.md)
-
