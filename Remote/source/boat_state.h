@@ -32,7 +32,7 @@ struct BoatState
     uint32_t gpsLastUpdateMs; // Local receipt time of the latest valid GPS telemetry.
     bool weatherValid;int16_t temperatureCentiC;uint32_t pressurePa;
     bool waterTemperatureValid;int16_t waterTemperatureCentiC;uint8_t waterTemperatureSample;
-    bool sonarReadingValid;uint16_t sonarDepthCm,sonarRangeCm;uint8_t sonarHealth,sonarAlarmFlags;
+    bool sonarReadingValid;uint16_t sonarDepthCm,sonarRangeCm;uint8_t sonarHealth,sonarAlarmFlags,sonarSample;
     bool sonarActive;      // Sonar operating status.
     bool headingValid;     // Heading valid only when fresh status/nav flags agree.
     bool lowBattery;       // Boat-reported low battery/RTH flag.

@@ -23,6 +23,7 @@ void initialiseBoatState()
     boatState.sonarReadingValid = false;
     boatState.sonarDepthCm = boatState.sonarRangeCm = 0;
     boatState.sonarHealth = boatState.sonarAlarmFlags = 0;
+    boatState.sonarSample = 0;
     boatState.waterTemperatureValid = false;
     boatState.waterTemperatureCentiC = 0;
     boatState.waterTemperatureSample = 0;

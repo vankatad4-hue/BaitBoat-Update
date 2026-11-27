@@ -8,7 +8,7 @@
 
 The preferred candidate is **Open Echo TUSS4470 + Lucky D+T 200 kHz / 45° wired transducer**, with a temperature output. It is not an approved final design: electrical compatibility, transducer pinout/characteristics, shallow-water behaviour, waterproof mounting, and the temperature interface remain unverified. Open Echo's shield guide describes an Arduino UNO interface (SPI, four GPIOs and analog A0) and says it is not currently pin/software-compatible with other Arduino boards. It also has a high-voltage transducer supply path. The ESP32-S3 adapter, analog level range, safe drive voltage and transducer match must be resolved before a driver or pin map is committed.
 
-Boat accepts a normalized, compact depth summary through `TrackerSensorPort::publishSonarSummary`; that method does not read hardware or assume a vendor protocol. The Remote receives depth, range, health, alarm flags, and sample ID. It shows the depth only while fresh. The plot is an empty scale and explicitly says the module/protocol is unselected. It draws no synthetic arches or bottom trace.
+Boat accepts a normalized, compact depth summary through `TrackerSensorPort::publishSonarSummary`; that method does not read hardware or assume a vendor protocol. The Remote receives depth, range, health, alarm flags, and sample ID. It shows the depth only while fresh and plots up to 64 distinct fresh samples as a scrolling depth history. The vertical scale starts at 15 m and expands in 15 m increments when needed; loss of fresh data clears the trace. It draws no synthetic arches, fish, or bottom trace, and the plot is explicitly identified as a depth history rather than an echogram.
 
 The Open Echo repository offers an Arduino NMEA DBT output sketch. `OpenEchoDbtDecoder` parses its checksummed serial `$??DBT` sentences, uses the meter field, and rejects malformed, out-of-range, or stale partial records. `TrackerSensorPort::feedOpenEchoDbtByte` publishes a depth-only summary with unknown range and degraded/unknown echo quality. A verified UART adapter can feed that method later; this code does not assign UART pins or connect hardware. The current sketch computes depth with a fixed 1450 m/s sound-speed value and its DBT sentence carries neither measured water temperature nor raw echo amplitudes; shallow-water accuracy must be measured before trusting the displayed value.
 
@@ -34,7 +34,7 @@ The existing Boat BMP280 driver probes addresses 0x76/0x77, requires chip ID 0x5
 
 1. Bench-check the preferred Open Echo shield with Lucky D+T at reduced/controlled drive, verify ESP32-S3-safe logic/analog levels, interface timing, transducer loading and target depth range; obtain recorded real echo samples.
 2. Determine whether the D+T water-temperature output is accessible and document its pinout, voltage, calibration and waterproof connector behaviour.
-3. Add protocol/host regressions and build both targets for the new Boat-to-Remote path. The default firmware still has no commissioned `BoatPhysicalDriver`, so this path is prepared but does not claim production RF telemetry.
+3. Add protocol/host regressions and build both targets for the new Boat-to-Remote path and Remote history display. The default firmware still has no commissioned `BoatPhysicalDriver`, so this path is prepared but does not claim production RF telemetry.
 4. After boards are available, verify GY-91 silicon/address, pressure against a reference, probe calibration, sonar depth against known distances, bus timing, and radio freshness on the actual units.
 
 ## Open Echo references

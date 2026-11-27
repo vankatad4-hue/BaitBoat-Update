@@ -92,6 +92,7 @@ void telemetryApplyToBoatState(BoatState &s,uint32_t now){
  s.sonarReadingValid=sonarFresh&&(telemetry.sonarHealth==1||telemetry.sonarHealth==2);
  s.sonarDepthCm=s.sonarReadingValid?telemetry.sonarDepthCm:0;s.sonarRangeCm=s.sonarReadingValid?telemetry.sonarRangeCm:0;
  s.sonarHealth=s.sonarReadingValid?telemetry.sonarHealth:0;s.sonarAlarmFlags=s.sonarReadingValid?telemetry.sonarAlarmFlags:0;
+ s.sonarSample=telemetry.sonarSample;
  s.sonarActive=sonarFresh&&(telemetry.sonarHealth==1||telemetry.sonarHealth==2);
  s.motorLeftActive=statusFresh&&(telemetry.safetyFlags&(1U<<1))!=0;s.motorRightActive=statusFresh&&(telemetry.safetyFlags&(1U<<2))!=0;
  s.lowBattery=statusFresh&&(telemetry.safetyFlags&(1U<<5))!=0;

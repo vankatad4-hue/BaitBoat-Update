@@ -372,10 +372,22 @@ static void createMapPanel()
 // CREATE SONAR PANEL
 // --------------------------------------------------
 
-// Static visual-only echogram prototype. Every arch is marked DEMO; no sonar
-// measurements are fabricated or connected to boat telemetry.
+// Compact telemetry cannot supply raw echo strength. This panel plots measured
+// depth samples only and must never be presented as a fish-finding echogram.
 static lv_obj_t *sonarPlot = nullptr;
 static lv_obj_t *sonarStatus = nullptr;
+static lv_obj_t *sonarScaleLabels[4] = {};
+
+// Keep only received depth measurements. This history is not an echogram and
+// cannot show fish, echo strength, or a bottom profile from summary telemetry.
+static constexpr uint8_t SONAR_HISTORY_CAPACITY = 64;
+static uint16_t sonarDepthHistory[SONAR_HISTORY_CAPACITY] = {};
+static lv_point_precise_t sonarDepthPoints[SONAR_HISTORY_CAPACITY] = {};
+static uint8_t sonarDepthCount = 0;
+static uint8_t sonarDepthNext = 0;
+static uint8_t sonarLastSample = 0;
+static bool sonarHistoryHasSample = false;
+static uint16_t sonarPlotScaleCm = 1500;
 
 static void sonarLine(lv_obj_t *parent, const lv_point_precise_t *pts, uint16_t n,
                       lv_color_t color, uint8_t width)
@@ -399,6 +411,17 @@ static void drawSonarPlot(uint16_t width, uint16_t height)
     const int32_t w = static_cast<int32_t>(width) - 1;
     const int32_t h = static_cast<int32_t>(height) - 1;
     const lv_color_t grid=lv_color_hex(0x244258);
+    if (sonarScaleLabels[0])
+    {
+        char scaleText[8];
+        for (uint8_t i = 0; i < 4; ++i)
+        {
+            const uint16_t depthMeters = static_cast<uint16_t>(
+                (static_cast<uint32_t>(sonarPlotScaleCm) * (3U - i)) / 300U);
+            snprintf(scaleText, sizeof(scaleText), "%u", static_cast<unsigned>(depthMeters));
+            lv_label_set_text(sonarScaleLabels[i], scaleText);
+        }
+    }
     static lv_point_precise_t hp[5][2],vp[5][2];
     for(int i=0;i<=4;i++){
         int y=(h*i)/4, x=(w*i)/4;
@@ -406,14 +429,66 @@ static void drawSonarPlot(uint16_t width, uint16_t height)
         vp[i][0]={x,0};vp[i][1]={x,h};
         sonarLine(sonarPlot,hp[i],2,grid,1);sonarLine(sonarPlot,vp[i],2,grid,1);
     }
-    // Keep the plot as an empty scale until a selected sounder can supply real
-    // echo-profile samples; never draw invented fish arches or a fake bottom.
+    // Scale depth from the surface at the top to the selected range at bottom.
+    // The trace connects real summary measurements only; it is not echo data.
+    for (uint8_t i = 0; i < sonarDepthCount; ++i)
+    {
+        const uint8_t historyIndex = static_cast<uint8_t>(
+            (sonarDepthNext + SONAR_HISTORY_CAPACITY - sonarDepthCount + i) % SONAR_HISTORY_CAPACITY);
+        const uint16_t depthCm = sonarDepthHistory[historyIndex];
+        const uint16_t boundedDepth = depthCm > sonarPlotScaleCm ? sonarPlotScaleCm : depthCm;
+        const int32_t x = sonarDepthCount < 2 ? w / 2 :
+            static_cast<int32_t>(i) * w / (sonarDepthCount - 1);
+        const int32_t y = h - static_cast<int32_t>(boundedDepth) * h / sonarPlotScaleCm;
+        sonarDepthPoints[i] = {x, y};
+    }
+    if (sonarDepthCount > 1)
+        sonarLine(sonarPlot, sonarDepthPoints, sonarDepthCount, lv_color_hex(0x20C979), 3);
+    else if (sonarDepthCount == 1)
+    {
+        // A short segment makes a single actual reading visible at this scale.
+        sonarDepthPoints[1] = {sonarDepthPoints[0].x + 1, sonarDepthPoints[0].y};
+        sonarLine(sonarPlot, sonarDepthPoints, 2, lv_color_hex(0x20C979), 3);
+    }
+}
+
+static void updateSonarHistory(const BoatState &state)
+{
+    if (!state.sonarReadingValid)
+    {
+        if (sonarHistoryHasSample || sonarDepthCount != 0)
+        {
+            sonarHistoryHasSample = false;
+            sonarDepthCount = sonarDepthNext = 0;
+            sonarPlotScaleCm = 1500;
+            if (sonarPlot)
+                drawSonarPlot(sonarExpanded ? 720 : 330, sonarExpanded ? 220 : 210);
+        }
+        return;
+    }
+
+    // The radio sample counter changes once per new Boat measurement. Ignore
+    // repeated UI refreshes so the same observation is not plotted repeatedly.
+    if (sonarHistoryHasSample && sonarLastSample == state.sonarSample) return;
+    sonarHistoryHasSample = true;
+    sonarLastSample = state.sonarSample;
+    sonarDepthHistory[sonarDepthNext] = state.sonarDepthCm;
+    sonarDepthNext = static_cast<uint8_t>((sonarDepthNext + 1) % SONAR_HISTORY_CAPACITY);
+    if (sonarDepthCount < SONAR_HISTORY_CAPACITY) ++sonarDepthCount;
+
+    // Expand the displayed range in 15 m increments, but never shrink it while
+    // the current fresh history is visible.
+    if (state.sonarDepthCm > sonarPlotScaleCm)
+        sonarPlotScaleCm = static_cast<uint16_t>(((state.sonarDepthCm + 1499U) / 1500U) * 1500U);
+
+    if (sonarPlot)
+        drawSonarPlot(sonarExpanded ? 720 : 330, sonarExpanded ? 220 : 210);
 }
 
 static void createSonarPanel()
 {
     sonarPanel = createPanel(contentPanel, 400, 5, 385, 315);
-    sonarTitle = createLabel(sonarPanel, "СОНАР • CHIRP", 12, 8);
+    sonarTitle = createLabel(sonarPanel, "СОНАР • ДЪЛБОЧИНА", 12, 8);
     weatherLabel=createLabel(sonarPanel,"BMP: --.-°C  ---- hPa",150,8);
     sonarDepthLabel=createLabel(sonarPanel,"ДЪЛБОЧИНА  --.- m",12,30);
     waterTemperatureLabel=createLabel(sonarPanel,"ВОДА  --.-°C",220,30);
@@ -425,9 +500,11 @@ static void createSonarPanel()
     lv_obj_set_style_pad_all(sonarPlot, 0, LV_PART_MAIN);
     lv_obj_clear_flag(sonarPlot, LV_OBJ_FLAG_SCROLLABLE);
     drawSonarPlot(330,210);
-    createLabel(sonarPanel,"0",8,52); createLabel(sonarPanel,"5",8,103);
-    createLabel(sonarPanel,"10",4,155); createLabel(sonarPanel,"15",4,207);
-    createLabel(sonarPanel,"ЕХОГРАМА: НЕ Е ИЗБРАН МОДУЛ / ПРОТОКОЛ",12,270);
+    sonarScaleLabels[0]=createLabel(sonarPanel,"15",8,52);
+    sonarScaleLabels[1]=createLabel(sonarPanel,"10",4,103);
+    sonarScaleLabels[2]=createLabel(sonarPanel,"5",8,155);
+    sonarScaleLabels[3]=createLabel(sonarPanel,"0",8,207);
+    createLabel(sonarPanel,"ИСТОРИЯ НА ДЪЛБОЧИНАТА / НЕ Е ЕХОГРАМА",12,270);
     sonarStatus=createLabel(sonarPanel,"СОНАР: НЯМА СВЕЖИ ДАННИ",12,289);
     lv_obj_add_flag(sonarPanel, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(sonarPanel, sonarTouchEvent, LV_EVENT_CLICKED, nullptr);
@@ -728,6 +805,10 @@ static void updateMapMissionMarkers(const BoatState &state)
 
 void updateBoatScreen(const BoatState &state)
 {
+    // Accumulate each fresh sample once, then redraw only the lightweight
+    // depth history. Lost/stale telemetry clears the trace to avoid implying
+    // that an old depth is still live.
+    updateSonarHistory(state);
     if(weatherLabel){
       char w[80];
       if(state.weatherValid)snprintf(w,sizeof(w),"BMP: %.1f°C  %.1f hPa",state.temperatureCentiC/100.0f,state.pressurePa/100.0f);
@@ -744,7 +825,13 @@ void updateBoatScreen(const BoatState &state)
       else snprintf(t,sizeof(t),"ВОДА  --.-°C");
       lv_label_set_text(waterTemperatureLabel,t);
     }
-    if(sonarStatus)lv_label_set_text(sonarStatus,state.sonarReadingValid?"СОНАР: ИЗМЕРВАНЕТО Е АКТИВНО":"СОНАР: НЯМА СВЕЖИ ДАННИ");
+    if (sonarStatus)
+    {
+        const char *statusText = !state.sonarReadingValid ? "СОНАР: НЯМА СВЕЖИ ДАННИ" :
+            (state.sonarHealth == 2 ? "DBT: САМО ДЪЛБОЧИНА / ЕХО НЕИЗВЕСТНО" :
+             "СОНАР: СВЕЖО РЕЗЮМЕ; НЕ Е ЕХОГРАМА");
+        lv_label_set_text(sonarStatus, statusText);
+    }
     // Update the GPS coordinate display only when telemetry reports a valid fix.
     if (state.gpsValid)
     {

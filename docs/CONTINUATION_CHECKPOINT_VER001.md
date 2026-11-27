@@ -1014,3 +1014,8 @@ Next software step: connect the commissioned Boat sample owner to `TrackerSensor
 ### R30H-124W Open Echo DBT parser — 2026-11-27
 
 Added the [Open Echo repository](https://github.com/Neumi/open_echo) reference and inspected its NMEA DBT sketch. Boat now parses bounded/checksummed DBT serial records through `OpenEchoDbtDecoder` and `TrackerSensorPort::feedOpenEchoDbtByte`, then publishes compact depth-only telemetry through the existing Boat/Remote path. It uses unknown range and reduced quality because DBT does not provide either. The reviewed sketch uses fixed 1450 m/s sound speed and emits no water temperature or echo amplitudes. No physical UART pins are assigned and the method is not connected to a serial port yet. Need unit/protocol regression and build verification, then target depth accuracy, cable temperature output and UART level/pin acceptance when boards arrive. Keep map integration postponed.
+
+
+### R30H-124W Remote depth-history display — 2026-11-27
+
+Remote now carries the sonar sample counter into `BoatState` and draws up to 64 distinct received depth samples in the sonar panel. The trace is labeled as depth history, uses a 15 m starting scale that expands in 15 m steps, and clears when telemetry becomes stale. DBT is identified as depth-only with unknown echo quality; the display does not claim fish detection or show a fabricated echogram. This remains compact summary telemetry; board-level UART/pin selection and physical validation are still pending. No tests/builds were run in this continuation. Next software item is exact-commit host/PlatformIO CI after the implementation is synced; map integration remains postponed.
