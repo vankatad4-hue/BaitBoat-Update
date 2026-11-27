@@ -1,6 +1,8 @@
-# Sonar integration plan — MODEL NOT SELECTED (no implementation)
+# Sonar integration plan — preferred candidate selected (no implementation)
 
-**Owner constraint:** plan sonar only. No purchase recommendation, selected brand/model, data parser, firmware integration, UI modifications, GPIO assignment, sounder/transducer wiring or separate display is authorized by this document.
+**Owner constraint:** plan sonar only. No purchase authorization, data parser, firmware integration, UI modifications, GPIO assignment, sounder/transducer wiring or separate display is authorized by this document.
+
+**Sonar choice — 2026-11-27:** Owner-selected preferred candidate: Open Echo TUSS4470 + Lucky D+T wired 200 kHz / 45° transducer, including live water temperature measurement. Electrical compatibility, probe pinout, temperature sensor characteristics, shallow-water performance and CHIRP capability remain unverified. Implementation and procurement remain deferred; no firmware, wiring or other hardware decisions changed.
 
 ## Required end-user behaviour
 - Full fishfinder-style echogram with real *fish arches* on the existing single **4.3-inch 800×480 Waveshare Remote display**. No separate sonar screen.
@@ -13,7 +15,7 @@ The Boat central carrier will preserve **unpopulated optional J_SONAR space/phys
 
 The Remote continues to have one display. Radio telemetry architecture must distinguish sonar bandwidth from compact command and GNSS telemetry: **nRF24/Lora may be unsuitable for transmitting full-resolution echo waterfalls**. Candidate architecture options (not implemented) include a specifically budgeted high-throughput auxiliary link or local preprocessed compression, subject to radio coexistence, power and license verification. Do not claim a full echo image is available through current telemetry messages.
 
-## Model decision checklist (keep vendor names blank)
+## Candidate qualification checklist
 1. Manufacturer and exact sounder/transducer SKUs, a documented interface or a licensed SDK for timestamped amplitude-vs-depth echo samples or rendered real echograms.
 2. Real example captures (not marketing mockups) with fish arches at 0.5, 1, 2, 5 and 10 m; bottom and suspended fish, shallow bottom clutter, boat movement, target distinction.
 3. CHIRP sweep frequencies/bandwidth, beam cone angle, transducer size/mounting, environmental protection, interference and permitted acoustic power.
@@ -26,4 +28,4 @@ The Remote continues to have one display. Radio telemetry architecture must dist
 ## Development sequencing after model selection
 A. Freeze the device/API/power/transducer and data transport. B. Capture real sample records under a permitted interface. C. Budget RF/data and implement isolated receive/decoder (separate from Boat motor and watchdog logic). D. Render calibrated echogram, fish-arch history and bottom trace with LVGL on the existing screen. E. Test against recorded captures and measured on-water echoes with manual/autopilot view. F. Check impact on battery, radio and watchdog deadlines. 
 
-**Today:** documentation and interface reservation only; **no sonar source code, selected model, module integration or electronics assigned.**
+**Today:** documentation and interface reservation only; **no sonar source code, module integration or electronics assigned.**
