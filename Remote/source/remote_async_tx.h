@@ -37,10 +37,14 @@ public:
  // A failed transition leaves submissions inhibited; retry before service.
  bool invalidateSession(){
   if(!owner_.worker())return false;
-  active_=false;epoch_=0;stopId_=0;clearSlots();
-  return advanceStop();
+  return clearSessionState();
  }
- // Root-key handshake only: no session command or heartbeat is allowed.
+ // Final shutdown cleanup may run after the exclusive owner was retired
+ // externally. It cannot reopen a session; beginSession still requires worker().
+ bool retireSession(){
+  if(!owner_.worker()&&!owner_.retired())return false;
+  return clearSessionState();
+ }
  bool beginHandshake(){
   if(!invalidateSession())return false;
   active_=true;return true;
@@ -219,6 +223,10 @@ public:
   return false;
  }
 private:
+ bool clearSessionState(){
+  active_=false;epoch_=0;stopId_=0;clearSlots();
+  return advanceStop();
+ }
  struct Slot{TxRequest request{};bool used=false,stop=false;};
  static bool validLink(PhyLink l){return l==PhyLink::Primary||l==PhyLink::Backup;}
  Slot& slot(PhyLink l){return l==PhyLink::Primary?primary_:backup_;}

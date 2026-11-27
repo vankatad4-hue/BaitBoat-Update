@@ -10,6 +10,7 @@ public:
  bool claimWorker(bool commissioned){return commissioned&&claim(Mode::Worker);}
  bool legacy()const{return remoteI2cAllowed()&&mode_==Mode::Legacy;}
  bool worker()const{return remoteI2cAllowed()&&mode_==Mode::Worker;}
+ bool retired()const{return remoteI2cAllowed()&&mode_==Mode::Retired;}
  void retire(){if(remoteI2cAllowed()&&mode_!=Mode::Unclaimed)mode_=Mode::Retired;}
 private:
  bool claim(Mode next){

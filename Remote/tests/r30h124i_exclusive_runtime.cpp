@@ -16,7 +16,7 @@ struct Service{bool service(uint32_t){return true;}};
 struct App{
  RemoteRadioOwner& owner;RemoteAsyncTx& tx;unsigned inits=0,revokes=0;bool ok=true,ownerWasWorker=false;
  static bool init(void* p){auto& a=*static_cast<App*>(p);++a.inits;return a.ok&&a.tx.beginSession(1);}
- static void revoke(void* p){auto& a=*static_cast<App*>(p);a.ownerWasWorker=a.owner.worker();++a.revokes;assert(a.tx.invalidateSession());}
+ static void revoke(void* p){auto& a=*static_cast<App*>(p);a.ownerWasWorker=a.owner.worker();++a.revokes;assert(a.tx.retireSession());}
 };
 struct Driver{
  enum class Admission{Accepted,Busy,DutyLimited,Invalid,Unavailable,Uncertain};
