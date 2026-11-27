@@ -4,8 +4,17 @@
 uint32_t fakeNow=0;
 static BoatActuatorOutput output={0,0,-1};
 static bool readSample(BoatHardwareSample &s){
- s={{422000000,275000000,1.25,90,true,true,true,true},fakeNow,fakeNow,fakeNow,
-    true,true,true,true,true,true,true,true,false,false,70,3,8,10700,0,fakeNow,fakeNow,true,true,BOAT_BATTERY_UNKNOWN,false};
+ // Set only fields used by this fixture so optional sonar/weather additions
+ // to BoatHardwareSample remain safely value-initialized without positional drift.
+ s={};
+ s.fix={422000000,275000000,1.25,90,true,true,true,true};
+ s.safetyAt=s.gnssAt=s.headingAt=fakeNow;
+ s.safetyValid=s.physicalStopReleased=s.batteryHealthy=s.stationary=true;
+ s.releaseInterlocks=s.releaseIdle=s.watchdogReady=s.outputFeedbackValid=true;
+ s.batteryPercent=70;s.gpsFixType=3;s.satellites=8;
+ s.batteryMillivolts=10700;s.speedCmPerSecond=0;
+ s.batteryAt=s.speedAt=fakeNow;s.voltageValid=s.speedValid=true;
+ s.batteryBand=BOAT_BATTERY_UNKNOWN;s.batteryRthRequested=false;
  return true;
 }
 static bool apply(const BoatActuatorOutput &o,uint16_t lease){assert(lease==100);output=o;return true;}
