@@ -32,6 +32,34 @@ class TestRemoteWorkerActivationLock(unittest.TestCase):
         self.assertEqual(1, setup.count("boatRadio_begin();"))
         self.assertNotIn("boatRadio_beginWorker(", setup)
 
+    def test_worker_application_commands_are_stop_only(self):
+        radio = (ROOT / "Remote/source/boat_radio.cpp").read_text()
+        send = function_body(radio, "bool boatRadio_sendCommand(const BoatCommand &command)")
+
+        worker_branch = function_body(send, "if(g_radioOwner.worker())")
+        self.assertIn("command.type!=CMD_EMERGENCY_STOP", worker_branch)
+        self.assertIn("!sessionReady()", worker_branch)
+        self.assertIn("g_workerControl.requestStop(command,now)", worker_branch)
+        self.assertNotIn("radioSendTransport(", worker_branch)
+        self.assertNotIn("g_linkManager.send(", worker_branch)
+
+    def test_mission_preparation_requires_legacy_owner(self):
+        radio = (ROOT / "Remote/source/boat_radio.cpp").read_text()
+        mission = function_body(radio, "static bool missionPreparationSafe()")
+        self.assertIn("if(!g_radioOwner.legacy())return false;", mission)
+
+    def test_worker_start_requires_authorized_exclusive_i2c_runtime(self):
+        exclusive = (ROOT / "Remote/source/remote_exclusive_runtime.h").read_text()
+        begin = function_body(exclusive, "bool begin(bool authorized,Initialize initialize,Callback revoke,void* ctx)")
+        self.assertIn("!remoteI2cAllowed()", begin)
+        self.assertIn("attempted_||!authorized", begin)
+        self.assertIn("owner_.claimWorker(true)", begin)
+        self.assertIn("runtime_.begin(true,true)", begin)
+
+        runtime = (ROOT / "Remote/source/remote_worker_runtime.h").read_text()
+        runtime_begin = function_body(runtime, "bool begin(bool commissioned,bool legacyAbsent)")
+        self.assertIn("!commissioned||!legacyAbsent||!remoteI2cAllowed()", runtime_begin)
+
     def test_remote_radio_commissioning_inputs_remain_false(self):
         config = (ROOT / "Remote/source/radio_hw_config.h").read_text()
         for flag in (
@@ -54,3 +82,4 @@ class TestRemoteWorkerActivationLock(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
