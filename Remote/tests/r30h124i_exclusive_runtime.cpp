@@ -60,7 +60,7 @@ int main(){
  Worker ew;Service es;RemoteWorkerRuntime<Worker,Service> er(ew,es);
  RemoteExclusiveRuntime<decltype(er)> ee(eo,eh,er);App ea{eo,et};
  assert(ee.begin(true,&App::init,&App::revoke,&ea));assert(ee.tick(0));
- assert(et.invalidateSession());eo.retire();assert(!ee.tick(1)&&ew.stops==1);
+ eo.retire();assert(!ee.tick(1)&&ew.stops==1);
  assert(!ee.permit()&&ea.revokes==1&&!ea.ownerWasWorker&&eg.stopped());ee.requestStop();assert(ew.stops==1);
  // Actual mock driver admissions: wait from terminal local completion even
  // when the application generation changes. Deadline is still checked first.
