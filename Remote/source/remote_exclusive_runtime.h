@@ -48,9 +48,10 @@ private:
  void retireApplication(){
   if(retired_)return;
   retired_=true;
-  if(!owner_.worker())return; // externally revoked; still stop worker in requestStop
-  revoke_(context_); // revoke TX/session and application authority first
-  owner_.retire();
+  // Revoke app TX/session state even if another path retired the owner first.
+  // In the normal path this callback runs before the owner mode is retired.
+  revoke_(context_);
+  if(owner_.worker())owner_.retire();
  }
  RemoteRadioOwner& owner_;RadioFrameHandoff& handoff_;Runtime& runtime_;
  Callback revoke_=nullptr;void* context_=nullptr;

@@ -907,3 +907,10 @@ The Boat physical worker, managed E22 admission, quiet-history proof and Remote 
 
 
 
+
+
+### R30H-124W8.5c.2 — external owner retirement callback fix (2026-11-27)
+
+- Lifecycle review found that `RemoteExclusiveRuntime::retireApplication()` skipped its revocation callback if another path had already retired `RemoteRadioOwner`. The radio permit was blocked, but the app session and TX generation state could remain uncleared.
+- The wrapper now invokes its one-shot application revocation callback on external retirement as well; normal retirement still runs the callback before retiring the owner. Expanded the exclusive-runtime host regression to assert callback ordering for normal shutdown and exactly-once session invalidation after external owner retirement.
+- `git diff --check` is the only local verification available; the C++ host regression is queued for the exact-commit lifecycle workflow because no compiler is available in this workspace. No production ownership, RF, hardware, upload or version gate changed.

@@ -14,9 +14,9 @@ struct Worker{
 };
 struct Service{bool service(uint32_t){return true;}};
 struct App{
- RemoteRadioOwner& owner;RemoteAsyncTx& tx;unsigned inits=0,revokes=0;bool ok=true;
+ RemoteRadioOwner& owner;RemoteAsyncTx& tx;unsigned inits=0,revokes=0;bool ok=true,ownerWasWorker=false;
  static bool init(void* p){auto& a=*static_cast<App*>(p);++a.inits;return a.ok&&a.tx.beginSession(1);}
- static void revoke(void* p){auto& a=*static_cast<App*>(p);assert(a.owner.worker());++a.revokes;assert(a.tx.invalidateSession());}
+ static void revoke(void* p){auto& a=*static_cast<App*>(p);a.ownerWasWorker=a.owner.worker();++a.revokes;assert(a.tx.invalidateSession());}
 };
 struct Driver{
  enum class Admission{Accepted,Busy,DutyLimited,Invalid,Unavailable,Uncertain};
@@ -37,7 +37,7 @@ int main(){
  assert(ex.begin(true,&App::init,&App::revoke,&app)&&app.inits==1);
  assert(!owner.claimLegacy()&&!ex.begin(true,&App::init,&App::revoke,&app));
  assert(ex.tick(0,true,false)&&ex.permit()); // degraded link is not global fault
- assert(!ex.tick(1,true,true)&&app.revokes==1&&w.stops==1&&gate.stopped());
+ assert(!ex.tick(1,true,true)&&app.revokes==1&&app.ownerWasWorker&&w.stops==1&&gate.stopped());
  assert(!owner.worker()&&!owner.claimLegacy()&&!ex.permit());
  ex.requestStop();assert(app.revokes==1&&w.stops==1);w.done=true;assert(ex.exited());
  RemoteRadioOwner failedOwner;RadioFrameHandoff fh;TxGenerationGate fg;RemoteAsyncTx ft(failedOwner,fh,fg);
@@ -61,7 +61,7 @@ int main(){
  RemoteExclusiveRuntime<decltype(er)> ee(eo,eh,er);App ea{eo,et};
  assert(ee.begin(true,&App::init,&App::revoke,&ea));assert(ee.tick(0));
  assert(et.invalidateSession());eo.retire();assert(!ee.tick(1)&&ew.stops==1);
- assert(!ee.permit()&&eg.stopped());ee.requestStop();assert(ew.stops==1);
+ assert(!ee.permit()&&ea.revokes==1&&!ea.ownerWasWorker&&eg.stopped());ee.requestStop();assert(ew.stops==1);
  // Actual mock driver admissions: wait from terminal local completion even
  // when the application generation changes. Deadline is still checked first.
  RadioFrameHandoff ph;assert(ph.begin());TxGenerationGate pg;assert(pg.transition(1));
