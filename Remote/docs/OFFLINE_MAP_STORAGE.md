@@ -60,6 +60,14 @@ python3 Remote/tools/mbtiles_area_export.py lake.mbtiles ./sd-map --style satell
 
 The exporter needs Pillow. Inspect `./sd-map/maps/area_plan.json` and the manifest; do not copy an incomplete pack (missing tile count must be zero) to the remote. Confirm the source licence allows offline storage and use before running.
 
+The full-archive converter accepts the same required style, attribution and licence fields and produces `coverage_index.csv` plus the manifest fields required by the firmware importer:
+
+```sh
+python3 Remote/tools/mbtiles_to_flytec.py lake.mbtiles ./sd-map --style satellite --attribution "Attribution text" --licence-url "https://example.org/licence"
+```
+
+Both exporters are capped at 6,000 tiles to match the Remote firmware index and import buffers. They remove the existing `manifest.txt` completion marker before modifying tile data and write a fresh manifest last. The full-archive converter sorts its coverage index in firmware XYZ order. The local map-tool CI covers both export paths; physical SD import and rendering still need the Remote board.
+
 
 ## Coverage index ver029.1
 The MBTiles area exporter now writes `/maps/coverage_index.csv` (`z,x,y,present`) including missing planned tile entries. The remote requires a valid index at boot and checks indexed coverage before tile reads. Firmware index limit is 6000 rows. Map Manager shows coverage counts and selected area coverage. This is not a downloader or staged-pack installer; no import transfer progress exists yet.

@@ -47,8 +47,10 @@ For each selected zoom z, convert north/west and south/east bounds to XYZ tile i
 
 ## Development progress
 - [x] Source preference scaffold AUTO / ONLINE / OFFLINE persisted in NVS.
-- [x] Map UI source-cycle button and explicit message when ONLINE is unavailable; SD fallback is currently the only renderer.
+- [x] Map UI source-cycle button and explicit message when ONLINE is unavailable; AUTO falls back to verified SD, while ONLINE displays no imagery until a provider is integrated.
 - [x] Python area planner generates a JSON plan for the selected centre, square size and zoom levels, with per-zoom tile counts, unique tile list and storage estimate.
+- [x] Both MBTiles export tools write the firmware import contract: complete manifest, sorted coverage index and RGB565 tiles; plans and archives over the 6,000-tile firmware limit are rejected.
+- [x] Export removes an existing completion marker before changing tile files, so an interrupted re-export cannot advertise stale mixed tile data.
 - [x] Unit tests added for latitude geometry, unique tiles, dateline wrapping and storage calculation.
 - [ ] Offline source licensing catalogue, actual area download, resumable tile jobs, coverage index and pack verification.
 - [ ] Google online provider adapter and credentials/attribution integration.
