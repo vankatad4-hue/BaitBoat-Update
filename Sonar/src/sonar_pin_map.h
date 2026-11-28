@@ -5,6 +5,7 @@
 // configure these pins or communicate with the shield.
 namespace sonar_pins {
 constexpr int VOUT_ADC = 34; // ADC1_CH6; input-only GPIO
+constexpr bool VOUT_ADC_AUDIT_SIGNED = false; // Measure signal range/conditioning before enabling.
 constexpr int IO1 = 25;
 constexpr int IO2 = 26;
 constexpr int OUT3 = 27;
