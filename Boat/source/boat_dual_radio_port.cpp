@@ -651,6 +651,18 @@ void BoatDualRadioPort::completeAsyncApplication(ManagedLink link,const flytec_r
  auto &tx=backup?asyncBackupTx_:asyncPrimaryTx_;
  tx.complete(ticket,state,now,sessionStarted_?sessionEpoch_:uint8_t(0),
   [&](const RadioFrame &frame,flytec_r30h121::TxState result,uint32_t queuedAt){
+   if(!backup&&frame.type==RADIO_MSG_TELEMETRY&&
+      frame.payload[0]==sonar_profile_v1::SUBTYPE){
+    portENTER_CRITICAL(&sonarProfileMux_);
+    if(sonarProfilePending_&&sonarProfileId_==frame.payload[1]&&
+       sonarProfileChunk_==frame.payload[2]&&
+       result==flytec_r30h121::TxState::LocalComplete){
+     if(++sonarProfileChunk_>=sonar_profile_v1::CHUNK_COUNT){
+      sonarProfilePending_=false;sonarProfileChunk_=0U;
+     }
+    }
+    portEXIT_CRITICAL(&sonarProfileMux_);
+   }
    if(!backup&&frame.type==RADIO_MSG_TELEMETRY&&frame.payload[0]==8U){
     if(result==flytec_r30h121::TxState::LocalComplete)optionalDiagnostics_.sent(queuedAt);
     else optionalDiagnostics_.rejectedTx();
@@ -749,6 +761,36 @@ void BoatDualRadioPort::serviceAsyncOwner(ManagedLink link,uint32_t now,bool lin
     memcpy(f.payload,payload,8);
     if(!radio_frameSeal(f,key_)||!queueAsyncApplication(link,f,now,remaining))optionalDiagnostics_.rejectedTx();
     return;
+   }
+   // Mirror the legacy bulk-data policy when the async owner is selected:
+   // profile fragments remain primary-only, lowest priority, and heartbeat-gap
+   // bounded. The transfer index advances only on local PHY completion.
+   uint8_t profileId=0U,profileChunk=0U,profileBins[sonar_profile_v1::BIN_COUNT]{};
+   uint32_t profileOfferedAtMs=0U;
+   bool profilePending=false;
+   portENTER_CRITICAL(&sonarProfileMux_);
+   if(sonarProfilePending_&&(uint32_t)(now-sonarProfileOfferedAtMs_)>5000U){
+    sonarProfilePending_=false;sonarProfileChunk_=0U;
+   }
+   profilePending=sonarProfilePending_;
+   if(profilePending){
+    profileId=sonarProfileId_;profileChunk=sonarProfileChunk_;
+    profileOfferedAtMs=sonarProfileOfferedAtMs_;
+    memcpy(profileBins,sonarProfileBins_,sizeof(profileBins));
+   }
+   portEXIT_CRITICAL(&sonarProfileMux_);
+   if(!backup&&profilePending&&opportunity.authenticatedSession&&opportunity.primaryFresh&&
+      !opportunity.txPending&&!opportunity.commandQueued&&!opportunity.activeMission&&
+      !opportunity.failsafeOrLinkLoss&&!opportunity.recentCommand&&opportunity.haveHeartbeat&&
+      gap>=boat_r30g::HEARTBEAT_GAP_BEGIN_MS&&gap<=boat_r30g::HEARTBEAT_GAP_END_MS){
+    RadioFrame profile{};
+    radio_frameInit(profile,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,++txSequence_,0,now,sessionEpoch_);
+    const uint32_t age=uint32_t(now-profileOfferedAtMs);
+    remaining=age<=5000U?5001U-age:0U;
+    const uint32_t window=boat_r30g::HEARTBEAT_GAP_END_MS+1U-gap;
+    if(remaining>window)remaining=window;
+    if(remaining&&sonar_profile_v1::encode(profileId,profileChunk,profileBins,profile.payload)&&
+       radio_frameSeal(profile,key_)&&queueAsyncApplication(link,profile,now,remaining))return;
    }
    if(!opportunity.authenticatedSession||!opportunity.primaryFresh||opportunity.txPending||
       opportunity.commandQueued||opportunity.activeMission||opportunity.failsafeOrLinkLoss||
