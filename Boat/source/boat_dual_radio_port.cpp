@@ -464,11 +464,7 @@ void BoatDualRadioPort::serviceLegacyPeriodicTx(uint32_t now){
  bool sonarProfileOccupiesSlot=false;
  const uint32_t profileGap=(uint32_t)(optionalNow-lastNrfHeartbeatTxMs_);
  if(!diagnosticOccupiesSlot&&profilePending&&
-    opportunity.authenticatedSession&&opportunity.primaryFresh&&
-    !opportunity.txPending&&!opportunity.commandQueued&&!opportunity.activeMission&&
-    !opportunity.failsafeOrLinkLoss&&!opportunity.recentCommand&&opportunity.haveHeartbeat&&
-    profileGap>=boat_r30g::HEARTBEAT_GAP_BEGIN_MS&&
-    profileGap<=boat_r30g::HEARTBEAT_GAP_END_MS){
+    boat_r30g::sonarProfileSlotAllowed(opportunity,profileGap)){
    RadioFrame profile{};
    radio_frameInit(profile,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,
                    ++txSequence_,0,optionalNow,sessionEpoch_);
@@ -779,10 +775,7 @@ void BoatDualRadioPort::serviceAsyncOwner(ManagedLink link,uint32_t now,bool lin
     memcpy(profileBins,sonarProfileBins_,sizeof(profileBins));
    }
    portEXIT_CRITICAL(&sonarProfileMux_);
-   if(!backup&&profilePending&&opportunity.authenticatedSession&&opportunity.primaryFresh&&
-      !opportunity.txPending&&!opportunity.commandQueued&&!opportunity.activeMission&&
-      !opportunity.failsafeOrLinkLoss&&!opportunity.recentCommand&&opportunity.haveHeartbeat&&
-      gap>=boat_r30g::HEARTBEAT_GAP_BEGIN_MS&&gap<=boat_r30g::HEARTBEAT_GAP_END_MS){
+   if(!backup&&profilePending&&boat_r30g::sonarProfileSlotAllowed(opportunity,gap)){
     RadioFrame profile{};
     radio_frameInit(profile,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,++txSequence_,0,now,sessionEpoch_);
     const uint32_t age=uint32_t(now-profileOfferedAtMs);

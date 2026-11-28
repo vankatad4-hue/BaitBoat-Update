@@ -17,6 +17,24 @@ static void skipped(OptionalDiagnosticBudget &b,Opportunity s,uint32_t now) {
  assert(!b.take(s,now,out));
 }
 int main() {
+ // A sonar profile may use a heartbeat gap during idle operation, but STOP
+ // and all other radio-owned work suppress fragments until the slot is free.
+ auto sonarSlot=idle(1000);
+ assert(sonarProfileSlotAllowed(sonarSlot,20U));
+ sonarSlot.commandQueued=true; // Includes pending STOP ACK/STATUS work.
+ assert(!sonarProfileSlotAllowed(sonarSlot,20U));
+ sonarSlot.commandQueued=false;sonarSlot.txPending=true;
+ assert(!sonarProfileSlotAllowed(sonarSlot,20U));
+ sonarSlot.txPending=false;sonarSlot.activeMission=true;
+ assert(!sonarProfileSlotAllowed(sonarSlot,20U));
+ sonarSlot.activeMission=false;sonarSlot.failsafeOrLinkLoss=true;
+ assert(!sonarProfileSlotAllowed(sonarSlot,20U));
+ sonarSlot.failsafeOrLinkLoss=false;sonarSlot.recentCommand=true;
+ assert(!sonarProfileSlotAllowed(sonarSlot,20U));
+ sonarSlot.recentCommand=false;
+ assert(!sonarProfileSlotAllowed(sonarSlot,14U));
+ assert(!sonarProfileSlotAllowed(sonarSlot,41U));
+
  const uint8_t oldPacket[8]={8,1,1,2,10,255,255,7};
  const uint8_t newPacket[8]={8,1,1,2,10,255,255,8};
  uint8_t payload[8]{};

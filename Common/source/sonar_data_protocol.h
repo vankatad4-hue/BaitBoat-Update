@@ -6,6 +6,9 @@
 // The power-control protocol has separate magic and remains independently
 // authenticated by Boat before it is forwarded to this physical UART.
 namespace sonar_data_v1 {
+// 115200 8N1 reduces a full 136-byte echo-profile frame from about 142 ms at
+// 9600 baud to about 12 ms while remaining conservative for ESP32 UART links.
+constexpr uint32_t LINK_BAUD_RATE = 115200UL;
 constexpr uint8_t MAGIC0 = 0xC3U;
 constexpr uint8_t MAGIC1 = 0x3CU;
 constexpr uint8_t VERSION = 1U;

@@ -9,6 +9,10 @@
 #include "sonar_data_protocol.h"
 
 int main() {
+  // Boat and Sonar must use one framing rate for depth, power, profile, and
+  // temperature traffic on the shared coprocessor UART.
+  static_assert(sonar_data_v1::LINK_BAUD_RATE == 115200UL,
+                "Update UART timing and both endpoint configurations together");
   // Keep the written GPIO/UART allocation synchronized with the build target.
   static_assert(sonar_pins::IO1 == 25 && sonar_pins::IO2 == 26 &&
                     sonar_pins::OUT3 == 27 && sonar_pins::OUT4 == 32,
@@ -68,7 +72,8 @@ int main() {
   assert(!invalid.append(samples.data(), samples.size()));
   assert(invalid.summary().invalidSample);
 
-  // Validate the encoded 9600-8N1 DBT sentence through Boat's real parser.
+  // Validate the encoded DBT sentence through Boat's real parser. It shares
+  // the 115200-8N1 UART with the binary profile and power frames.
   char sentence[80]{};
   assert(openEchoFormatDbt(1287U, sentence, sizeof(sentence)));
   OpenEchoDbtDecoder decoder;

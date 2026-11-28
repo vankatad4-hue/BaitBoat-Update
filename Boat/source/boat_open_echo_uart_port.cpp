@@ -16,7 +16,7 @@ bool BoatOpenEchoUartPort::begin(bool sensorOwnerReady) {
   // A compile-only profile is not physical pin approval. Refuse to configure
   // UART0 unless both the sensor owner and separate GPIO audit are approved.
   if (!sensorOwnerReady || BOAT_OPEN_ECHO_UART_PIN_AUDIT_SIGNED != 1) return false;
-  Serial0.begin(9600, SERIAL_8N1, BOAT_OPEN_ECHO_UART_RX_PIN,
+  Serial0.begin(sonar_data_v1::LINK_BAUD_RATE, SERIAL_8N1, BOAT_OPEN_ECHO_UART_RX_PIN,
                 BOAT_OPEN_ECHO_UART_TX_PIN);
   active_ = true;
 #else

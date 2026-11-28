@@ -1,9 +1,10 @@
 #include <Arduino.h>
-#include "driver/uart.h"
+#include "driver/gpio.h"
 #include "esp_sleep.h"
 #include "dbt_sentence.h"
 #include "sonar_pin_map.h"
 #include "sonar_power_protocol.h"
+#include "sonar_data_protocol.h"
 
 // This target is intentionally a diagnostic placeholder until the exact shield
 // revision, transducer, signal levels, and sampling implementation are reviewed.
@@ -34,9 +35,14 @@ static void enterSonarLightSleep() {
   // ADC/TUSS tasks to stop. Future sensor drivers must add their stop hook here.
   Serial1.flush();
   delay(5U); // Let the authenticated state ACK clear the UART wire before sleep.
-  uart_set_wakeup_threshold(UART_NUM_1, 3U);
-  if (esp_sleep_enable_uart_wakeup(UART_NUM_1) == ESP_OK)
+  // UART1 on the classic ESP32 cannot use GPIO-matrix pin routing as its
+  // light-sleep UART wake source. Wake on the RX pin's low start-bit level,
+  // then let Boat send the framed command after its wake preamble delay.
+  const gpio_num_t rxPin = static_cast<gpio_num_t>(sonar_pins::BOAT_UART_RX);
+  if (gpio_wakeup_enable(rxPin, GPIO_INTR_LOW_LEVEL) != ESP_OK) return;
+  if (esp_sleep_enable_gpio_wakeup() == ESP_OK)
     (void)esp_light_sleep_start();
+  gpio_wakeup_disable(rxPin);
 }
 
 static void servicePowerControl() {
@@ -68,7 +74,7 @@ void setup() {
   if (FLYTEC_SONAR_POWER_UART_ENABLED == 1 &&
       sonar_pins::BOAT_UART_RX_AUDIT_SIGNED &&
       sonar_pins::BOAT_UART_TX_AUDIT_SIGNED) {
-    Serial1.begin(9600U, SERIAL_8N1, sonar_pins::BOAT_UART_RX,
+    Serial1.begin(sonar_data_v1::LINK_BAUD_RATE, SERIAL_8N1, sonar_pins::BOAT_UART_RX,
                   sonar_pins::BOAT_UART_TX);
   }
 #endif

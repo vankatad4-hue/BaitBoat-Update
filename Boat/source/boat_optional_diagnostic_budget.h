@@ -25,6 +25,18 @@ struct Opportunity {
  bool haveHeartbeat=false;
 };
 
+// Sonar fragments share only an already-idle primary heartbeat gap. They may
+// never occupy a slot while STOP/ACK/STATUS, manual control, mission, or link
+// recovery work is pending.
+inline bool sonarProfileSlotAllowed(const Opportunity &state,
+                                    uint32_t heartbeatAgeMs) {
+ return state.authenticatedSession && state.primaryFresh && !state.txPending &&
+        !state.commandQueued && !state.activeMission &&
+        !state.failsafeOrLinkLoss && !state.recentCommand &&
+        state.haveHeartbeat && heartbeatAgeMs>=HEARTBEAT_GAP_BEGIN_MS &&
+        heartbeatAgeMs<=HEARTBEAT_GAP_END_MS;
+}
+
 class OptionalDiagnosticBudget {
 public:
  bool offer(const uint8_t bytes[8],uint32_t nowMs) {

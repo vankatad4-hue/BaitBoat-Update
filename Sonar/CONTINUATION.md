@@ -214,3 +214,32 @@ open work; do not treat Remote standby as a sonar battery-saving mode.
 The proposed control and passive-piezo integration sequence is documented in
 [`Remote/docs/SONAR_POWER_AND_PING_ALERT_DESIGN.md`](../Remote/docs/SONAR_POWER_AND_PING_ALERT_DESIGN.md).
 
+### Latest software follow-up — 2026-11-28
+
+- Unified the Boat↔Sonar UART data/control link at 115200 baud. A 136-byte
+  echo-profile frame now takes about 11.8 ms on 8N1, versus about 141.7 ms at
+  9600 baud. Both endpoints still require unsigned physical pin/voltage audits;
+  this baud change is compile-tested only, not measured on a cable.
+- Changed the classic ESP32 light-sleep wake trigger from UART wake to a GPIO
+  low-level trigger on the candidate RX pin. UART1 wake has classic ESP32 pin
+  routing constraints, while generic GPIO wake can use the GPIO-matrix pin.
+  Boat emits a `0x55` edge preamble and sends the framed request after 25 ms;
+  this path remains compile-only with unsigned pins and no physical wake test.
+- Centralized the Boat scheduler's sonar-fragment eligibility predicate and
+  added host assertions that fragments are excluded whenever command/STOP work,
+  pending TX, mission, failsafe, recent control, or out-of-window timing exists.
+  This verifies software scheduling policy only. RF throughput and measured
+  STOP latency during concurrent sonar streaming remain NOT_RUN.
+- TI documents TUSS4470 `TOF_CONFIG` at register `0x1B`, with `SLEEP_MODE_EN`
+  and `STDBY_MODE_EN` bits. This gives the future standby driver a documented
+  control point, but does not switch off the ESP32, ADC, or any shield power
+  rail. No register writes are enabled until the Shield 002 wiring, SPI level,
+  and shutdown/restart sequence are verified on hardware.
+- Lucky D+T still has no published thermistor pinout/type/protocol. The Remote
+  R-J6 buzzer remains a logical connector without an audited ESP32 GPIO, so the
+  piezo driver stays disabled. Physical dual-core acceptance and all sonar
+  acquisition commissioning remain NOT_RUN; see the gates above.
+- This workstation has no C++ compiler or PlatformIO command available, so no
+  local build is claimed. CI must verify this follow-up after repository sync.
+  Map integration remains postponed.
+

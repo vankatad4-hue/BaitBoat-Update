@@ -19,7 +19,7 @@ enum class SonarDbtTransmitStatus : uint8_t {
   UART_WRITE_ERROR,
 };
 
-// Gated one-way 9600-8N1 NMEA DBT output. It accepts only a FOUND detector
+// Gated 115200-8N1 UART output. DBT depth still accepts only a FOUND detector
 // result so invalid captures and no-echo results cannot become stale depths.
 class Esp32DbtUartTransmitter {
  public:
@@ -45,7 +45,7 @@ class Esp32DbtUartTransmitter {
   bool ready() const { return ready_; }
 
  private:
-  static constexpr uint32_t BAUD_RATE = 9600U;
+  static constexpr uint32_t BAUD_RATE = sonar_data_v1::LINK_BAUD_RATE;
   bool sendDataFrame(uint8_t type, uint8_t sequence, const uint8_t *payload,
                      uint8_t length);
   bool ready_ = false;
