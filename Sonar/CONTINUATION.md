@@ -16,6 +16,9 @@ Shield 002 remains an uncommissioned candidate.
   [#46134352872](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46134352872).
 - The same host and four target checks passed on the current branch head in
   [#46134623965](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46134623965).
+- After narrowing the CI path filters to firmware, tests, and build configuration,
+  the host test and all four target profiles passed in
+  [#46135033752](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46135033752).
 - Acquisition, stable-echo detection, invalid/incomplete capture handling,
   DBT formatting, and Boat's DBT parser round-trip passed the Sonar host test
   in the same workflow. This is simulated software behavior, not a sensor test.
