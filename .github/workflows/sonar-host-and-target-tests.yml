@@ -8,6 +8,16 @@ on:
       - 'Sonar/src/**'
       - 'Sonar/tests/**'
       - 'Boat/source/open_echo_dbt.h'
+      - 'Boat/source/boat_open_echo_uart_port.*'
+      - 'Boat/source/boat_application_port.*'
+      - 'Boat/source/radio_payload_codec.cpp'
+      - 'Common/source/sonar_power_protocol.h'
+      - 'Remote/source/boat_commands.*'
+      - 'Remote/source/boat_radio.cpp'
+      - 'Remote/source/boat_ui.cpp'
+      - 'Remote/source/radio_ack_tracker.cpp'
+      - 'Remote/source/radio_payload_codec.cpp'
+      - 'Remote/source/radio_payload_encoder.cpp'
       - 'Boat/platformio.ini'
       - '.github/workflows/sonar-host-and-target-tests.yml'
   pull_request:
@@ -16,6 +26,16 @@ on:
       - 'Sonar/src/**'
       - 'Sonar/tests/**'
       - 'Boat/source/open_echo_dbt.h'
+      - 'Boat/source/boat_open_echo_uart_port.*'
+      - 'Boat/source/boat_application_port.*'
+      - 'Boat/source/radio_payload_codec.cpp'
+      - 'Common/source/sonar_power_protocol.h'
+      - 'Remote/source/boat_commands.*'
+      - 'Remote/source/boat_radio.cpp'
+      - 'Remote/source/boat_ui.cpp'
+      - 'Remote/source/radio_ack_tracker.cpp'
+      - 'Remote/source/radio_payload_codec.cpp'
+      - 'Remote/source/radio_payload_encoder.cpp'
       - 'Boat/platformio.ini'
       - '.github/workflows/sonar-host-and-target-tests.yml'
 
@@ -51,3 +71,5 @@ jobs:
         run: pio run -d Sonar -e devkitc_v4_spi_api_compile
       - name: Compile DBT UART API profile
         run: pio run -d Sonar -e devkitc_v4_uart_api_compile
+      - name: Compile UART sleep/wake API profile
+        run: pio run -d Sonar -e devkitc_v4_power_uart_compile

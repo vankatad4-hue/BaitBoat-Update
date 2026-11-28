@@ -11,7 +11,8 @@ int main() {
     assert(radio_encodeAckPayload(RADIO_ACK_ACCEPTED,7,0x1234,1,0x05,p));
     assert(radio_decodeAckPayload(p,d) && d.commandId==0x1234 && d.commandType==7 && d.interlockFlags==5);
     assert(!radio_encodeAckPayload(0,7,0,0,0,p));
-    assert(!radio_encodeAckPayload(0,11,1,0,0,p));
+    assert(radio_encodeAckPayload(0,11,1,0,0,p));
+    assert(radio_decodeAckPayload(p,d) && d.commandType==11 && d.commandId==1);
     assert(!radio_encodeAckPayload(8,7,1,0,0,p));
     assert(!radio_encodeAckPayload(0,7,1,3,0,p));
     assert(!radio_encodeAckPayload(0,7,1,0,0x80,p));

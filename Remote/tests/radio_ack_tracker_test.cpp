@@ -24,7 +24,10 @@ int main(){
     assert(t.get(104,r) && r.state==RADIO_CMD_ACK_EXECUTED);
     assert(t.begin(105,4,0,0xFFFFFFF0UL,40)); t.update(0x00000018UL);
     assert(t.get(105,r) && r.state==RADIO_CMD_ACK_TIMEOUT); // millis rollover
-    assert(!t.begin(0,1,0,1) && !t.begin(106,11,0,1));
+    assert(!t.begin(0,1,0,1));
+    assert(t.begin(106,11,0,1,100));
+    assert(!t.observe(ack(106,11,RADIO_ACK_EXECUTED),RADIO_ACK_LINK_BACKUP,17,2));
+    assert(t.observe(ack(106,11,RADIO_ACK_EXECUTED),RADIO_ACK_LINK_PRIMARY,17,3));
     assert(t.begin(107,4,0,2,100)); assert(!t.begin(107,4,0,3,100));
     return 0;
 }

@@ -1068,3 +1068,10 @@ Direct shield-to-Boat wiring is feasible in principle with an adapter harness; t
 - Remote now requests a short generated PWM chirp for strong local echo peaks when Fish Alarm is enabled. This reports an echo candidate, not classified fish or bearing. The PWM implementation is gated off; carrier R-J6 has no MCU pin assignment. No audible sound occurs until a GPIO and any needed driver are verified and the gate is enabled. The Pixabay MP3 remains a sound reference only.
 - Top-view echo rings use measured profile peaks but do not imply azimuth; boat heading is shown as orientation only. Existing echogram/profile transport remains connected at the software boundary, but there are no real acquisition profiles until the shield driver is implemented and commissioned.
 - No builds, tests, hardware checks or uploads were run in this update. Map integration remains postponed. Next: run affected Boat/Remote/Sonar compile profiles and exact-commit host/CI checks; audit UART pins/voltage, select a real TUSS/transducer standby or switched rail, and assign the Remote piezo output before enabling either runtime gate.
+
+
+### R30H-124W sonar integration CI corrections — 2026-11-28
+
+- Exact commit `fa50edb320fec913acbef0f95c489a98e97d1326` is synced on `platformio-unified-r30h20`. Its first push workflows found that the new shared UART protocol header was missing from the generated-source ignore/pair inventory, Sonar needed the Common include path, and legacy ACK tests still expected type 11 to be invalid. Sonar acquisition/DBT host tests, packaging, dual-core lifecycle and existing diagnostic suites passed; Boat/Remote host, source-layout audit and initial Sonar target did not.
+- Corrected the paired-source/ignore contract, ACK expectations and Sonar include path. Added `devkitc_v4_power_uart_compile` to the Sonar CI target matrix so it compiles the new light-sleep API without enabling runtime pins.
+- Follow-up CI has not completed yet. This Windows workspace has neither `g++` nor PlatformIO installed; no local firmware compile or direct test run is claimed. Update this checkpoint with exact run results after the follow-up commit checks complete.
