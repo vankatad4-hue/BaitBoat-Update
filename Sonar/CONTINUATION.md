@@ -139,3 +139,15 @@ voltage domain, shared-bus membership, boot-strapping impact, and continuity che
 to agree for every connected function. A compile-time distinct-pin check alone
 cannot establish that mapping.
 
+### Latest software follow-up — 2026-11-28
+
+Commit `6ed24d03` adds sonar-profile scheduling to the gated asynchronous Boat
+radio-owner path as well as the active legacy scheduler. It preserves the same
+primary-only idle-gap policy, snapshots profile metadata under the profile lock,
+and advances the fragment index only after local PHY completion. The branch was
+pushed and the local tracking ref matched GitHub at this commit. GitHub combined
+status had not reported checks when this checkpoint was written; the local
+workspace has no PlatformIO or C++ compiler, so this follow-up is awaiting CI
+verification. This scheduler parity does not activate the async radio owner,
+sonar acquisition, or any physical output.
+
