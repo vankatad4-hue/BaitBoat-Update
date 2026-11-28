@@ -51,5 +51,11 @@ The mode 1 candidate follows the [Open Echo TUSS4470 sketch](https://github.com/
 which uses 1 MHz; this project's transport lowers that rate to 400 kHz to stay
 within TI's 500 kHz maximum.
 
+The current [Open Echo `settings.h`](https://github.com/Neumi/open_echo/blob/main/TUSS4470_shield_002/arduino/TUSS4470_arduino/settings.h)
+defaults both transducer drive and the TUSS band-pass filter to 40 kHz; its
+200 kHz filter setting is only a comment. Do not reuse that preset for the
+candidate 200 kHz Lucky D+T transducer. A real profile must match the measured
+transducer and shield in both burst frequency and receive-filter frequency.
+
 Map integration remains postponed. No local build, test, or hardware validation
-is claimed for the current codec or transport.
+is claimed for the current sonar software.

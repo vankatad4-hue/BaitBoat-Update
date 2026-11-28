@@ -107,10 +107,15 @@ use must be assessed alongside the Boat nRF24 RF link and measured capture
 quality.
 
 The upstream Open Echo UNO sketch is a reference, not portable ESP32 firmware:
-it uses AVR Timer1 registers and AVR ADC registers. The NMEA DBT sketch declares
-an ADC sample buffer but does not populate it, so its reported depth index may
-be stale or zero. The raw-data example does capture samples, but its timing and
-depth detection still need an ESP32 implementation and bench validation.
+it uses AVR Timer1 registers and AVR ADC registers. Its current `settings.h`
+defaults both transducer drive and band-pass filter to 40 kHz; the 200 kHz
+filter value is only a commented option. Do not reuse that default for the
+candidate 200 kHz transducer or change only the filter while leaving the 40 kHz
+drive clock. Select both for the exact transducer and shield revision. The NMEA
+DBT sketch declares an ADC sample buffer but does not populate it, so its
+reported depth index may be stale or zero. The raw-data example does capture
+samples, but its timing and depth detection still need an ESP32 implementation
+and bench validation.
 
 The ADC adapter uses Espressif's `esp_adc/adc_continuous.h` interface available
 with this repository's PlatformIO espressif32 8.0.0 framework package. It asks

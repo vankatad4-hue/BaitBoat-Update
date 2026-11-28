@@ -78,7 +78,11 @@ SPI use must verify the current mode 1, 400 kHz transport and NCS-high guard on
 the exact shield; the TUSS4470 SPI clock must remain at or below 500 kHz.
 
 The upstream Open Echo UNO code is not a drop-in ESP32 implementation: it uses
-AVR Timer1 and ADC registers. Also, `NMEA_DBT_OUT.ino` declares an analog sample
-buffer but does not store ADC values into it; the depth output can therefore be
-stale or zero. The raw-data sketch captures samples but still needs a timed ESP32
-ADC/DMA port and validation before it can provide Boat telemetry.
+AVR Timer1 and ADC registers. Its current `settings.h` defaults both drive and
+band-pass frequencies to 40 kHz even though the candidate Lucky D+T transducer
+is 200 kHz; the 200 kHz filter value is commented out. Do not copy that
+configuration or change only the filter. Also, `NMEA_DBT_OUT.ino` declares an
+analog sample buffer but does not store ADC values into it; the depth output can
+therefore be stale or zero. The raw-data sketch captures samples but still
+needs a timed ESP32 ADC/DMA port and validation before it can provide Boat
+telemetry.
