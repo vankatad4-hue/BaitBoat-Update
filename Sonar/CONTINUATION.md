@@ -157,8 +157,9 @@ range-profile peaks with full dashed rings. The echoes have no measured bearing,
 so the rings intentionally do not position or identify fish. The circle's
 footprint diameter is estimated as `2 × depth × tan(beam angle / 2)`; the
 candidate 45° angle and exact transducer remain unverified. A software-standby
-button suppresses Remote-side profile processing and clears the local plot; it
-is explicitly labeled as Remote-only. It does not put the Sonar ESP32 to sleep.
+button is labeled `Sonar Off` / `Sonar On` and suppresses Remote-side profile
+processing and clears the local plot; the status explicitly says it is
+Remote-only. It does not put the Sonar ESP32 to sleep.
 The existing Sonar link is one-way UART1 TX to Boat RX, and no
 Remote→Boat→Sonar control command is implemented. The Sonar firmware continues
 to compile with hardware activation hard-disabled. For future sleep/wake

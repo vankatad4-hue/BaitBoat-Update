@@ -733,16 +733,16 @@ static void createSonarPanel()
     sonarViewHint=createLabel(sonarPanel,"ЕХОГРАМА: САМО ОТ ПОЛУЧЕНА ИЗМЕРЕНА АМПЛИТУДА",12,270);
     sonarStatus=createLabel(sonarPanel,"СОНАР: НЯМА СВЕЖИ ДАННИ",12,289);
     sonarPowerButton=lv_button_create(sonarPanel);
-    lv_obj_set_size(sonarPowerButton,88,26);lv_obj_set_pos(sonarPowerButton,286,5);
+    lv_obj_set_size(sonarPowerButton,108,26);lv_obj_set_pos(sonarPowerButton,266,5);
     lv_obj_set_style_bg_color(sonarPowerButton,lv_color_hex(0x7A342B),LV_PART_MAIN);
     lv_obj_set_style_radius(sonarPowerButton,6,LV_PART_MAIN);
     sonarPowerButtonLabel=lv_label_create(sonarPowerButton);
-    lv_label_set_text(sonarPowerButtonLabel,"SOFT STBY");lv_obj_center(sonarPowerButtonLabel);
+    lv_label_set_text(sonarPowerButtonLabel,"Sonar Off");lv_obj_center(sonarPowerButtonLabel);
     lv_obj_add_event_cb(sonarPowerButton,[](lv_event_t *event){
         if(lv_event_get_code(event)!=LV_EVENT_CLICKED)return;
         lv_event_stop_bubbling(event);
         sonarSoftwareStandby = !sonarSoftwareStandby;
-        lv_label_set_text(sonarPowerButtonLabel, sonarSoftwareStandby ? "RESUME" : "SOFT STBY");
+        lv_label_set_text(sonarPowerButtonLabel, sonarSoftwareStandby ? "Sonar On" : "Sonar Off");
         lv_obj_set_style_bg_color(sonarPowerButton,
             lv_color_hex(sonarSoftwareStandby ? 0x246B38 : 0x7A342B), LV_PART_MAIN);
         if (sonarSoftwareStandby) {
@@ -1017,7 +1017,7 @@ void toggleSonarPanel()
 
         lv_obj_set_size(sonarPanel, 780, 315);
         lv_obj_set_size(sonarPlot, 720, 220);
-        lv_obj_set_pos(sonarPowerButton,680,5);
+        lv_obj_set_pos(sonarPowerButton,658,5);
         drawSonarPlot(720,220);
     }
     else
@@ -1027,7 +1027,7 @@ void toggleSonarPanel()
 
         lv_obj_set_size(sonarPanel, 385, 315);
         lv_obj_set_size(sonarPlot, 330, 210);
-        lv_obj_set_pos(sonarPowerButton,286,5);
+        lv_obj_set_pos(sonarPowerButton,266,5);
         drawSonarPlot(330,210);
 
         // Show map again.
@@ -1066,7 +1066,7 @@ void updateBoatScreen(const BoatState &state)
     if (!sonarSoftwareStandby && headingChanged && sonarPlot)
         drawSonarPlot(sonarExpanded ? 720U : 330U, sonarExpanded ? 220U : 210U);
     if (sonarSoftwareStandby) {
-        if (sonarStatus) lv_label_set_text(sonarStatus, "REMOTE SOFTWARE STANDBY • SONAR HARDWARE POWER UNAFFECTED");
+        if (sonarStatus) lv_label_set_text(sonarStatus, "REMOTE STANDBY ONLY • SONAR ESP32 STILL RUNNING");
         if (sonarViewHint) lv_label_set_text(sonarViewHint, "STANDBY: НЯМА ОБРАБОТКА НА ПРОФИЛИ ОТ ДИСТАНЦИОННОТО");
     }
     if(weatherLabel){
@@ -1089,7 +1089,7 @@ void updateBoatScreen(const BoatState &state)
     if (sonarStatus)
     {
         if (sonarSoftwareStandby) {
-            lv_label_set_text(sonarStatus, "REMOTE SOFTWARE STANDBY • SONAR HARDWARE POWER UNAFFECTED");
+            lv_label_set_text(sonarStatus, "REMOTE STANDBY ONLY • SONAR ESP32 STILL RUNNING");
         } else if (sonarTopViewDepthValid) {
             if (!state.sonarEchoProfileValid) {
                 lv_label_set_text(sonarStatus, "НЯМА СВЕЖ ЕХО-ПРОФИЛ");

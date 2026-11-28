@@ -10,7 +10,7 @@
   <text x="36" y="48" fill="#e9f2f8" font-family="Arial,sans-serif" font-size="26" font-weight="700">FLYTEC REMOTE · SONAR</text>
   <text x="36" y="75" fill="#9cb6c8" font-family="Arial,sans-serif" font-size="14">COMBINED VIEW PREVIEW · ECHO SHAPES ARE STYLIZED SAMPLE DATA</text>
   <rect x="1010" y="28" width="218" height="38" rx="8" fill="#7a342b" stroke="#ce755f"/>
-  <text x="1119" y="53" text-anchor="middle" fill="#fff3ed" font-family="Arial,sans-serif" font-size="15" font-weight="700">SOFTWARE STANDBY</text>
+  <text x="1119" y="53" text-anchor="middle" fill="#fff3ed" font-family="Arial,sans-serif" font-size="15" font-weight="700">Sonar Off</text>
 
   <rect x="28" y="100" width="1224" height="580" rx="15" fill="#0a1722" stroke="#28618a" stroke-width="2"/>
   <text x="52" y="139" fill="#f0f7fb" font-family="Arial,sans-serif" font-size="21" font-weight="700">ECHOGRAM</text>
@@ -48,6 +48,6 @@
   <text x="123" y="394" fill="#c9f3d2" font-family="Arial,sans-serif" font-size="12">RANGE ECHO PINGS · NO BEARING DATA</text>
 
   <text x="52" y="625" fill="#bcd1dc" font-family="Arial,sans-serif" font-size="13">Circle diameter scales with measured depth × candidate beam coverage. Green line shows boat heading; ring pings do not indicate fish direction.</text>
-  <text x="52" y="650" fill="#e2a99d" font-family="Arial,sans-serif" font-size="13" font-weight="700">Standby stops Remote-side processing only; Sonar ESP32 sleep/wake needs a Boat-to-Sonar control link.</text>
+  <text x="52" y="650" fill="#e2a99d" font-family="Arial,sans-serif" font-size="13" font-weight="700">Current button stops Remote-side processing only; Sonar ESP32 sleep/wake needs a Boat-to-Sonar control link.</text>
   <text x="52" y="670" fill="#9cb6c8" font-family="Arial,sans-serif" font-size="12">Candidate ping alert is software-generated; audible output needs a connected speaker/buzzer (none is onboard this Remote revision).</text>
 </svg>
