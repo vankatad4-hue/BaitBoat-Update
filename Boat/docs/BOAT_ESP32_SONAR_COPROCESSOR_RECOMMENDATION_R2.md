@@ -52,3 +52,16 @@ The current Boat DBT decoder can accept a bounded byte stream, but it is not yet
 - [Open Echo TUSS4470 Shield 002 guide](https://github.com/Neumi/open_echo/blob/main/TUSS4470_shield_002/README.md)
 - [Open Echo current sample timing](https://github.com/Neumi/open_echo)
 - [TI TUSS4470 datasheet](https://www.ti.com/lit/ds/symlink/tuss4470.pdf)
+
+## Software implementation status
+
+The separate `Sonar/` PlatformIO target now records this DevKitC V4 pin
+candidate and builds only a disarmed USB diagnostic scaffold. It deliberately
+does not configure the shield pins, start the transducer, or emit DBT until the
+electrical and acquisition gates above are cleared.
+
+The upstream Open Echo UNO code is not a drop-in ESP32 implementation: it uses
+AVR Timer1 and ADC registers. Also, `NMEA_DBT_OUT.ino` declares an analog sample
+buffer but does not store ADC values into it; the depth output can therefore be
+stale or zero. The raw-data sketch captures samples but still needs a timed ESP32
+ADC/DMA port and validation before it can provide Boat telemetry.
