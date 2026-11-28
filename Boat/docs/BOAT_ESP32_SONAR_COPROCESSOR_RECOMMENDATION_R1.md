@@ -1,7 +1,7 @@
 # ESP32 sonar coprocessor recommendation R1
 
 **Branch:** `platformio-unified-r30h20`
-**Status:** board candidate for engineering evaluation; not ordered, wired, or commissioned. This recommendation does not enable a sensor driver or change the active pin map.
+**Status:** superseded for board selection by [R2](BOAT_ESP32_SONAR_COPROCESSOR_RECOMMENDATION_R2.md). The owner identified an existing ESP32-DevKitC V4 with 4 MB flash and 40-pin headers, so the N8R8 purchase proposal below is retained only as research history. No sensor driver or pin map was enabled by this document.
 
 ## Recommendation
 

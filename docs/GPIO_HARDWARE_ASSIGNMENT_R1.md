@@ -30,7 +30,7 @@ The MCP23017 at candidate address `0x27` supplies the expander functions: `GPA0â
 
 ### Boat sonar allocation
 
-The Open Echo shield still has **no Boat GPIO assignment**. Its expected interface needs a dedicated SPI chip-select, IO1, IO2, OUT3, OUT4 and analog VOUT sampling; SPI clock/data may be shared only with deliberate bus arbitration. The remaining general-purpose pins are reserved or already owned, and the available candidate map does not currently show a conflict-free analog input plus four control/status pins. Do not connect shield UNO pin numbers directly to Boat GPIOs. Revisit this allocation after the exact shield/Boat revisions and analog/output levels are measured, and choose a vetted alternate interface or additional controller if the pin/ADC budget remains insufficient.
+The Open Echo shield has **no direct Boat GPIO assignment**. Its interface needs a dedicated SPI chip-select, IO1, IO2, OUT3, OUT4 and analog VOUT sampling. The Boat's remaining general-purpose pins are reserved or already owned. The owner has an ESP32-DevKitC V4 available as a separate sonar-only coprocessor candidate; its proposed pin map and one-way Boat UART path are documented in [sonar coprocessor recommendation R2](../Boat/docs/BOAT_ESP32_SONAR_COPROCESSOR_RECOMMENDATION_R2.md). Do not connect shield UNO pin numbers directly to Boat GPIOs or wire the candidate Boat UART until the crosswalk and source guards are updated and the levels are measured.
 
 ## Remote â€” Waveshare ESP32-S3-Touch-LCD-4.3 Standard, SKU 25948
 
