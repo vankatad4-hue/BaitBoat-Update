@@ -19,18 +19,19 @@ Starting source tree: `7f36eb9b5c4c0a962cf3819c9d40c657c11f14e6`
 - Added Sonar ADC acquisition and DBT UART contract tests, plus CI jobs for the
   host test and all four DevKitC V4 PlatformIO compile profiles.
 
-## Awaiting CI verification
+## Verified GitHub Actions results
 
-- Boat and Remote PlatformIO builds and the complete offline-map suite are not
-  yet verified on the latest change. Local PlatformIO could not install the
-  ESP32 platform: the sandbox blocked network access and PlatformIO rejected
-  writes to its user cache.
-- Sonar acquisition/UART host tests and the four target compile profiles are
-  added but not yet executed. Their results must be read from GitHub Actions
-  before calling them passed.
+- [Boat portable host tests #46133216284](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46133216284): **SUCCESS**, including the corrected R30A validator and all 8 R30A tests.
+- [Primary PlatformIO compile #46133216294](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46133216294): **SUCCESS** for both Boat and Remote target jobs.
+- [Sonar host and target tests #46133216583](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46133216583): **SUCCESS** for the acquisition/DBT UART host test and all four DevKitC V4 compile profiles (base, ADC, SPI, UART).
+- [Offline Map Tool Tests #46133216280](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46133216280): **SUCCESS** for the complete discovered Remote tool suite, including map planning and MBTiles export.
+- Local offline map planner tests also passed (6 tests). The local full suite lacked Pillow, so its complete result is taken from GitHub Actions.
 
 ## Hardware boundary
 
 All builds and tests are software-only. Sonar ADC/SPI/UART hardware remains
 disarmed, PlatformIO upload remains denied, and no sensor timing, voltage,
-transducer, or water-depth behavior has been physically verified.
+transducer, or water-depth behavior has been physically verified. The local
+PlatformIO attempt could not install the ESP32 platform because the sandbox
+blocked downloads and PlatformIO could not write its user cache; CI supplied
+the target-build verification instead.
