@@ -4,6 +4,7 @@ on:
   push:
     branches: [hardware-ready-dual-radio-r1, platformio-unified-r30h20]
     paths:
+      - '.gitignore'
       - 'Common/**'
       - 'Boat/platformio.ini'
       - 'Boat/source/**'
