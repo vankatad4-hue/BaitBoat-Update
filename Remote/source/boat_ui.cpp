@@ -385,6 +385,10 @@ static lv_obj_t *sonarViewHint = nullptr;
 static bool sonarTopViewMode = false;
 static bool sonarBoatHeadingValid = false;
 static float sonarBoatHeadingDeg = 0.0f;
+static bool sonarTopViewDepthValid = false;
+static uint16_t sonarTopViewDepthCm = 0U;
+static uint16_t sonarTopViewRangeCm = 0U;
+static float sonarTopViewFootprintDiameterCm = 0.0f;
 
 // Keep only received depth measurements. This history is not an echogram and
 // cannot show fish, echo strength, or a bottom profile from summary telemetry.
@@ -399,6 +403,9 @@ static uint16_t sonarPlotScaleCm = 1500;
 static constexpr uint8_t SONAR_ECHO_COLUMNS = 64;
 static constexpr uint8_t SONAR_ECHO_BINS = 128;
 static constexpr uint8_t SONAR_TOP_VIEW_SIZE = 64;
+// Lucky D+T candidate specification is 45 degrees; exact purchased transducer
+// and cone angle remain unverified, so every footprint shown is an estimate.
+static constexpr float SONAR_BEAM_ANGLE_DEG = 45.0f;
 static uint8_t sonarEchoHistory[SONAR_ECHO_COLUMNS][SONAR_ECHO_BINS] = {};
 static uint16_t sonarEchoPixels[SONAR_ECHO_COLUMNS * SONAR_ECHO_BINS] = {};
 static uint16_t sonarTopViewPixels[SONAR_TOP_VIEW_SIZE * SONAR_TOP_VIEW_SIZE] = {};
@@ -451,6 +458,18 @@ static void renderSonarTopViewImage()
     if (!sonarTopViewCanvas) return;
     const uint8_t center = SONAR_TOP_VIEW_SIZE / 2U;
     const uint8_t maxRadius = center - 1U;
+    const uint16_t rangeCm = sonarTopViewRangeCm ? sonarTopViewRangeCm : sonarPlotScaleCm;
+    const uint16_t depthCm = sonarTopViewDepthValid ? sonarTopViewDepthCm : 0U;
+    constexpr float DEGREES_TO_RADIANS = 0.017453292519943295f;
+    const float halfBeamRadians = SONAR_BEAM_ANGLE_DEG * DEGREES_TO_RADIANS * 0.5f;
+    sonarTopViewFootprintDiameterCm = depthCm ?
+        2.0f * depthCm * tanf(halfBeamRadians) : 0.0f;
+    const float maximumDiameterCm = rangeCm ?
+        2.0f * rangeCm * tanf(halfBeamRadians) : 0.0f;
+    uint8_t footprintRadius = maximumDiameterCm > 0.0f ?
+        static_cast<uint8_t>(lroundf(maxRadius * sonarTopViewFootprintDiameterCm / maximumDiameterCm)) : 0U;
+    if (depthCm && rangeCm && depthCm > rangeCm) footprintRadius = maxRadius;
+    else if (footprintRadius > maxRadius) footprintRadius = maxRadius;
     const uint8_t *profile = sonarEchoCount ?
         sonarEchoHistory[(sonarEchoNext + SONAR_ECHO_COLUMNS - 1U) % SONAR_ECHO_COLUMNS] : nullptr;
     for (uint8_t y = 0; y < SONAR_TOP_VIEW_SIZE; ++y) {
@@ -459,9 +478,10 @@ static void renderSonarTopViewImage()
             const int16_t dy = static_cast<int16_t>(y) - center;
             const uint16_t radiusSquared = static_cast<uint16_t>(dx * dx + dy * dy);
             uint16_t color = 0x0610U;
-            if (radiusSquared <= static_cast<uint16_t>(maxRadius * maxRadius)) {
+            if (footprintRadius && radiusSquared <= static_cast<uint16_t>(footprintRadius * footprintRadius)) {
                 const uint8_t radius = static_cast<uint8_t>(sqrtf(static_cast<float>(radiusSquared)));
-                const uint8_t firstBin = static_cast<uint8_t>(radius * SONAR_ECHO_BINS / center);
+                const uint8_t firstBin = static_cast<uint8_t>(
+                    static_cast<uint16_t>(radius) * (SONAR_ECHO_BINS - 1U) / footprintRadius);
                 uint16_t amplitude = 0U;
                 if (profile) {
                     const uint8_t binEnd = firstBin + 4U > SONAR_ECHO_BINS ?
@@ -472,17 +492,17 @@ static void renderSonarTopViewImage()
                 }
                 color = sonarIntensityColor(static_cast<uint8_t>(amplitude));
                 if ((radius % 8U) == 0U && amplitude < 128U) color = 0x39E7U;
+                if (radius == footprintRadius) color = 0x7BEFU;
                 if (radiusSquared < 5U) color = 0xFFFFU;
             }
             sonarTopViewPixels[static_cast<uint16_t>(y) * SONAR_TOP_VIEW_SIZE + x] = color;
         }
     }
-    // This line is boat orientation from valid compass/course telemetry; it is
+    // This line is boat orientation from the valid GY-91 compass heading; it is
     // not an azimuth estimate for any individual sonar echo.
-    if (sonarBoatHeadingValid) {
-        constexpr float DEGREES_TO_RADIANS = 0.017453292519943295f;
+    if (sonarBoatHeadingValid && footprintRadius) {
         const float headingRadians = sonarBoatHeadingDeg * DEGREES_TO_RADIANS;
-        for (uint8_t step = 0; step < maxRadius; ++step) {
+        for (uint8_t step = 0; step < footprintRadius; ++step) {
             const int16_t x = static_cast<int16_t>(center) +
                 static_cast<int16_t>(lroundf(sinf(headingRadians) * step));
             const int16_t y = static_cast<int16_t>(center) -
@@ -534,10 +554,16 @@ static void drawSonarPlot(uint16_t width, uint16_t height)
             static_cast<int32_t>(width - diameter) / 2,
             static_cast<int32_t>(height - diameter) / 2);
         renderSonarTopViewImage();
-        if (sonarViewHint)
-            lv_label_set_text(sonarViewHint, sonarBoatHeadingValid ?
-                "СЕВЕР НАГОРЕ • ЗЕЛЕНО: КУРС НА ЛОДКАТА" :
-                "СЕВЕР НАГОРЕ • НЯМА СВЕЖ КУРС НА ЛОДКАТА");
+        if (sonarViewHint) {
+            char coverage[72];
+            if (sonarTopViewDepthValid) {
+                snprintf(coverage, sizeof(coverage), "ПОКРИТИЕ D≈%.1fm • 45° КАНДИДАТ",
+                    sonarTopViewFootprintDiameterCm / 100.0f);
+            } else {
+                snprintf(coverage, sizeof(coverage), "НЯМА СВЕЖА ДЪЛБОЧИНА ЗА МАЩАБ НА ПЕТНОТО");
+            }
+            lv_label_set_text(sonarViewHint, coverage);
+        }
         return;
     }
     lv_obj_add_flag(sonarTopViewCanvas, LV_OBJ_FLAG_HIDDEN);
@@ -1000,6 +1026,9 @@ void updateBoatScreen(const BoatState &state)
         (state.headingValid && fabsf(sonarBoatHeadingDeg - state.heading) >= 0.5f);
     sonarBoatHeadingValid = state.headingValid;
     if (sonarBoatHeadingValid) sonarBoatHeadingDeg = state.heading;
+    sonarTopViewDepthValid = state.sonarReadingValid && state.sonarDepthCm > 0U;
+    sonarTopViewDepthCm = sonarTopViewDepthValid ? state.sonarDepthCm : 0U;
+    sonarTopViewRangeCm = state.sonarRangeCm;
     // Append each new depth summary and completed measured echo profile once.
     updateSonarHistory(state);
     if (sonarTopViewMode && headingChanged && sonarPlot)
@@ -1023,9 +1052,13 @@ void updateBoatScreen(const BoatState &state)
     if (sonarStatus)
     {
         if (sonarTopViewMode) {
-            lv_label_set_text(sonarStatus, state.sonarEchoProfileValid ?
-                "ПРОФИЛЪТ Е ИЗМЕРЕН • ЕХО-АЗИМУТ НЕ Е НАЛИЧЕН" :
-                "НЯМА СВЕЖ ЕХО-ПРОФИЛ • ЕХО-АЗИМУТ НЕ Е НАЛИЧЕН");
+            if (!state.sonarEchoProfileValid) {
+                lv_label_set_text(sonarStatus, "НЯМА СВЕЖ ЕХО-ПРОФИЛ");
+            } else if (sonarBoatHeadingValid) {
+                lv_label_set_text(sonarStatus, "ЕХО: OK • ЗЕЛЕНО=КУРС • АЗИМУТ НА ЕХО НЯМА");
+            } else {
+                lv_label_set_text(sonarStatus, "ЕХО: OK • НЯМА СВЕЖ КУРС ИЛИ ЕХО-АЗИМУТ");
+            }
         } else if (state.sonarEchoProfileValid) {
             lv_label_set_text(sonarStatus, "ЕХОГРАМА: ПОЛУЧЕН ИЗМЕРЕН ПРОФИЛ");
         } else {
