@@ -564,9 +564,10 @@ static void drawSonarPlot(uint16_t width, uint16_t height)
         lv_image_set_scale_x(sonarTopViewCanvas, scale);
         lv_image_set_scale_y(sonarTopViewCanvas, scale);
         lv_image_set_pivot(sonarTopViewCanvas, 0, 0);
+        const int32_t centeredY = static_cast<int32_t>(height - diameter) / 2;
         lv_obj_set_pos(sonarTopViewCanvas,
             static_cast<int32_t>(width - diameter) / 2,
-            static_cast<int32_t>(height - diameter) / 2);
+            centeredY < 18 ? 18 : centeredY);
         renderSonarTopViewImage();
         if (sonarViewHint) {
             char coverage[72];
