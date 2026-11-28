@@ -117,7 +117,7 @@ working tree on 2026-11-28:
 | --- | --- | --- |
 | Active sonar acquisition runtime | Not active. `Sonar/src/main.cpp` statically requires the hardware-enable flag to remain zero. ADC DMA capture and the TUSS4470 SPI adapter are compile-gated components, not a running sonar acquisition pipeline. | Exact Shield 002 revision, transducer model/electrical data, VOUT conditioning, register profile, burst control, ADC timing and burst/sample synchronization. |
 | Full echo-profile communication | A 128-bin measured-envelope protocol and best-effort primary-link sender/reassembler are implemented. It is display-resolution, not raw ADC capture; no ACK/retry or Sonar-to-Boat profile producer is connected. | Feed calibrated measured bins from Sonar into `TrackerSensorPort::publishSonarEchoProfile`, measure actual airtime, and decide whether reliable retry or raw-profile transport is required. A 5,224-sample 12-bit capture is 7,836 bytes before framing. |
-| Remote echogram | Remote reassembles complete profiles and renders a 64-column scrolling amplitude canvas. Fish classification is not implemented; depth-history remains the fallback. | Confirm scale/range alignment and rendering on the Waveshare display. Only connect real acquisition data; do not invent fish arches. |
+| Remote echogram and circle view | Remote reassembles complete profiles and renders a 64-column scrolling amplitude canvas. A new toggle adds a compact concentric range view; a green marker may show fresh boat heading. The single-beam sensor provides no echo azimuth, so the UI labels the circle as range-only and never plots invented target directions. | Latest circle-mode code awaits Remote CI. Confirm appearance on the Waveshare display; only connect real acquisition data. |
 | Lucky D+T water-temperature interface | Still unidentified from public documentation. Lucky's official FF718-T page describes a cable probe, 200 kHz/45-degree sonar, and water-temperature display, but publishes no temperature-element pinout, sensor type, resistance curve, or protocol. A display feature is not evidence of accessible thermistor wires. | Read the exact transducer and monitor labels/manual, inspect the cable/conductor mapping, then measure or obtain the temperature element specification before implementing a driver. Do not infer a thermistor or ADC connection from “D+T”. |
 | Dual-core runtime acceptance | Not accepted on hardware. Existing diagnostic code/build coverage checks task affinity and progress in software, but no Boat/Remote board runtime results are recorded. | Run the bench on both physical boards; record core IDs, worker progress/drop counters, radio load, STOP latency, watchdog and heap/stack behavior. |
 | GPIO assignments | Candidate maps and compile-time uniqueness/range checks exist for the DevKitC V4 Sonar coprocessor; Boat and Remote have their own candidate maps. Physical audits remain unsigned, so assignments are not finalized for wiring/activation. | Confirm exact board SKUs/revisions and connector-to-GPIO continuity, then sign each endpoint's pin audit. Keep all peripherals disabled until that audit is recorded. |
@@ -144,10 +144,15 @@ cannot establish that mapping.
 Commit `6ed24d03` adds sonar-profile scheduling to the gated asynchronous Boat
 radio-owner path as well as the active legacy scheduler. It preserves the same
 primary-only idle-gap policy, snapshots profile metadata under the profile lock,
-and advances the fragment index only after local PHY completion. The branch was
-pushed and the local tracking ref matched GitHub at this commit. GitHub combined
-status had not reported checks when this checkpoint was written; the local
-workspace has no PlatformIO or C++ compiler, so this follow-up is awaiting CI
-verification. This scheduler parity does not activate the async radio owner,
-sonar acquisition, or any physical output.
+and advances the fragment index only after local PHY completion. The code was
+verified by Boat and Remote host tests and both primary PlatformIO builds on
+commit `6cc974ac` (GitHub Actions run `46138381538` for Boat/Remote builds;
+`46138381595` and `46138381601` for host tests). The local workspace has no
+PlatformIO or C++ compiler. This scheduler parity does not activate the async
+radio owner, sonar acquisition, or any physical output.
+
+The circular Remote view is implemented in the current working tree but is not
+yet CI-verified. It maps the received 128-bin range/amplitude profile to
+concentric rings, uses a green orientation line only when heading telemetry is
+fresh, and explicitly states that individual echo bearings are unavailable.
 
