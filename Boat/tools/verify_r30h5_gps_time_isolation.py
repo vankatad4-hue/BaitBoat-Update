@@ -34,13 +34,21 @@ def verify(source):
         require("Boat/source/radio_utc_time_v1.h",t)
     boat=source["Boat/source/boat_dual_radio_port.cpp"]
     remote=source["Remote/source/boat_radio.cpp"]
+    utc_start=boat.find("// R30H-5 UTC LAST:")
+    utc_end=boat.find("bool BoatDualRadioPort::maybeStartFailsafeReturnHome",utc_start)
+    if utc_start<0 or utc_end<0:
+        errors.append("Boat/source/boat_dual_radio_port.cpp: missing bounded UTC scheduler block")
+        utc_block=""
+    else:
+        utc_block=boat[utc_start:utc_end]
     for t in ("flytec_utc::extrapolate(utcSource_,utcNow,ms)",
               "flytec_time::encode(ms,beacon.payload)","sendFrame(LINK_NRF_PRIMARY,beacon)",
               "!opportunity.activeMission","!opportunity.failsafeOrLinkLoss",
               "!opportunity.recentCommand","!primaryDriverPending()",
-              "!diagnosticOccupiesSlot",
-              "bool BoatDualRadioPort::primaryDriverPending() const{return nrf_.txPending();}"):
-        require("Boat/source/boat_dual_radio_port.cpp",t)
+              "!diagnosticOccupiesSlot"):
+        if t not in utc_block:errors.append(f"UTC scheduler block: missing {t!r}")
+    require("Boat/source/boat_dual_radio_port.cpp",
+            "bool BoatDualRadioPort::primaryDriverPending() const{return nrf_.txPending();}")
     if "sendFrame(LINK_LORA_BACKUP,beacon)" in boat:
         errors.append("UTC telemetry must never use provisional E22 airtime")
     for t in ("g_gpsUtcClock.observe(utcMs,now)","link!=LINK_NRF_PRIMARY",
