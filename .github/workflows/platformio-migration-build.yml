@@ -32,6 +32,7 @@ on:
   pull_request:
     branches: [main, hardware-ready-dual-radio-r1]
     paths:
+      - '.gitignore'
       - 'Common/**'
       - 'Boat/platformio.ini'
       - 'Boat/source/**'
