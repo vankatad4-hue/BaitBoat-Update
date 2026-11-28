@@ -5,8 +5,19 @@
 #include "dbt_sentence.h"
 #include "echo_profile_detector.h"
 #include "open_echo_dbt.h"
+#include "sonar_pin_map.h"
 
 int main() {
+  // Keep the written GPIO/UART allocation synchronized with the build target.
+  static_assert(sonar_pins::IO1 == 25 && sonar_pins::IO2 == 26 &&
+                    sonar_pins::OUT3 == 27 && sonar_pins::OUT4 == 32,
+                "Shield GPIO assignments changed; update the hardware crosswalk");
+  static_assert(sonar_pins::TUSS_CS == 21 && sonar_pins::SPI_SCK == 18 &&
+                    sonar_pins::SPI_MISO == 19 && sonar_pins::SPI_MOSI == 23,
+                "TUSS4470 SPI allocation changed; update the bus crosswalk");
+  static_assert(sonar_pins::VOUT_ADC == 34 && sonar_pins::BOAT_UART_TX == 22,
+                "ADC/UART allocation changed; update the endpoint crosswalk");
+
   // A full DMA-equivalent sample block is required before depth detection.
   std::array<uint16_t, sonar_capture::SAMPLE_CAPACITY> samples{};
   samples[1300] = 2400U;

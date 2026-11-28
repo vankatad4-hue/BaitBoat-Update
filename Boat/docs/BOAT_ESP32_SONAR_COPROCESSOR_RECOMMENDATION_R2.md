@@ -37,6 +37,8 @@ Boat GPIO21/J3-18 is now the unsigned UART0 RX candidate and the optional nRF IR
 
 Boat now has a bounded DBT decoder connected to a compile-gated UART0 receiver through `BoatOpenEchoUartPort`. Its isolated compile profile routes diagnostics to native USB CDC and reserves Boat GPIO21/J3-18 as UART RX; the default firmware remains disabled because the physical pin audit flag is unsigned. The coprocessor-side GPIO22 TX, Boat-side header mapping, TX voltage and shared-ground arrangement remain unverified, so this is a software interface candidate rather than a connection instruction. The Remote receives compact depth telemetry only; full 1,800-sample echo profiles and Lucky D+T water temperature need separate protocol work and are outside this depth-only first connection.
 
+**D+T temperature is not yet electrically specified.** The [manufacturer's wired 718LIC D+T product page](https://www.luckylaker.com/products/luckylaker-sensor-718lic) lists a 200 kHz, 45-degree transducer and says it requires a compatible fish-finder monitor; it does not publish temperature-element pins, resistance curve, excitation limits, or data protocol. Do not connect the temperature element to an ESP32 ADC by assumption. Boat and Remote already carry a bounded water-temperature telemetry field, but no source driver publishes actual Lucky D+T measurements.
+
 ## Electrical and acquisition gates
 
 1. Confirm Shield 002 revision, component selection for the 200 kHz transducer, transducer model/polarity and connector orientation.

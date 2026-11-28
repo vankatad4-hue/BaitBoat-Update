@@ -29,6 +29,38 @@ The pin constants are not yet an instruction to wire the shield.
 The current implementation state and next software/hardware gates are tracked
 in [`CONTINUATION.md`](CONTINUATION.md).
 
+### Provisional DevKitC V4 allocation
+
+The software allocation is now explicit and compile-time checked for duplicate,
+input-only, and boot-strapping GPIO conflicts:
+
+| Function | ESP32-DevKitC V4 GPIO | Direction |
+| --- | ---: | --- |
+| TUSS4470 IO1 | 25 | Output |
+| TUSS4470 IO2 | 26 | Output |
+| Shield OUT3 | 27 | Input |
+| Shield OUT4 | 32 | Input |
+| TUSS4470 chip select | 21 | Output |
+| VSPI SCK / MISO / MOSI | 18 / 19 / 23 | Output / input / output |
+| Shield VOUT envelope | 34 (ADC1) | Input-only |
+| Sonar-to-Boat UART1 TX | 22 | Output, 9600-8N1 |
+
+On Boat, the matching candidate is GPIO21/J3-18 as UART0 RX, only in the
+USB-CDC diagnostic profile. The coprocessor GPIO22 TX, Boat GPIO21 RX, and
+logic ground form the proposed one-way link. The two boards' GPIO numbers are
+independent namespaces. All physical pin, signal-level, shield-header, and
+ground checks remain unsigned; the compile-time allocation does not authorize
+connecting the shield or Boat UART.
+
+The candidate [Lucky wired D+T transducer](https://www.luckylaker.com/products/luckylaker-sensor-718lic)
+is listed by its manufacturer as a 200 kHz, 45-degree, fish-finder-only
+transducer. The public product information does not specify a temperature
+element's wires, resistance curve, interface, or data protocol. Therefore the
+TUSS profile and water-temperature input remain disabled until the actual
+transducer documentation and wiring are available. The [Open Echo Shield 002
+guide](https://github.com/Neumi/open_echo/blob/main/TUSS4470_shield_002/README.md)
+also requires matching the capacitor jumpers to the selected transducer.
+
 `src/dbt_sentence.h` contains a side-effect-free integer formatter for valid
 depths in Boat's accepted range. `src/esp32_dbt_uart_transmitter.*` is a
 compile-gated 9600-8N1 UART1 sender that accepts only a `FOUND` detector result;
