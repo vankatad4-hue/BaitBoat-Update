@@ -177,4 +177,6 @@ The refreshed `Remote/docs/SONAR_DISPLAY_PREVIEW.svg` is a static design
 preview, not a live capture or build-verified output. Audio hardware, sample
 choice/license handling, alert thresholds/debounce, and device sleep/wake remain
 open work; do not treat Remote standby as a sonar battery-saving mode.
+The proposed control and passive-piezo integration sequence is documented in
+[`Remote/docs/SONAR_POWER_AND_PING_ALERT_DESIGN.md`](../Remote/docs/SONAR_POWER_AND_PING_ALERT_DESIGN.md).
 
