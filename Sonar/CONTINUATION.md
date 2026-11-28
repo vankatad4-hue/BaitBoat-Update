@@ -108,6 +108,36 @@ Map integration remains postponed. Firmware builds and host tests are verified,
 but no sensor voltage, timing, transducer, UART wiring, depth, temperature,
 echogram, or physical dual-core runtime acceptance is claimed.
 
+## R30H-124W sonar data-link implementation — 2026-11-28
+
+- Added `Common/source/sonar_data_protocol.h`, a bounded version-1 UART frame
+  format with CRC-16, strict frame lengths, 128-bin echo-profile payloads, and
+  signed centi-degree water-temperature payloads. This is sensor transport only;
+  it does not claim a selected/working Lucky D+T temperature driver.
+- Sonar's gated UART adapter can now send complete echo profiles and water
+  temperature samples. Boat's optional UART adapter decodes these frames and
+  passes them into the existing `TrackerSensorPort` profile and temperature
+  publication boundaries, alongside the existing NMEA DBT depth path.
+- Extended the Sonar host contract test with profile round-trip, signed
+  temperature payload, sequence/sample, and CRC-corruption cases. CI now runs
+  that test with the canonical Common source include path and triggers on this
+  protocol header.
+- Verification is pending for these edits. This workspace has no usable native
+  C++ compiler, Python runtime, or PlatformIO command; run the Sonar host and
+  target workflow after syncing this commit. No board upload or hardware test
+  was attempted.
+- The acquisition firmware remains statically disarmed. The transport API is
+  not yet called by a live acquisition runtime because burst synchronization,
+  TUSS register profile, analog conditioning, and sample calibration remain
+  unsigned. The UART data link also remains behind physical pin audits. Remote's
+  existing 128-bin telemetry/echogram path is unchanged and still awaits a
+  produced profile from the Sonar board.
+- Sonar sleep is still ESP32 light sleep only. The current disarmed build has no
+  active acquisition drivers to stop; future commissioned drivers need explicit
+  stop/restart hooks before the power command can sleep/wake the fully active
+  sonar hardware. The Remote piezo output remains disabled pending its GPIO
+  audit. Map integration remains postponed.
+
 ## R30H-124W8.5c.2 follow-up audit
 
 The following status was rechecked against the current `platformio-unified-r30h20`

@@ -6,6 +6,7 @@
 #include "echo_profile_detector.h"
 #include "open_echo_dbt.h"
 #include "sonar_pin_map.h"
+#include "sonar_data_protocol.h"
 
 int main() {
   // Keep the written GPIO/UART allocation synchronized with the build target.
@@ -90,4 +91,43 @@ int main() {
     decoded = decoder.feed(byte, now++, decodedCm) || decoded;
   }
   assert(!decoded);
+
+  // Full 128-bin echo frames survive encode/decode with sequence and samples.
+  uint8_t bins[128]{};
+  for (uint8_t i = 0U; i < 128U; ++i) bins[i] = static_cast<uint8_t>(i * 3U);
+  uint8_t frameBytes[sonar_data_v1::MAX_FRAME]{};
+  uint8_t frameLength = 0U;
+  assert(sonar_data_v1::encode(sonar_data_v1::ECHO_PROFILE, 42U, bins,
+                               sizeof(bins), frameBytes, sizeof(frameBytes),
+                               frameLength));
+  assert(frameLength == 136U);
+  sonar_data_v1::Parser dataParser;
+  sonar_data_v1::Frame dataFrame{};
+  bool frameReady = false;
+  for (uint8_t i = 0U; i < frameLength; ++i)
+    frameReady = dataParser.feed(frameBytes[i], dataFrame) || frameReady;
+  assert(frameReady && dataFrame.type == sonar_data_v1::ECHO_PROFILE);
+  assert(dataFrame.sequence == 42U && dataFrame.length == sizeof(bins));
+  for (uint8_t i = 0U; i < 128U; ++i) assert(dataFrame.payload[i] == bins[i]);
+
+  // Temperature uses signed centi-degrees and a separate sample counter.
+  const uint8_t temperaturePayload[3] = {0xFCU, 0x18U, 9U}; // -10.00 C
+  assert(sonar_data_v1::encode(sonar_data_v1::WATER_TEMPERATURE, 9U,
+                               temperaturePayload, sizeof(temperaturePayload),
+                               frameBytes, sizeof(frameBytes), frameLength));
+  dataParser.reset();
+  frameReady = false;
+  for (uint8_t i = 0U; i < frameLength; ++i)
+    frameReady = dataParser.feed(frameBytes[i], dataFrame) || frameReady;
+  assert(frameReady && dataFrame.type == sonar_data_v1::WATER_TEMPERATURE);
+  assert(dataFrame.length == 3U && dataFrame.payload[0] == 0xFCU &&
+         dataFrame.payload[1] == 0x18U && dataFrame.payload[2] == 9U);
+
+  // CRC corruption drops the complete frame and leaves the parser reusable.
+  frameBytes[frameLength - 1U] ^= 0x01U;
+  dataParser.reset();
+  frameReady = false;
+  for (uint8_t i = 0U; i < frameLength; ++i)
+    frameReady = dataParser.feed(frameBytes[i], dataFrame) || frameReady;
+  assert(!frameReady && !dataParser.pending());
 }

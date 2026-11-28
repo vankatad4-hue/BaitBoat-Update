@@ -12,6 +12,7 @@ on:
       - 'Boat/source/boat_application_port.*'
       - 'Boat/source/radio_payload_codec.cpp'
       - 'Common/source/sonar_power_protocol.h'
+      - 'Common/source/sonar_data_protocol.h'
       - 'Remote/source/boat_commands.*'
       - 'Remote/source/boat_radio.cpp'
       - 'Remote/source/boat_ui.cpp'
@@ -30,6 +31,7 @@ on:
       - 'Boat/source/boat_application_port.*'
       - 'Boat/source/radio_payload_codec.cpp'
       - 'Common/source/sonar_power_protocol.h'
+      - 'Common/source/sonar_data_protocol.h'
       - 'Remote/source/boat_commands.*'
       - 'Remote/source/boat_radio.cpp'
       - 'Remote/source/boat_ui.cpp'
@@ -47,7 +49,7 @@ jobs:
       - name: Compile acquisition and DBT UART contract tests
         run: >-
           g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror
-          -ISonar/src -IBoat/source
+          -ISonar/src -IBoat/source -ICommon/source
           Sonar/tests/sonar_acquisition_uart_test.cpp
           Sonar/src/echo_profile_detector.cpp
           -o /tmp/sonar_acquisition_uart_test

@@ -40,7 +40,12 @@ void BoatOpenEchoUartPort::poll(uint32_t now) {
     if (readByte < 0) continue;
     sonar_power_v1::Frame frame{};
     const uint8_t byte = static_cast<uint8_t>(readByte);
-    if (powerParser_.feed(byte, frame)) {
+    const bool powerWasPending = powerParser_.pending();
+    const bool powerComplete = powerParser_.feed(byte, frame);
+    sonar_data_v1::Frame dataFrame{};
+    const bool dataWasPending = dataParser_.pending();
+    const bool dataComplete = dataParser_.feed(byte, dataFrame);
+    if (powerComplete) {
       if (powerPending_ && powerFrameSent_ && frame.type == sonar_power_v1::ACK &&
           frame.commandId == powerCommandId_) {
         powerResultId_ = frame.commandId;
@@ -48,9 +53,22 @@ void BoatOpenEchoUartPort::poll(uint32_t now) {
         powerResultReady_ = true;
         powerPending_ = false;
       }
-    } else {
-      // Binary power frames are ignored by the NMEA DBT parser; valid ASCII
-      // DBT bytes continue through the same existing sonar telemetry path.
+    }
+    if (dataComplete) {
+      if (dataFrame.type == sonar_data_v1::ECHO_PROFILE &&
+          dataFrame.length == 128U) {
+        sensors_.publishSonarEchoProfile(dataFrame.sequence, dataFrame.payload, now);
+      } else if (dataFrame.type == sonar_data_v1::WATER_TEMPERATURE &&
+                 dataFrame.length == 3U) {
+        const int16_t temperature = static_cast<int16_t>(
+            (static_cast<uint16_t>(dataFrame.payload[0]) << 8U) | dataFrame.payload[1]);
+        sensors_.publishWaterTemperature(temperature, dataFrame.payload[2], now);
+      }
+    }
+    // Never feed binary frame bytes (including malformed/incomplete frames)
+    // into the ASCII NMEA parser.
+    if (!powerComplete && !powerWasPending && !powerParser_.pending() &&
+        !dataComplete && !dataWasPending && !dataParser_.pending()) {
       sensors_.feedOpenEchoDbtByte(static_cast<char>(byte), now);
     }
   }

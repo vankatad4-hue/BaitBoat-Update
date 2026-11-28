@@ -8,6 +8,7 @@
 
 #include <Arduino.h>
 #include "echo_profile_detector.h"
+#include "sonar_data_protocol.h"
 
 // Status for the compact depth-only link from sonar coprocessor to Boat.
 enum class SonarDbtTransmitStatus : uint8_t {
@@ -35,10 +36,18 @@ class Esp32DbtUartTransmitter {
   // Send one checksummed DBT sentence only for a validated detector result.
   SonarDbtTransmitStatus sendDetectedDepth(const EchoDetectionResult &result);
 
+  // Send a complete 128-bin processed echo profile for Remote rendering.
+  bool sendEchoProfile(uint8_t profileId, const uint8_t bins[128]);
+
+  // Send signed centi-degrees Celsius and the sensor sample counter.
+  bool sendWaterTemperature(int16_t temperatureCentiC, uint8_t sample);
+
   bool ready() const { return ready_; }
 
  private:
   static constexpr uint32_t BAUD_RATE = 9600U;
+  bool sendDataFrame(uint8_t type, uint8_t sequence, const uint8_t *payload,
+                     uint8_t length);
   bool ready_ = false;
 };
 

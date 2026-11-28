@@ -4,6 +4,7 @@
 #include "boat_radio_hw_config.h"
 #include "tracker_sensor_port.h"
 #include "sonar_power_protocol.h"
+#include "sonar_data_protocol.h"
 
 // Optional UART0-to-DBT adapter. The compile profile enables code generation,
 // but the port cannot start until its physical pin audit is explicitly signed.
@@ -29,4 +30,5 @@ private:
   uint32_t powerSendAtMs_ = 0U, powerDeadlineMs_ = 0U;
   uint8_t powerFrame_[sonar_power_v1::FRAME_SIZE]{};
   sonar_power_v1::Parser powerParser_{};
+  sonar_data_v1::Parser dataParser_{};
 };

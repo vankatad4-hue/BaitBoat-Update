@@ -39,6 +39,7 @@ inline bool encode(uint8_t type, uint8_t state, uint16_t commandId,
 class Parser {
  public:
   void reset() { used_ = 0U; }
+  bool pending() const { return used_ != 0U; }
   bool feed(uint8_t byte, Frame &out) {
     if (used_ == 0U) {
       if (byte == MAGIC0) bytes_[used_++] = byte;

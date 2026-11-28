@@ -48,4 +48,28 @@ SonarDbtTransmitStatus Esp32DbtUartTransmitter::sendDetectedDepth(
                            : SonarDbtTransmitStatus::UART_WRITE_ERROR;
 }
 
+bool Esp32DbtUartTransmitter::sendEchoProfile(uint8_t profileId,
+                                               const uint8_t bins[128]) {
+  return sendDataFrame(sonar_data_v1::ECHO_PROFILE, profileId, bins, 128U);
+}
+
+bool Esp32DbtUartTransmitter::sendWaterTemperature(int16_t temperatureCentiC,
+                                                    uint8_t sample) {
+  const uint16_t encoded = static_cast<uint16_t>(temperatureCentiC);
+  const uint8_t payload[3] = {static_cast<uint8_t>(encoded >> 8U),
+                              static_cast<uint8_t>(encoded), sample};
+  return sendDataFrame(sonar_data_v1::WATER_TEMPERATURE, sample, payload, 3U);
+}
+
+bool Esp32DbtUartTransmitter::sendDataFrame(uint8_t type, uint8_t sequence,
+                                            const uint8_t *payload,
+                                            uint8_t length) {
+  if (!ready_) return false;
+  uint8_t bytes[sonar_data_v1::MAX_FRAME]{};
+  uint8_t written = 0U;
+  if (!sonar_data_v1::encode(type, sequence, payload, length, bytes,
+                             sizeof(bytes), written)) return false;
+  return Serial1.write(bytes, written) == written;
+}
+
 #endif // FLYTEC_SONAR_UART_DRIVER_COMPILE
