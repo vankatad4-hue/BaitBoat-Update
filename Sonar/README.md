@@ -37,6 +37,13 @@ threshold register and must be calibrated independently. Capture sample zero
 must also be aligned to the actual transmit time before the ToF estimate can be
 trusted.
 
+`src/tuss4470_spi_codec.*` is a side-effect-free 16-bit MSB-first frame helper.
+It encodes the read/write bit, six-bit address, odd parity and data byte, and
+validates odd parity before exposing the returned status/data fields. It does
+not configure SPI, toggle chip select, observe the required high interval
+between frames, or read/write TUSS4470 registers. The bus protocol and all
+candidate chip-select/SPI pins remain uncommissioned.
+
 ## Work required before sensor firmware
 
 1. Identify the exact ESP32 module and Shield 002 revision, selected capacitor
@@ -47,9 +54,14 @@ trusted.
    timer burst and measured sample-zero/transmit alignment. Keep Wi-Fi disabled
    during capture and propagate ADC pool overflow, invalid channel records, stop
    errors, or incomplete captures as invalid results.
-4. Validate the capture interval, depth threshold, blind zone, and sound-speed
+4. Implement the TUSS SPI transport around the pure frame codec: select the
+   SPI mode/rate from the exact shield documentation, keep the clock at or below
+   500 kHz, deassert NCS between every 16-bit frame, and handle parity/status
+   errors. Confirm the shield's actual interface and logic levels before any
+   bus or chip-select pin is enabled.
+5. Validate the capture interval, depth threshold, blind zone, and sound-speed
    compensation against known distances before sending DBT.
-5. Add the one-way DBT transmitter only after the coprocessor has a validated
+6. Add the one-way DBT transmitter only after the coprocessor has a validated
    depth source. The Boat-side receiver now has a compile-only UART0/USB-CDC
    profile on the GPIO21 candidate and bounded DBT parsing, but its physical
    pin audit is unsigned and the default firmware cannot start it. Keep the
