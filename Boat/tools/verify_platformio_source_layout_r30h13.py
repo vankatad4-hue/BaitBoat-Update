@@ -23,6 +23,7 @@ COMMON_PAIRS = (
     "radio_protocol.cpp", "radio_protocol.h",
     "radio_safety_diagnostic_v1.h",
     "sonar_power_protocol.h",
+    "sonar_data_protocol.h",
     "radio_session_platform.h", "radio_session_v2.h",
     "radio_utc_time_v1.h",
 )
