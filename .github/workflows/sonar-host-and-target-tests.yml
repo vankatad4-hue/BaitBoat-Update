@@ -24,6 +24,7 @@ on:
       - '.github/workflows/sonar-host-and-target-tests.yml'
   pull_request:
     paths:
+      - '.gitignore'
       - 'Sonar/platformio.ini'
       - 'Sonar/src/**'
       - 'Sonar/tests/**'
