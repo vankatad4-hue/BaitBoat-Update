@@ -4,13 +4,17 @@ on:
   push:
     branches: [platformio-unified-r30h20]
     paths:
-      - 'Sonar/**'
+      - 'Sonar/platformio.ini'
+      - 'Sonar/src/**'
+      - 'Sonar/tests/**'
       - 'Boat/source/open_echo_dbt.h'
       - 'Boat/platformio.ini'
       - '.github/workflows/sonar-host-and-target-tests.yml'
   pull_request:
     paths:
-      - 'Sonar/**'
+      - 'Sonar/platformio.ini'
+      - 'Sonar/src/**'
+      - 'Sonar/tests/**'
       - 'Boat/source/open_echo_dbt.h'
       - 'Boat/platformio.ini'
       - '.github/workflows/sonar-host-and-target-tests.yml'
