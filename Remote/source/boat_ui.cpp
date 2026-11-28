@@ -466,6 +466,9 @@ static void renderSonarTopViewImage()
         2.0f * depthCm * tanf(halfBeamRadians) : 0.0f;
     const float maximumDiameterCm = rangeCm ?
         2.0f * rangeCm * tanf(halfBeamRadians) : 0.0f;
+    uint32_t visibleBins = (rangeCm && depthCm) ?
+        (static_cast<uint32_t>(depthCm) * SONAR_ECHO_BINS + rangeCm - 1U) / rangeCm : 0U;
+    if (visibleBins > SONAR_ECHO_BINS) visibleBins = SONAR_ECHO_BINS;
     uint8_t footprintRadius = maximumDiameterCm > 0.0f ?
         static_cast<uint8_t>(lroundf(maxRadius * sonarTopViewFootprintDiameterCm / maximumDiameterCm)) : 0U;
     if (depthCm && rangeCm && depthCm > rangeCm) footprintRadius = maxRadius;
@@ -480,12 +483,12 @@ static void renderSonarTopViewImage()
             uint16_t color = 0x0610U;
             if (footprintRadius && radiusSquared <= static_cast<uint16_t>(footprintRadius * footprintRadius)) {
                 const uint8_t radius = static_cast<uint8_t>(sqrtf(static_cast<float>(radiusSquared)));
-                const uint8_t firstBin = static_cast<uint8_t>(
-                    static_cast<uint16_t>(radius) * (SONAR_ECHO_BINS - 1U) / footprintRadius);
+                const uint8_t firstBin = static_cast<uint8_t>(visibleBins ?
+                    static_cast<uint32_t>(radius) * (visibleBins - 1U) / footprintRadius : 0U);
                 uint16_t amplitude = 0U;
-                if (profile) {
-                    const uint8_t binEnd = firstBin + 4U > SONAR_ECHO_BINS ?
-                        SONAR_ECHO_BINS : static_cast<uint8_t>(firstBin + 4U);
+                if (profile && visibleBins) {
+                    const uint8_t binEnd = firstBin + 4U > visibleBins ?
+                        static_cast<uint8_t>(visibleBins) : static_cast<uint8_t>(firstBin + 4U);
                     for (uint8_t bin = firstBin; bin < binEnd; ++bin)
                         amplitude += profile[bin];
                     amplitude = binEnd > firstBin ? amplitude / (binEnd - firstBin) : 0U;
