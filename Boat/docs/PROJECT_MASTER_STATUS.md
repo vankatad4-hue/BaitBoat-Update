@@ -956,3 +956,10 @@ The Boat physical worker, managed E22 admission, quiet-history proof and Remote 
 - Consolidated Boat/Remote pin ownership in [GPIO hardware assignment register R1](../../docs/GPIO_HARDWARE_ASSIGNMENT_R1.md); the source maps now call out board-owned resources and unsigned reservations.
 - Boat pins are allocated to selected modules or reserved. Open Echo's required extra chip-select, IO1/IO2, OUT3/OUT4 and ADC VOUT pins remain unassigned (`-1`) because no conflict-free reviewed interface fits the current candidate map. Revisit after exact boards/shield and signal levels are inspected.
 - No physical GPIO, sensor, RF or actuator was commissioned or enabled; release markers and existing output gates are unchanged. No local test/build command was run.
+
+
+### R30H-124W sonar software handoff refresh — 2026-11-28
+
+- Boat's isolated UART0/USB-CDC compile profile and bounded DBT ingress are implemented at the source level. Boat GPIO21/J3-18 and coprocessor GPIO22 remain candidate pins; the Boat audit is unsigned and runtime ingress remains disabled in the default profile.
+- The disarmed ESP32-DevKitC V4 target now includes `Sonar/src/adc_capture_buffer.h`, a fixed 5,224-sample software buffer with whole-block bounds checks, 12-bit raw sample validation, overflow reporting and elapsed-time capture metadata. It performs no ADC or GPIO access and is not used by the current firmware.
+- Documentation now reflects the receiver state and the decision to use wired UART for compact DBT while leaving Wi-Fi unused during capture. Next software step is a PlatformIO-compatible ESP32 ADC continuous/DMA adapter feeding the bounded buffer; target API and physical signal levels must be checked before activation. No tests/builds were run, hardware pins/transducer remain untouched, and map integration stays postponed.

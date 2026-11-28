@@ -35,7 +35,7 @@ The selected software candidate is compact depth-only NMEA DBT over a one-way UA
 
 Boat GPIO21/J3-18 is now the unsigned UART0 RX candidate and the optional nRF IRQ is left unconnected. `NRF24Link` polls the radio and does not consume IRQ. The candidate is reflected in the canonical Boat pin map and GPIO crosswalk; inspect the exact board header and measure signal levels before signing it or connecting the wire.
 
-The current Boat DBT decoder can accept a bounded byte stream, but it is not yet attached to this UART. The Remote receives compact depth telemetry only; full 1,800-sample echo profiles and Lucky D+T water temperature need separate protocol work and are outside this depth-only first connection.
+Boat now has a bounded DBT decoder connected to a compile-gated UART0 receiver through `BoatOpenEchoUartPort`. Its isolated compile profile routes diagnostics to native USB CDC and reserves Boat GPIO21/J3-18 as UART RX; the default firmware remains disabled because the physical pin audit flag is unsigned. The coprocessor-side GPIO22 TX, Boat-side header mapping, TX voltage and shared-ground arrangement remain unverified, so this is a software interface candidate rather than a connection instruction. The Remote receives compact depth telemetry only; full 1,800-sample echo profiles and Lucky D+T water temperature need separate protocol work and are outside this depth-only first connection.
 
 ## Electrical and acquisition gates
 
@@ -58,9 +58,10 @@ The current Boat DBT decoder can accept a bounded byte stream, but it is not yet
 ## Software implementation status
 
 The separate `Sonar/` PlatformIO target now records this DevKitC V4 pin
-candidate and builds only a disarmed USB diagnostic scaffold. It deliberately
-does not configure the shield pins, start the transducer, or emit DBT until the
-electrical and acquisition gates above are cleared.
+candidate and contains a disarmed USB diagnostic scaffold plus a fixed-size
+5,224-sample capture buffer contract. It deliberately does not configure the
+shield pins, start the transducer, read an ADC, or emit DBT until the electrical
+and acquisition gates above are cleared.
 
 The upstream Open Echo UNO code is not a drop-in ESP32 implementation: it uses
 AVR Timer1 and ADC registers. Also, `NMEA_DBT_OUT.ino` declares an analog sample
