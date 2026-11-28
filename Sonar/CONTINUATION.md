@@ -11,6 +11,9 @@ Shield 002 remains an uncommissioned candidate.
 - The standalone DevKitC V4 Sonar target and all four PlatformIO profiles
   (base, ADC, SPI, UART) passed in Actions run
   [#46133216583](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46133216583).
+- After adding the compile-time GPIO allocation checks, the Sonar host test and
+  all four target profiles passed again in
+  [#46134352872](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46134352872).
 - Acquisition, stable-echo detection, invalid/incomplete capture handling,
   DBT formatting, and Boat's DBT parser round-trip passed the Sonar host test
   in the same workflow. This is simulated software behavior, not a sensor test.
