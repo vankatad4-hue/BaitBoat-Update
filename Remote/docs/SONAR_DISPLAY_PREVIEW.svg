@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="bg" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a1825"/>
+      <stop offset="1" stop-color="#030911"/>
+    </linearGradient>
+    <linearGradient id="signal" x2="0" y2="1">
+      <stop offset="0" stop-color="#174f7d"/>
+      <stop offset="0.42" stop-color="#19a6b8"/>
+      <stop offset="0.78" stop-color="#48c876"/>
+      <stop offset="1" stop-color="#f2cf57"/>
+    </linearGradient>
+    <pattern id="grid" width="48" height="45" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V45" fill="none" stroke="#244258" stroke-width="1"/>
+    </pattern>
+    <clipPath id="plotClip"><rect x="93" y="196" width="478" height="382" rx="5"/></clipPath>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <text x="36" y="48" fill="#e9f2f8" font-family="Arial,sans-serif" font-size="26" font-weight="700">FLYTEC REMOTE · SONAR DISPLAY</text>
+  <text x="36" y="75" fill="#9cb6c8" font-family="Arial,sans-serif" font-size="14">UI PREVIEW · STYLIZED SAMPLE RETURNS · NOT LIVE SONAR DATA</text>
+  <rect x="1034" y="25" width="210" height="34" rx="17" fill="#183a56" stroke="#397ba6"/>
+  <text x="1139" y="47" text-anchor="middle" fill="#d9edf9" font-family="Arial,sans-serif" font-size="14" font-weight="700">MODE TOGGLE</text>
+
+  <g>
+    <rect x="28" y="100" width="600" height="580" rx="15" fill="#0a1722" stroke="#28618a" stroke-width="2"/>
+    <text x="52" y="139" fill="#f0f7fb" font-family="Arial,sans-serif" font-size="21" font-weight="700">ECHOGRAM</text>
+    <text x="52" y="164" fill="#8daabd" font-family="Arial,sans-serif" font-size="13">scrolling echo amplitude · latest profile at right</text>
+    <rect x="93" y="196" width="478" height="382" rx="5" fill="#06101b" stroke="#315a73"/>
+    <rect x="93" y="196" width="478" height="382" fill="url(#grid)"/>
+    <g clip-path="url(#plotClip)" opacity="0.9">
+      <path d="M94 530 C145 520 180 532 228 516 S303 526 350 500 S418 516 470 486 S530 496 572 475 L572 520 C522 538 498 525 451 542 S373 539 326 557 S245 547 196 566 S130 559 94 573Z" fill="url(#signal)" opacity="0.7"/>
+      <path d="M111 343 L111 325 L116 325 L116 343 Z M159 410 L159 390 L164 390 L164 410 Z M207 284 L207 250 L212 250 L212 284 Z M255 385 L255 352 L260 352 L260 385 Z M303 322 L303 298 L308 298 L308 322 Z M351 450 L351 427 L356 427 L356 450 Z M399 300 L399 270 L404 270 L404 300 Z M447 369 L447 328 L452 328 L452 369 Z M495 278 L495 240 L500 240 L500 278 Z M541 338 L541 300 L546 300 L546 338 Z" fill="#44c7d8"/>
+      <path d="M95 516 C145 501 170 512 220 494 S302 510 351 480 S417 495 469 464 S532 475 574 451" fill="none" stroke="#ffe17a" stroke-width="5" opacity="0.9"/>
+    </g>
+    <text x="51" y="205" fill="#90a8b8" font-family="Arial,sans-serif" font-size="12">0 m</text>
+    <text x="47" y="332" fill="#90a8b8" font-family="Arial,sans-serif" font-size="12">5 m</text>
+    <text x="42" y="457" fill="#90a8b8" font-family="Arial,sans-serif" font-size="12">10 m</text>
+    <text x="42" y="574" fill="#90a8b8" font-family="Arial,sans-serif" font-size="12">15 m</text>
+    <rect x="52" y="608" width="552" height="42" rx="7" fill="#101f2b"/>
+    <text x="68" y="634" fill="#bcd1dc" font-family="Arial,sans-serif" font-size="13">ECHOGRAM · measured amplitude only · no fish classification</text>
+  </g>
+
+  <g>
+    <rect x="652" y="100" width="600" height="580" rx="15" fill="#0a1722" stroke="#28618a" stroke-width="2"/>
+    <text x="676" y="139" fill="#f0f7fb" font-family="Arial,sans-serif" font-size="21" font-weight="700">TOP VIEW · RANGE FOOTPRINT</text>
+    <text x="676" y="164" fill="#8daabd" font-family="Arial,sans-serif" font-size="13">concentric rings summarize measured echo strength by range</text>
+    <circle cx="952" cy="375" r="170" fill="#06101b" stroke="#244258" stroke-width="1" stroke-dasharray="5 6"/>
+    <text x="952" y="190" text-anchor="middle" fill="#a8bfce" font-family="Arial,sans-serif" font-size="14" font-weight="700">N</text>
+    <circle cx="952" cy="375" r="57" fill="#104b71" stroke="#9bd9db" stroke-width="2"/>
+    <circle cx="952" cy="375" r="43" fill="none" stroke="#20a7ad" stroke-width="4" opacity="0.95"/>
+    <circle cx="952" cy="375" r="29" fill="none" stroke="#55c97f" stroke-width="5" opacity="0.95"/>
+    <circle cx="952" cy="375" r="15" fill="none" stroke="#f0d15d" stroke-width="5" opacity="0.95"/>
+    <path d="M952 375 L985 328" stroke="#25e07d" stroke-width="5" stroke-linecap="round"/>
+    <path d="M985 328 L982 340 L975 335 Z" fill="#25e07d"/>
+    <circle cx="952" cy="375" r="5" fill="#f4f8fb"/>
+    <text x="1145" y="270" fill="#b7d1df" font-family="Arial,sans-serif" font-size="13">5.0 m measured depth</text>
+    <text x="1145" y="294" fill="#b7d1df" font-family="Arial,sans-serif" font-size="13">45° beam candidate</text>
+    <text x="1145" y="318" fill="#b7d1df" font-family="Arial,sans-serif" font-size="13">D ≈ 4.1 m footprint</text>
+    <line x1="1144" y1="350" x2="1180" y2="350" stroke="#25e07d" stroke-width="4"/>
+    <text x="1188" y="355" fill="#b7d1df" font-family="Arial,sans-serif" font-size="13">boat heading</text>
+    <rect x="676" y="608" width="552" height="42" rx="7" fill="#101f2b"/>
+    <text x="692" y="634" fill="#bcd1dc" font-family="Arial,sans-serif" font-size="13">D = 2 × depth × tan(beam / 2) · echo azimuth is not measured</text>
+  </g>
+</svg>

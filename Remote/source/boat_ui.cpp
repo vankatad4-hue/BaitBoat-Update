@@ -379,6 +379,7 @@ static lv_obj_t *sonarStatus = nullptr;
 static lv_obj_t *sonarScaleLabels[4] = {};
 static lv_obj_t *sonarEchoCanvas = nullptr;
 static lv_obj_t *sonarTopViewCanvas = nullptr;
+static lv_obj_t *sonarNorthLabel = nullptr;
 static lv_obj_t *sonarViewButton = nullptr;
 static lv_obj_t *sonarViewButtonLabel = nullptr;
 static lv_obj_t *sonarViewHint = nullptr;
@@ -481,22 +482,27 @@ static void renderSonarTopViewImage()
             const int16_t dy = static_cast<int16_t>(y) - center;
             const uint16_t radiusSquared = static_cast<uint16_t>(dx * dx + dy * dy);
             uint16_t color = 0x0610U;
-            if (footprintRadius && radiusSquared <= static_cast<uint16_t>(footprintRadius * footprintRadius)) {
+            if (radiusSquared <= static_cast<uint16_t>(maxRadius * maxRadius)) {
                 const uint8_t radius = static_cast<uint8_t>(sqrtf(static_cast<float>(radiusSquared)));
-                const uint8_t firstBin = static_cast<uint8_t>(visibleBins ?
-                    static_cast<uint32_t>(radius) * (visibleBins - 1U) / footprintRadius : 0U);
-                uint16_t amplitude = 0U;
-                if (profile && visibleBins) {
-                    const uint8_t binEnd = firstBin + 4U > visibleBins ?
-                        static_cast<uint8_t>(visibleBins) : static_cast<uint8_t>(firstBin + 4U);
-                    for (uint8_t bin = firstBin; bin < binEnd; ++bin)
-                        amplitude += profile[bin];
-                    amplitude = binEnd > firstBin ? amplitude / (binEnd - firstBin) : 0U;
+                if (footprintRadius && radiusSquared <= static_cast<uint16_t>(footprintRadius * footprintRadius)) {
+                    const uint8_t firstBin = static_cast<uint8_t>(visibleBins ?
+                        static_cast<uint32_t>(radius) * (visibleBins - 1U) / footprintRadius : 0U);
+                    uint16_t amplitude = 0U;
+                    if (profile && visibleBins) {
+                        const uint8_t binEnd = firstBin + 4U > visibleBins ?
+                            static_cast<uint8_t>(visibleBins) : static_cast<uint8_t>(firstBin + 4U);
+                        for (uint8_t bin = firstBin; bin < binEnd; ++bin)
+                            amplitude += profile[bin];
+                        amplitude = binEnd > firstBin ? amplitude / (binEnd - firstBin) : 0U;
+                    }
+                    color = sonarIntensityColor(static_cast<uint8_t>(amplitude));
+                    if ((radius % 8U) == 0U && amplitude < 128U) color = 0x39E7U;
+                    if (radius == footprintRadius) color = 0x7BEFU;
+                    if (radiusSquared < 5U) color = 0xFFFFU;
+                } else if (radius == maxRadius && ((x + y) % 3U) == 0U) {
+                    // Dotted outer guide is the maximum beam-footprint range.
+                    color = 0x2442U;
                 }
-                color = sonarIntensityColor(static_cast<uint8_t>(amplitude));
-                if ((radius % 8U) == 0U && amplitude < 128U) color = 0x39E7U;
-                if (radius == footprintRadius) color = 0x7BEFU;
-                if (radiusSquared < 5U) color = 0xFFFFU;
             }
             sonarTopViewPixels[static_cast<uint16_t>(y) * SONAR_TOP_VIEW_SIZE + x] = color;
         }
@@ -533,7 +539,8 @@ static void drawSonarPlot(uint16_t width, uint16_t height)
     if (!sonarPlot) return;
     for (uint32_t child = lv_obj_get_child_count(sonarPlot); child > 0; --child) {
         lv_obj_t *object = lv_obj_get_child(sonarPlot, child - 1U);
-        if (object != sonarEchoCanvas && object != sonarTopViewCanvas) lv_obj_delete(object);
+        if (object != sonarEchoCanvas && object != sonarTopViewCanvas && object != sonarNorthLabel)
+            lv_obj_delete(object);
     }
     // LVGL 9.6 lv_point_precise_t stores integer pixel coordinates in this
     // configuration. Never use floating-point list initialization here:
@@ -545,6 +552,10 @@ static void drawSonarPlot(uint16_t width, uint16_t height)
     if (sonarTopViewMode) {
         lv_obj_add_flag(sonarEchoCanvas, LV_OBJ_FLAG_HIDDEN);
         lv_obj_remove_flag(sonarTopViewCanvas, LV_OBJ_FLAG_HIDDEN);
+        if (sonarNorthLabel) {
+            lv_obj_remove_flag(sonarNorthLabel, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_set_pos(sonarNorthLabel, static_cast<int32_t>(width) / 2 - 4, 0);
+        }
         for (lv_obj_t *label : sonarScaleLabels)
             if (label) lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
         const uint16_t diameter = static_cast<uint16_t>(
@@ -571,6 +582,7 @@ static void drawSonarPlot(uint16_t width, uint16_t height)
     }
     lv_obj_add_flag(sonarTopViewCanvas, LV_OBJ_FLAG_HIDDEN);
     lv_obj_remove_flag(sonarEchoCanvas, LV_OBJ_FLAG_HIDDEN);
+    if (sonarNorthLabel) lv_obj_add_flag(sonarNorthLabel, LV_OBJ_FLAG_HIDDEN);
     for (lv_obj_t *label : sonarScaleLabels)
         if (label) lv_obj_remove_flag(label, LV_OBJ_FLAG_HIDDEN);
     if (sonarViewHint)
@@ -705,6 +717,10 @@ static void createSonarPanel()
                          SONAR_TOP_VIEW_SIZE, LV_COLOR_FORMAT_RGB565);
     lv_obj_add_flag(sonarTopViewCanvas, LV_OBJ_FLAG_HIDDEN);
     lv_image_set_antialias(sonarTopViewCanvas, false);
+    sonarNorthLabel=lv_label_create(sonarPlot);
+    lv_label_set_text(sonarNorthLabel,"N");
+    lv_obj_set_style_text_color(sonarNorthLabel,lv_color_hex(0xD9EDF9),LV_PART_MAIN);
+    lv_obj_add_flag(sonarNorthLabel,LV_OBJ_FLAG_HIDDEN);
     drawSonarPlot(330,210);
     sonarScaleLabels[0]=createLabel(sonarPanel,"15",8,52);
     sonarScaleLabels[1]=createLabel(sonarPanel,"10",4,103);

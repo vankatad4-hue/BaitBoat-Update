@@ -117,7 +117,7 @@ working tree on 2026-11-28:
 | --- | --- | --- |
 | Active sonar acquisition runtime | Not active. `Sonar/src/main.cpp` statically requires the hardware-enable flag to remain zero. ADC DMA capture and the TUSS4470 SPI adapter are compile-gated components, not a running sonar acquisition pipeline. | Exact Shield 002 revision, transducer model/electrical data, VOUT conditioning, register profile, burst control, ADC timing and burst/sample synchronization. |
 | Full echo-profile communication | A 128-bin measured-envelope protocol and best-effort primary-link sender/reassembler are implemented. It is display-resolution, not raw ADC capture; no ACK/retry or Sonar-to-Boat profile producer is connected. | Feed calibrated measured bins from Sonar into `TrackerSensorPort::publishSonarEchoProfile`, measure actual airtime, and decide whether reliable retry or raw-profile transport is required. A 5,224-sample 12-bit capture is 7,836 bytes before framing. |
-| Remote echogram and circle view | Remote reassembles complete profiles and renders a 64-column scrolling amplitude canvas. A new toggle adds a concentric beam-footprint view whose diameter is estimated as `2 × depth × tan(beam angle / 2)`; a green marker shows fresh GY-91 boat heading. The 45° Lucky D+T angle is a candidate pending exact sensor verification. A single beam has no echo azimuth, so the UI never plots invented target directions. | Latest circle-mode code awaits Remote CI. Confirm appearance and footprint scaling on the Waveshare display; only connect real acquisition data. |
+| Remote echogram and circle view | Remote reassembles complete profiles and renders a 64-column scrolling amplitude canvas. A new toggle adds a concentric beam-footprint view whose diameter is estimated as `2 × depth × tan(beam angle / 2)`; a green marker shows fresh GY-91 boat heading. The 45° Lucky D+T angle is a candidate pending exact sensor verification. A single beam has no echo azimuth, so the UI never plots invented target directions. CI passed on `2b43dbff`: Remote host tests, conservative source audit, and both Boat/Remote PlatformIO builds. | Confirm appearance and footprint scaling on the Waveshare display; only connect real acquisition data. See the [UI preview](../Remote/docs/SONAR_DISPLAY_PREVIEW.svg). |
 | Lucky D+T water-temperature interface | Still unidentified from public documentation. Lucky's official FF718-T page describes a cable probe, 200 kHz/45-degree sonar, and water-temperature display, but publishes no temperature-element pinout, sensor type, resistance curve, or protocol. A display feature is not evidence of accessible thermistor wires. | Read the exact transducer and monitor labels/manual, inspect the cable/conductor mapping, then measure or obtain the temperature element specification before implementing a driver. Do not infer a thermistor or ADC connection from “D+T”. |
 | Dual-core runtime acceptance | Not accepted on hardware. Existing diagnostic code/build coverage checks task affinity and progress in software, but no Boat/Remote board runtime results are recorded. | Run the bench on both physical boards; record core IDs, worker progress/drop counters, radio load, STOP latency, watchdog and heap/stack behavior. |
 | GPIO assignments | Candidate maps and compile-time uniqueness/range checks exist for the DevKitC V4 Sonar coprocessor; Boat and Remote have their own candidate maps. Physical audits remain unsigned, so assignments are not finalized for wiring/activation. | Confirm exact board SKUs/revisions and connector-to-GPIO continuity, then sign each endpoint's pin audit. Keep all peripherals disabled until that audit is recorded. |
@@ -151,10 +151,11 @@ commit `6cc974ac` (GitHub Actions run `46138381538` for Boat/Remote builds;
 PlatformIO or C++ compiler. This scheduler parity does not activate the async
 radio owner, sonar acquisition, or any physical output.
 
-The circular Remote view is implemented in the current working tree but is not
-yet CI-verified. It maps the received 128-bin range/amplitude profile to
-concentric rings. Its outer diameter grows with measured depth using the
+The circular Remote view is CI-verified on commit `2b43dbff`. It maps the
+received 128-bin range/amplitude profile, limited to the fresh measured depth,
+to concentric rings. Its outer diameter grows with measured depth using the
 candidate transducer beam angle; a green orientation line appears only when
 GY-91 heading telemetry is fresh. The display explicitly states that
-individual echo bearings are unavailable.
+individual echo bearings are unavailable. `Remote/docs/SONAR_DISPLAY_PREVIEW.svg`
+shows the two view modes with labeled illustrative data, not a live boat capture.
 
