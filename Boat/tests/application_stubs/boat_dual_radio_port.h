@@ -38,4 +38,5 @@ public:
  bool missionReleaseComplete(uint16_t,uint16_t,bool){return true;}
  bool completeApplicationAction(const BoatCommand &c,uint32_t g,bool ok,uint8_t,uint8_t,ManagedLink reply=LINK_NRF_PRIMARY){if(g!=gen)return false;acks.push_back({c.commandId,ok,reply});return true;}
  bool sendHardwareTelemetry(const RadioDecodedPayload &d,uint32_t /*sampledAt*/=0){if(!primary)return false;telemetry.push_back(d);return true;}
+ bool offerSonarEchoProfile(uint8_t,const uint8_t[128]){return true;}
 };
