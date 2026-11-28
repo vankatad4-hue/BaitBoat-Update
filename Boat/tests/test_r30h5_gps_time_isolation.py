@@ -46,8 +46,8 @@ class TestGNSSUTCIsolation(unittest.TestCase):
                      "frame.sessionEpoch!=g_sessionEpoch")
     def test_time_beacon_cannot_preempt_mission(self):
         self.hostile("Boat/source/boat_dual_radio_port.cpp",
-                     "!opportunity.commandQueued&&!opportunity.activeMission&&\n    !opportunity.failsafeOrLinkLoss",
-                     "!opportunity.commandQueued&&true&&\n    !opportunity.failsafeOrLinkLoss")
+                     "!diagnosticOccupiesSlot&&!sonarProfileOccupiesSlot&&opportunity.authenticatedSession&&\n    opportunity.primaryFresh&&opportunity.haveHeartbeat&&\n    !opportunity.commandQueued&&!opportunity.activeMission&&\n    !opportunity.failsafeOrLinkLoss",
+                     "!diagnosticOccupiesSlot&&!sonarProfileOccupiesSlot&&opportunity.authenticatedSession&&\n    opportunity.primaryFresh&&opportunity.haveHeartbeat&&\n    !opportunity.commandQueued&&true&&\n    !opportunity.failsafeOrLinkLoss")
     def test_primary_pending_wrapper_must_report_driver(self):
         self.hostile("Boat/source/boat_dual_radio_port.cpp",
                      "bool BoatDualRadioPort::primaryDriverPending() const{return nrf_.txPending();}",
