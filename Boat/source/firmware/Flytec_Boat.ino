@@ -11,6 +11,7 @@
 #include "boat_dual_radio_port.h"
 #include "boat_application_port.h"
 #include "tracker_sensor_port.h"
+#include "boat_open_echo_uart_port.h"
 #include "mdd20a_direct_profile.h"
 #include "figure8_calibration_nvs.h"
 #include "boat_home_point_nvs.h"
@@ -29,6 +30,7 @@ static_assert(!boat_r30d::ACTUAL_READER_COMMISSIONED &&
 #include "tracker_commissioned_config.h"
 static HardwareSerial gnssUart(2);
 static TrackerSensorPort sensors(gnssUart,Wire);
+static BoatOpenEchoUartPort openEchoUart(sensors);
 static flytec_time::Discipline gnssUtcClock;
 static uint32_t lastGpsUtcStamp=0;
 static bool haveGpsUtcStamp=false;
@@ -90,6 +92,10 @@ void setup(){
  #if __has_include("tracker_commissioned_config.h")
  sensorsReady=sensors.begin(trackerLocalProfile());
  Serial.println(sensorsReady?"Sensor diagnostics enabled; actuator power must remain disconnected.":"Sensor profile denied.");
+ if(sensorsReady){
+  const bool sonarUartReady=openEchoUart.begin(sensorsReady);
+  Serial.println(sonarUartReady?"Open Echo DBT UART active under signed pin profile.":"Open Echo UART disabled; pin audit or build profile not enabled.");
+ }
  #endif
  // No physical stationary/STOP sensor validation exists yet, so leave
  // the mission preparation gate unset (default deny).
@@ -109,6 +115,9 @@ void loop(){
    if(command=='x'){sensors.abortAutomaticFigure8();Serial.println("FIGURE8: aborted; no calibration applied.");}
   }
   const uint32_t now=millis();sensors.poll(now);
+  // UART0 only runs in the isolated USB-CDC compile profile and after the
+  // sonar GPIO audit; valid DBT enters the normal sensor snapshot pipeline.
+  openEchoUart.poll(now);
   // Copy sensor values while this legacy application loop still owns Wire.
   // Optional telemetry is handed to BoatApplicationPort as data only; no
   // sensor bus access or actuator authority is moved into the radio worker.

@@ -19,7 +19,7 @@ This register consolidates the current source maps and board-owned peripherals. 
 | 14, 15, 16 | E22 AUX/M0/M1 | Candidate modem control signals. |
 | 17, 18 | E22 UART TX/RX | Candidate 3.3 V UART path. |
 | 19, 20 | Native USB D−/D+ | Reserve for USB. |
-| 21 | nRF24 IRQ | Optional interrupt; polling can be used if IRQ is omitted. |
+| 21 | Open Echo UART0 RX candidate | Replaces optional nRF IRQ; `NRF24Link` polls. Native USB CDC must own `Serial` before UART0 is remapped. Physical pin/level audit remains unsigned. |
 | 22–34 | Not available on the selected ESP32-S3 GPIO set | Not header GPIO assignments for this board target. |
 | 35–37 | N32R16V octal memory reserve | Do not use as external GPIO. |
 | 38, 48 | Revision-dependent RGB LED / low-voltage reserve | Do not repurpose without exact board-revision confirmation. |
@@ -30,7 +30,7 @@ The MCP23017 at candidate address `0x27` supplies the expander functions: `GPA0�
 
 ### Boat sonar allocation
 
-The Open Echo shield has **no direct Boat GPIO assignment**. Its interface needs a dedicated SPI chip-select, IO1, IO2, OUT3, OUT4 and analog VOUT sampling. The Boat's remaining general-purpose pins are reserved or already owned. The owner has an ESP32-DevKitC V4 available as a separate sonar-only coprocessor candidate; its proposed pin map and one-way Boat UART path are documented in [sonar coprocessor recommendation R2](../Boat/docs/BOAT_ESP32_SONAR_COPROCESSOR_RECOMMENDATION_R2.md). Do not connect shield UNO pin numbers directly to Boat GPIOs or wire the candidate Boat UART until the crosswalk and source guards are updated and the levels are measured.
+The Open Echo shield has **no direct Boat GPIO assignment**. Its interface needs a dedicated SPI chip-select, IO1, IO2, OUT3, OUT4 and analog VOUT sampling. A separate ESP32-DevKitC V4 is the sonar coprocessor candidate. Boat GPIO21/J3-18 is allocated in software as UART0 RX for compact DBT; native USB CDC owns `Serial` in the isolated compile profile, and the nRF IRQ is omitted because the driver polls. The UART remains unsigned and will not start until a separate pin audit is signed. See [sonar coprocessor recommendation R2](../Boat/docs/BOAT_ESP32_SONAR_COPROCESSOR_RECOMMENDATION_R2.md).
 
 ## Remote — Waveshare ESP32-S3-Touch-LCD-4.3 Standard, SKU 25948
 

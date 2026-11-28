@@ -8,7 +8,7 @@ NRF_CE,10,J1-16,PROBE_ONLY,RF signed zero
 NRF_MOSI,11,J1-17,PROBE_ONLY,SPI output not enabled
 NRF_SCK,12,J1-18,PROBE_ONLY,SPI output not enabled
 NRF_MISO,13,J1-19,PROBE_ONLY,SPI input
-NRF_IRQ,21,J3-18,PROBE_ONLY,IRQ input
+SONAR_UART_RX,21,J3-18,INPUT_ONLY_CANDIDATE,UART0 receive from sonar coprocessor; unsigned
 E22_NRST,6,J1-6,PROBE_ONLY,No drive before module audit
 E22_AUX,14,J1-20,PROBE_ONLY,Input level check
 E22_M0,15,J1-8,PROBE_ONLY,Mode output locked

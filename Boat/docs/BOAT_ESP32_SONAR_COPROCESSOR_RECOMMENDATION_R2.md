@@ -1,7 +1,7 @@
 # ESP32 sonar coprocessor recommendation R2
 
 **Date:** 2026-11-28
-**Status:** use the owner's existing **ESP32-DevKitC V4** as the sonar-only controller candidate. Not yet wired or commissioned. This does not enable a sensor driver or change the active Boat pin map.
+**Status:** use the owner's existing **ESP32-DevKitC V4** as the sonar-only controller candidate. Not yet wired or commissioned. Boat now has an unsigned UART0 RX candidate on GPIO21 in an isolated compile profile; the default firmware still cannot start the receiver.
 
 ## Board fit
 
@@ -31,9 +31,9 @@ GPIO25–27 are ADC2-capable pins on the classic ESP32, but they are only used a
 
 ## Boat telemetry connection
 
-The protocol candidate is compact depth-only NMEA DBT over a one-way UART from coprocessor GPIO22 TX to Boat GPIO21 RX, with a shared logic ground. The Boat's current source assigns UART2 to GNSS, UART1 to E22, and `Serial` to diagnostics; a separate UART endpoint has not been allocated. Decide whether to move diagnostics to verified native USB CDC, use a bounded software UART, or revise another interface before creating the receiver. Do not assume UART0 is free while the debug console uses it.
+The selected software candidate is compact depth-only NMEA DBT over a one-way UART from coprocessor GPIO22 TX to Boat GPIO21 RX, with a shared logic ground. Boat keeps UART2 for GNSS and UART1 for E22; the isolated `boat_open_echo_uart_compile` profile routes `Serial` to native USB CDC and uses UART0 for sonar receive. The default firmware leaves the sonar adapter disabled, and the adapter refuses to start while its separate GPIO audit flag is zero.
 
-Boat GPIO21 is currently documented for optional nRF IRQ, but the current `NRF24Link` code polls the radio and does not consume the IRQ pin. Reassigning GPIO21 still requires updating the canonical Boat pin map, radio macros, crosswalk, source guards and resource checks as one reviewed change. Do not connect the wire until both serial ownership and pin records agree.
+Boat GPIO21/J3-18 is now the unsigned UART0 RX candidate and the optional nRF IRQ is left unconnected. `NRF24Link` polls the radio and does not consume IRQ. The candidate is reflected in the canonical Boat pin map and GPIO crosswalk; inspect the exact board header and measure signal levels before signing it or connecting the wire.
 
 The current Boat DBT decoder can accept a bounded byte stream, but it is not yet attached to this UART. The Remote receives compact depth telemetry only; full 1,800-sample echo profiles and Lucky D+T water temperature need separate protocol work and are outside this depth-only first connection.
 

@@ -29,7 +29,8 @@ int main(){
  assert(contains("NRF_SCK",BOAT_NRF_SCK_PIN,"J1-18"));
  assert(contains("NRF_MOSI",BOAT_NRF_MOSI_PIN,"J1-17"));
  assert(contains("NRF_MISO",BOAT_NRF_MISO_PIN,"J1-19"));
- assert(contains("NRF_IRQ",BOAT_NRF_IRQ_PIN,"J3-18"));
+ assert(BOAT_NRF_IRQ_PIN==-1);
+ assert(contains("SONAR_UART_RX",BOAT_OPEN_ECHO_UART_RX_PIN,"J3-18"));
  assert(contains("E22_TX",BOAT_E22_UART_PIN_TX,"J1-10"));
  assert(contains("E22_RX",BOAT_E22_UART_PIN_RX,"J1-11"));
  assert(contains("E22_NRST",BOAT_E22_UART_PIN_NRST,"J1-6"));
@@ -47,6 +48,7 @@ int main(){
  assert(boat_r23::MCP_EKM_GPA_MASK==0x0f);
  assert(boat_r23::MCP_MDD_GPB_MASK==0x03);
  assert(BOAT_NRF_PIN_AUDIT_SIGNED==0);
+ assert(BOAT_OPEN_ECHO_UART_PIN_AUDIT_SIGNED==0);
  assert(BOAT_E22_UART_PIN_AUDIT_SIGNED==0);
  assert(BOAT_E22_UART_LOGIC_LEVELS_VERIFIED==0);
  assert(BOAT_E22_UART_RF_INTEROPERABILITY_VERIFIED==0);

@@ -35,11 +35,11 @@ source calls it and the current firmware does not send a DBT sentence.
 5. Add the one-way UART DBT output only after Boat's serial ownership, GPIO
    map, freshness rules, and RF scheduling path are reviewed together.
 
-The Boat currently assigns `HardwareSerial(2)` to GNSS and `HardwareSerial(1)`
-to E22; Arduino `Serial` is also used for the debug console. A dedicated sonar
-UART therefore needs an explicit serial/console allocation before its RX pin
-can be connected. The proposed GPIO21 also replaces the optional nRF IRQ
-candidate and must be reconciled in the canonical pin crosswalk first.
+Boat keeps `HardwareSerial(2)` for GNSS and `HardwareSerial(1)` for E22. The
+isolated `boat_open_echo_uart_compile` profile places diagnostics on native USB
+CDC and reserves UART0 RX/GPIO21 for the sonar DBT stream. The default Boat
+profile does not enable the reader, its GPIO audit flag is still zero, and the
+optional nRF IRQ is omitted because the current radio driver polls.
 
 The upstream Open Echo UNO sketch is a reference, not portable ESP32 firmware:
 it uses AVR Timer1 registers and AVR ADC registers. The NMEA DBT sketch declares

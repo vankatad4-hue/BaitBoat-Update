@@ -76,13 +76,15 @@ radio=read(RADIO)
 for macro,value in [
     ("BOAT_NRF_CE_PIN",10),("BOAT_NRF_CSN_PIN",9),
     ("BOAT_NRF_SCK_PIN",12),("BOAT_NRF_MOSI_PIN",11),
-    ("BOAT_NRF_MISO_PIN",13),("BOAT_NRF_IRQ_PIN",21),
+    ("BOAT_NRF_MISO_PIN",13),("BOAT_NRF_IRQ_PIN",-1),
+    ("BOAT_OPEN_ECHO_UART_RX_PIN",21),
     ("BOAT_E22_UART_PIN_TX",17),("BOAT_E22_UART_PIN_RX",18),
     ("BOAT_E22_UART_PIN_M0",15),("BOAT_E22_UART_PIN_M1",16),
     ("BOAT_E22_UART_PIN_AUX",14),("BOAT_E22_UART_PIN_NRST",6),
 ]:
     assert re.search(r'^#define\s+'+macro+r'\s+'+str(value)+r'\s*$',radio,re.M),macro
-for macro in ("BOAT_NRF_PIN_AUDIT_SIGNED","BOAT_E22_UART_PIN_AUDIT_SIGNED",
+for macro in ("BOAT_NRF_PIN_AUDIT_SIGNED","BOAT_OPEN_ECHO_UART_PIN_AUDIT_SIGNED",
+              "BOAT_E22_UART_PIN_AUDIT_SIGNED",
               "BOAT_E22_UART_LOGIC_LEVELS_VERIFIED",
               "BOAT_E22_UART_RF_INTEROPERABILITY_VERIFIED"):
     assert re.search(r'^#define\s+'+macro+r'\s+0\s*$',radio,re.M),macro

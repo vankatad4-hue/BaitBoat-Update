@@ -5,7 +5,7 @@
 
 **Date:** 2026-11-22 | **Branch:** `hardware-ready-dual-radio-r1`  
 **Scope:** actual R20-selected DevKitC-1-N32R16V + M100 PRO + GY-91 + ADS1115 + nRF24 PA/LNA + E22-900T22S + Waveshare MCP23017 + Cytron MDD20A + EKM014.  
-**Result:** **manufacturer-header-verified pin allocation and complete logical connection schedule**; final board-revision, carrier connector, logic-level and physical safety tests remain **unsigned**. **No physical motor or solenoid energization authorized.**
+**Result:** **manufacturer-header-verified pin allocation and complete logical connection schedule**; final board-revision, carrier connector, logic-level and physical safety tests remain **unsigned**. **No physical motor or solenoid energization authorized.** R30H-124W supersedes the optional GPIO21 nRF IRQ assignment with the candidate sonar UART0 RX route; the radio remains polled.
 
 The authoritative machine-readable 64-net schedule is [BOAT_R23_MODULE_CONNECTION_MATRIX.csv](BOAT_R23_MODULE_CONNECTION_MATRIX.csv). This document and CSV supersede R20's prose **only where extra electrical conditions are made explicit**, not the R20 module selection or the R21 battery divider.
 
@@ -30,7 +30,7 @@ Espressif's **DevKitC-1 v1.1 J1/J3 header table** matches all 18 proposed MCU GP
 | 16 | J1-9 | E22 mode 1 | E22 pad 21 M1 |
 | 17 | J1-10 | UART TX (E22) | E22 pad 22 RXD |
 | 18 | J1-11 | UART RX (E22) | E22 pad 23 TXD |
-| 21 | J3-18 | nRF24 IRQ | nRF24 IRQ, optional interrupt |
+| 21 | J3-18 | Open Echo UART RX | Sonar coprocessor TX; UART0 RX with native USB CDC debug console |
 | 39 | J3-9 | MDD20A left PWM | MDD20A PWM1 (JTAG MTCK repurposed) |
 | 40 | J3-8 | MDD20A right PWM | MDD20A PWM2 (JTAG MTDO repurposed) |
 
@@ -65,7 +65,7 @@ Manufacturer references: [HGLRC M100 PRO](https://www.hglrc.com/products/hglrc-m
 
 ## 3. Primary 2.4GHz radio: nRF24L01+ PA/LNA
 
-Selected wiring uses the single 3.3V SPI bus on GPIO11/MOSI, GPIO12/SCK, GPIO13/MISO, GPIO9/CSN, GPIO10/CE and GPIO21/IRQ. Power is **Pololu D24V10F3 #2830 unit #1**, not the ESP32 board's onboard 3.3V pin and never a 5V socket feed. Provide proper local supply decoupling and measure peak burst/ripple.
+Selected wiring uses the single 3.3V SPI bus on GPIO11/MOSI, GPIO12/SCK, GPIO13/MISO, GPIO9/CSN and GPIO10/CE. GPIO21 is reassigned to sonar UART0 RX; leave the optional nRF IRQ disconnected because `NRF24Link` polls the radio. Power is **Pololu D24V10F3 #2830 unit #1**, not the ESP32 board's onboard 3.3V pin and never a 5V socket feed. Provide proper local supply decoupling and measure peak burst/ripple.
 
 **Critical connector condition:** nRF24 PA/LNA carriers typically expose the labelled signals GND/VCC/CE/CSN/SCK/MOSI/MISO/IRQ but **the 2×4 physical header orientation remains unknown**. Crimp/key the final adapter harness after inspecting the actual purchased module. An Ardboard nRF24 adapter may be used *only after* its regulator input/output/ripple are qualified; the currently selected power path is the separate Pololu 3.3V regulator, so do not purchase a second radio voltage converter automatically. Antenna matching and RF coverage must be tested.
 

@@ -24,7 +24,7 @@ def verify(data):
         return {x["Net"]:x for x in r}
     b,r=rows(B),rows(R)
     boat={"GNSS_TX":4,"GNSS_RX":5,"I2C_SCL":7,"I2C_SDA":8,"NRF_CSN":9,
-          "NRF_CE":10,"NRF_MOSI":11,"NRF_SCK":12,"NRF_MISO":13,"NRF_IRQ":21,
+          "NRF_CE":10,"NRF_MOSI":11,"NRF_SCK":12,"NRF_MISO":13,"SONAR_UART_RX":21,
           "E22_NRST":6,"E22_AUX":14,"E22_M0":15,"E22_M1":16,"E22_TX":17,"E22_RX":18,
           "MDD_PWM1":39,"MDD_PWM2":40,"SPARE1":1,"SPARE2":2,"SPARE41":41,
           "SPARE42":42,"GNSS_PPS":-1,"MCP23017":-1,"INA231":-1}
@@ -66,7 +66,9 @@ def verify(data):
         except ValueError:return None
     for path,expected in (
        (BH,{"BOAT_NRF_CSN_PIN":9,"BOAT_NRF_CE_PIN":10,"BOAT_NRF_SCK_PIN":12,
-            "BOAT_NRF_MOSI_PIN":11,"BOAT_NRF_MISO_PIN":13,"BOAT_NRF_IRQ_PIN":21,
+            "BOAT_NRF_MOSI_PIN":11,"BOAT_NRF_MISO_PIN":13,"BOAT_NRF_IRQ_PIN":-1,
+            "BOAT_OPEN_ECHO_UART_RX_PIN":21,
+            "BOAT_OPEN_ECHO_UART_PIN_AUDIT_SIGNED":0,
             "BOAT_E22_UART_PIN_TX":17,"BOAT_E22_UART_PIN_RX":18,
             "BOAT_E22_UART_PIN_M0":15,"BOAT_E22_UART_PIN_M1":16,
             "BOAT_E22_UART_PIN_AUX":14,"BOAT_E22_UART_PIN_NRST":6,

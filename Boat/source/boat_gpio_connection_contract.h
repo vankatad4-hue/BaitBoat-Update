@@ -12,7 +12,7 @@ static constexpr Pin assigned[]={
  {"SHARED_I2C_SCL",7,"J1-7"}, {"SHARED_I2C_SDA",8,"J1-12"},
  {"NRF_CSN",9,"J1-15"}, {"NRF_CE",10,"J1-16"},
  {"NRF_MOSI",11,"J1-17"}, {"NRF_SCK",12,"J1-18"},
- {"NRF_MISO",13,"J1-19"}, {"NRF_IRQ",21,"J3-18"},
+ {"NRF_MISO",13,"J1-19"}, {"SONAR_UART_RX",21,"J3-18"},
  {"E22_NRST",6,"J1-6"}, {"E22_M0",15,"J1-8"},
  {"E22_M1",16,"J1-9"}, {"E22_TX",17,"J1-10"},
  {"E22_RX",18,"J1-11"}, {"E22_AUX",14,"J1-20"},

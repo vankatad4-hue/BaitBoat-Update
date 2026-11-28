@@ -28,7 +28,7 @@ The selected N32R16V option uses the ESP32-S3-WROOM-2-N32R16V module. Follow the
 | nRF24 MOSI | GPIO11 | J1-17 | nRF24 MOSI | SPI |
 | nRF24 SCK | GPIO12 | J1-18 | nRF24 SCK | SPI |
 | nRF24 MISO | GPIO13 | J1-19 | nRF24 MISO | SPI |
-| nRF24 IRQ | GPIO21 | J3-18 | nRF24 IRQ | Optional interrupt; polling remains possible |
+| Open Echo UART RX | GPIO21 | J3-18 | Coprocessor GPIO22 TX | UART0 RX candidate; nRF24 IRQ is omitted because the driver polls |
 | E22 NRST | GPIO6 | J1-6 | E22 pad 1 NRST | Active-low reset |
 | E22 M0 | GPIO15 | J1-8 | E22 pad 20 M0 | Set low for normal mode |
 | E22 M1 | GPIO16 | J1-9 | E22 pad 21 M1 | Set low for normal mode |

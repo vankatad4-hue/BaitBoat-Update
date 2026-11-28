@@ -927,6 +927,13 @@ The Boat physical worker, managed E22 admission, quiet-history proof and Remote 
 - Open Echo DBT does not transmit water temperature or raw echo strength, and the current sketch uses a fixed 1450 m/s sound speed. The parser is not connected to a UART because the shield pinout/levels and Boat connector assignment are not verified. No live sensor or depth-accuracy claim.
 
 
+### R30H-124W Boat sonar UART software path — 2026-11-28
+
+- Allocated Boat GPIO21/J3-18 as an unsigned UART0 RX candidate for the separate ESP32 sonar coprocessor. The optional nRF IRQ is left unconnected because `NRF24Link` polls. The source pin map, GPIO crosswalks, and R23/R30H resource checks now reflect the UART candidate.
+- Added `BoatOpenEchoUartPort` to feed the existing bounded DBT parser and sensor telemetry snapshot. The isolated `boat_open_echo_uart_compile` profile moves `Serial` to native USB CDC and enables UART0 code generation. The port still refuses to start because `BOAT_OPEN_ECHO_UART_PIN_AUDIT_SIGNED=0`; the default diagnostic profile leaves the path disabled.
+- Exact board header, UART voltage and connector crosswalk remain unsigned. No signal is wired; no sonar driver, transmitter, upload, build, or tests were run. Map integration remains postponed.
+
+
 
 
 
