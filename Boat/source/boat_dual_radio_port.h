@@ -1,6 +1,8 @@
 #pragma once
 #include <Arduino.h>
 #include <SPI.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/portmacro.h>
 #include "nrf24_link.h"
 #include "e22_uart_board_port.h"
 #include "boat_radio_hw_config.h"
@@ -85,6 +87,9 @@ public:
     // NOT delivered, ACKed or permitted to change actuator state.
     bool sendHardwareTelemetry(const RadioDecodedPayload &status);
     bool sendHardwareTelemetry(const RadioDecodedPayload &status,uint32_t sampledAt);
+    // Queue one measured 128-bin envelope; fragments use only the idle,
+    // heartbeat-gap telemetry slot and never the backup LoRa link.
+    bool offerSonarEchoProfile(uint8_t profileId,const uint8_t bins[128]);
     // Diagnostic UTC observation only: no link lease, ACK, navigation or
     // actuator authorization. Sent best effort on primary nRF only.
     void offerGnssUtc(const flytec_utc::Sample &utc){utcSource_=utc;}
@@ -206,6 +211,11 @@ private:
     // R30G single best-effort diagnostic slot. STOP/ACK/heartbeat/mission
     // always precede optional telemetry. Never extend command leases.
     boat_r30g::OptionalDiagnosticBudget optionalDiagnostics_{};
+    uint8_t sonarProfileBins_[128]{};
+    uint8_t sonarProfileId_=0,sonarProfileChunk_=0;
+    bool sonarProfilePending_=false;
+    uint32_t sonarProfileOfferedAtMs_=0;
+    portMUX_TYPE sonarProfileMux_=portMUX_INITIALIZER_UNLOCKED;
     uint32_t lastControlRxMs_=0;
     bool lastControlRxValid_=false;
     bool havePrimaryHeartbeatSent_=false;

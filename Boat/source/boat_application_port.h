@@ -43,6 +43,7 @@ private:
  uint16_t releaseTransaction_=0;
  uint32_t lastStatusAt_=0,lastDataAt_=0,generation_=0;
  uint8_t sampleSequence_=0;
+ uint8_t lastSonarProfileId_=0;bool sonarProfileIdSeen_=false;
  bool manualPending_=false;
  BoatCommand manualRelease_{};
  void finishManual(bool success);

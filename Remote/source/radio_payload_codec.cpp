@@ -1,5 +1,6 @@
 #include "radio_payload_codec.h"
 #include "radio_safety_diagnostic_v1.h"
+#include "sonar_echo_profile_v1.h"
 #include <string.h>
 
 static uint16_t readU16LE(const uint8_t *p) {
@@ -92,6 +93,15 @@ bool radio_decodeTelemetryPayload(const uint8_t p[8], RadioDecodedPayload &out) 
         out.temperatureCentiC=(int16_t)readU16LE(p+1);out.waterTemperatureSample=p[3];
         if(out.temperatureCentiC < -500 || out.temperatureCentiC > 5000){resetOut(out);return false;}
         return true;
+    case sonar_profile_v1::SUBTYPE: {
+        sonar_profile_v1::Fragment fragment{};
+        if(!sonar_profile_v1::decode(p,fragment)){resetOut(out);return false;}
+        out.kind=RADIO_PAYLOAD_SONAR_PROFILE_FRAGMENT;
+        out.sonarProfileId=fragment.profileId;
+        out.sonarProfileChunk=fragment.chunkIndex;
+        memcpy(out.sonarProfileBins,fragment.bins,sizeof(out.sonarProfileBins));
+        return true;
+    }
     default: resetOut(out); return false;
     }
 }

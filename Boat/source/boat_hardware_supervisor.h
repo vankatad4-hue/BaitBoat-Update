@@ -18,6 +18,9 @@ struct BoatHardwareSample {
  // Optional local sensor readings. Hardware adapters set these only after a
  // successful sample; timestamps are local monotonic milliseconds.
  bool sonarValid;uint16_t sonarDepthCm,sonarRangeCm;uint8_t sonarHealth,sonarAlarmFlags,sonarSample;uint32_t sonarAt;
+ // Optional 128-bin echo envelope. The sonar task must reduce measured ADC
+ // returns to this display-resolution profile before publishing it.
+ bool sonarProfileValid=false;uint8_t sonarProfileId=0;uint8_t sonarProfileBins[128]{};uint32_t sonarProfileAt=0;
  bool waterTemperatureValid;int16_t waterTemperatureCentiC;uint8_t waterTemperatureSample;uint32_t waterTemperatureAt;
  bool weatherValid;int16_t weatherTemperatureCentiC;uint32_t pressurePa,weatherAt;
 };

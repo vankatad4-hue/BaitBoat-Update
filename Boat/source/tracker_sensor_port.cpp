@@ -1,6 +1,8 @@
 #include "tracker_sensor_port.h"
 #include "ina231_voltage_contract.h"
 #include "ina231_arduino_wire.h"
+#include "sonar_echo_profile_v1.h"
+#include <string.h>
 namespace{
  bool validPins(const TrackerSensorConfig &c){
   if(!c.pinAuditSigned||!(c.gnssBaud==9600||c.gnssBaud==115200)||(c.imuAddress!=0x68&&c.imuAddress!=0x69)||
@@ -124,6 +126,9 @@ void TrackerSensorPort::copySensors(BoatHardwareSample &s,uint32_t now)const{
  s.sonarDepthCm=s.sonarValid?sonarDepthCm_:0;s.sonarRangeCm=s.sonarValid?sonarRangeCm_:0;
  s.sonarHealth=s.sonarValid?sonarHealth_:0;s.sonarAlarmFlags=s.sonarValid?sonarAlarmFlags_:0;
  s.sonarSample=sonarSample_;s.sonarAt=sonarAt_;
+ s.sonarProfileValid=sonarProfileValid_&&(uint32_t)(now-sonarProfileAt_)<=sonar_profile_v1::ASSEMBLY_TIMEOUT_MS;
+ s.sonarProfileId=sonarProfileValid_?sonarProfileId_:0U;s.sonarProfileAt=sonarProfileAt_;
+ if(s.sonarProfileValid)memcpy(s.sonarProfileBins,sonarProfileBins_,sizeof(s.sonarProfileBins));
  s.waterTemperatureValid=waterTemperatureValid_&&(uint32_t)(now-waterTemperatureAt_)<=5000U;
  s.waterTemperatureCentiC=s.waterTemperatureValid?waterTemperatureCentiC_:0;
  s.waterTemperatureSample=waterTemperatureSample_;s.waterTemperatureAt=waterTemperatureAt_;
@@ -134,6 +139,12 @@ bool TrackerSensorPort::publishSonarSummary(uint16_t depthCm,uint16_t rangeCm,ui
  // reject an impossible depth. Health 1/2 follows the compact summary contract.
  if((health!=1&&health!=2)||(alarmFlags&0xF0U)!=0||(rangeCm&&depthCm>rangeCm)){sonarValid_=false;return false;}
  sonarDepthCm_=depthCm;sonarRangeCm_=rangeCm;sonarHealth_=health;sonarAlarmFlags_=alarmFlags;sonarSample_=sample;sonarAt_=now;sonarValid_=true;return true;
+}
+
+bool TrackerSensorPort::publishSonarEchoProfile(uint8_t profileId,const uint8_t bins[128],uint32_t now){
+ if(!bins||profileId==0U){sonarProfileValid_=false;return false;}
+ memcpy(sonarProfileBins_,bins,sizeof(sonarProfileBins_));
+ sonarProfileId_=profileId;sonarProfileAt_=now;sonarProfileValid_=true;return true;
 }
 
 bool TrackerSensorPort::feedOpenEchoDbtByte(char byte,uint32_t now){

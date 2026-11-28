@@ -67,14 +67,19 @@ Shield 002 remains an uncommissioned candidate.
 3. Measure ADC interval, overflow behavior, SPI mode/rate/NCS timing, and
    signal levels on the target. Validate thresholds and depth against known
    distances before enabling DBT output.
-4. Define a bandwidth-bounded, authenticated full-range echo-profile transfer
-   protocol between Boat and Remote. The current radio telemetry is 8 bytes per
-   authenticated frame and only carries a compact depth summary; no profile
-   transfer/reassembly path exists. Do not bypass STOP/control priority or
-   blindly flood the backup E22 link.
-5. Replace the Remote's depth-history line with a scrolling echogram only after
-   real time/amplitude profile columns reach the display. Draw measured return
-   amplitudes; do not fabricate fish arches from a depth-only reading.
+4. The Boat-to-Remote profile path now has a bounded 128-bin display-envelope
+   protocol. It splits five bins across each 8-byte authenticated telemetry
+   payload (26 fragments/profile), sends one fragment only in the existing
+   idle primary heartbeat gap, abandons stale transfers, and never uses E22.
+   Remote validates fragment shape and assembles out-of-order chunks before
+   publishing a complete profile. This is not raw capture transfer: 5,224 raw
+   12-bit samples would require about 1,959 frames at four data bytes/frame.
+   There is no profile ACK/retry yet, and the sonar coprocessor does not yet
+   produce/feed the 128-bin envelope into Boat's new publication boundary.
+5. Remote now retains up to 64 completed profiles and renders their measured
+   amplitudes as a scrolling LVGL canvas. The old depth-history graph remains
+   the fallback when no profile has arrived. No fish-arch classification is
+   implemented; the display shows amplitude only and must not infer fish IDs.
 6. Add a Lucky D+T temperature driver once its actual thermistor/interface
    specification is supplied or measured. Boat/Remote already have a bounded
    water-temperature telemetry/UI field, but the active Boat sensor port has
@@ -111,8 +116,8 @@ working tree on 2026-11-28:
 | Requested item | Current verified state | Remaining gate |
 | --- | --- | --- |
 | Active sonar acquisition runtime | Not active. `Sonar/src/main.cpp` statically requires the hardware-enable flag to remain zero. ADC DMA capture and the TUSS4470 SPI adapter are compile-gated components, not a running sonar acquisition pipeline. | Exact Shield 002 revision, transducer model/electrical data, VOUT conditioning, register profile, burst control, ADC timing and burst/sample synchronization. |
-| Full echo-profile communication | Not implemented. Authenticated telemetry currently carries only an 8-byte depth summary. There is no profile sender, fragment protocol, retry/reassembly buffer, or Remote profile state. | Decide whether the transmitted profile is raw 5,224-sample data or a measured display-resolution envelope, then budget radio airtime and add low-priority transfer/reassembly without delaying STOP, heartbeat, or command traffic. A 12-bit raw capture is 7,836 bytes before framing; even four profile bytes per 8-byte payload would need about 1,959 radio frames. |
-| Remote echogram | Not implemented. The current LVGL plot is explicitly a depth-history graph; the UI does not draw echo amplitude or fish arches. | Receive real, timestamped amplitude bins first. Render intensity and scrolling columns only from measured profile data; depth-only DBT must remain visibly depth-only. |
+| Full echo-profile communication | A 128-bin measured-envelope protocol and best-effort primary-link sender/reassembler are implemented. It is display-resolution, not raw ADC capture; no ACK/retry or Sonar-to-Boat profile producer is connected. | Feed calibrated measured bins from Sonar into `TrackerSensorPort::publishSonarEchoProfile`, measure actual airtime, and decide whether reliable retry or raw-profile transport is required. A 5,224-sample 12-bit capture is 7,836 bytes before framing. |
+| Remote echogram | Remote reassembles complete profiles and renders a 64-column scrolling amplitude canvas. Fish classification is not implemented; depth-history remains the fallback. | Confirm scale/range alignment and rendering on the Waveshare display. Only connect real acquisition data; do not invent fish arches. |
 | Lucky D+T water-temperature interface | Still unidentified from public documentation. Lucky's official FF718-T page describes a cable probe, 200 kHz/45-degree sonar, and water-temperature display, but publishes no temperature-element pinout, sensor type, resistance curve, or protocol. A display feature is not evidence of accessible thermistor wires. | Read the exact transducer and monitor labels/manual, inspect the cable/conductor mapping, then measure or obtain the temperature element specification before implementing a driver. Do not infer a thermistor or ADC connection from “D+T”. |
 | Dual-core runtime acceptance | Not accepted on hardware. Existing diagnostic code/build coverage checks task affinity and progress in software, but no Boat/Remote board runtime results are recorded. | Run the bench on both physical boards; record core IDs, worker progress/drop counters, radio load, STOP latency, watchdog and heap/stack behavior. |
 | GPIO assignments | Candidate maps and compile-time uniqueness/range checks exist for the DevKitC V4 Sonar coprocessor; Boat and Remote have their own candidate maps. Physical audits remain unsigned, so assignments are not finalized for wiring/activation. | Confirm exact board SKUs/revisions and connector-to-GPIO continuity, then sign each endpoint's pin audit. Keep all peripherals disabled until that audit is recorded. |

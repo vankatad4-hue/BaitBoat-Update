@@ -20,6 +20,7 @@ struct BoatTelemetry {
  uint16_t diagnosticFlags=0,diagnosticMillivolts=0xffffU;
  uint32_t diagnosticReceivedAtMs=0;
  bool sonarSummaryValid;uint16_t sonarDepthCm,sonarRangeCm;uint8_t sonarHealth,sonarAlarmFlags,sonarSample;uint32_t sonarReceivedAtMs;
+ bool sonarEchoProfileValid=false;uint8_t sonarEchoProfileId=0;uint8_t sonarEchoProfile[128]{};uint32_t sonarEchoProfileReceivedAtMs=0;
 };
 extern BoatTelemetry telemetry;
 void telemetryInit();void telemetryUpdate(const BoatTelemetry &newData);

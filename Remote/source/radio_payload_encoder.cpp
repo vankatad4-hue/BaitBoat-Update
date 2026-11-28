@@ -1,5 +1,6 @@
 #include "radio_payload_encoder.h"
 #include "radio_safety_diagnostic_v1.h"
+#include "sonar_echo_profile_v1.h"
 #include <string.h>
 static void clear8(uint8_t out[8]){memset(out,0,8);}
 static void put16(uint8_t*p,uint16_t v){p[0]=(uint8_t)v;p[1]=(uint8_t)(v>>8);}
@@ -14,6 +15,7 @@ case RADIO_PAYLOAD_GNSS_LONGITUDE:if(in.coordinateE7 < -1800000000L||in.coordina
 case RADIO_PAYLOAD_NAVIGATION:if((in.headingCentidegrees!=0xFFFFU&&in.headingCentidegrees>35999U)||(in.speedCmPerSecond!=0xFFFFU&&in.speedCmPerSecond>10000U)||in.navigationStatus>5)return false;out[0]=5;put16(out+1,in.headingCentidegrees);put16(out+3,in.speedCmPerSecond);out[5]=in.navigationStatus;out[6]=in.waypointIndex;out[7]=in.navigationSample;return true;
 case RADIO_PAYLOAD_SONAR_SUMMARY:if(in.sonarHealth>3||(in.sonarAlarmFlags&0xF0U)!=0)return false;out[0]=6;put16(out+1,in.depthCm);put16(out+3,in.sonarRangeCm);out[5]=in.sonarHealth;out[6]=in.sonarAlarmFlags;out[7]=in.sonarSample;return true;
 case RADIO_PAYLOAD_WATER_TEMPERATURE:if(in.temperatureCentiC < -500||in.temperatureCentiC>5000)return false;out[0]=10;put16(out+1,(uint16_t)in.temperatureCentiC);out[3]=in.waterTemperatureSample;return true;
+case RADIO_PAYLOAD_SONAR_PROFILE_FRAGMENT:if(in.sonarProfileId==0U||in.sonarProfileChunk>=sonar_profile_v1::CHUNK_COUNT)return false;out[0]=sonar_profile_v1::SUBTYPE;out[1]=in.sonarProfileId;out[2]=in.sonarProfileChunk;memcpy(out+3,in.sonarProfileBins,5U);{sonar_profile_v1::Fragment f{};if(!sonar_profile_v1::decode(out,f)){clear8(out);return false;}return true;}
 case RADIO_PAYLOAD_SAFETY_DIAGNOSTIC: {
         // Only telemetry bits; never encode STOP, ACK or a command.
         radio_r30f::Diagnostic d{};

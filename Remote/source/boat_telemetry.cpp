@@ -1,10 +1,13 @@
 #include "boat_telemetry.h"
 #include "radio_safety_diagnostic_v1.h"
+#include "sonar_echo_profile_v1.h"
+#include <string.h>
 BoatTelemetry telemetry;
+static sonar_profile_v1::Reassembler sonarProfileReceiver;
 static constexpr uint32_t STATUS_MAX_AGE=1500,BATTERY_MAX_AGE=5000,COORD_PAIR_MAX_GAP=500,GPS_MAX_AGE=2000,NAV_MAX_AGE=2000,SONAR_MAX_AGE=1500;
 static constexpr uint32_t SAFETY_DIAGNOSTIC_MAX_AGE_MS=6000U; // R30F 2-second nominal TX
 static bool fresh(uint32_t now,uint32_t stamp,uint32_t maxAge){return (uint32_t)(now-stamp)<=maxAge;}
-void telemetryInit(){telemetry={};telemetry.batteryPercent=-1;telemetry.stopState=2;}
+void telemetryInit(){telemetry={};telemetry.batteryPercent=-1;telemetry.stopState=2;sonarProfileReceiver.clear();}
 void telemetryUpdate(const BoatTelemetry &d){telemetry=d;telemetry.receivedAtMs=millis();}
 bool telemetryApplyRadioPayload(const RadioDecodedPayload &p,bool primary,uint32_t now){
  switch(p.kind){
@@ -67,6 +70,23 @@ bool telemetryApplyRadioPayload(const RadioDecodedPayload &p,bool primary,uint32
  case RADIO_PAYLOAD_WATER_TEMPERATURE:
   telemetry.waterTemperatureValid=true;telemetry.waterTemperatureCentiC=p.temperatureCentiC;
   telemetry.waterTemperatureSample=p.waterTemperatureSample;telemetry.waterTemperatureReceivedAtMs=now;telemetry.receivedAtMs=now;return true;
+ case RADIO_PAYLOAD_SONAR_PROFILE_FRAGMENT:
+  // Profiles are best-effort bulk telemetry from the primary radio only.
+  // Incomplete, expired, or interleaved transfers never replace a good image.
+  if(!primary)return false;
+  {
+   uint8_t completed[sonar_profile_v1::BIN_COUNT]{};
+   uint8_t payload[8]={sonar_profile_v1::SUBTYPE,p.sonarProfileId,p.sonarProfileChunk,
+       p.sonarProfileBins[0],p.sonarProfileBins[1],p.sonarProfileBins[2],
+       p.sonarProfileBins[3],p.sonarProfileBins[4]};
+   if(sonarProfileReceiver.push(payload,now,completed)){
+    memcpy(telemetry.sonarEchoProfile,completed,sizeof(completed));
+    telemetry.sonarEchoProfileId=p.sonarProfileId;
+    telemetry.sonarEchoProfileReceivedAtMs=now;
+    telemetry.sonarEchoProfileValid=true;
+   }
+  }
+  return true;
  default:return false;
  }
 }
@@ -94,6 +114,9 @@ void telemetryApplyToBoatState(BoatState &s,uint32_t now){
  s.sonarHealth=s.sonarReadingValid?telemetry.sonarHealth:0;s.sonarAlarmFlags=s.sonarReadingValid?telemetry.sonarAlarmFlags:0;
  s.sonarSample=telemetry.sonarSample;
  s.sonarActive=sonarFresh&&(telemetry.sonarHealth==1||telemetry.sonarHealth==2);
+ s.sonarEchoProfileValid=telemetry.sonarEchoProfileValid&&fresh(now,telemetry.sonarEchoProfileReceivedAtMs,5000U);
+ s.sonarEchoProfileId=s.sonarEchoProfileValid?telemetry.sonarEchoProfileId:0U;
+ if(s.sonarEchoProfileValid)memcpy(s.sonarEchoProfile,telemetry.sonarEchoProfile,sizeof(s.sonarEchoProfile));
  s.motorLeftActive=statusFresh&&(telemetry.safetyFlags&(1U<<1))!=0;s.motorRightActive=statusFresh&&(telemetry.safetyFlags&(1U<<2))!=0;
  s.lowBattery=statusFresh&&(telemetry.safetyFlags&(1U<<5))!=0;
  s.criticalBattery=statusFresh&&(telemetry.safetyFlags&(1U<<7))!=0;

@@ -1,6 +1,7 @@
 #include "boat_dual_radio_port.h"
 #include "radio_payload_codec.h"
 #include "recovery_probe_wire.h"
+#include "sonar_echo_profile_v1.h"
 #include <string.h>
 
 
@@ -75,6 +76,17 @@ bool BoatDualRadioPort::sendHardwareTelemetry(const RadioDecodedPayload &status,
  if(!primaryOrdinaryTxReady())return false; // Never burn a sequence on busy TX.
  RadioFrame f;radio_frameInit(f,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,++txSequence_,0,now,sessionEpoch_);
  return radio_encodeTelemetryPayload(status,f.payload)&&radio_frameSeal(f,key_)&&sendFrame(LINK_NRF_PRIMARY,f);
+}
+bool BoatDualRadioPort::offerSonarEchoProfile(uint8_t profileId,const uint8_t bins[128]){
+ // Keep the current profile immutable while its fragments are in flight.
+ // The application will offer its latest sample again after this transfer.
+ if(profileId==0U||bins==nullptr)return false;
+ portENTER_CRITICAL(&sonarProfileMux_);
+ if(sonarProfilePending_){portEXIT_CRITICAL(&sonarProfileMux_);return false;}
+ memcpy(sonarProfileBins_,bins,sizeof(sonarProfileBins_));
+ sonarProfileId_=profileId;sonarProfileChunk_=0U;sonarProfilePending_=true;
+ sonarProfileOfferedAtMs_=millis();
+ portEXIT_CRITICAL(&sonarProfileMux_);return true;
 }
 bool BoatDualRadioPort::sendMissionFeedback(const MissionControlFeedback &status,uint32_t now){
  // Never spend LoRa airtime on 250-ms status updates while nRF is healthy.
@@ -161,6 +173,9 @@ void BoatDualRadioPort::resetSession(bool preserveMission){
  // R30G: never carry a diagnostic offer or stale activity timestamp across
  // authenticated session/key/epoch rollover.
  optionalDiagnostics_.reset();lastControlRxValid_=false;
+ portENTER_CRITICAL(&sonarProfileMux_);
+ sonarProfilePending_=false;sonarProfileChunk_=0U;sonarProfileOfferedAtMs_=0U;
+ portEXIT_CRITICAL(&sonarProfileMux_);
  backupStopAck_.reset();backupStatusOutbox_.reset();
  stopAck_.reset(); // Never replay a STOP ACK across session/epoch boundaries.
  statusOutbox_.reset(); // Pre-session status is not an authority.
@@ -419,6 +434,18 @@ void BoatDualRadioPort::serviceLegacyPeriodicTx(uint32_t now){
  opportunity.haveHeartbeat=havePrimaryHeartbeatSent_;
  uint8_t optionalPayload[8]{};
  const uint32_t optionalNow=millis();
+ uint8_t profileId=0U,profileChunk=0U,profileBins[sonar_profile_v1::BIN_COUNT]{};
+ bool profilePending=false;
+ portENTER_CRITICAL(&sonarProfileMux_);
+ if(sonarProfilePending_&&(uint32_t)(optionalNow-sonarProfileOfferedAtMs_)>5000U){
+   sonarProfilePending_=false;sonarProfileChunk_=0U;
+ }
+ profilePending=sonarProfilePending_;
+ if(profilePending){
+   profileId=sonarProfileId_;profileChunk=sonarProfileChunk_;
+   memcpy(profileBins,sonarProfileBins_,sizeof(profileBins));
+ }
+ portEXIT_CRITICAL(&sonarProfileMux_);
  const bool diagnosticOccupiesSlot=optionalDiagnostics_.take(opportunity,optionalNow,optionalPayload);
  if(diagnosticOccupiesSlot){
    // The scheduler has ALREADY enforced heartbeat/command priority.
@@ -431,13 +458,39 @@ void BoatDualRadioPort::serviceLegacyPeriodicTx(uint32_t now){
    else
      optionalDiagnostics_.rejectedTx(); // no retries or priority inversion
  }
+ // Echo profiles are lower priority than the optional diagnostic stream.
+ // Send one authenticated fragment only in the same measured-idle primary
+ // heartbeat gap; never use the backup LoRa link for bulk profile data.
+ bool sonarProfileOccupiesSlot=false;
+ const uint32_t profileGap=(uint32_t)(optionalNow-lastNrfHeartbeatTxMs_);
+ if(!diagnosticOccupiesSlot&&profilePending&&
+    opportunity.authenticatedSession&&opportunity.primaryFresh&&
+    !opportunity.txPending&&!opportunity.commandQueued&&!opportunity.activeMission&&
+    !opportunity.failsafeOrLinkLoss&&!opportunity.recentCommand&&opportunity.haveHeartbeat&&
+    profileGap>=boat_r30g::HEARTBEAT_GAP_BEGIN_MS&&
+    profileGap<=boat_r30g::HEARTBEAT_GAP_END_MS){
+   RadioFrame profile{};
+   radio_frameInit(profile,RADIO_MSG_TELEMETRY,BOAT_ID,REMOTE_ID,
+                   ++txSequence_,0,optionalNow,sessionEpoch_);
+   if(sonar_profile_v1::encode(profileId,profileChunk,profileBins,profile.payload)&&
+      radio_frameSeal(profile,key_)&&sendFrame(LINK_NRF_PRIMARY,profile)){
+     sonarProfileOccupiesSlot=true;
+     portENTER_CRITICAL(&sonarProfileMux_);
+     if(sonarProfilePending_&&sonarProfileId_==profileId&&sonarProfileChunk_==profileChunk){
+       if(++sonarProfileChunk_>=sonar_profile_v1::CHUNK_COUNT){
+         sonarProfilePending_=false;sonarProfileChunk_=0U;
+       }
+     }
+     portEXIT_CRITICAL(&sonarProfileMux_);
+   }
+ }
  // R30H-5 UTC LAST: authenticated nRF only, no E22 airtime.
  // No TX during missions, command queue, manual control activity,
  // failsafe or a missed heartbeat. This time stream is informational and
  // CANNOT extend a link lease or change the STOP/RTH monotonic timers.
  const uint32_t utcNow=millis();
  const uint32_t gap=(uint32_t)(utcNow-lastNrfHeartbeatTxMs_);
- if(!diagnosticOccupiesSlot&&opportunity.authenticatedSession&&
+ if(!diagnosticOccupiesSlot&&!sonarProfileOccupiesSlot&&opportunity.authenticatedSession&&
     opportunity.primaryFresh&&opportunity.haveHeartbeat&&
     !opportunity.commandQueued&&!opportunity.activeMission&&
     !opportunity.failsafeOrLinkLoss&&!opportunity.recentCommand&&
@@ -771,6 +824,9 @@ void BoatDualRadioPort::receiveCaptured(ManagedLink link,const RadioFrame &f,uin
      // New authenticated epoch: discard any optional diagnostic from the
      // previous key/session and require a new successful primary heartbeat.
      optionalDiagnostics_.reset();lastControlRxValid_=false;
+     portENTER_CRITICAL(&sonarProfileMux_);
+     sonarProfilePending_=false;sonarProfileChunk_=0U;sonarProfileOfferedAtMs_=0U;
+     portEXIT_CRITICAL(&sonarProfileMux_);
      backupStopAck_.reset();backupStatusOutbox_.reset();
      stopAck_.reset(); // new authenticated session invalidates prior ACK ID
      statusOutbox_.reset(); // no pre-handshake stopped status

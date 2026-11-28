@@ -37,6 +37,9 @@ public:
  // reader or the DBT adapter may publish here after validating a real depth;
  // this method itself performs no bus I/O and assigns no pins.
  bool publishSonarSummary(uint16_t depthCm,uint16_t rangeCm,uint8_t health,uint8_t alarmFlags,uint8_t sample,uint32_t now);
+ // Publish an already measured 128-bin envelope from the sonar acquisition
+ // task. This boundary performs no sampling or ADC scaling itself.
+ bool publishSonarEchoProfile(uint8_t profileId,const uint8_t bins[128],uint32_t now);
  // Feed bytes from a dedicated, verified Open Echo NMEA-DBT UART adapter.
  // This parser call performs no UART reads and does not assign board pins.
  bool feedOpenEchoDbtByte(char byte,uint32_t now);
@@ -84,6 +87,7 @@ private:
  bool bmpReady_=false,bmpValid_=false;uint8_t bmpAddress_=0;
  Bmp280Calibration bmpCal_{};int32_t bmpTemp_=0;uint32_t bmpPressure_=0,bmpAt_=0,bmpPollAt_=0;
  bool sonarValid_=false;uint16_t sonarDepthCm_=0,sonarRangeCm_=0;uint8_t sonarHealth_=0,sonarAlarmFlags_=0,sonarSample_=0;uint32_t sonarAt_=0;
+ bool sonarProfileValid_=false;uint8_t sonarProfileId_=0,sonarProfileBins_[128]{};uint32_t sonarProfileAt_=0;
  OpenEchoDbtDecoder openEchoDbt_{};uint8_t openEchoSample_=0;
  bool waterTemperatureValid_=false;int16_t waterTemperatureCentiC_=0;uint8_t waterTemperatureSample_=0;uint32_t waterTemperatureAt_=0;
  bool configured_=false,imuReady_=false,headingValid_=false,voltageValid_=false,adcPending_=false;

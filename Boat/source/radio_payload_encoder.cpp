@@ -1,5 +1,6 @@
 #include "radio_payload_encoder.h"
 #include "radio_safety_diagnostic_v1.h"
+#include "sonar_echo_profile_v1.h"
 #include <string.h>
 
 static void clear8(uint8_t out[8]) { memset(out, 0, 8); }
@@ -47,6 +48,17 @@ bool radio_encodeTelemetryPayload(const RadioDecodedPayload &in, uint8_t out[8])
     case RADIO_PAYLOAD_WATER_TEMPERATURE:
         if(in.temperatureCentiC < -500 || in.temperatureCentiC > 5000)return false;
         out[0]=10;put16(out+1,(uint16_t)in.temperatureCentiC);out[3]=in.waterTemperatureSample;return true;
+    case RADIO_PAYLOAD_SONAR_PROFILE_FRAGMENT: {
+        if(in.sonarProfileId==0U || in.sonarProfileChunk>=sonar_profile_v1::CHUNK_COUNT)
+            return false;
+        out[0]=sonar_profile_v1::SUBTYPE;
+        out[1]=in.sonarProfileId;
+        out[2]=in.sonarProfileChunk;
+        memcpy(out+3,in.sonarProfileBins,5U);
+        sonar_profile_v1::Fragment fragment{};
+        if(!sonar_profile_v1::decode(out,fragment)){clear8(out);return false;}
+        return true;
+    }
     case RADIO_PAYLOAD_SAFETY_DIAGNOSTIC: {
         // Only telemetry bits; never encode STOP, ACK or a command.
         radio_r30f::Diagnostic d{};

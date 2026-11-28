@@ -1,4 +1,5 @@
 #include "../source/radio_payload_encoder.h"
+#include "../source/sonar_echo_profile_v1.h"
 #include <assert.h>
 
 int main() {
@@ -44,6 +45,22 @@ int main() {
     assert(radio_encodeTelemetryPayload(d,p) && radio_decodeTelemetryPayload(p,d));
     assert(d.depthCm==250 && d.sonarAlarmFlags==3);
     d.sonarHealth=4; assert(!radio_encodeTelemetryPayload(d,p));
+
+    uint8_t echo[sonar_profile_v1::BIN_COUNT];
+    for (uint16_t i=0;i<sonar_profile_v1::BIN_COUNT;++i) echo[i]=static_cast<uint8_t>(i*2U);
+    sonar_profile_v1::Reassembler receiver;
+    uint8_t rebuilt[sonar_profile_v1::BIN_COUNT]{};
+    uint8_t payload[8]{};
+    for (int chunk=sonar_profile_v1::CHUNK_COUNT-1;chunk>=0;--chunk) {
+        assert(sonar_profile_v1::encode(9U,static_cast<uint8_t>(chunk),echo,payload));
+        RadioDecodedPayload fragment{};
+        assert(radio_decodeTelemetryPayload(payload,fragment));
+        assert(fragment.kind==RADIO_PAYLOAD_SONAR_PROFILE_FRAGMENT);
+        assert(receiver.push(payload,100U+static_cast<uint32_t>(sonar_profile_v1::CHUNK_COUNT-chunk),rebuilt)==(chunk==0));
+    }
+    for (uint16_t i=0;i<sonar_profile_v1::BIN_COUNT;++i) assert(rebuilt[i]==echo[i]);
+    assert(!sonar_profile_v1::encode(0U,0U,echo,payload));
+    assert(!sonar_profile_v1::encode(9U,sonar_profile_v1::CHUNK_COUNT,echo,payload));
 
     d={}; d.kind=RADIO_PAYLOAD_INVALID; assert(!radio_encodeTelemetryPayload(d,p));
     return 0;

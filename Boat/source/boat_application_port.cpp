@@ -3,6 +3,7 @@
 #include "boat_hardware_telemetry.h"
 #include "boat_shared_supply_fault_guard.h"
 #include "boat_software_output_boundary.h"
+#include <string.h>
 BoatApplicationPort *BoatApplicationPort::active_=nullptr;
 void BoatApplicationPort::updateSensorTelemetry(const BoatHardwareSample &s){
  // This is a copied read-only telemetry snapshot. Keep the actuator driver's
@@ -12,6 +13,9 @@ void BoatApplicationPort::updateSensorTelemetry(const BoatHardwareSample &s){
  sensorTelemetry_.sonarValid=s.sonarValid; sensorTelemetry_.sonarDepthCm=s.sonarDepthCm;
  sensorTelemetry_.sonarRangeCm=s.sonarRangeCm; sensorTelemetry_.sonarHealth=s.sonarHealth;
  sensorTelemetry_.sonarAlarmFlags=s.sonarAlarmFlags; sensorTelemetry_.sonarSample=s.sonarSample; sensorTelemetry_.sonarAt=s.sonarAt;
+ sensorTelemetry_.sonarProfileValid=s.sonarProfileValid;sensorTelemetry_.sonarProfileId=s.sonarProfileId;
+ sensorTelemetry_.sonarProfileAt=s.sonarProfileAt;
+ if(s.sonarProfileValid)memcpy(sensorTelemetry_.sonarProfileBins,s.sonarProfileBins,sizeof(sensorTelemetry_.sonarProfileBins));
  sensorTelemetry_.waterTemperatureValid=s.waterTemperatureValid; sensorTelemetry_.waterTemperatureCentiC=s.waterTemperatureCentiC;
  sensorTelemetry_.waterTemperatureSample=s.waterTemperatureSample; sensorTelemetry_.waterTemperatureAt=s.waterTemperatureAt;
 }
@@ -50,6 +54,17 @@ void BoatApplicationPort::publishData(uint32_t now){
  telemetrySample.sonarAlarmFlags=sensorTelemetry_.sonarAlarmFlags;telemetrySample.sonarSample=sensorTelemetry_.sonarSample;telemetrySample.sonarAt=sensorTelemetry_.sonarAt;
  telemetrySample.waterTemperatureValid=sensorTelemetry_.waterTemperatureValid;telemetrySample.waterTemperatureCentiC=sensorTelemetry_.waterTemperatureCentiC;
  telemetrySample.waterTemperatureSample=sensorTelemetry_.waterTemperatureSample;telemetrySample.waterTemperatureAt=sensorTelemetry_.waterTemperatureAt;
+ telemetrySample.sonarProfileValid=sensorTelemetry_.sonarProfileValid;
+ telemetrySample.sonarProfileId=sensorTelemetry_.sonarProfileId;
+ telemetrySample.sonarProfileAt=sensorTelemetry_.sonarProfileAt;
+ if(sensorTelemetry_.sonarProfileValid){
+  memcpy(telemetrySample.sonarProfileBins,sensorTelemetry_.sonarProfileBins,sizeof(telemetrySample.sonarProfileBins));
+  if(!sonarProfileIdSeen_||lastSonarProfileId_!=sensorTelemetry_.sonarProfileId){
+   if(radio_.offerSonarEchoProfile(sensorTelemetry_.sonarProfileId,sensorTelemetry_.sonarProfileBins)){
+    lastSonarProfileId_=sensorTelemetry_.sonarProfileId;sonarProfileIdSeen_=true;
+   }
+  }
+ }
  const auto b=boatHardware_telemetry(telemetrySample,now,++sampleSequence_,255,radio_.missionPhase());
  for(uint8_t i=0;i<b.count;++i)radio_.sendHardwareTelemetry(b.payload[i],now);
 }

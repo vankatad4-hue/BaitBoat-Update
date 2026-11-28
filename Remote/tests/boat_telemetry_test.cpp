@@ -1,4 +1,6 @@
 #include "boat_telemetry.h"
+#include "sonar_echo_profile_v1.h"
+#include <string.h>
 #include <assert.h>
 uint32_t millis(){return 0;}
 static RadioDecodedPayload p(RadioPayloadKind k){RadioDecodedPayload x{};x.kind=k;return x;}
@@ -26,5 +28,18 @@ int main(){
  assert(telemetryApplyRadioPayload(st,false,1500));telemetryApplyToBoatState(s,1600);assert(!s.emergencyStopConfirmed&&!s.actuatorSafetyReady);
  lat.coordinateSample=23;assert(telemetryApplyRadioPayload(lat,true,1700));telemetryApplyToBoatState(s,1800);assert(!s.gpsValid);
  telemetryApplyToBoatState(s,3201);assert(!s.emergencyStopConfirmed&&!s.actuatorSafetyReady&&!s.gpsValid&&!s.headingValid);
+ telemetryInit();
+ uint8_t profile[sonar_profile_v1::BIN_COUNT];
+ for(uint16_t i=0;i<sonar_profile_v1::BIN_COUNT;++i)profile[i]=static_cast<uint8_t>(255U-i);
+ // Out-of-order fragments assemble only into the complete 128-bin profile.
+ for(int chunk=sonar_profile_v1::CHUNK_COUNT-1;chunk>=0;--chunk){
+  uint8_t wire[8]{};assert(sonar_profile_v1::encode(23U,static_cast<uint8_t>(chunk),profile,wire));
+  RadioDecodedPayload fragment{};assert(radio_decodeTelemetryPayload(wire,fragment));
+  if(chunk==sonar_profile_v1::CHUNK_COUNT-1)assert(!telemetryApplyRadioPayload(fragment,false,4000));
+  assert(telemetryApplyRadioPayload(fragment,true,4000U+static_cast<uint32_t>(sonar_profile_v1::CHUNK_COUNT-chunk)));
+ }
+ telemetryApplyToBoatState(s,4100);
+ assert(s.sonarEchoProfileValid&&s.sonarEchoProfileId==23);
+ assert(memcmp(s.sonarEchoProfile,profile,sizeof(profile))==0);
  return 0;
 }

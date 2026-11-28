@@ -34,6 +34,7 @@ struct BoatState
     bool waterTemperatureValid;int16_t waterTemperatureCentiC;uint8_t waterTemperatureSample;
     bool sonarReadingValid;uint16_t sonarDepthCm,sonarRangeCm;uint8_t sonarHealth,sonarAlarmFlags,sonarSample;
     bool sonarActive;      // Sonar operating status.
+    bool sonarEchoProfileValid;uint8_t sonarEchoProfileId;uint8_t sonarEchoProfile[128];
     bool headingValid;     // Heading valid only when fresh status/nav flags agree.
     bool lowBattery;       // Boat-reported low battery/RTH flag.
     bool criticalBattery;  // Boat-reported critical battery STOP flag.
