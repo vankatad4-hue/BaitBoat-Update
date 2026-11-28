@@ -380,10 +380,10 @@ static lv_obj_t *sonarScaleLabels[4] = {};
 static lv_obj_t *sonarEchoCanvas = nullptr;
 static lv_obj_t *sonarTopViewCanvas = nullptr;
 static lv_obj_t *sonarNorthLabel = nullptr;
-static lv_obj_t *sonarViewButton = nullptr;
-static lv_obj_t *sonarViewButtonLabel = nullptr;
+static lv_obj_t *sonarPowerButton = nullptr;
+static lv_obj_t *sonarPowerButtonLabel = nullptr;
 static lv_obj_t *sonarViewHint = nullptr;
-static bool sonarTopViewMode = false;
+static bool sonarSoftwareStandby = false;
 static bool sonarBoatHeadingValid = false;
 static float sonarBoatHeadingDeg = 0.0f;
 static bool sonarTopViewDepthValid = false;
@@ -476,33 +476,44 @@ static void renderSonarTopViewImage()
     else if (footprintRadius > maxRadius) footprintRadius = maxRadius;
     const uint8_t *profile = sonarEchoCount ?
         sonarEchoHistory[(sonarEchoNext + SONAR_ECHO_COLUMNS - 1U) % SONAR_ECHO_COLUMNS] : nullptr;
+    uint8_t pingRadii[4] = {};
+    uint8_t pingCount = 0U;
+    if (profile && visibleBins && footprintRadius) {
+        for (uint8_t bin = 2U; bin + 2U < visibleBins && pingCount < 4U; ++bin) {
+            const uint8_t amplitude = profile[bin];
+            if (amplitude < 190U || amplitude < profile[bin - 1U] ||
+                amplitude < profile[bin + 1U]) continue;
+            const uint8_t pingRadius = static_cast<uint8_t>(
+                (static_cast<uint16_t>(bin) * footprintRadius) / visibleBins);
+            if (pingRadius > 2U) pingRadii[pingCount++] = pingRadius;
+        }
+    }
     for (uint8_t y = 0; y < SONAR_TOP_VIEW_SIZE; ++y) {
         for (uint8_t x = 0; x < SONAR_TOP_VIEW_SIZE; ++x) {
             const int16_t dx = static_cast<int16_t>(x) - center;
             const int16_t dy = static_cast<int16_t>(y) - center;
             const uint16_t radiusSquared = static_cast<uint16_t>(dx * dx + dy * dy);
-            uint16_t color = 0x0610U;
+            // Dark green radar field with a circular boundary and range rings.
+            uint16_t color = 0x0000U;
             if (radiusSquared <= static_cast<uint16_t>(maxRadius * maxRadius)) {
                 const uint8_t radius = static_cast<uint8_t>(sqrtf(static_cast<float>(radiusSquared)));
-                if (footprintRadius && radiusSquared <= static_cast<uint16_t>(footprintRadius * footprintRadius)) {
-                    const uint8_t firstBin = static_cast<uint8_t>(visibleBins ?
-                        static_cast<uint32_t>(radius) * (visibleBins - 1U) / footprintRadius : 0U);
-                    uint16_t amplitude = 0U;
-                    if (profile && visibleBins) {
-                        const uint8_t binEnd = firstBin + 4U > visibleBins ?
-                            static_cast<uint8_t>(visibleBins) : static_cast<uint8_t>(firstBin + 4U);
-                        for (uint8_t bin = firstBin; bin < binEnd; ++bin)
-                            amplitude += profile[bin];
-                        amplitude = binEnd > firstBin ? amplitude / (binEnd - firstBin) : 0U;
-                    }
-                    color = sonarIntensityColor(static_cast<uint8_t>(amplitude));
-                    if ((radius % 8U) == 0U && amplitude < 128U) color = 0x39E7U;
-                    if (radius == footprintRadius) color = 0x7BEFU;
-                    if (radiusSquared < 5U) color = 0xFFFFU;
-                } else if (radius == maxRadius && ((x + y) % 3U) == 0U) {
-                    // Dotted outer guide is the maximum beam-footprint range.
-                    color = 0x2442U;
+                color = 0x0100U;
+                if ((radius % 8U) == 0U) color = 0x0320U;
+                if (dx == 0 || dy == 0) color = 0x03A0U;
+                if (radius == maxRadius) color = 0x07E0U;
+                if (footprintRadius && radius == footprintRadius) color = 0x07E0U;
+
+                // A profile has range and strength, but no bearing. Mark each
+                // strong local peak as a complete dashed range ring so the UI
+                // never invents a target direction or fish position.
+                for (uint8_t ping = 0U; ping < pingCount; ++ping) {
+                    if (radius == pingRadii[ping] && ((x + y + ping) % 5U) < 2U)
+                        color = 0xFFE0U;
                 }
+                if (radiusSquared < 5U) color = 0xFFFFU;
+            } else if (radius <= center && ((x + y) % 2U) == 0U) {
+                // Short degree-scale ticks around the radar perimeter.
+                color = 0x07E0U;
             }
             sonarTopViewPixels[static_cast<uint16_t>(y) * SONAR_TOP_VIEW_SIZE + x] = color;
         }
@@ -549,45 +560,30 @@ static void drawSonarPlot(uint16_t width, uint16_t height)
     const int32_t w = static_cast<int32_t>(width) - 1;
     const int32_t h = static_cast<int32_t>(height) - 1;
     const lv_color_t grid=lv_color_hex(0x244258);
-    if (sonarTopViewMode) {
-        lv_obj_add_flag(sonarEchoCanvas, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_remove_flag(sonarTopViewCanvas, LV_OBJ_FLAG_HIDDEN);
-        if (sonarNorthLabel) {
-            lv_obj_remove_flag(sonarNorthLabel, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_set_pos(sonarNorthLabel, static_cast<int32_t>(width) / 2 - 4, 0);
-        }
-        for (lv_obj_t *label : sonarScaleLabels)
-            if (label) lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
-        const uint16_t diameter = static_cast<uint16_t>(
-            (height < width ? height : width) > 192U ? 192U : (height < width ? height : width));
-        const uint16_t scale = static_cast<uint16_t>((static_cast<uint32_t>(diameter) * 256U) / SONAR_TOP_VIEW_SIZE);
-        lv_image_set_scale_x(sonarTopViewCanvas, scale);
-        lv_image_set_scale_y(sonarTopViewCanvas, scale);
-        lv_image_set_pivot(sonarTopViewCanvas, 0, 0);
-        const int32_t centeredY = static_cast<int32_t>(height - diameter) / 2;
-        lv_obj_set_pos(sonarTopViewCanvas,
-            static_cast<int32_t>(width - diameter) / 2,
-            centeredY < 18 ? 18 : centeredY);
-        renderSonarTopViewImage();
-        if (sonarViewHint) {
-            char coverage[72];
-            if (sonarTopViewDepthValid) {
-                snprintf(coverage, sizeof(coverage), "ПОКРИТИЕ D≈%.1fm • 45° КАНДИДАТ",
-                    sonarTopViewFootprintDiameterCm / 100.0f);
-            } else {
-                snprintf(coverage, sizeof(coverage), "НЯМА СВЕЖА ДЪЛБОЧИНА ЗА МАЩАБ НА ПЕТНОТО");
-            }
-            lv_label_set_text(sonarViewHint, coverage);
-        }
-        return;
-    }
-    lv_obj_add_flag(sonarTopViewCanvas, LV_OBJ_FLAG_HIDDEN);
     lv_obj_remove_flag(sonarEchoCanvas, LV_OBJ_FLAG_HIDDEN);
-    if (sonarNorthLabel) lv_obj_add_flag(sonarNorthLabel, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_remove_flag(sonarTopViewCanvas, LV_OBJ_FLAG_HIDDEN);
+    if (sonarNorthLabel) {
+        lv_obj_remove_flag(sonarNorthLabel, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_set_pos(sonarNorthLabel, 54, 3);
+    }
     for (lv_obj_t *label : sonarScaleLabels)
         if (label) lv_obj_remove_flag(label, LV_OBJ_FLAG_HIDDEN);
-    if (sonarViewHint)
-        lv_label_set_text(sonarViewHint, "ЕХОГРАМА: САМО ОТ ПОЛУЧЕНА ИЗМЕРЕНА АМПЛИТУДА");
+    if (sonarViewHint) {
+        char coverage[90];
+        if (sonarTopViewDepthValid)
+            snprintf(coverage, sizeof(coverage), "КРЪГ: D≈%.1fm • ПИНГОВЕТЕ СА БЕЗ АЗИМУТ",
+                     sonarTopViewFootprintDiameterCm / 100.0f);
+        else
+            snprintf(coverage, sizeof(coverage), "КРЪГ: ЧАКА СВЕЖА ДЪЛБОЧИНА • ПИНГОВЕТЕ СА БЕЗ АЗИМУТ");
+        lv_label_set_text(sonarViewHint, coverage);
+    }
+    const uint16_t diameter = static_cast<uint16_t>(height < 112U ? height : 112U);
+    const uint16_t scale = static_cast<uint16_t>((static_cast<uint32_t>(diameter) * 256U) / SONAR_TOP_VIEW_SIZE);
+    lv_image_set_scale_x(sonarTopViewCanvas, scale);
+    lv_image_set_scale_y(sonarTopViewCanvas, scale);
+    lv_image_set_pivot(sonarTopViewCanvas, 0, 0);
+    lv_obj_set_pos(sonarTopViewCanvas, 4, 4);
+    renderSonarTopViewImage();
     if (sonarScaleLabels[0])
     {
         char scaleText[8];
@@ -605,6 +601,13 @@ static void drawSonarPlot(uint16_t width, uint16_t height)
         hp[i][0]={0,y};hp[i][1]={w,y};
         vp[i][0]={x,0};vp[i][1]={x,h};
         sonarLine(sonarPlot,hp[i],2,grid,1);sonarLine(sonarPlot,vp[i],2,grid,1);
+    }
+    // Keep the radar overlay legible above the echogram grid and return data.
+    lv_obj_move_foreground(sonarTopViewCanvas);
+    if (sonarNorthLabel) lv_obj_move_foreground(sonarNorthLabel);
+    if (sonarSoftwareStandby) {
+        renderSonarEchoImage(width, height);
+        return;
     }
     if (sonarEchoCount > 0U) {
         renderSonarEchoImage(width, height);
@@ -729,16 +732,25 @@ static void createSonarPanel()
     sonarScaleLabels[3]=createLabel(sonarPanel,"0",8,207);
     sonarViewHint=createLabel(sonarPanel,"ЕХОГРАМА: САМО ОТ ПОЛУЧЕНА ИЗМЕРЕНА АМПЛИТУДА",12,270);
     sonarStatus=createLabel(sonarPanel,"СОНАР: НЯМА СВЕЖИ ДАННИ",12,289);
-    sonarViewButton=lv_button_create(sonarPanel);
-    lv_obj_set_size(sonarViewButton,88,26);lv_obj_set_pos(sonarViewButton,286,5);
-    lv_obj_set_style_bg_color(sonarViewButton,lv_color_hex(0x174F92),LV_PART_MAIN);
-    lv_obj_set_style_radius(sonarViewButton,6,LV_PART_MAIN);
-    sonarViewButtonLabel=lv_label_create(sonarViewButton);
-    lv_label_set_text(sonarViewButtonLabel,"TOP VIEW");lv_obj_center(sonarViewButtonLabel);
-    lv_obj_add_event_cb(sonarViewButton,[](lv_event_t *event){
+    sonarPowerButton=lv_button_create(sonarPanel);
+    lv_obj_set_size(sonarPowerButton,88,26);lv_obj_set_pos(sonarPowerButton,286,5);
+    lv_obj_set_style_bg_color(sonarPowerButton,lv_color_hex(0x7A342B),LV_PART_MAIN);
+    lv_obj_set_style_radius(sonarPowerButton,6,LV_PART_MAIN);
+    sonarPowerButtonLabel=lv_label_create(sonarPowerButton);
+    lv_label_set_text(sonarPowerButtonLabel,"SOFT STBY");lv_obj_center(sonarPowerButtonLabel);
+    lv_obj_add_event_cb(sonarPowerButton,[](lv_event_t *event){
         if(lv_event_get_code(event)!=LV_EVENT_CLICKED)return;
-        sonarTopViewMode=!sonarTopViewMode;
-        lv_label_set_text(sonarViewButtonLabel,sonarTopViewMode?"ECHOGRAM":"TOP VIEW");
+        lv_event_stop_bubbling(event);
+        sonarSoftwareStandby = !sonarSoftwareStandby;
+        lv_label_set_text(sonarPowerButtonLabel, sonarSoftwareStandby ? "RESUME" : "SOFT STBY");
+        lv_obj_set_style_bg_color(sonarPowerButton,
+            lv_color_hex(sonarSoftwareStandby ? 0x246B38 : 0x7A342B), LV_PART_MAIN);
+        if (sonarSoftwareStandby) {
+            // Stop Remote-side sonar profile processing and clear stale traces.
+            sonarEchoCount = sonarEchoNext = sonarDepthCount = sonarDepthNext = 0U;
+            sonarEchoHasProfile = sonarHistoryHasSample = false;
+            sonarTopViewDepthValid = false;
+        }
         drawSonarPlot(sonarExpanded?720U:330U,sonarExpanded?220U:210U);
     },LV_EVENT_CLICKED,nullptr);
     lv_obj_add_flag(sonarPanel, LV_OBJ_FLAG_CLICKABLE);
@@ -1005,7 +1017,7 @@ void toggleSonarPanel()
 
         lv_obj_set_size(sonarPanel, 780, 315);
         lv_obj_set_size(sonarPlot, 720, 220);
-        lv_obj_set_pos(sonarViewButton,680,5);
+        lv_obj_set_pos(sonarPowerButton,680,5);
         drawSonarPlot(720,220);
     }
     else
@@ -1015,7 +1027,7 @@ void toggleSonarPanel()
 
         lv_obj_set_size(sonarPanel, 385, 315);
         lv_obj_set_size(sonarPlot, 330, 210);
-        lv_obj_set_pos(sonarViewButton,286,5);
+        lv_obj_set_pos(sonarPowerButton,286,5);
         drawSonarPlot(330,210);
 
         // Show map again.
@@ -1046,13 +1058,17 @@ void updateBoatScreen(const BoatState &state)
         (state.headingValid && fabsf(sonarBoatHeadingDeg - state.heading) >= 0.5f);
     sonarBoatHeadingValid = state.headingValid;
     if (sonarBoatHeadingValid) sonarBoatHeadingDeg = state.heading;
-    sonarTopViewDepthValid = state.sonarReadingValid && state.sonarDepthCm > 0U;
+    sonarTopViewDepthValid = !sonarSoftwareStandby && state.sonarReadingValid && state.sonarDepthCm > 0U;
     sonarTopViewDepthCm = sonarTopViewDepthValid ? state.sonarDepthCm : 0U;
     sonarTopViewRangeCm = state.sonarRangeCm;
     // Append each new depth summary and completed measured echo profile once.
-    updateSonarHistory(state);
-    if (sonarTopViewMode && headingChanged && sonarPlot)
+    if (!sonarSoftwareStandby) updateSonarHistory(state);
+    if (!sonarSoftwareStandby && headingChanged && sonarPlot)
         drawSonarPlot(sonarExpanded ? 720U : 330U, sonarExpanded ? 220U : 210U);
+    if (sonarSoftwareStandby) {
+        if (sonarStatus) lv_label_set_text(sonarStatus, "REMOTE SOFTWARE STANDBY • SONAR HARDWARE POWER UNAFFECTED");
+        if (sonarViewHint) lv_label_set_text(sonarViewHint, "STANDBY: НЯМА ОБРАБОТКА НА ПРОФИЛИ ОТ ДИСТАНЦИОННОТО");
+    }
     if(weatherLabel){
       char w[80];
       if(state.weatherValid)snprintf(w,sizeof(w),"BMP: %.1f°C  %.1f hPa",state.temperatureCentiC/100.0f,state.pressurePa/100.0f);
@@ -1060,7 +1076,8 @@ void updateBoatScreen(const BoatState &state)
       lv_label_set_text(weatherLabel,w);
     }
     if(sonarDepthLabel){char d[48];
-      if(state.sonarReadingValid)snprintf(d,sizeof(d),"ДЪЛБОЧИНА  %.2f m",state.sonarDepthCm/100.0f);
+      if(sonarSoftwareStandby)snprintf(d,sizeof(d),"ДЪЛБОЧИНА  STANDBY");
+      else if(state.sonarReadingValid)snprintf(d,sizeof(d),"ДЪЛБОЧИНА  %.2f m",state.sonarDepthCm/100.0f);
       else snprintf(d,sizeof(d),"ДЪЛБОЧИНА  --.- m");
       lv_label_set_text(sonarDepthLabel,d);
     }
@@ -1071,13 +1088,15 @@ void updateBoatScreen(const BoatState &state)
     }
     if (sonarStatus)
     {
-        if (sonarTopViewMode) {
+        if (sonarSoftwareStandby) {
+            lv_label_set_text(sonarStatus, "REMOTE SOFTWARE STANDBY • SONAR HARDWARE POWER UNAFFECTED");
+        } else if (sonarTopViewDepthValid) {
             if (!state.sonarEchoProfileValid) {
                 lv_label_set_text(sonarStatus, "НЯМА СВЕЖ ЕХО-ПРОФИЛ");
             } else if (sonarBoatHeadingValid) {
-                lv_label_set_text(sonarStatus, "ЕХО: OK • ЗЕЛЕНО=КУРС • АЗИМУТ НА ЕХО НЯМА");
+                lv_label_set_text(sonarStatus, "ЕХО: OK • ЗЕЛЕНО=КУРС • ПИНГОВЕ БЕЗ АЗИМУТ");
             } else {
-                lv_label_set_text(sonarStatus, "ЕХО: OK • НЯМА СВЕЖ КУРС ИЛИ ЕХО-АЗИМУТ");
+                lv_label_set_text(sonarStatus, "ЕХО: OK • КУРС/АЗИМУТ НЕ Е НАЛИЧЕН");
             }
         } else if (state.sonarEchoProfileValid) {
             lv_label_set_text(sonarStatus, "ЕХОГРАМА: ПОЛУЧЕН ИЗМЕРЕН ПРОФИЛ");
