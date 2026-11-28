@@ -16,6 +16,7 @@ constexpr int SPI_MISO = 19;
 constexpr int SPI_MOSI = 23;
 constexpr bool TUSS_SPI_AUDIT_SIGNED = false; // Keep SPI inactive until board/shield levels are checked.
 constexpr int BOAT_UART_TX = 22;
+constexpr bool BOAT_UART_TX_AUDIT_SIGNED = false; // Measure coprocessor TX before wiring Boat RX.
 }
 
 static_assert(sonar_pins::VOUT_ADC == 34, "VOUT must remain on ADC1 input-only GPIO34");

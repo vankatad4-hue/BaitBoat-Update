@@ -10,7 +10,9 @@ Shield 002 remains an uncommissioned candidate.
 - Bounded 5,224-sample ADC capture buffer, optional ESP-IDF ADC continuous/DMA
   adapter, and a pure echo threshold classifier. The adapter is not instantiated
   by firmware. Requested sample rate, voltage mapping, sample timing, and
-  transmit-time origin are not validated on the board.
+  acoustic burst-origin sample coordinate are not validated on the board. The
+  detector takes that origin explicitly and computes depth from elapsed samples
+  after the burst, instead of treating capture sample zero as transmit time.
 - Side-effect-free TUSS4470 SPI frame codec. Separate read/write functions
   validate six-bit addresses and form odd-parity frames; reads use the required
   zero data byte. Response decoding validates parity and exposes raw status,
@@ -19,18 +21,22 @@ Shield 002 remains an uncommissioned candidate.
   400 kHz mode 1, a 3 μs NCS-high guard, write-address echo checking, and explicit
   parity/status errors. Its dedicated PlatformIO API-compile environment does
   not arm hardware. The mode and guard remain unverified on the physical shield.
+- Compile-gated UART1 transmitter at 9600-8N1 that accepts only a `FOUND` depth
+  result, formats a checksummed DBT sentence, and writes it on the GPIO22
+  candidate. Its separate pin audit is unsigned and the main firmware does not
+  instantiate it.
 - Boat accepts bounded NMEA DBT through an isolated UART0/USB-CDC build profile.
   The receive gate remains disabled until Boat GPIO21 and the coprocessor TX
   level are physically checked and signed. Sonar GPIO candidates are documented
   only; no sensor, SPI, ADC, UART transmitter, Wi-Fi, or transducer drive is
-  enabled in the default firmware.
+  instantiated in the default firmware.
 
 ## Next steps
 
 1. Inspect the exact Shield 002 revision, transducer, jumpers, power input and
    output levels; confirm all proposed ESP32 pin connections electrically.
-2. Build the disarmed target and isolated ADC/SPI API profiles, then review any
-   compiler/API failures before changing hardware gates.
+2. Build the disarmed target and isolated ADC/SPI/UART API profiles, then review
+   any compiler/API failures before changing hardware gates.
 3. Inspect the transport on the exact target; verify mode, rate, CS boundaries,
    NCS-high guard, and signal levels with a scope before signing its hardware
    audit gate.

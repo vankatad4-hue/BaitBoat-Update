@@ -14,10 +14,11 @@ and its isolated peripheral API profiles:
 pio run -d Sonar -e devkitc_v4_compile
 pio run -d Sonar -e devkitc_v4_adc_api_compile
 pio run -d Sonar -e devkitc_v4_spi_api_compile
+pio run -d Sonar -e devkitc_v4_uart_api_compile
 ```
 
-The ADC and SPI profiles compile their adapters but do not instantiate or start
-them. PlatformIO Upload is intentionally denied by the shared
+The ADC, SPI, and UART profiles compile their adapters but do not instantiate or
+start them. PlatformIO Upload is intentionally denied by the shared
 `Boat/tools/pio_deny_upload.py` guard.
 
 ## Candidate pins
@@ -29,8 +30,11 @@ The current implementation state and next software/hardware gates are tracked
 in [`CONTINUATION.md`](CONTINUATION.md).
 
 `src/dbt_sentence.h` contains a side-effect-free integer formatter for valid
-depths in Boat's accepted range. `src/adc_capture_buffer.h` provides a fixed
-5,224-sample staging buffer with complete-block checks, invalid-ADC-sample
+depths in Boat's accepted range. `src/esp32_dbt_uart_transmitter.*` is a
+compile-gated 9600-8N1 UART1 sender that accepts only a `FOUND` detector result;
+its GPIO22 audit remains unsigned and it is not instantiated.
+`src/adc_capture_buffer.h` provides a fixed 5,224-sample staging buffer with
+complete-block checks, invalid-ADC-sample
 rejection, overflow reporting, and elapsed capture timing. The optional
 `src/esp32_adc_continuous_capture.*` adapter configures ADC1 DMA on the GPIO34
 candidate, decodes only the expected channel, and stops on exactly one full
@@ -38,13 +42,14 @@ sample block. Its VOUT hardware audit is hard-set false, and neither adapter is
 instantiated by the disarmed firmware; no DBT sentence is currently sent.
 
 `src/echo_profile_detector.*` consumes only a complete capture and requires an
-explicit calibrated ADC threshold, blanking sample, measured sample interval,
-and sound-speed value. It reports the first stable crossing as a depth estimate;
-it does not use a default calibration, read the TUSS OUT4 comparator, or publish
+explicit calibrated ADC threshold, blanking sample count, measured sample
+interval, sound-speed value, and measured acoustic burst-origin sample. It
+reports the first stable crossing after that origin as a depth estimate; it does
+not use a default calibration, read the TUSS OUT4 comparator, or publish
 telemetry. The ADC raw threshold is a different value from the TUSS4470 OUT4
-threshold register and must be calibrated independently. Capture sample zero
-must also be aligned to the actual transmit time before the ToF estimate can be
-trusted.
+threshold register and must be calibrated independently. The caller must
+determine the acoustic origin's sample coordinate; the ADC stream is not
+automatically synchronized to the transmit event.
 
 `src/tuss4470_spi_codec.*` is a side-effect-free 16-bit MSB-first frame helper.
 It has separate read and write encoders; reads always send the required `0x00`
@@ -79,11 +84,12 @@ shield.
    bus or chip-select pin is enabled.
 5. Validate the capture interval, depth threshold, blind zone, and sound-speed
    compensation against known distances before sending DBT.
-6. Add the one-way DBT transmitter only after the coprocessor has a validated
-   depth source. The Boat-side receiver now has a compile-only UART0/USB-CDC
-   profile on the GPIO21 candidate and bounded DBT parsing, but its physical
-   pin audit is unsigned and the default firmware cannot start it. Keep the
-   transmitter disabled until both boards' pins and logic levels are checked.
+6. Validate the compile-gated DBT transmitter against Boat's bounded parser,
+   then enable it only after the coprocessor has a validated depth source. The
+   Boat-side receiver has a compile-only UART0/USB-CDC profile on the GPIO21
+   candidate; its physical pin audit is unsigned and the default firmware
+   cannot start it. Keep both UART gates unsigned until pin and logic levels on
+   both boards are checked.
 
 Boat keeps `HardwareSerial(2)` for GNSS and `HardwareSerial(1)` for E22. The
 isolated `boat_open_echo_uart_compile` profile places diagnostics on native USB

@@ -20,7 +20,7 @@ EchoDetectionResult EchoProfileDetector::detect(
     return {EchoDetectionStatus::INVALID_CAPTURE, 0U, 0U, 0U};
   }
 
-  if (config.blankUntilSample >= summary.sampleCount ||
+  if (config.transmitSampleIndex >= summary.sampleCount ||
       config.thresholdAdcRaw == 0U ||
       config.thresholdAdcRaw > sonar_capture::ADC_RAW_MAX ||
       config.consecutiveSamples == 0U ||
@@ -34,7 +34,13 @@ EchoDetectionResult EchoProfileDetector::detect(
 
   const uint16_t *samples = capture.samples();
   const size_t lastStart = summary.sampleCount - config.consecutiveSamples;
-  for (size_t start = config.blankUntilSample; start <= lastStart; ++start) {
+  const size_t firstStart = static_cast<size_t>(config.transmitSampleIndex) +
+                            config.blankingSamples;
+  if (firstStart > lastStart) {
+    return {EchoDetectionStatus::INVALID_CONFIG, 0U, 0U, 0U};
+  }
+
+  for (size_t start = firstStart; start <= lastStart; ++start) {
     uint16_t peak = 0U;
     bool stableCrossing = true;
     for (size_t offset = 0; offset < config.consecutiveSamples; ++offset) {
@@ -47,8 +53,10 @@ EchoDetectionResult EchoProfileDetector::detect(
     }
     if (!stableCrossing) continue;
 
-    // depth_cm = sample * interval_ns * speed_mm_s / (2 * 10 * 1e9).
-    const uint64_t numerator = static_cast<uint64_t>(start) *
+    // Use elapsed samples after the measured acoustic burst origin:
+    // depth_cm = ToF_samples * interval_ns * speed_mm_s / (2 * 10 * 1e9).
+    const size_t timeOfFlightSamples = start - config.transmitSampleIndex;
+    const uint64_t numerator = static_cast<uint64_t>(timeOfFlightSamples) *
                                config.sampleIntervalNs *
                                config.soundSpeedMmPerSecond;
     const uint64_t roundedDepthCm =

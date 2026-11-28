@@ -71,10 +71,11 @@ the actual board/shield before signing the gate. The target deliberately does no
 instantiate the capture or detector, configure shield pins, start the
 transducer, read an ADC, or emit DBT until the electrical and acquisition gates
 above are cleared. The classifier requires explicit calibrated ADC threshold,
-blanking, sample timing, and sound-speed inputs; it does not treat the TUSS
-OUT4 threshold register as an ADC code or claim a calibrated depth. Any future
-SPI driver must select the mode and rate from the exact shield revision and
-remain at or below the TUSS4470 500 kHz clock limit.
+blanking, measured acoustic burst-origin sample, sample timing, and sound-speed
+inputs; it does not treat the TUSS OUT4 threshold register as an ADC code or
+claim a calibrated depth. Any future
+SPI use must verify the current mode 1, 400 kHz transport and NCS-high guard on
+the exact shield; the TUSS4470 SPI clock must remain at or below 500 kHz.
 
 The upstream Open Echo UNO code is not a drop-in ESP32 implementation: it uses
 AVR Timer1 and ADC registers. Also, `NMEA_DBT_OUT.ino` declares an analog sample
