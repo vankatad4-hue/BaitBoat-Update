@@ -58,6 +58,7 @@ out/ui-font/
 /Boat/source/radio_watchdog.h
 /Boat/source/sonar_echo_profile_v1.h
 /Boat/source/sonar_power_protocol.h
+/Boat/source/sonar_data_protocol.h
 /Boat/source/radio_worker.h
 /Boat/source/recovery_probe_wire.h
 /Boat/source/transport_mailbox.h
@@ -100,6 +101,7 @@ out/ui-font/
 /Remote/source/radio_watchdog.h
 /Remote/source/sonar_echo_profile_v1.h
 /Remote/source/sonar_power_protocol.h
+/Remote/source/sonar_data_protocol.h
 /Remote/source/radio_worker.h
 /Remote/source/recovery_probe_wire.h
 /Remote/source/transport_mailbox.h
