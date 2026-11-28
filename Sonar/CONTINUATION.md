@@ -102,3 +102,35 @@ matching capacitor-jumper selection. A real profile must satisfy both.
 Map integration remains postponed. Firmware builds and host tests are verified,
 but no sensor voltage, timing, transducer, UART wiring, depth, temperature,
 echogram, or physical dual-core runtime acceptance is claimed.
+
+## R30H-124W8.5c.2 follow-up audit
+
+The following status was rechecked against the current `platformio-unified-r30h20`
+working tree on 2026-11-28:
+
+| Requested item | Current verified state | Remaining gate |
+| --- | --- | --- |
+| Active sonar acquisition runtime | Not active. `Sonar/src/main.cpp` statically requires the hardware-enable flag to remain zero. ADC DMA capture and the TUSS4470 SPI adapter are compile-gated components, not a running sonar acquisition pipeline. | Exact Shield 002 revision, transducer model/electrical data, VOUT conditioning, register profile, burst control, ADC timing and burst/sample synchronization. |
+| Full echo-profile communication | Not implemented. Authenticated telemetry currently carries only an 8-byte depth summary. There is no profile sender, fragment protocol, retry/reassembly buffer, or Remote profile state. | Decide whether the transmitted profile is raw 5,224-sample data or a measured display-resolution envelope, then budget radio airtime and add low-priority transfer/reassembly without delaying STOP, heartbeat, or command traffic. A 12-bit raw capture is 7,836 bytes before framing; even four profile bytes per 8-byte payload would need about 1,959 radio frames. |
+| Remote echogram | Not implemented. The current LVGL plot is explicitly a depth-history graph; the UI does not draw echo amplitude or fish arches. | Receive real, timestamped amplitude bins first. Render intensity and scrolling columns only from measured profile data; depth-only DBT must remain visibly depth-only. |
+| Lucky D+T water-temperature interface | Still unidentified from public documentation. Lucky's official FF718-T page describes a cable probe, 200 kHz/45-degree sonar, and water-temperature display, but publishes no temperature-element pinout, sensor type, resistance curve, or protocol. A display feature is not evidence of accessible thermistor wires. | Read the exact transducer and monitor labels/manual, inspect the cable/conductor mapping, then measure or obtain the temperature element specification before implementing a driver. Do not infer a thermistor or ADC connection from “D+T”. |
+| Dual-core runtime acceptance | Not accepted on hardware. Existing diagnostic code/build coverage checks task affinity and progress in software, but no Boat/Remote board runtime results are recorded. | Run the bench on both physical boards; record core IDs, worker progress/drop counters, radio load, STOP latency, watchdog and heap/stack behavior. |
+| GPIO assignments | Candidate maps and compile-time uniqueness/range checks exist for the DevKitC V4 Sonar coprocessor; Boat and Remote have their own candidate maps. Physical audits remain unsigned, so assignments are not finalized for wiring/activation. | Confirm exact board SKUs/revisions and connector-to-GPIO continuity, then sign each endpoint's pin audit. Keep all peripherals disabled until that audit is recorded. |
+
+### Temperature-source evidence
+
+Lucky's official [FF718-T product specification](https://www.luckysonar.com/products/fish-finder-pitcher-ff718-t)
+states the cable probe operates at 200 kHz with a 45-degree beam and lists water
+temperature on the display. The official [manual download page](https://www.luckysonar.com/pages/lucky-download)
+provides the FF718LIC-T manual but does not expose an electrical pinout in its
+publicly indexed text. The exact purchased D+T sensor model is still not recorded
+in this repository. Therefore no temperature driver can safely be selected yet.
+
+### GPIO sign-off rule
+
+The present pin maps are allocation proposals, not wiring authorization. “Final”
+requires board revision, physical header pin, ESP32 GPIO number, signal direction,
+voltage domain, shared-bus membership, boot-strapping impact, and continuity check
+to agree for every connected function. A compile-time distinct-pin check alone
+cannot establish that mapping.
+
