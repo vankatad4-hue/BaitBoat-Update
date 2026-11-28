@@ -25,6 +25,7 @@ out/ui-font/
 .platformio/
 
 # Generated from canonical Common/source; edit the canonical file, not copies.
+# This includes sonar_data_protocol.h staged for the Boat and Remote builds.
 /Boat/source/bounded_rx_service.h
 /Boat/source/bounded_tx_service.h
 /Boat/source/core0_probe.h
