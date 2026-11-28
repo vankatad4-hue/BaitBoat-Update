@@ -36,7 +36,12 @@ def check_netlist(r23, r27, r29, effective):
     assert all(r["Electrical_Gate"] and r["Authority"] for r in effective)
     for net, old in retained.items():
         now=e[net]
-        assert now["Authority"]=="R23_RETAINED"
+        # R30H-124W explicitly reclassifies the retained sonar RX candidate
+        # as a newer, still-unsigned software allocation. Its electrical
+        # endpoints must remain identical to the R23 schedule until a signed
+        # hardware audit authorizes any wiring change.
+        expected_authority = "R30H124W" if net == "SONAR_UART_RX" else "R23_RETAINED"
+        assert now["Authority"]==expected_authority
         assert (now["Source"],now["Source_Pin"],now["Destination"],now["Destination_Pin"]) == (
             old["Source"],old["Source_Pin"],old["Destination"],old["Destination_Pin"])
     for r in r27:

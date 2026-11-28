@@ -22,6 +22,15 @@ class EffectiveNetlistTests(unittest.TestCase):
     def test_exact_architecture_and_undocumented_parts(self):
         self.assertTrue(self.valid(copy.deepcopy(self.effective)))
         self.assertTrue(module.check_readiness(copy.deepcopy(self.gates)))
+    def test_sonar_uart_reclassification_preserves_the_r23_wiring(self):
+        sonar = next(r for r in self.effective if r["Net"] == "SONAR_UART_RX")
+        self.assertEqual(sonar["Authority"], "R30H124W")
+        self.assertEqual((sonar["Source"], sonar["Source_Pin"], sonar["Destination"], sonar["Destination_Pin"]),
+                         ("Open_Echo_Coprocessor", "TX", "ESP32-S3", "GPIO21"))
+        modified = copy.deepcopy(self.effective)
+        next(r for r in modified if r["Net"] == "SONAR_UART_RX")["Authority"] = "R23_RETAINED"
+        with self.assertRaises(AssertionError):
+            self.valid(modified)
     def test_reject_retired_ads(self):
         mod=copy.deepcopy(self.effective)
         mod[0]["Net"]="ADS_SCL"

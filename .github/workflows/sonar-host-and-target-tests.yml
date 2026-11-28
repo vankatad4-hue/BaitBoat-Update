@@ -1,0 +1,49 @@
+name: Sonar host and target tests
+
+on:
+  push:
+    branches: [platformio-unified-r30h20]
+    paths:
+      - 'Sonar/**'
+      - 'Boat/source/open_echo_dbt.h'
+      - 'Boat/platformio.ini'
+      - '.github/workflows/sonar-host-and-target-tests.yml'
+  pull_request:
+    paths:
+      - 'Sonar/**'
+      - 'Boat/source/open_echo_dbt.h'
+      - 'Boat/platformio.ini'
+      - '.github/workflows/sonar-host-and-target-tests.yml'
+
+jobs:
+  sonar-host-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile acquisition and DBT UART contract tests
+        run: >-
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror
+          -ISonar/src -IBoat/source
+          Sonar/tests/sonar_acquisition_uart_test.cpp
+          Sonar/src/echo_profile_detector.cpp
+          -o /tmp/sonar_acquisition_uart_test
+      - name: Verify ADC acquisition and Boat UART sentence behavior
+        run: /tmp/sonar_acquisition_uart_test
+
+  sonar-platformio-targets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install PlatformIO Core
+        run: python -m pip install platformio
+      - name: Compile disarmed DevKitC V4 Sonar firmware
+        run: pio run -d Sonar -e devkitc_v4_compile
+      - name: Compile ADC capture API profile
+        run: pio run -d Sonar -e devkitc_v4_adc_api_compile
+      - name: Compile TUSS4470 SPI API profile
+        run: pio run -d Sonar -e devkitc_v4_spi_api_compile
+      - name: Compile DBT UART API profile
+        run: pio run -d Sonar -e devkitc_v4_uart_api_compile
