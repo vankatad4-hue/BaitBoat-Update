@@ -122,10 +122,14 @@ echogram, or physical dual-core runtime acceptance is claimed.
   temperature payload, sequence/sample, and CRC-corruption cases. CI now runs
   that test with the canonical Common source include path and triggers on this
   protocol header.
-- Verification is pending for these edits. This workspace has no usable native
-  C++ compiler, Python runtime, or PlatformIO command; run the Sonar host and
-  target workflow after syncing this commit. No board upload or hardware test
-  was attempted.
+- CI verified the Sonar host protocol/acquisition tests and all five Sonar
+  PlatformIO profiles (base, ADC API, SPI API, UART API, and power UART) in
+  [run #46159340356](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46159340356).
+  The Boat and Remote no-flash PlatformIO builds both passed in
+  [run #46159340362](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46159340362),
+  and the shared-source inventory passed in
+  [run #46159340355](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46159340355).
+  No board upload or hardware test was attempted.
 - The acquisition firmware remains statically disarmed. The transport API is
   not yet called by a live acquisition runtime because burst synchronization,
   TUSS register profile, analog conditioning, and sample calibration remain
