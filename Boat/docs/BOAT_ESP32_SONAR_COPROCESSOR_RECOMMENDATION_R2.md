@@ -31,7 +31,9 @@ GPIO25–27 are ADC2-capable pins on the classic ESP32, but they are only used a
 
 ## Boat telemetry connection
 
-Start by sending compact depth-only NMEA DBT over a one-way UART from coprocessor GPIO22 TX to Boat GPIO21 RX, with a shared logic ground. Boat GPIO21 is currently documented for optional nRF IRQ, but the current `NRF24Link` code polls the radio and does not consume the IRQ pin. Reassigning GPIO21 still requires updating the canonical Boat pin map, radio macros, crosswalk, source guards and resource checks as one reviewed change. Do not connect the wire until those records agree.
+The protocol candidate is compact depth-only NMEA DBT over a one-way UART from coprocessor GPIO22 TX to Boat GPIO21 RX, with a shared logic ground. The Boat's current source assigns UART2 to GNSS, UART1 to E22, and `Serial` to diagnostics; a separate UART endpoint has not been allocated. Decide whether to move diagnostics to verified native USB CDC, use a bounded software UART, or revise another interface before creating the receiver. Do not assume UART0 is free while the debug console uses it.
+
+Boat GPIO21 is currently documented for optional nRF IRQ, but the current `NRF24Link` code polls the radio and does not consume the IRQ pin. Reassigning GPIO21 still requires updating the canonical Boat pin map, radio macros, crosswalk, source guards and resource checks as one reviewed change. Do not connect the wire until both serial ownership and pin records agree.
 
 The current Boat DBT decoder can accept a bounded byte stream, but it is not yet attached to this UART. The Remote receives compact depth telemetry only; full 1,800-sample echo profiles and Lucky D+T water temperature need separate protocol work and are outside this depth-only first connection.
 
