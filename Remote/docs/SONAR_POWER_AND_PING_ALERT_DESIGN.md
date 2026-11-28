@@ -1,53 +1,58 @@
 # Sonar power control and ping alert
 
-## Button behavior
+## Power command and button
 
-The screen button is named **Sonar Off / Sonar On**. Its current handler only
-pauses Remote-side profile processing and clears the local plot; it does not
-sleep the Sonar ESP32. Keep the status text explicit until an end-to-end state
-acknowledgement exists.
+The Remote **Sonar Off / Sonar On** button now sends authenticated command 11
+over the primary radio link. Boat forwards a compact, checksummed request to
+the Sonar ESP32 and returns the Remote command result only after the Sonar ACK
+matches the command ID and requested state. Backup-radio routing is rejected.
+Missing UART configuration, an unsigned pin audit, timeout, or a mismatched ACK
+leaves the UI unconfirmed and the Sonar power action rejected.
 
-## Sonar sleep/wake path
+The Sonar firmware has an opt-in UART control compile profile and uses ESP32
+UART-triggered **light sleep**. The sender supplies wake edges before the
+framed request because the wake-triggering UART bytes are not retained. Wake
+and sleep code is compile-tested by the dedicated profile only when a target
+build is run; runtime UART enable remains 0.
 
-The current data UART is one-way: Sonar ESP32 GPIO22 TX → Boat GPIO21 RX. A
-Remote button cannot send a sleep request over that link. The intended software
-path is an authenticated, idempotent `SONAR_POWER` command from Remote to Boat,
-then a framed request over a second UART direction, with the Sonar board
-returning its actual state over the existing data TX line.
+This is a software sleep request, not a rail disconnect. The TUSS4470 shield
+and transducer supply remain powered in light sleep. The acquisition driver is
+still disarmed, so there are currently no ADC/DMA or TUSS activity hooks to
+stop or restart. Cutting all sonar hardware power requires a verified standby
+control or a properly rated load switch and current measurements.
 
-ESP32 UART wake is supported for **light sleep**, not deep sleep. The sender
-must transmit wake edges first because the wake-triggering UART character is
-lost. The Sonar runtime should stop the capture cycle, DMA/ADC, and TUSS4470
-activity before sleeping, then reinitialize them after an acknowledged wake.
-Those peripherals are not active in the current disarmed firmware. Light sleep
-does not disconnect shield/transducer supply; cutting all sonar-rail power
-requires a load switch or a verified sensor standby mode and power measurement.
-
-Required before the button can operate the Sonar board:
-
-1. Assign and physically verify a Boat UART TX and Sonar UART RX, common ground,
-   connector pins, and 3.3 V logic levels. Existing candidate maps are unsigned.
-2. Add the authenticated command to both Remote and Boat protocol paths, with
-   duplicate suppression, timeout handling, and ACK only after the Sonar board
-   confirms its new state.
-3. Implement UART wake/light-sleep in Sonar and connect shutdown/restart hooks
-   for each commissioned acquisition peripheral.
-4. Verify current draw in active, sleep, and wake states with the actual shield
-   connected. Do not show “Off” as confirmed until the Sonar ACK arrives.
+Boat GPIO21 RX and GPIO47 TX, and Sonar GPIO17 RX/GPIO22 TX, are provisional.
+All physical UART audit flags remain unsigned. Check the exact board modules,
+header routes, common ground, signal voltage and level shifting before enabling
+the UART runtime. GPIO47 on the selected S3 module may require a level shifter.
+No board was uploaded or connected.
 
 ## Generated ping output
 
-The selected Waveshare ESP32-S3-Touch-LCD-4.3 Standard has no documented
-onboard speaker/audio codec. The planned carrier has an optional `BUZZER_CTRL`
-connector, but no MCU pin is assigned to it. GPIO6 is already the SD library's
-dummy-CS pin in this firmware and is not a free buzzer output.
+Remote now detects the same strong local echo peaks that produce yellow
+range-only pings on the top-view circle. When the saved **Fish Alarm** setting
+is enabled, a short synthesized PWM tone is requested for an echo candidate;
+this is not fish classification and the down-looking single beam has no target
+bearing. No MP3 is stored or played; the linked Pixabay effect is a sound
+reference.
 
-A **passive piezo** can produce a short synthesized sonar chirp from a PWM
-output; an active buzzer generally gives only its built-in pitch, switched on
-and off. Use a transistor driver if the selected piezo's current or voltage is
-outside the MCU pin rating. This output would synthesize a tone; it would not
-play the linked Pixabay MP3. Trigger only for a debounced strong echo
-candidate—current profiles do not classify fish or provide echo bearing.
+Tone generation is implemented behind `REMOTE_SONAR_BUZZER_ENABLED`, which is
+0, and `REMOTE_SONAR_BUZZER_PIN`, which is -1. The planned carrier's R-J6
+`BUZZER_CTRL` is a logical connector only; it has no assigned ESP32 GPIO yet.
+Thus there is no audible output on the current firmware. A passive piezo can
+play the generated chirp after a PWM GPIO and suitable driver are assigned and
+verified. An active buzzer generally only switches its fixed pitch.
 
-The Pixabay sound is a reference for the desired sound, not firmware audio:
-[Sonar ping sound effect](https://pixabay.com/sound-effects/film-special-effects-sonar-89448/).
+## Remaining acceptance
+
+1. Audit and sign the Boat/Sonar UART directions, signal levels and physical
+   routes; then enable UART runtime and verify authenticated Remote → Boat →
+   Sonar sleep/wake plus matching ACKs.
+2. Decide the TUSS4470 and transducer standby or rail-switch circuit, add the
+   required stop/restart hooks to the real acquisition driver, and measure
+   active/sleep/wake current with the shield connected.
+3. Assign R-J6 to a verified PWM-capable Remote GPIO with an appropriate
+   driver, enable the audio gate, and confirm the saved fish-alarm setting
+   produces one debounced tone per strong echo candidate.
+4. Build all affected PlatformIO targets and run the exact-commit host/CI
+   checks. These results are not claimed until observed and recorded.

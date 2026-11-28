@@ -68,6 +68,29 @@ void BoatApplicationPort::publishData(uint32_t now){
  const auto b=boatHardware_telemetry(telemetrySample,now,++sampleSequence_,255,radio_.missionPhase());
  for(uint8_t i=0;i<b.count;++i)radio_.sendHardwareTelemetry(b.payload[i],now);
 }
+bool BoatApplicationPort::startSonarPower(const BoatCommand &cmd,ManagedLink link){
+ // Sleep/wake is a primary authenticated command and is admitted only when
+ // the complete UART wake/ack adapter is active on audited pins.
+ if(cmd.type!=CMD_SONAR_POWER||link!=LINK_NRF_PRIMARY||sonarPowerPending_||
+    !sonarPowerRequest_||!sonarPowerResult_||cmd.leftMotor||cmd.rightMotor||
+    cmd.mode!=MODE_MANUAL||(driverFaultLatched_&&cmd.activate))return false;
+ if(!sonarPowerRequest_(static_cast<uint16_t>(cmd.commandId),cmd.activate,millis()))return false;
+ sonarPowerCommand_=cmd;sonarPowerReplyLink_=link;
+ sonarPowerGeneration_=radio_.sessionGeneration();sonarPowerPending_=true;
+ return true;
+}
+void BoatApplicationPort::serviceSonarPower(uint32_t now){
+ if(!sonarPowerPending_||!sonarPowerResult_)return;
+ uint16_t commandId=0U;bool success=false;
+ if(sonarPowerResult_(commandId,success)&&commandId==sonarPowerCommand_.commandId){
+  radio_.completeApplicationAction(sonarPowerCommand_,sonarPowerGeneration_,success,2,0,sonarPowerReplyLink_);
+  sonarPowerPending_=false;sonarPowerCommand_={};return;
+ }
+ if(static_cast<uint32_t>(now-sonarPowerCommand_.createdAtMs)>2000U){
+  radio_.completeApplicationAction(sonarPowerCommand_,sonarPowerGeneration_,false,2,0,sonarPowerReplyLink_);
+  sonarPowerPending_=false;sonarPowerCommand_={};
+ }
+}
 void BoatApplicationPort::fault(){
  // In a fault path a same-tick pre-STOP sensor sample CANNOT confirm a
  // newly commanded physical STOP. Return an error/UNKNOWN to any pending
@@ -86,8 +109,14 @@ void BoatApplicationPort::fault(){
 void BoatApplicationPort::tick(){
  // Diagnostic default: poll and discard, never simulate a physical input.
  if(!attached_){
-  radio_.update();BoatCommand cmd{};bool duplicate=false;ManagedLink link=LINK_NONE;
-  while(radio_.takeCommand(cmd,duplicate,link)){}
+  radio_.update();serviceSonarPower(millis());
+  BoatCommand cmd{};bool duplicate=false;ManagedLink link=LINK_NONE;
+  while(radio_.takeCommand(cmd,duplicate,link)){
+   if(cmd.type!=CMD_SONAR_POWER)continue;
+   if(duplicate)continue;
+   if(!startSonarPower(cmd,link))
+    radio_.completeApplicationAction(cmd,radio_.sessionGeneration(),false,2,0,link);
+  }
   return;
  }
  // R30H-25: after apply() fails, the physical output state is uncertain.
@@ -99,6 +128,13 @@ void BoatApplicationPort::tick(){
   radio_.update();
   BoatCommand cmd{};bool duplicate=false;ManagedLink link=LINK_NONE;
   while(radio_.takeCommand(cmd,duplicate,link)){
+   // A confirmed sonar OFF is a non-actuator power reduction and remains
+   // available during a Boat driver fault; waking it does not.
+   if(cmd.type==CMD_SONAR_POWER){
+    if(!duplicate&&!startSonarPower(cmd,link))
+     radio_.completeApplicationAction(cmd,radio_.sessionGeneration(),false,2,0,link);
+    continue;
+   }
    if(!duplicate&&cmd.type!=CMD_EMERGENCY_STOP)
     radio_.completeApplicationAction(cmd,radio_.sessionGeneration(),false,2,0,link);
   }
@@ -161,6 +197,11 @@ void BoatApplicationPort::tick(){
  in.autonomousRth=radio_.failsafeReturnHomeActive();
  BoatCommand cmd{};bool duplicate=false;ManagedLink link=LINK_NONE;
  while(radio_.takeCommand(cmd,duplicate,link)){
+  if(cmd.type==CMD_SONAR_POWER){
+   if(!duplicate&&!startSonarPower(cmd,link))
+    radio_.completeApplicationAction(cmd,generation_,false,2,0,link);
+   continue;
+  }
   if(cmd.type==CMD_EMERGENCY_STOP){fault();return;}
   if(duplicate)continue;
   if(cmd.type==CMD_CLEAR_STOP){
@@ -195,6 +236,7 @@ void BoatApplicationPort::tick(){
    else radio_.completeApplicationAction(cmd,generation_,false,2,0);
   }
  }
+ serviceSonarPower(millis());
  in=boatHardware_inputs(sample_,millis(),executor_.stopped());
  in.primaryFresh=radio_.primaryFresh(millis());in.backupFresh=radio_.backupFresh(millis());
  in.autonomousRth=radio_.failsafeReturnHomeActive();

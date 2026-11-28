@@ -17,6 +17,8 @@ constexpr int SPI_MOSI = 23;
 constexpr bool TUSS_SPI_AUDIT_SIGNED = false; // Keep SPI inactive until board/shield levels are checked.
 constexpr int BOAT_UART_TX = 22;
 constexpr bool BOAT_UART_TX_AUDIT_SIGNED = false; // Measure coprocessor TX before wiring Boat RX.
+constexpr int BOAT_UART_RX = 17; // Candidate Boat-to-Sonar command return.
+constexpr bool BOAT_UART_RX_AUDIT_SIGNED = false; // UART wake path remains electrically unsigned.
 
 // These helpers make the provisional allocation fail at compile time if a
 // future pin edit introduces an ESP32 classic input-only or boot-strapping pin
@@ -41,14 +43,16 @@ static_assert(sonar_pins::isClassicEsp32Gpio(sonar_pins::IO1) &&
               sonar_pins::isClassicEsp32Gpio(sonar_pins::SPI_SCK) &&
               sonar_pins::isClassicEsp32Gpio(sonar_pins::SPI_MISO) &&
               sonar_pins::isClassicEsp32Gpio(sonar_pins::SPI_MOSI) &&
-              sonar_pins::isClassicEsp32Gpio(sonar_pins::BOAT_UART_TX),
+              sonar_pins::isClassicEsp32Gpio(sonar_pins::BOAT_UART_TX) &&
+              sonar_pins::isClassicEsp32Gpio(sonar_pins::BOAT_UART_RX),
               "Every provisional sonar signal must use a bonded ESP32 DevKitC GPIO");
 static_assert(!sonar_pins::isInputOnlyClassicEsp32Gpio(sonar_pins::IO1) &&
               !sonar_pins::isInputOnlyClassicEsp32Gpio(sonar_pins::IO2) &&
               !sonar_pins::isInputOnlyClassicEsp32Gpio(sonar_pins::TUSS_CS) &&
               !sonar_pins::isInputOnlyClassicEsp32Gpio(sonar_pins::SPI_SCK) &&
               !sonar_pins::isInputOnlyClassicEsp32Gpio(sonar_pins::SPI_MOSI) &&
-              !sonar_pins::isInputOnlyClassicEsp32Gpio(sonar_pins::BOAT_UART_TX),
+              !sonar_pins::isInputOnlyClassicEsp32Gpio(sonar_pins::BOAT_UART_TX) &&
+              !sonar_pins::isInputOnlyClassicEsp32Gpio(sonar_pins::BOAT_UART_RX),
               "Driven sonar signals cannot use input-only GPIO34..39");
 static_assert(!sonar_pins::isClassicEsp32StrapPin(sonar_pins::IO1) &&
               !sonar_pins::isClassicEsp32StrapPin(sonar_pins::IO2) &&
@@ -109,6 +113,7 @@ static_assert(sonar_pins::IO1 != sonar_pins::IO2 &&
               sonar_pins::VOUT_ADC != sonar_pins::SPI_MISO &&
               sonar_pins::VOUT_ADC != sonar_pins::SPI_MOSI &&
               sonar_pins::VOUT_ADC != sonar_pins::BOAT_UART_TX &&
+              sonar_pins::VOUT_ADC != sonar_pins::BOAT_UART_RX &&
               sonar_pins::BOAT_UART_TX != sonar_pins::TUSS_CS &&
               sonar_pins::SPI_SCK != sonar_pins::SPI_MISO &&
               sonar_pins::SPI_SCK != sonar_pins::SPI_MOSI &&
@@ -117,3 +122,18 @@ static_assert(sonar_pins::IO1 != sonar_pins::IO2 &&
               sonar_pins::BOAT_UART_TX != sonar_pins::SPI_MISO &&
               sonar_pins::BOAT_UART_TX != sonar_pins::SPI_MOSI,
               "Each sonar signal must own a distinct ESP32 DevKitC GPIO");
+static_assert(sonar_pins::BOAT_UART_RX != sonar_pins::BOAT_UART_TX &&
+              sonar_pins::BOAT_UART_RX != sonar_pins::IO1 &&
+              sonar_pins::BOAT_UART_RX != sonar_pins::IO2 &&
+              sonar_pins::BOAT_UART_RX != sonar_pins::OUT3 &&
+              sonar_pins::BOAT_UART_RX != sonar_pins::OUT4 &&
+              sonar_pins::BOAT_UART_RX != sonar_pins::TUSS_CS &&
+              sonar_pins::BOAT_UART_RX != sonar_pins::SPI_SCK &&
+              sonar_pins::BOAT_UART_RX != sonar_pins::SPI_MISO &&
+              sonar_pins::BOAT_UART_RX != sonar_pins::SPI_MOSI &&
+              sonar_pins::BOAT_UART_RX != sonar_pins::VOUT_ADC,
+              "Sonar UART RX must be unique in the DevKitC GPIO map");
+static_assert(!sonar_pins::isClassicEsp32StrapPin(sonar_pins::BOAT_UART_RX) &&
+              !sonar_pins::isClassicEsp32FlashPin(sonar_pins::BOAT_UART_RX) &&
+              !sonar_pins::isInputOnlyClassicEsp32Gpio(sonar_pins::BOAT_UART_RX),
+              "Sonar UART RX must be a non-strap, output-capable GPIO");

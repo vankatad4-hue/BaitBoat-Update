@@ -92,6 +92,7 @@ bool DualRadioManager::backupCommandAllowed(const BoatCommand &cmd) {
     switch (cmd.type) {
     case CMD_EMERGENCY_STOP: return true;
     case CMD_SET_MODE: return cmd.mode == MODE_RETURN_HOME || cmd.mode == MODE_AUTOPILOT;
+    case CMD_SONAR_POWER: return false; // Sleep/wake is primary-link only.
     case CMD_MANUAL_MOTORS: return false; // 3s LoRa pacing cannot meet 200ms motor lease
     case CMD_CLEAR_STOP: return false; // cannot safely clear STOP without fresh control lease
     case CMD_RELEASE_HOPPER_LEFT: case CMD_RELEASE_HOPPER_RIGHT:

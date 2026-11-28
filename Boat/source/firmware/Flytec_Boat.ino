@@ -95,6 +95,9 @@ void setup(){
  if(sensorsReady){
   const bool sonarUartReady=openEchoUart.begin(sensorsReady);
   Serial.println(sonarUartReady?"Open Echo DBT UART active under signed pin profile.":"Open Echo UART disabled; pin audit or build profile not enabled.");
+  application.setSonarPowerLink(
+   [](uint16_t id,bool enabled,uint32_t now){return openEchoUart.requestPower(id,enabled,now);},
+   [](uint16_t &id,bool &success){return openEchoUart.takePowerResult(id,success);});
  }
  #endif
  // No physical stationary/STOP sensor validation exists yet, so leave

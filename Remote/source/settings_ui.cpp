@@ -1,4 +1,5 @@
 #include "settings_ui.h"
+#include "sonar_alert_audio.h"
 #include "bulgarian_keyboard.h"
 #include <Arduino.h>
 #include <WiFi.h>
@@ -213,6 +214,7 @@ static void saveSonarPreferences()
     settingsPrefs.putUChar("snr_palette", (uint8_t)lv_dropdown_get_selected(sonarPalette));
     settingsPrefs.putBool("snr_arches", lv_obj_has_state(sonarFishArches, LV_STATE_CHECKED));
     settingsPrefs.putBool("snr_falarm", lv_obj_has_state(sonarFishAlarm, LV_STATE_CHECKED));
+    sonarAudio_setFishAlarmEnabled(lv_obj_has_state(sonarFishAlarm, LV_STATE_CHECKED));
     settingsPrefs.putBool("snr_salarm", lv_obj_has_state(sonarShallowAlarm, LV_STATE_CHECKED));
     settingsPrefs.putBool("snr_dalarm", lv_obj_has_state(sonarDeepAlarm, LV_STATE_CHECKED));
     settingsPrefs.putUShort("snr_sdepth", (uint16_t)lv_slider_get_value(sonarShallowDepth));
@@ -289,6 +291,7 @@ static void buildSonarSection(lv_obj_t *parent)
     const uint16_t shallowDepth = settingsPrefs.getUShort("snr_sdepth", 1);
     const uint16_t deepDepth = settingsPrefs.getUShort("snr_ddepth", 20);
     settingsPrefs.end();
+    sonarAudio_setFishAlarmEnabled(fishAlarm);
 
     makeLabel(parent, "НАСТРОЙКИ НА СОНАРА", 12, 8);
     makeLabel(parent, "ДЪЛБОЧИНА / ОБРАБОТКА", 12, 38);

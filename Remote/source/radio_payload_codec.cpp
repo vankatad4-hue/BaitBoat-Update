@@ -29,7 +29,7 @@ bool radio_decodeHeartbeatPayload(const uint8_t p[8], RadioDecodedPayload &out) 
 }
 bool radio_decodeAckPayload(const uint8_t p[8], RadioDecodedPayload &out) {
     resetOut(out);
-    if(p[0]!=0 || p[1]>RADIO_ACK_INTERNAL_FAILURE || p[2]<1 || p[2]>10 ||
+    if(p[0]!=0 || p[1]>RADIO_ACK_INTERNAL_FAILURE || p[2]<1 || p[2]>11 ||
        p[5]>2 || (p[6]&0xF0U)!=0 || p[7]!=0) return false;
     out.kind=RADIO_PAYLOAD_ACK; out.subtype=0; out.ackResult=p[1]; out.commandType=p[2];
     out.commandId=readU16LE(p+3); out.stopState=p[5]; out.interlockFlags=p[6];

@@ -1,5 +1,6 @@
 
 #include "boat_ui.h"
+#include "sonar_alert_audio.h"
 #include <Arduino.h>
 #include "boat_state.h"
 #include "joystick_calibration_ui.h"
@@ -384,6 +385,9 @@ static lv_obj_t *sonarPowerButton = nullptr;
 static lv_obj_t *sonarPowerButtonLabel = nullptr;
 static lv_obj_t *sonarViewHint = nullptr;
 static bool sonarSoftwareStandby = false;
+static bool sonarPowerRequestPending = false;
+static bool sonarPowerRequestedEnabled = true;
+static uint16_t sonarPowerCommandId = 0U;
 static bool sonarBoatHeadingValid = false;
 static float sonarBoatHeadingDeg = 0.0f;
 static bool sonarTopViewDepthValid = false;
@@ -654,6 +658,22 @@ static void updateSonarHistory(const BoatState &state)
         sonarEchoHasProfile = true;
         sonarLastEchoProfileId = state.sonarEchoProfileId;
         profileAdded = true;
+        // The sound is an echo-candidate alert, not a fish species classifier.
+        // With the current unsigned piezo pin, this remains a safe no-op.
+        if (state.sonarReadingValid && state.sonarRangeCm > 0U) {
+            uint32_t visibleBins =
+                (static_cast<uint32_t>(state.sonarDepthCm) * SONAR_ECHO_BINS +
+                 state.sonarRangeCm - 1U) / state.sonarRangeCm;
+            if (visibleBins > SONAR_ECHO_BINS) visibleBins = SONAR_ECHO_BINS;
+            for (uint8_t bin = 2U; bin + 2U < visibleBins; ++bin) {
+                const uint8_t amplitude = state.sonarEchoProfile[bin];
+                if (amplitude >= 190U && amplitude >= state.sonarEchoProfile[bin - 1U] &&
+                    amplitude >= state.sonarEchoProfile[bin + 1U]) {
+                    sonarAudio_notifyEchoCandidate();
+                    break;
+                }
+            }
+        }
     }
     if (!state.sonarReadingValid)
     {
@@ -741,17 +761,18 @@ static void createSonarPanel()
     lv_obj_add_event_cb(sonarPowerButton,[](lv_event_t *event){
         if(lv_event_get_code(event)!=LV_EVENT_CLICKED)return;
         lv_event_stop_bubbling(event);
-        sonarSoftwareStandby = !sonarSoftwareStandby;
-        lv_label_set_text(sonarPowerButtonLabel, sonarSoftwareStandby ? "Sonar On" : "Sonar Off");
-        lv_obj_set_style_bg_color(sonarPowerButton,
-            lv_color_hex(sonarSoftwareStandby ? 0x246B38 : 0x7A342B), LV_PART_MAIN);
-        if (sonarSoftwareStandby) {
-            // Stop Remote-side sonar profile processing and clear stale traces.
-            sonarEchoCount = sonarEchoNext = sonarDepthCount = sonarDepthNext = 0U;
-            sonarEchoHasProfile = sonarHistoryHasSample = false;
-            sonarTopViewDepthValid = false;
+        if (sonarPowerRequestPending) return;
+        uint16_t commandId = 0U;
+        const bool requestedEnabled = sonarSoftwareStandby;
+        if (!boatCommands_setSonarEnabled(requestedEnabled, &commandId)) {
+            if (sonarStatus) lv_label_set_text(sonarStatus, "СОНАР: ЗАЯВКАТА НЕ Е ИЗПРАТЕНА");
+            return;
         }
-        drawSonarPlot(sonarExpanded?720U:330U,sonarExpanded?220U:210U);
+        sonarPowerRequestedEnabled = requestedEnabled;
+        sonarPowerCommandId = commandId;
+        sonarPowerRequestPending = true;
+        lv_obj_add_state(sonarPowerButton, LV_STATE_DISABLED);
+        if (sonarStatus) lv_label_set_text(sonarStatus, "СОНАР: ЧАКА ПОТВЪРЖДЕНИЕ ОТ КОПРОЦЕСОРА");
     },LV_EVENT_CLICKED,nullptr);
     lv_obj_add_flag(sonarPanel, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(sonarPanel, sonarTouchEvent, LV_EVENT_CLICKED, nullptr);
@@ -1054,6 +1075,29 @@ static void updateMapMissionMarkers(const BoatState &state)
 
 void updateBoatScreen(const BoatState &state)
 {
+    sonarAudio_poll(millis());
+    if (sonarPowerRequestPending) {
+        RadioCommandAckRecord ack{};
+        if (boatRadio_getCommandAck(sonarPowerCommandId, ack)) {
+            if (ack.state == RADIO_CMD_ACK_EXECUTED) {
+                sonarPowerRequestPending = false;
+                sonarSoftwareStandby = !sonarPowerRequestedEnabled;
+                lv_label_set_text(sonarPowerButtonLabel, sonarSoftwareStandby ? "Sonar On" : "Sonar Off");
+                lv_obj_set_style_bg_color(sonarPowerButton,
+                    lv_color_hex(sonarSoftwareStandby ? 0x246B38 : 0x7A342B), LV_PART_MAIN);
+                lv_obj_clear_state(sonarPowerButton, LV_STATE_DISABLED);
+                if (sonarSoftwareStandby) {
+                    sonarEchoCount = sonarEchoNext = sonarDepthCount = sonarDepthNext = 0U;
+                    sonarEchoHasProfile = sonarHistoryHasSample = false;
+                }
+                drawSonarPlot(sonarExpanded ? 720U : 330U, sonarExpanded ? 220U : 210U);
+            } else if (ack.state == RADIO_CMD_ACK_REJECTED || ack.state == RADIO_CMD_ACK_TIMEOUT) {
+                sonarPowerRequestPending = false;
+                lv_obj_clear_state(sonarPowerButton, LV_STATE_DISABLED);
+                if (sonarStatus) lv_label_set_text(sonarStatus, "СОНАР: НЯМА ПОТВЪРЖДЕНИЕ / ОТКАЗ");
+            }
+        }
+    }
     const bool headingChanged = sonarBoatHeadingValid != state.headingValid ||
         (state.headingValid && fabsf(sonarBoatHeadingDeg - state.heading) >= 0.5f);
     sonarBoatHeadingValid = state.headingValid;
@@ -1065,8 +1109,10 @@ void updateBoatScreen(const BoatState &state)
     if (!sonarSoftwareStandby) updateSonarHistory(state);
     if (!sonarSoftwareStandby && headingChanged && sonarPlot)
         drawSonarPlot(sonarExpanded ? 720U : 330U, sonarExpanded ? 220U : 210U);
-    if (sonarSoftwareStandby) {
-        if (sonarStatus) lv_label_set_text(sonarStatus, "REMOTE STANDBY ONLY • SONAR ESP32 STILL RUNNING");
+    if (sonarPowerRequestPending) {
+        if (sonarStatus) lv_label_set_text(sonarStatus, "СОНАР: ЧАКА ПОТВЪРЖДЕНИЕ ОТ КОПРОЦЕСОРА");
+    } else if (sonarSoftwareStandby) {
+        if (sonarStatus) lv_label_set_text(sonarStatus, "SONAR ESP32 LIGHT SLEEP • SHIELD POWER NOT CUT");
         if (sonarViewHint) lv_label_set_text(sonarViewHint, "STANDBY: НЯМА ОБРАБОТКА НА ПРОФИЛИ ОТ ДИСТАНЦИОННОТО");
     }
     if(weatherLabel){
@@ -1088,8 +1134,10 @@ void updateBoatScreen(const BoatState &state)
     }
     if (sonarStatus)
     {
-        if (sonarSoftwareStandby) {
-            lv_label_set_text(sonarStatus, "REMOTE STANDBY ONLY • SONAR ESP32 STILL RUNNING");
+        if (sonarPowerRequestPending) {
+            lv_label_set_text(sonarStatus, "СОНАР: ЧАКА ПОТВЪРЖДЕНИЕ ОТ КОПРОЦЕСОРА");
+        } else if (sonarSoftwareStandby) {
+            lv_label_set_text(sonarStatus, "SONAR ESP32 LIGHT SLEEP • SHIELD POWER NOT CUT");
         } else if (sonarTopViewDepthValid) {
             if (!state.sonarEchoProfileValid) {
                 lv_label_set_text(sonarStatus, "НЯМА СВЕЖ ЕХО-ПРОФИЛ");

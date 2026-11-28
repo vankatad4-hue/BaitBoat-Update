@@ -284,7 +284,7 @@ bool boatRadio_sendCommand(const BoatCommand &command) {
         return true; // logical local STOP intent, not RF delivery
     }
     if(command.type==CMD_MANUAL_MOTORS&&!boatRadio_manualModeConfirmed())return false;
-    if(command.type!=CMD_EMERGENCY_STOP&&g_stopMustConfirm)return false;
+    if(command.type!=CMD_EMERGENCY_STOP&&command.type!=CMD_SONAR_POWER&&g_stopMustConfirm)return false;
     const uint32_t now=millis();
     bool queued=false;
     if(command.type==CMD_EMERGENCY_STOP&&sessionReady()){

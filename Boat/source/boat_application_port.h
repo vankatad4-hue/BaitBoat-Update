@@ -15,6 +15,8 @@ struct BoatPhysicalDriver {
  bool (*apply)(const BoatActuatorOutput &,uint16_t maxLeaseMs);
  void (*disable)();
 };
+using BoatSonarPowerRequest = bool (*)(uint16_t commandId, bool enabled, uint32_t nowMs);
+using BoatSonarPowerResult = bool (*)(uint16_t &commandId, bool &success);
 class BoatApplicationPort {
 public:
  explicit BoatApplicationPort(BoatDualRadioPort &radio):radio_(radio){}
@@ -22,6 +24,11 @@ public:
  // Copy optional sensor values from the existing application/I2C owner.
  // These telemetry-only fields never enter actuator permission decisions.
  void updateSensorTelemetry(const BoatHardwareSample &sample);
+ // Attach the independently gated UART adapter used for acknowledged Sonar
+ // power requests. A null callback keeps the radio command fail-closed.
+ void setSonarPowerLink(BoatSonarPowerRequest request, BoatSonarPowerResult result) {
+  sonarPowerRequest_=request; sonarPowerResult_=result;
+ }
  void tick();
 private:
  static BoatApplicationPort *active_;
@@ -45,7 +52,15 @@ private:
  uint8_t sampleSequence_=0;
  uint8_t lastSonarProfileId_=0;bool sonarProfileIdSeen_=false;
  bool manualPending_=false;
+ bool sonarPowerPending_=false;
+ BoatCommand sonarPowerCommand_{};
+ ManagedLink sonarPowerReplyLink_=LINK_NONE;
+ uint32_t sonarPowerGeneration_=0U;
+ BoatSonarPowerRequest sonarPowerRequest_=nullptr;
+ BoatSonarPowerResult sonarPowerResult_=nullptr;
  BoatCommand manualRelease_{};
+ void serviceSonarPower(uint32_t now);
+ bool startSonarPower(const BoatCommand &cmd,ManagedLink link);
  void finishManual(bool success);
  void publishData(uint32_t now);
  void fault();

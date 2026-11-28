@@ -10,6 +10,8 @@ constexpr int GNSS_TX=4, GNSS_RX=5, I2C_SCL=7, I2C_SDA=8;
 constexpr int NRF_CSN=9, NRF_CE=10, NRF_MOSI=11, NRF_SCK=12, NRF_MISO=13, NRF_IRQ=-1;
 // UART0 RX candidate for the separate sonar coprocessor; still unsigned.
 constexpr int OPEN_ECHO_UART_RX=21;
+// Candidate reverse UART direction for power requests; board wiring is not signed.
+constexpr int OPEN_ECHO_UART_TX=47;
 constexpr int E22_NRST=6, E22_AUX=14, E22_M0=15, E22_M1=16, E22_TX=17, E22_RX=18;
 constexpr int MDD_PWM1=39, MDD_PWM2=40;
 constexpr uint8_t MCP_ADDR=0x27, MCP_DIR1_GPB=0, MCP_DIR2_GPB=1;
@@ -36,4 +38,12 @@ static_assert(!OPEN_ECHO_GPIO_MAP_ASSIGNED && OPEN_ECHO_CS<0 &&
               OPEN_ECHO_VOUT_ADC<0,"Open Echo GPIO map requires physical review");
 static_assert(OPEN_ECHO_UART_RX==21 && NRF_IRQ<0,
               "GPIO21 belongs to sonar UART RX; nRF IRQ is intentionally unconnected");
+static_assert(OPEN_ECHO_UART_TX==47 && OPEN_ECHO_UART_TX!=OPEN_ECHO_UART_RX &&
+              OPEN_ECHO_UART_TX!=GNSS_TX && OPEN_ECHO_UART_TX!=GNSS_RX &&
+              OPEN_ECHO_UART_TX!=E22_TX && OPEN_ECHO_UART_TX!=E22_RX &&
+              OPEN_ECHO_UART_TX!=NRF_CSN && OPEN_ECHO_UART_TX!=NRF_CE &&
+              OPEN_ECHO_UART_TX!=NRF_MOSI && OPEN_ECHO_UART_TX!=NRF_SCK &&
+              OPEN_ECHO_UART_TX!=NRF_MISO && OPEN_ECHO_UART_TX!=MDD_PWM1 &&
+              OPEN_ECHO_UART_TX!=MDD_PWM2,
+              "Boat-to-Sonar UART TX candidate must remain unique");
 }

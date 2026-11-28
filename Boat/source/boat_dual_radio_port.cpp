@@ -1051,8 +1051,9 @@ void BoatDualRadioPort::receiveCaptured(ManagedLink link,const RadioFrame &f,uin
  }
  const auto phase=controller_.status().phase;
  const bool homeRequest=cmd.type==CMD_SET_MODE&&cmd.mode==MODE_RETURN_HOME;
- if(detachedReturn_||(phase>=MC_PREPARED&&phase<=MC_RETURNING&&
-    !(phase==MC_PREPARED&&cmd.type==CMD_CLEAR_STOP)&&!homeRequest)){if(cmd.type!=CMD_MANUAL_MOTORS)sendCommandAck(link,cmd,RADIO_ACK_REJECTED_SAFETY,2,0,now);return;}
+ const bool sonarPowerRequest=cmd.type==CMD_SONAR_POWER;
+ if((detachedReturn_&&!sonarPowerRequest)||(phase>=MC_PREPARED&&phase<=MC_RETURNING&&
+    !(phase==MC_PREPARED&&cmd.type==CMD_CLEAR_STOP)&&!homeRequest&&!sonarPowerRequest)){if(cmd.type!=CMD_MANUAL_MOTORS)sendCommandAck(link,cmd,RADIO_ACK_REJECTED_SAFETY,2,0,now);return;}
  if(dedupe_.hasExecuted(f.sourceId,f.sessionEpoch,id)) {
    sendCommandAck(link,cmd,RADIO_ACK_DUPLICATE,0,0,now);return;
  }

@@ -15,7 +15,8 @@ enum BoatCommandType : uint8_t
     CMD_RELEASE_HOPPER_LEFT = 7,
     CMD_RELEASE_HOPPER_RIGHT = 8,
     CMD_RELEASE_HOOK_LEFT = 9,
-    CMD_RELEASE_HOOK_RIGHT = 10
+    CMD_RELEASE_HOOK_RIGHT = 10,
+    CMD_SONAR_POWER = 11
 };
 
 // Complete application-level command.
@@ -54,6 +55,10 @@ bool boatCommands_setMode(BoatMode mode);
 
 // Send manual motor commands.
 bool boatCommands_setManualMotors(int16_t left, int16_t right);
+
+// Request a Sonar ESP32 state change. `commandId` receives the ID used to
+// correlate the eventual authenticated Sonar-state acknowledgement.
+bool boatCommands_setSonarEnabled(bool enabled, uint16_t *commandId);
 
 // Request bait release.
 bool boatCommands_releaseBait();

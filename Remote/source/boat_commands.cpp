@@ -146,6 +146,19 @@ bool boatCommands_setManualMotors(int16_t left, int16_t right)
     return sendCommand(command);
 }
 
+bool boatCommands_setSonarEnabled(bool enabled, uint16_t *commandId)
+{
+    if (!commandId || !boatRadio_primaryConnected() || (enabled && boatState.failsafeActive))
+        return false;
+    BoatCommand command = {};
+    command.type = CMD_SONAR_POWER;
+    command.mode = MODE_MANUAL;
+    command.activate = enabled;
+    if (!sendCommand(command)) return false;
+    *commandId = static_cast<uint16_t>(command.commandId);
+    return *commandId != 0U;
+}
+
 // Release actions fail closed until authenticated primary-link telemetry
 // confirms STOP released and the boat-side actuator interlocks are healthy.
 static bool releaseRequestAllowed()

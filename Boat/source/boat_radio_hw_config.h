@@ -11,6 +11,7 @@
 // nRF24Link polls, so the optional IRQ signal is not assigned to the MCU.
 #define BOAT_NRF_IRQ_PIN -1
 #define BOAT_OPEN_ECHO_UART_RX_PIN 21
+#define BOAT_OPEN_ECHO_UART_TX_PIN 47
 #define BOAT_OPEN_ECHO_UART_PIN_AUDIT_SIGNED 0
 #define BOAT_NRF_PIN_AUDIT_SIGNED 0
 #define BOAT_SX1262_BOARD_AUDIT_SIGNED 0
@@ -48,8 +49,11 @@ static_assert(BOAT_NRF_MOSI_PIN == boat_pins::NRF_MOSI, "R30H-33 pin-map mismatc
 static_assert(BOAT_NRF_IRQ_PIN == boat_pins::NRF_IRQ, "R30H-33 pin-map mismatch: BOAT_NRF_IRQ_PIN");
 static_assert(BOAT_OPEN_ECHO_UART_RX_PIN == boat_pins::OPEN_ECHO_UART_RX,
               "Sonar UART RX candidate drift");
-static_assert(BOAT_OPEN_ECHO_UART_PIN_AUDIT_SIGNED == 0,
-              "Sonar UART pin remains physically unsigned");
+static_assert(BOAT_OPEN_ECHO_UART_TX_PIN == boat_pins::OPEN_ECHO_UART_TX,
+              "Sonar UART TX candidate drift");
+static_assert(BOAT_OPEN_ECHO_UART_PIN_AUDIT_SIGNED == 0 ||
+              BOAT_OPEN_ECHO_UART_PIN_AUDIT_SIGNED == 1,
+              "Sonar UART pin audit flag must be boolean");
 static_assert(BOAT_E22_UART_PIN_TX == boat_pins::E22_TX, "R30H-33 pin-map mismatch: BOAT_E22_UART_PIN_TX");
 static_assert(BOAT_E22_UART_PIN_RX == boat_pins::E22_RX, "R30H-33 pin-map mismatch: BOAT_E22_UART_PIN_RX");
 static_assert(BOAT_E22_UART_PIN_M0 == boat_pins::E22_M0, "R30H-33 pin-map mismatch: BOAT_E22_UART_PIN_M0");

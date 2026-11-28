@@ -11,6 +11,7 @@ static int16_t clampMotor(int16_t v) {
 static bool backupAllowed(const BoatCommand &cmd) {
     if (cmd.type == CMD_EMERGENCY_STOP) return true;
     if (cmd.type == CMD_SET_MODE) return cmd.mode == MODE_RETURN_HOME || cmd.mode == MODE_AUTOPILOT;
+    if (cmd.type == CMD_SONAR_POWER) return false; // Sleep/wake requires the primary Boat-Sonar command path.
     if (cmd.type == CMD_MANUAL_MOTORS || cmd.type == CMD_CLEAR_STOP) return false;
     // Explicit one-channel release commands still pass Boat interlocks.
     return cmd.type == CMD_RELEASE_HOPPER_LEFT || cmd.type == CMD_RELEASE_HOPPER_RIGHT ||
@@ -46,7 +47,7 @@ bool radio_decodeCommand(const RadioFrame &f, uint8_t expectedSrc, uint8_t expec
     if (f.type != RADIO_MSG_CONTROL && f.type != RADIO_MSG_ACTION) return false;
     if (f.payload[7] != 0 || f.payload[6] > 1) return false;
     const uint8_t rawType=f.payload[0];
-    if (rawType < CMD_EMERGENCY_STOP || rawType > CMD_RELEASE_HOOK_RIGHT) return false;
+    if (rawType < CMD_EMERGENCY_STOP || rawType > CMD_SONAR_POWER) return false;
     out = {};
     out.sequence=f.sequence;
     out.commandId=f.commandId;
@@ -63,8 +64,10 @@ bool radio_decodeCommand(const RadioFrame &f, uint8_t expectedSrc, uint8_t expec
         out.type == CMD_RELEASE_HOOK_LEFT || out.type == CMD_RELEASE_HOOK_RIGHT);
     // Legacy combined-release IDs are rejected to prevent unintended two-channel actuation.
     if (out.type == CMD_BAIT_RELEASE || out.type == CMD_HOOK_RELEASE) return false;
-    if (out.activate && !releaseCommand) return false;
+    if (out.activate && !releaseCommand && out.type != CMD_SONAR_POWER) return false;
     if (releaseCommand && !out.activate) return false;
+    if (out.type == CMD_SONAR_POWER &&
+        (out.leftMotor != 0 || out.rightMotor != 0 || out.mode != MODE_MANUAL)) return false;
     if (backup && !backupAllowed(out)) return false;
     return true;
 }

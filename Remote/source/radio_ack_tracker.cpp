@@ -19,14 +19,14 @@ int RadioAckTracker::allocate() const {
     return -1;
 }
 bool RadioAckTracker::primaryOnly(uint8_t type,uint8_t mode) const {
-    // 2=clear STOP, 3=set mode, 5/6 legacy combined release, 7..10 independent releases.
+    // 2=clear STOP, 3=set mode, 5/6 legacy combined release, 7..10 releases, 11=sonar power.
     // Backup is limited to STOP, RETURN HOME and restricted manual steering.
-    if(type==2 || type==5 || type==6 || (type>=7 && type<=10)) return true;
+    if(type==2 || type==5 || type==6 || (type>=7 && type<=11)) return true;
     if(type==3 && mode!=2) return true; // MODE_RETURN_HOME wire value is 2
     return false;
 }
 bool RadioAckTracker::begin(uint16_t id,uint8_t type,uint8_t mode,uint32_t now,uint16_t timeout) {
-    if(id==0 || type<1 || type>10 || timeout==0) return false;
+    if(id==0 || type<1 || type>11 || timeout==0) return false;
     const int existing=find(id);
     if(existing>=0 && (slots_[existing].record.state==RADIO_CMD_ACK_WAITING ||
                        slots_[existing].record.state==RADIO_CMD_ACK_ACCEPTED)) return false;

@@ -87,6 +87,7 @@ public:
    if(c.type==CMD_MANUAL_MOTORS){if(stopped_||missionId_)return false;return status(response,false,now);}
    bool executed=false;
    if(c.type==CMD_CLEAR_STOP&&stopped_){stopped_=false;executed=true;}
+   else if(c.type==CMD_SONAR_POWER){sonarEnabled_=c.activate;executed=true;}
    else if(c.type>=CMD_RELEASE_HOPPER_LEFT&&c.type<=CMD_RELEASE_HOOK_RIGHT&&!stopped_&&!missionId_){++mockReleases_;executed=true;}
    // The real Boat currently rejects SET_MODE(MANUAL); do not simulate success.
    radio_frameInit(response,RADIO_MSG_ACK,2,1,++sequence_,uint16_t(c.commandId),now,1);
@@ -110,6 +111,7 @@ public:
  }
  uint16_t lastStop()const{return lastStop_;}
  unsigned mockReleases()const{return mockReleases_;}
+ bool sonarEnabled()const{return sonarEnabled_;}
  bool missionStatus(RadioFrame& f,uint32_t now,bool backup=false){
   if(!missionId_)return false;
   if(phase_==MC_PREPARED&&uint32_t(now-stageAt_)>=10000U)phase_=MC_ABORTED;
@@ -123,6 +125,6 @@ private:
  MissionStickLease lease_;uint16_t missionId_=0,lastRequest_=0;uint32_t stageAt_=0;
  MissionControlPhase phase_=MC_IDLE;MissionControlOp lastOp_=MCTRL_CANCEL;MissionControlResult lastResult_=MC_STATUS;
  SessionHmac mac_;SessionHandshake session_;RadioSessionCounter rx_;MissionAssembler mission_;
- uint8_t root_[32]{42},key_[32]{};uint16_t sequence_=0,lastStop_=0;bool stopped_=false,primaryUnavailable_=false,safetyReturn_=false;uint8_t battery_=80;unsigned mockReleases_=0;
+ uint8_t root_[32]{42},key_[32]{};uint16_t sequence_=0,lastStop_=0;bool stopped_=false,primaryUnavailable_=false,safetyReturn_=false,sonarEnabled_=true;uint8_t battery_=80;unsigned mockReleases_=0;
 };
 }
