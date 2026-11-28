@@ -63,8 +63,11 @@ candidate and contains a disarmed USB diagnostic scaffold, fixed-size
 echo-profile threshold classifier. It also contains a side-effect-free
 TUSS4470 SPI frame codec with separate read/write encoders, a fixed zero byte for
 reads, whole-frame odd-parity validation, and named response status fields. It
-does not instantiate SPI, toggle NCS, observe the required NCS-high interval,
-or access TUSS registers. The target deliberately does not
+also includes a compile-gated ESP32 transport at a candidate 400 kHz / SPI mode
+1 with one 16-bit transfer per NCS pulse and an explicit NCS-high guard. The
+transport is not instantiated; a compile-time hardware lock and unsigned SPI
+pin audit prevent it from starting. Verify mode, timing and voltage levels on
+the actual board/shield before signing the gate. The target deliberately does not
 instantiate the capture or detector, configure shield pins, start the
 transducer, read an ADC, or emit DBT until the electrical and acquisition gates
 above are cleared. The classifier requires explicit calibrated ADC threshold,

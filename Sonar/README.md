@@ -7,11 +7,18 @@ does not enable the Boat UART, and does not report a depth value.
 
 ## Build target
 
-From the repository root, use `pio run -d Sonar -e devkitc_v4_compile` to compile
-the disarmed scaffold. `pio run -d Sonar -e devkitc_v4_adc_api_compile` also
-compiles the ESP32 ADC continuous/DMA adapter against the pinned framework API;
-it does not instantiate or start the adapter. PlatformIO Upload is intentionally
-denied by the shared `Boat/tools/pio_deny_upload.py` guard.
+From the repository root, run these commands to compile the disarmed scaffold
+and its isolated peripheral API profiles:
+
+```sh
+pio run -d Sonar -e devkitc_v4_compile
+pio run -d Sonar -e devkitc_v4_adc_api_compile
+pio run -d Sonar -e devkitc_v4_spi_api_compile
+```
+
+The ADC and SPI profiles compile their adapters but do not instantiate or start
+them. PlatformIO Upload is intentionally denied by the shared
+`Boat/tools/pio_deny_upload.py` guard.
 
 ## Candidate pins
 
@@ -46,6 +53,14 @@ status byte into VDRV-ready, burst-fault, EEPROM-fault, and device-state fields.
 It does not configure SPI, toggle chip select, observe the required high
 interval between frames, or read/write TUSS4470 registers. The bus protocol and
 all candidate chip-select/SPI pins remain uncommissioned.
+
+`src/esp32_tuss4470_transport.*` wraps the codec with one `SPI.transfer16`
+frame per NCS pulse, 400 kHz SPI mode 1, a 3 μs NCS-high guard, write-address
+echo checking, and explicit parity/status error returns. Its compile-only API
+profile is `devkitc_v4_spi_api_compile`. Runtime remains unavailable: hardware
+enable is compile-locked to zero and `TUSS_SPI_AUDIT_SIGNED` is false. The mode and guard
+are software candidates that still require a scope check on the exact board and
+shield.
 
 ## Work required before sensor firmware
 
