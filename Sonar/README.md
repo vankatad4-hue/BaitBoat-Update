@@ -28,16 +28,25 @@ candidate, decodes only the expected channel, and stops on exactly one full
 sample block. Its VOUT hardware audit is hard-set false, and neither adapter is
 instantiated by the disarmed firmware; no DBT sentence is currently sent.
 
+`src/echo_profile_detector.*` consumes only a complete capture and requires an
+explicit calibrated ADC threshold, blanking sample, measured sample interval,
+and sound-speed value. It reports the first stable crossing as a depth estimate;
+it does not use a default calibration, read the TUSS OUT4 comparator, or publish
+telemetry. The ADC raw threshold is a different value from the TUSS4470 OUT4
+threshold register and must be calibrated independently. Capture sample zero
+must also be aligned to the actual transmit time before the ToF estimate can be
+trusted.
+
 ## Work required before sensor firmware
 
 1. Identify the exact ESP32 module and Shield 002 revision, selected capacitor
    jumpers, transducer model, and drive voltage.
 2. Measure TUSS logic outputs and VOUT against the ESP32 input limits; add
    level conversion or analog scaling if measurements require it.
-3. Integrate the capture adapter with a validated timer burst and future echo
-   detector. Keep Wi-Fi disabled during capture and propagate ADC pool
-   overflow, invalid channel records, stop errors, or incomplete captures as
-   invalid results.
+3. Integrate the capture adapter and pure profile detector with a validated
+   timer burst and measured sample-zero/transmit alignment. Keep Wi-Fi disabled
+   during capture and propagate ADC pool overflow, invalid channel records, stop
+   errors, or incomplete captures as invalid results.
 4. Validate the capture interval, depth threshold, blind zone, and sound-speed
    compensation against known distances before sending DBT.
 5. Add the one-way DBT transmitter only after the coprocessor has a validated

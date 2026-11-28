@@ -58,10 +58,14 @@ Boat now has a bounded DBT decoder connected to a compile-gated UART0 receiver t
 ## Software implementation status
 
 The separate `Sonar/` PlatformIO target now records this DevKitC V4 pin
-candidate and contains a disarmed USB diagnostic scaffold plus a fixed-size
-5,224-sample capture buffer contract. It deliberately does not configure the
-shield pins, start the transducer, read an ADC, or emit DBT until the electrical
-and acquisition gates above are cleared.
+candidate and contains a disarmed USB diagnostic scaffold, fixed-size
+5,224-sample capture buffer, optional ADC1 continuous/DMA adapter, and a pure
+echo-profile threshold classifier. It deliberately does not instantiate the
+capture or detector, configure shield pins, start the transducer, read an ADC,
+or emit DBT until the electrical and acquisition gates above are cleared. The
+classifier requires explicit calibrated ADC threshold, blanking, sample timing,
+and sound-speed inputs; it does not treat the TUSS OUT4 threshold register as an
+ADC code or claim a calibrated depth.
 
 The upstream Open Echo UNO code is not a drop-in ESP32 implementation: it uses
 AVR Timer1 and ADC registers. Also, `NMEA_DBT_OUT.ino` declares an analog sample
