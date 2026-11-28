@@ -497,10 +497,10 @@ static void renderSonarTopViewImage()
             const int16_t dx = static_cast<int16_t>(x) - center;
             const int16_t dy = static_cast<int16_t>(y) - center;
             const uint16_t radiusSquared = static_cast<uint16_t>(dx * dx + dy * dy);
+            const uint8_t radius = static_cast<uint8_t>(sqrtf(static_cast<float>(radiusSquared)));
             // Dark green radar field with a circular boundary and range rings.
             uint16_t color = 0x0000U;
             if (radiusSquared <= static_cast<uint16_t>(maxRadius * maxRadius)) {
-                const uint8_t radius = static_cast<uint8_t>(sqrtf(static_cast<float>(radiusSquared)));
                 color = 0x0100U;
                 if ((radius % 8U) == 0U) color = 0x0320U;
                 if (dx == 0 || dy == 0) color = 0x03A0U;
