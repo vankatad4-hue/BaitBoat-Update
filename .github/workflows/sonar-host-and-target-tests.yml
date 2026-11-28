@@ -4,6 +4,7 @@ on:
   push:
     branches: [platformio-unified-r30h20]
     paths:
+      - '.gitignore'
       - 'Sonar/platformio.ini'
       - 'Sonar/src/**'
       - 'Sonar/tests/**'
