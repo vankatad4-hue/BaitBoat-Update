@@ -61,9 +61,10 @@ The separate `Sonar/` PlatformIO target now records this DevKitC V4 pin
 candidate and contains a disarmed USB diagnostic scaffold, fixed-size
 5,224-sample capture buffer, optional ADC1 continuous/DMA adapter, and a pure
 echo-profile threshold classifier. It also contains a side-effect-free
-TUSS4470 SPI frame codec that composes and checks the 16-bit MSB-first odd-parity
-frame format. It does not instantiate SPI, toggle NCS, observe the required
-NCS-high interval, or access TUSS registers. The target deliberately does not
+TUSS4470 SPI frame codec with separate read/write encoders, a fixed zero byte for
+reads, whole-frame odd-parity validation, and named response status fields. It
+does not instantiate SPI, toggle NCS, observe the required NCS-high interval,
+or access TUSS registers. The target deliberately does not
 instantiate the capture or detector, configure shield pins, start the
 transducer, read an ADC, or emit DBT until the electrical and acquisition gates
 above are cleared. The classifier requires explicit calibrated ADC threshold,

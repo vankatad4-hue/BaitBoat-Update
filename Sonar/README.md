@@ -18,6 +18,8 @@ denied by the shared `Boat/tools/pio_deny_upload.py` guard.
 See [`src/sonar_pin_map.h`](src/sonar_pin_map.h) and the detailed
 [Boat coprocessor recommendation](../Boat/docs/BOAT_ESP32_SONAR_COPROCESSOR_RECOMMENDATION_R2.md).
 The pin constants are not yet an instruction to wire the shield.
+The current implementation state and next software/hardware gates are tracked
+in [`CONTINUATION.md`](CONTINUATION.md).
 
 `src/dbt_sentence.h` contains a side-effect-free integer formatter for valid
 depths in Boat's accepted range. `src/adc_capture_buffer.h` provides a fixed
@@ -38,11 +40,12 @@ must also be aligned to the actual transmit time before the ToF estimate can be
 trusted.
 
 `src/tuss4470_spi_codec.*` is a side-effect-free 16-bit MSB-first frame helper.
-It encodes the read/write bit, six-bit address, odd parity and data byte, and
-validates odd parity before exposing the returned status/data fields. It does
-not configure SPI, toggle chip select, observe the required high interval
-between frames, or read/write TUSS4470 registers. The bus protocol and all
-candidate chip-select/SPI pins remain uncommissioned.
+It has separate read and write encoders; reads always send the required `0x00`
+data byte. The response decoder validates odd parity and separates the raw
+status byte into VDRV-ready, burst-fault, EEPROM-fault, and device-state fields.
+It does not configure SPI, toggle chip select, observe the required high
+interval between frames, or read/write TUSS4470 registers. The bus protocol and
+all candidate chip-select/SPI pins remain uncommissioned.
 
 ## Work required before sensor firmware
 

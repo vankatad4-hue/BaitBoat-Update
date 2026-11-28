@@ -6,15 +6,29 @@
 // It never opens SPI, toggles NCS, or accesses a sensor register.
 namespace tuss4470_spi {
 
-struct Response {
-  bool controllerParityError; // Device reports an error in the previous MCU frame.
-  uint8_t status;              // Preserve six device status bits without interpretation.
-  uint8_t data;                // Read data or write-frame echo, depending on the request.
+enum class DeviceState : uint8_t {
+  LISTEN = 0U,
+  BURST = 1U,
+  STANDBY = 2U,
+  SLEEP = 3U,
 };
 
-// Encode R/W, six-bit register address, odd frame parity, and data into two
-// bytes in wire order. `read=true` emits the read bit and caller-supplied dummy byte.
-bool encode(bool read, uint8_t address, uint8_t data, uint8_t frame[2]);
+struct Response {
+  bool controllerParityError; // Device reports an error in the previous MCU frame.
+  uint8_t status;              // Raw six status bits, retained for diagnostics.
+  bool vdrvReady;              // STAT5: regulator reached the configured voltage.
+  bool pulseNumberFault;       // STAT4: burst ended before the configured pulse count.
+  bool driverPulseFault;       // STAT3: TUSS4470 detected a driver pulse fault.
+  bool eepromCrcFault;         // STAT2: internal EEPROM load reported a CRC error.
+  DeviceState deviceState;     // STAT1:0: listen, burst, standby, or sleep.
+  uint8_t data;                // Raw returned byte; meaning depends on SPI frame sequence.
+};
+
+// Encode a register read with the required zero data byte and odd frame parity.
+bool encodeRead(uint8_t address, uint8_t frame[2]);
+
+// Encode a register write with odd frame parity.
+bool encodeWrite(uint8_t address, uint8_t data, uint8_t frame[2]);
 
 // Validate whole-frame odd parity before exposing device status or returned data.
 bool decode(const uint8_t frame[2], Response &response);
