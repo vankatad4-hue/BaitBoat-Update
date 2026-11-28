@@ -239,7 +239,14 @@ The proposed control and passive-piezo integration sequence is documented in
   R-J6 buzzer remains a logical connector without an audited ESP32 GPIO, so the
   piezo driver stays disabled. Physical dual-core acceptance and all sonar
   acquisition commissioning remain NOT_RUN; see the gates above.
-- This workstation has no C++ compiler or PlatformIO command available, so no
-  local build is claimed. CI must verify this follow-up after repository sync.
+- GitHub Actions verified the follow-up at commit `26e07285`: Sonar host and
+  target tests passed in [run #46161411575](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46161411575),
+  Boat/Remote no-flash PlatformIO builds passed in [run #46161411584](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46161411584),
+  and Boat and Remote host suites passed in [runs #46161411520](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46161411520)
+  and [#46161411571](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46161411571).
+  Shared-source inventory passed in [run #46161411481](https://github.com/vankatad4-hue/BaitBoat-Update/actions/runs/46161411481);
+  Boat/Remote dual-core bench compile passed in [run #46161411539](https://github.com/vankat4-hue/BaitBoat-Update/actions/runs/46161411539).
+  These are host/build results only: RF/STOP timing, sensor acquisition,
+  sleep-current reduction, buzzer output, and dual-core runtime remain NOT_RUN.
   Map integration remains postponed.
 
